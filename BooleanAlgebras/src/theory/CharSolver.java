@@ -2,14 +2,15 @@ package theory;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import theory.BooleanAlgebra;
+import java.util.List;
+
 import utilities.Pair;
 
 /**
  *
  * @author lorisdan
  */
-public class CharSolver extends BooleanAlgebra<CharPred, Character>{
+public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Character>{
 
     final Character minChar = Character.MIN_VALUE;
     final Character maxChar = Character.MAX_VALUE;
@@ -148,5 +149,41 @@ public class CharSolver extends BooleanAlgebra<CharPred, Character>{
     public Pair<Character, Character> generateWitnesses(CharPred u) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+	@Override
+	public CharFunc MkSubstFuncFunc(CharFunc f1, CharFunc f2) {
+		//TODO Careful with overflows, check at transition level??
+		return new CharFunc(f1.increment+f2.increment);
+	}
+
+	@Override
+	public CharPred MkSubstFuncPred(CharFunc f, CharPred p) {
+		//TODO test this
+		ArrayList<Pair<Character,Character>> intervals = new ArrayList<Pair<Character,Character>>();
+		for (Pair<Character, Character> interval : p.intervals) {
+			intervals.add(
+					new Pair<Character, Character>(
+							(char)(interval.first-f.increment), 
+							(char)(interval.second-f.increment)));			
+		}
+		return new CharPred(intervals);
+	}
+
+	@Override
+	public Character MkSubstFuncConst(CharFunc f, Character c) {
+		//TODO test this
+		return Character.toChars(f.increment+c)[0];
+	}
     
+	/**
+	 * returns the string of a list of chars
+	 * @param chars
+	 * @return
+	 */
+	public String stringOfList(List<Character> chars){
+		StringBuilder sb = new StringBuilder();
+		for(Character c: chars)
+			sb.append(c);
+		return sb.toString();
+	}
 }

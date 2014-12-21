@@ -3,8 +3,8 @@ package automata.svpa;
 
 public class TaggedSymbol<S> {
 
-	S input;
-	SymbolTag tag;
+	public S input;
+	public SymbolTag tag;
 	
 	public TaggedSymbol(S input, SymbolTag tag) {
 		super();

@@ -5,17 +5,20 @@ package automata.svpa;
 
 import java.util.Stack;
 
-import automata.Move;
-
 import theory.BooleanAlgebra;
 import utilities.Pair;
 
-public abstract class SVPAMove<U,S> extends Move<U, S> implements Cloneable{
+public abstract class SVPAMove<U,S> implements Cloneable{
 
+	public Integer from;
+
+	public Integer to;
+	
 	Tag type;	
 	
 	protected SVPAMove(Integer from, Integer to, Tag type) {
-		super(from, to);
+		this.from = from;
+		this.to=to;
 		this.type = type;
 	}
 
@@ -31,5 +34,11 @@ public abstract class SVPAMove<U,S> extends Move<U, S> implements Cloneable{
 
 	
 	public abstract Object clone();
+
+	public abstract String toDotString();
+
+	public abstract S getWitness(BooleanAlgebra<U, S> ba);
+
+	public abstract boolean isEpsilonTransition();
 	
 }

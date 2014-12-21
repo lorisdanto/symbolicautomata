@@ -104,125 +104,6 @@ public class SFA<U, S> extends Automaton<U, S> {
 		return aut;
 	}
 
-	// Generate a string in the language, null if language is empty
-	public List<S> getWitness(BooleanAlgebra<U, S> ba) {
-		if (isEmpty)
-			return null;
-
-
-		Map<Integer,LinkedList<S>> witMap = new HashMap<Integer, LinkedList<S>>(); 
-		for(Integer state: finalStates)
-			witMap.put(state, new LinkedList<S>());
-		
-		HashSet<Integer> reachedStates = new HashSet<Integer>(finalStates);
-		HashSet<Integer> barreer = new HashSet<Integer>(finalStates);
-		
-		while (!barreer.isEmpty()) {
-						
-			ArrayList<SFAMove<U, S>> moves = new ArrayList<SFAMove<U, S>>(
-					getTransitionsTo(barreer));
-			
-			barreer = new HashSet<Integer>();			
-			for(SFAMove<U, S> move: moves){
-				if(!reachedStates.contains(move.from)){
-					barreer.add(move.from);
-					reachedStates.add(move.from);
-				}
-				LinkedList<S> newWit = new LinkedList<S>(witMap.get(move.to));
-				if (!move.isEpsilonTransition()) {
-					InputMove<U, S> cm = (InputMove<U, S>) move;
-					newWit.addFirst(ba.generateWitness(cm.guard));
-				}					
-				if(!witMap.containsKey(move.from))
-					witMap.put(move.from, newWit);
-				else{
-					LinkedList<S> oldWit = witMap.get(move.from);
-					if(oldWit.size()>newWit.size())
-						witMap.put(move.from, newWit);
-				}
-			}
-										
-		}
-		for(Integer st: initialStates)
-			return witMap.get(st);
-		return null;
-	}
-
-	@SuppressWarnings("unused")
-	private boolean isInitialConfiguration(Collection<Integer> conf) {
-		for (Integer state : conf)
-			if (isInitialState(state))
-				return true;
-		return false;
-	}
-
-	private boolean isInitialState(Integer state) {
-		return initialStates.contains(state);
-	}
-
-	private boolean isFinalConfiguration(Collection<Integer> conf) {
-		for (Integer state : conf)
-			if (isFinalState(state))
-				return true;
-		return false;
-	}
-
-	private boolean isFinalState(Integer state) {
-		return finalStates.contains(state);
-	}
-
-	public boolean accepts(List<S> input, BooleanAlgebra<U, S> ba) {
-		Collection<Integer> currConf = getEpsClosure(initialStates, ba);
-		for (S el : input) {
-			currConf = getNextState(currConf, el, ba);
-			currConf = getEpsClosure(currConf, ba);
-			if (currConf.isEmpty())
-				return false;
-		}
-
-		return isFinalConfiguration(currConf);
-	}
-
-	public Collection<Integer> getNextState(Collection<Integer> currState,
-			S inputElement, BooleanAlgebra<U, S> ba) {
-		Collection<Integer> nextState = new HashSet<Integer>();
-		for (SFAMove<U, S> t : getTransitionsFrom(currState)) {
-			if (!t.isEpsilonTransition()) {
-				InputMove<U, S> ct = (InputMove<U, S>) t;
-				if (ba.HasModel(ct.guard, inputElement))
-					nextState.add(t.to);
-			}
-		}
-
-		return nextState;
-	}
-
-	private Collection<Integer> getEpsClosure(Integer state,
-			BooleanAlgebra<U, S> ba) {
-
-		HashSet<Integer> st = new HashSet<Integer>();
-		st.add(state);
-		return getEpsClosure(st, ba);
-	}
-
-	private Collection<Integer> getEpsClosure(Collection<Integer> fronteer,
-			BooleanAlgebra<U, S> ba) {
-
-		Collection<Integer> reached = new HashSet<Integer>(fronteer);
-		LinkedList<Integer> toVisit = new LinkedList<Integer>(fronteer);
-
-		while (toVisit.size() > 0) {
-			for (SFAMove<U, S> t : getTransitionsFrom(toVisit.removeFirst())) {
-				if (t.isEpsilonTransition()) {
-					if (!reached.contains(t.to)) {
-						reached.add(t.to);
-						toVisit.add(t.to);
-					}
-				}
-			}
-		}
-		return reached;
-	}
 
 	/**
 	 * Computes the intersection with <code>aut</code> as a new SFA
@@ -1217,13 +1098,6 @@ public class SFA<U, S> extends Automaton<U, S> {
 	}
 
 	@Override
-	public Collection<Move<U, S>> getMoves() {
-		Collection<Move<U, S>> transitions = new LinkedList<Move<U, S>>();
-		transitions.addAll(getTransitions());
-		return transitions;
-	}
-
-	@Override
 	public Collection<Move<U, S>> getMovesFrom(Integer state) {
 		Collection<Move<U, S>> transitions = new LinkedList<Move<U, S>>();
 		transitions.addAll(getTransitionsFrom(state));
@@ -1236,6 +1110,8 @@ public class SFA<U, S> extends Automaton<U, S> {
 		transitions.addAll(getTransitionsTo(state));
 		return transitions;
 	}
+	
+
 
 	@Override
 	public Collection<Integer> getFinalStates() {
@@ -1275,6 +1151,9 @@ public class SFA<U, S> extends Automaton<U, S> {
 				transitionsTo);
 
 		return cl;
-	}
+	}	
+
+
+
 
 }

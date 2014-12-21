@@ -2,9 +2,17 @@ package automata;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-public abstract class Automaton<U, S> {
+import theory.BooleanAlgebra;
+
+public abstract class Automaton<P, S> {
 
 	public boolean isEmpty;
 	public boolean isDeterministic;
@@ -21,32 +29,42 @@ public abstract class Automaton<U, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public abstract Collection<Move<U, S>> getMoves();
+	public Collection<Move<P, S>> getMoves(){
+		return getMovesFrom(getStates());
+	}
 
 	/**
-	 * Returns the set of transitions starting set of states
+	 * Set of moves from state
 	 */
-	public abstract Collection<Move<U, S>> getMovesFrom(Integer state);
+	public abstract Collection<Move<P, S>> getMovesFrom(Integer state);
 
 	/**
-	 * Returns the set of transitions starting set of states
+	 * Set of moves from set of states
 	 */
-	public abstract Collection<Move<U, S>> getMovesTo(Integer state);
-
+	public Collection<Move<P, S>> getMovesFrom(Collection<Integer> states) {
+		Collection<Move<P, S>> transitions = new LinkedList<Move<P, S>>();
+		for (Integer state : states)
+			transitions.addAll(getMovesFrom(state));
+		return transitions;
+	}
+	
 	/**
-	 * Returns the set of states
+	 * Set of moves to state
 	 */
-	public abstract Collection<Integer> getStates();
-
+	public abstract Collection<Move<P, S>> getMovesTo(Integer state);
+	
 	/**
-	 * Returns the set of initial states
+	 * Set of moves to set of states
 	 */
-	public abstract Collection<Integer> getInitialStates();
+	public Collection<Move<P, S>> getMovesTo(Collection<Integer> states) {
+		Collection<Move<P, S>> transitions = new LinkedList<Move<P, S>>();
+		for (Integer state : states)
+			transitions.addAll(getMovesTo(state));
+		return transitions;
+	}
 
-	/**
-	 * Returns the set of final states
-	 */
-	public abstract Collection<Integer> getFinalStates();
+	
+	
 
 	/**
 	 * Saves in the file <code>name</code> under the path <code>path</code> the
@@ -73,7 +91,7 @@ public abstract class Automaton<U, S> {
 			}
 
 			for (Integer state : getStates()) {
-				for (Move<U, S> t : getMovesFrom(state))
+				for (Move<P, S> t : getMovesFrom(state))
 					fw.write(t.toDotString());
 			}
 
@@ -96,7 +114,7 @@ public abstract class Automaton<U, S> {
 		s = "Automaton: " + getMoves().size() + " transitions, "
 				+ getStates().size() + " states" + "\n";
 		s += "Transitions \n";
-		for (Move<U, S> t : getMoves())
+		for (Move<P, S> t : getMoves())
 			s = s + t + "\n";
 		s += "Initial States \n";
 		for (Integer is : getInitialStates())
@@ -105,5 +123,153 @@ public abstract class Automaton<U, S> {
 		for (Integer fs : getFinalStates())
 			s = s + fs + "\n";
 		return s;
+	}
+	
+	
+	/**
+	 * Returns a sequence in the input domain
+	 * @param ba
+	 * @return a list in the domain language, , null if empty
+	 */
+	public List<S> getWitness(BooleanAlgebra<P, S> ba) {
+		if (isEmpty)
+			return null;
+
+		Map<Integer,LinkedList<S>> witMap = new HashMap<Integer, LinkedList<S>>(); 
+		for(Integer state: getFinalStates())
+			witMap.put(state, new LinkedList<S>());
+		
+		HashSet<Integer> reachedStates = new HashSet<Integer>(getFinalStates());
+		HashSet<Integer> barreer = new HashSet<Integer>(getFinalStates());
+		
+		while (!barreer.isEmpty()) {
+						
+			ArrayList<Move<P, S>> moves = new ArrayList<Move<P, S>>(
+					getMovesTo(barreer));
+			
+			barreer = new HashSet<Integer>();			
+			for(Move<P, S> move: moves){
+				if(!reachedStates.contains(move.from)){
+					barreer.add(move.from);
+					reachedStates.add(move.from);
+				}
+				LinkedList<S> newWit = new LinkedList<S>(witMap.get(move.to));
+				if (!move.isEpsilonTransition()) {
+					newWit.addFirst(move.getWitness(ba));
+				}					
+				if(!witMap.containsKey(move.from))
+					witMap.put(move.from, newWit);
+				else{
+					LinkedList<S> oldWit = witMap.get(move.from);
+					if(oldWit.size()>newWit.size())
+						witMap.put(move.from, newWit);
+				}
+			}
+										
+		}
+		for(Integer st: getInitialStates())
+			return witMap.get(st);
+		return null;
+	}
+	
+	/**
+	 * Returns true if the machine accepts the input list
+	 * @param input
+	 * @param ba
+	 * @return true if accepted false otherwise
+	 */
+	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba) {
+		Collection<Integer> currConf = getEpsClosure(getInitialStates(), ba);
+		for (S el : input) {
+			currConf = getNextState(currConf, el, ba);
+			currConf = getEpsClosure(currConf, ba);
+			if (currConf.isEmpty())
+				return false;
+		}
+
+		return isFinalConfiguration(currConf);
+	}
+
+	
+	
+	
+	//Accessors functions	
+	/**
+	 * Returns the set of states
+	 */
+	public abstract Collection<Integer> getStates();
+
+	/**
+	 * Returns the set of initial states
+	 */
+	public abstract Collection<Integer> getInitialStates();
+
+	/**
+	 * Returns the set of final states
+	 */
+	public abstract Collection<Integer> getFinalStates();
+	
+	
+	//Utility methods
+	protected boolean isInitialConfiguration(Collection<Integer> conf) {
+		for (Integer state : conf)
+			if (isInitialState(state))
+				return true;
+		return false;
+	}
+
+	protected boolean isInitialState(Integer state) {
+		return getInitialStates().contains(state);
+	}
+
+	protected boolean isFinalConfiguration(Collection<Integer> conf) {
+		for (Integer state : conf)
+			if (isFinalState(state))
+				return true;
+		return false;
+	}
+
+	protected boolean isFinalState(Integer state) {
+		return getFinalStates().contains(state);
+	}
+		
+	protected Collection<Integer> getEpsClosure(Integer state,
+			BooleanAlgebra<P, S> ba) {
+
+		HashSet<Integer> st = new HashSet<Integer>();
+		st.add(state);
+		return getEpsClosure(st, ba);
+	}
+
+	protected Collection<Integer> getEpsClosure(Collection<Integer> fronteer,
+			BooleanAlgebra<P, S> ba) {
+
+		Collection<Integer> reached = new HashSet<Integer>(fronteer);
+		LinkedList<Integer> toVisit = new LinkedList<Integer>(fronteer);
+
+		while (toVisit.size() > 0) {
+			for (Move<P, S> t : getMovesFrom(toVisit.removeFirst())) {
+				if (t.isEpsilonTransition()) {
+					if (!reached.contains(t.to)) {
+						reached.add(t.to);
+						toVisit.add(t.to);
+					}
+				}
+			}
+		}
+		return reached;
+	}
+	
+	protected Collection<Integer> getNextState(Collection<Integer> currState,
+			S inputElement, BooleanAlgebra<P, S> ba) {
+		Collection<Integer> nextState = new HashSet<Integer>();
+		for (Move<P, S> t : getMovesFrom(currState)) {
+			if (!t.isEpsilonTransition()) {
+				if(t.hasModel(inputElement, ba))
+					nextState.add(t.to);
+			}
+		}
+
+		return nextState;
 	}
 }

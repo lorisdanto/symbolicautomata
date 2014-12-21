@@ -20,7 +20,11 @@ public abstract class Move<U,S>{
 		this.to=to;
 	}
 	
-	public abstract boolean isSatisfiable(BooleanAlgebra<U,S> boolal);
+	public abstract boolean isSatisfiable(BooleanAlgebra<U,S> ba);
+	
+	public abstract S getWitness(BooleanAlgebra<U,S> ba);
+	
+	public abstract boolean hasModel(S el, BooleanAlgebra<U,S> ba);
 	
 	/**
 	 * Checks if the transition is an epsilon transition

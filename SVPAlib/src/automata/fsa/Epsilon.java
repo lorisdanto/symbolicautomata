@@ -54,4 +54,14 @@ public class Epsilon<U,S> extends SFAMove<U,S> {
 		return true;
 	}
 
+	@Override
+	public S getWitness(BooleanAlgebra<U, S> boolal) {
+		return null;
+	}
+
+	@Override
+	public boolean hasModel(S el, BooleanAlgebra<U, S> ba) {
+		return false;
+	}
+	
 }

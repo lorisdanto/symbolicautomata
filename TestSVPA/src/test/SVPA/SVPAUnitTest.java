@@ -1,26 +1,5 @@
 package test.SVPA;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.junit.Test;
-
-import theory.BooleanAlgebra;
-import automata.AutomataException;
-import automata.svpa.Call;
-import automata.svpa.Epsilon;
-import automata.svpa.Internal;
-import automata.svpa.Return;
-import automata.svpa.ReturnBS;
-import automata.svpa.SVPA;
-import automata.svpa.SVPAMove;
-import automata.svpa.TaggedSymbol;
-import automata.svpa.TaggedSymbol.SymbolTag;
 
 
 public class SVPAUnitTest {

@@ -105,5 +105,10 @@ public class ReturnBS<U, S> extends SVPAMove<U, S> {
 	public boolean isEpsilonTransition() {
 		return false;
 	}
+
+	@Override
+	public S getWitness(BooleanAlgebra<U, S> ba) {
+		return ba.generateWitness(guard);
+	}
 	
 }

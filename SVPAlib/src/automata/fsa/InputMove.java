@@ -62,5 +62,15 @@ public class InputMove<U,S> extends SFAMove<U, S>{
 	public boolean isEpsilonTransition() {
 		return false;
 	}
+
+	@Override
+	public S getWitness(BooleanAlgebra<U, S> ba) {
+		return ba.generateWitness(guard);
+	}
+
+	@Override
+	public boolean hasModel(S el, BooleanAlgebra<U, S> ba) {
+		return ba.HasModel(guard, el);
+	}
 	
 }

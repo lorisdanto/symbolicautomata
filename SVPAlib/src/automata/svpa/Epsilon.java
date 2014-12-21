@@ -5,6 +5,8 @@ package automata.svpa;
 
 import java.util.Stack;
 
+
+
 import theory.BooleanAlgebra;
 import utilities.Pair;
 
@@ -66,6 +68,12 @@ public class Epsilon<U, S> extends SVPAMove<U, S> {
 	@Override
 	public boolean isEpsilonTransition() {
 		return true;
+	}
+
+	@Override
+	public S getWitness(BooleanAlgebra<U, S> boolal) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
