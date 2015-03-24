@@ -54,4 +54,16 @@ public class VariableAssignment<S> {
 		
 		return new VariableAssignment<S1>(emptyVariableAssignment); 
 	}
+	
+	@Override
+	public String toString(){
+		StringBuilder sb = new StringBuilder();
+		for(List<S> ass :  variableAssignments){
+			for(S v :  ass){
+				sb.append(v.toString());				
+			}			
+			sb.append(';');
+		}
+		return sb.toString();
+	}
 }

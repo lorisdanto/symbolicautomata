@@ -1,5 +1,6 @@
 package transducers.sst;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,5 +24,15 @@ public class CharFunction<U, F, S> implements Token<U, F, S>{
 		List<S> out = new LinkedList<S>(); 
 		out.add(ba.MkSubstFuncConst(unaryFunction, input));
 		return out;
+	}
+
+	@Override
+	public Token<U, F, S> rename(HashMap<String, String> varRename) {
+		return this;
+	}
+	
+	@Override
+	public String toString(){
+		return "{"+unaryFunction.toString()+"}";
 	}
 }

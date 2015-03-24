@@ -57,16 +57,9 @@ public class SSTUnitTest {
 
 			SST<CharPred, CharFunc, Character> sstA = getSSTaNoEps(ba);
 
-			List<Character> goodInput = new LinkedList<>();
-			goodInput.add('a');
-			goodInput.add('2');
-			goodInput.add('c');
-			
-			List<Character> badInput = new LinkedList<>();
-			badInput.add('#');
-			badInput.add('2');
-			badInput.add('c');
-			
+			List<Character> goodInput = lOfS("a2c");
+			List<Character> badInput = lOfS("#2c");
+
 			assertTrue(sstA.accepts(goodInput, ba));
 			assertTrue(!sstA.accepts(badInput, ba));
 
@@ -75,7 +68,7 @@ public class SSTUnitTest {
 		}
 
 	}
-	
+
 	@Test
 	public void testOutput() {
 
@@ -84,20 +77,12 @@ public class SSTUnitTest {
 
 			SST<CharPred, CharFunc, Character> sstA = getSSTaNoEps(ba);
 
-			List<Character> input1 = new LinkedList<>();
-			input1.add('a');
-			input1.add('2');
-			input1.add('c');
-			
-			List<Character> input2 = new LinkedList<>();
-			input2.add('a');
-			input2.add('c');
-			input2.add('c');
-			
+			List<Character> input1 = lOfS("a2c");
+			List<Character> input2 = lOfS("acc");
+
 			List<Character> output1 = sstA.outputOn(input1, ba);
 			List<Character> output2 = sstA.outputOn(input2, ba);
-			
-			
+
 			assertTrue(ba.stringOfList(output1).equals("ac"));
 			assertTrue(ba.stringOfList(output2).equals("acc"));
 
@@ -105,6 +90,67 @@ public class SSTUnitTest {
 			System.out.print(e);
 		}
 
+	}
+	
+	@Test
+	public void testEpsilonRemoval() {
+
+		try {
+			CharSolver ba = new CharSolver();
+
+			SST<CharPred, CharFunc, Character> sstA = getSSTa(ba);
+			
+			SST<CharPred, CharFunc, Character> sstAnoEps= sstA.removeEpsilonMoves(ba);
+
+			List<Character> input1 = lOfS("a2c");
+			List<Character> input2 = lOfS("acc");
+
+			List<Character> output1 = sstAnoEps.outputOn(input1, ba);
+			List<Character> output2 = sstAnoEps.outputOn(input2, ba);
+
+			assertTrue(ba.stringOfList(output1).equals("ac"));
+			assertTrue(ba.stringOfList(output2).equals("acc"));
+
+		} catch (AutomataException e) {
+			System.out.print(e);
+		}
+
+	}
+
+	@Test
+	public void testCombine() {
+
+		try {
+			CharSolver ba = new CharSolver();
+
+			SST<CharPred, CharFunc, Character> sst1 = getSSTc(ba);
+			SST<CharPred, CharFunc, Character> sst2 = getSSTd(ba);
+			SST<CharPred, CharFunc, Character> combined = sst1.combineWith(
+					sst2, ba);
+
+			List<Character> input1 = lOfS("a2c");
+			List<Character> input2 = lOfS("a22");
+			List<Character> input3 = lOfS("#");
+
+			assertTrue(combined.accepts(input1, ba));
+			assertTrue(!combined.accepts(input2, ba));
+			assertTrue(!combined.accepts(input3, ba));
+
+			List<Character> output1 = combined.outputOn(input1, ba);
+			assertTrue(ba.stringOfList(output1).equals("acac"));
+
+		} catch (AutomataException e) {
+			System.out.print(e);
+		}
+
+	}
+
+	private List<Character> lOfS(String s) {
+		List<Character> l = new ArrayList<Character>();
+		char[] ca = s.toCharArray();
+		for (int i = 0; i < s.length(); i++)
+			l.add(ca[i]);
+		return l;
 	}
 
 	// SST with one epsilon transition and two states, deletes all numbers and
@@ -124,7 +170,7 @@ public class SSTUnitTest {
 		justX.add(xv);
 
 		LinkedList<Token<CharPred, CharFunc, Character>> justX2 = new LinkedList<>();
-		justX.add(xv);
+		justX2.add(xv);
 
 		// x:= xa
 		LinkedList<Token<CharPred, CharFunc, Character>> xa = new LinkedList<>();
@@ -154,8 +200,7 @@ public class SSTUnitTest {
 		Map<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>>();
 		outputFunction.put(0, justXva);
 
-		return SST.MkSST(transitionsA, Arrays.asList(0), variables,
-				outputFunction, ba);
+		return SST.MkSST(transitionsA, 0, variables, outputFunction, ba);
 	}
 
 	// SST with one epsilon transition and two states, deletes all numbers and
@@ -202,8 +247,105 @@ public class SSTUnitTest {
 		Map<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>>();
 		outputFunction.put(0, justXva);
 
-		return SST.MkSST(transitionsA, Arrays.asList(0), variables,
-				outputFunction, ba);
+		return SST.MkSST(transitionsA, 0, variables, outputFunction, ba);
+	}
+
+	// SST with two states, deletes all numbers and
+	// keeps all letters. Only defined if string ends with letter
+	private SST<CharPred, CharFunc, Character> getSSTc(CharSolver ba)
+			throws AutomataException {
+
+		CharPred alpha = new CharPred('a', 'z');
+		CharPred num = new CharPred('1', '9');
+		String[] variables = { "x" };
+		StringVariable<CharPred, CharFunc, Character> xv = new StringVariable<>(
+				"x");
+
+		// Updates
+		// x:= x
+		LinkedList<ConstantToken<CharPred, CharFunc, Character>> justX = new LinkedList<>();
+		justX.add(xv);
+
+		LinkedList<Token<CharPred, CharFunc, Character>> justX2 = new LinkedList<>();
+		justX2.add(xv);
+
+		// x:= xa
+		LinkedList<Token<CharPred, CharFunc, Character>> xa = new LinkedList<>();
+		xa.add(xv);
+		xa.add(new CharFunction<CharPred, CharFunc, Character>(CharFunc.ID()));
+
+		// Create corresponding matrix
+		SimpleVariableUpdate<CharPred, CharFunc, Character> justXva = new SimpleVariableUpdate<>(
+				justX);
+
+		FunctionalVariableUpdate<CharPred, CharFunc, Character> justXva2 = new FunctionalVariableUpdate<>(
+				justX2);
+		FunctionalVariableUpdate<CharPred, CharFunc, Character> xava = new FunctionalVariableUpdate<>(
+				xa);
+
+		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();
+
+		transitionsA.add(new SSTInputMove<CharPred, CharFunc, Character>(0, 0,
+				alpha, xava));
+		transitionsA.add(new SSTInputMove<CharPred, CharFunc, Character>(0, 1,
+				alpha, xava));
+		transitionsA.add(new SSTInputMove<CharPred, CharFunc, Character>(0, 0,
+				num, justXva2));
+
+		// Output function just outputs x
+		Map<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>>();
+		outputFunction.put(1, justXva);
+
+		return SST.MkSST(transitionsA, 0, variables, outputFunction, ba);
+	}
+
+	// SST with two states, deletes all numbers and
+	// keeps all letters. Always defined
+	private SST<CharPred, CharFunc, Character> getSSTd(CharSolver ba)
+			throws AutomataException {
+
+		CharPred alpha = new CharPred('a', 'z');
+		CharPred num = new CharPred('1', '9');
+		String[] variables = { "x" };
+		StringVariable<CharPred, CharFunc, Character> xv = new StringVariable<>(
+				"x");
+
+		// Updates
+		// x:= x
+		LinkedList<ConstantToken<CharPred, CharFunc, Character>> justX = new LinkedList<>();
+		justX.add(xv);
+
+		LinkedList<Token<CharPred, CharFunc, Character>> justX2 = new LinkedList<>();
+		justX2.add(xv);
+
+		// x:= xa
+		LinkedList<Token<CharPred, CharFunc, Character>> xa = new LinkedList<>();
+		xa.add(xv);
+		xa.add(new CharFunction<CharPred, CharFunc, Character>(CharFunc.ID()));
+
+		// Create corresponding matrix
+		SimpleVariableUpdate<CharPred, CharFunc, Character> justXva = new SimpleVariableUpdate<>(
+				justX);
+
+		FunctionalVariableUpdate<CharPred, CharFunc, Character> justXva2 = new FunctionalVariableUpdate<>(
+				justX2);
+		FunctionalVariableUpdate<CharPred, CharFunc, Character> xava = new FunctionalVariableUpdate<>(
+				xa);
+
+		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();
+
+		transitionsA.add(new SSTInputMove<CharPred, CharFunc, Character>(0, 0,
+				alpha, xava));
+		transitionsA.add(new SSTInputMove<CharPred, CharFunc, Character>(0, 1,
+				alpha, xava));
+		transitionsA.add(new SSTInputMove<CharPred, CharFunc, Character>(0, 0,
+				num, justXva2));
+
+		// Output function just outputs x
+		Map<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>>();
+		outputFunction.put(0, justXva);
+
+		return SST.MkSST(transitionsA, 0, variables, outputFunction, ba);
 	}
 
 }

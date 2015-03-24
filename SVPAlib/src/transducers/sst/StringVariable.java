@@ -1,5 +1,6 @@
 package transducers.sst;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,15 @@ public class StringVariable<U, F, S> implements ConstantToken<U, F, S>{
 		int index = variablesToIndices.get(name);
 		return assignment.variableValue(index);
 	}
+
+	@Override
+	public Token<U, F, S> rename(HashMap<String, String> varRename) {
+		// TODO Auto-generated method stub
+		return new StringVariable<U,F,S>(varRename.get(name));
+	}	
 	
-	
+	@Override
+	public String toString(){
+		return name;
+	}
 }

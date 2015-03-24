@@ -1,5 +1,6 @@
 package transducers.sst;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,4 +26,15 @@ public class CharConstant<U, F, S> implements ConstantToken<U, F, S>{
 		out.add(constant);
 		return out;
 	}
+	
+	@Override
+	public Token<U, F, S> rename(HashMap<String, String> varRename) {
+		return this;
+	}
+	
+	@Override
+	public String toString(){
+		return constant.toString();
+	}
+	
 }

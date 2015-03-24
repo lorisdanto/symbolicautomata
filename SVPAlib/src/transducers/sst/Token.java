@@ -1,5 +1,6 @@
 package transducers.sst;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,4 +14,5 @@ public interface Token<P, F, S> {
 			S input, 
 			BooleanAlgebraSubst<P, F, S> ba);
 
+	Token<P,F,S> rename(HashMap<String, String> varRename);
 }
