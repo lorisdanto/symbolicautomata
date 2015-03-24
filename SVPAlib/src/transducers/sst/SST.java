@@ -173,13 +173,13 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	}
 
 	// creates an empty configuration
-	private Map<Integer, Collection<VariableAssignment<S>>> initializedConfig() {
-		Map<Integer, Collection<VariableAssignment<S>>> configuration = new HashMap<Integer, Collection<VariableAssignment<S>>>();
-		for (Integer state : getStates())
-			configuration.put(state, new LinkedList<VariableAssignment<S>>());
-
-		return configuration;
-	}
+//	private Map<Integer, Collection<VariableAssignment<S>>> initializedConfig() {
+//		Map<Integer, Collection<VariableAssignment<S>>> configuration = new HashMap<Integer, Collection<VariableAssignment<S>>>();
+//		for (Integer state : getStates())
+//			configuration.put(state, new LinkedList<VariableAssignment<S>>());
+//
+//		return configuration;
+//	}
 
 	// Makes one step on the current config and symbol in the sst
 	private Map<Integer, Collection<VariableAssignment<S>>> getNextConfig(
@@ -427,6 +427,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		epsFree.initialState = 0;
 		epsFree.states.add(epsFree.initialState);
 		statesAss.put(epsFree.initialState, epscl);
+		epsFree.variablesToIndices = sst.variablesToIndices;
 
 		reachedStates.put(p, epsFree.initialState);
 		toVisitStates.add(p);
