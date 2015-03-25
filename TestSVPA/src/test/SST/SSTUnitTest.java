@@ -123,7 +123,7 @@ public class SSTUnitTest {
 		try {
 			CharSolver ba = new CharSolver();
 
-			SST<CharPred, CharFunc, Character> sst1 = getSSTc(ba);
+			SST<CharPred, CharFunc, Character> sst1 = delNumKeepLettOnlyEndLett(ba);
 			SST<CharPred, CharFunc, Character> sst2 = getSSTd(ba);
 			SST<CharPred, CharFunc, Character> combined = sst1.combineWith(
 					sst2, ba);
@@ -176,7 +176,39 @@ public class SSTUnitTest {
 		} catch (AutomataException e) {
 			System.out.print(e);
 		}
+	}
+	
+	@Test
+	public void testUnion() {
 
+		try {
+			CharSolver ba = new CharSolver();
+
+			SST<CharPred, CharFunc, Character> sst1 = delNumKeepLettOnlyEndLett(ba);
+			SST<CharPred, CharFunc, Character> sst2 = getNumberCopy(ba);
+			SST<CharPred, CharFunc, Character> union = sst1.unionWith(
+					sst2, ba);
+
+			List<Character> input1 = lOfS("a2");
+			List<Character> input2 = lOfS("2a");
+			List<Character> input3 = lOfS("aa");
+			List<Character> input4 = lOfS("22");
+
+			assertTrue(!union.accepts(input1, ba));
+			assertTrue(union.accepts(input2, ba));
+			assertTrue(union.accepts(input3, ba));
+			assertTrue(union.accepts(input4, ba));
+
+			List<Character> output2 = union.outputOn(input2, ba);
+			assertTrue(ba.stringOfList(output2).equals("a"));
+			List<Character> output3 = union.outputOn(input3, ba);
+			assertTrue(ba.stringOfList(output3).equals("aa"));
+			List<Character> output4 = union.outputOn(input4, ba);
+			assertTrue(ba.stringOfList(output4).equals("22"));		
+
+		} catch (AutomataException e) {
+			System.out.print(e);
+		}
 	}
 	
 	@Test
@@ -278,7 +310,7 @@ public class SSTUnitTest {
 	// S: 0 -[a-z]/x{c+0};-> 1
 	// Initial States: 0
 	// Output Function: F(1)=x;
-	private SST<CharPred, CharFunc, Character> getSSTc(CharSolver ba)
+	private SST<CharPred, CharFunc, Character> delNumKeepLettOnlyEndLett(CharSolver ba)
 			throws AutomataException {
 
 		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();

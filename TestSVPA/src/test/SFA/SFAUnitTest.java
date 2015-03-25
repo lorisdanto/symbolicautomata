@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-
 import org.junit.Test;
 
 import theory.CharPred;
@@ -44,7 +43,6 @@ public class SFAUnitTest {
         LinkedList<Integer> finStates2 = new LinkedList<>();
         finStates2.add(1);
         for(int i=0;i<100;i++){
-        try {
         	SFA<CharPred, Character> rex = SFA.MkSFA(transitionsRex, 0, finStates, solver);
         	SFA<CharPred, Character> left = SFA.MkSFA(transitionsLeft, 0, finStates2, solver);        
         	
@@ -52,11 +50,6 @@ public class SFAUnitTest {
         	if(min.isEmpty)
         		System.out.println(min);
         	assertFalse(rex.isEquivalentTo(left, solver));
-        	
-		} catch (AutomataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		};
         }
         
 		
