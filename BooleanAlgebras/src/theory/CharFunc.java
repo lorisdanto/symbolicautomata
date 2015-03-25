@@ -23,7 +23,7 @@ public class CharFunc {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("x+");
+		sb.append("c+");
 		sb.append(increment);
 
 		return sb.toString();

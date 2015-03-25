@@ -51,11 +51,20 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return new VariableAssignment<S>(variableValues);
 	}
 
-	@Override
-	public VariableUpdate<P, F, S> renameVars(HashMap<String, String> varRename) {
+	public FunctionalVariableUpdate<P, F, S> renameVars(HashMap<String, String> varRename) {
 		ArrayList<List<Token<P, F, S>>> newVariableUpdate = new ArrayList<List<Token<P, F, S>>>();
 		for (List<Token<P, F, S>> singleVarUp : variableUpdate) {
 			newVariableUpdate.add(renameTokens(varRename, singleVarUp));
+		}
+
+		return new FunctionalVariableUpdate<P, F, S>(newVariableUpdate);
+	}
+	
+	public FunctionalVariableUpdate<P, F, S> liftToNVars(int n) {
+		ArrayList<List<Token<P, F, S>>> newVariableUpdate = 
+				new ArrayList<List<Token<P, F, S>>>(variableUpdate);
+		for (int i=variableUpdate.size();i<n;i++) {
+			newVariableUpdate.add(new ArrayList<Token<P,F,S>>());
 		}
 
 		return new FunctionalVariableUpdate<P, F, S>(newVariableUpdate);

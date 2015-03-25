@@ -47,7 +47,7 @@ public class SSTEpsilon<P, F, S> extends SSTMove<P, F, S> {
 	
 	@Override
 	public String toString() {
-		return String.format("E: %s --> %s", from, to);
+		return String.format("E: %s -%s-> %s", from, variableUpdate, to);
 	}
 	
 	@Override

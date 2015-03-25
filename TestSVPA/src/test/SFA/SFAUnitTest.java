@@ -32,8 +32,6 @@ public class SFAUnitTest {
         transitionsRex.add(new InputMove<CharPred, Character>(2, 1, new CharPred('b')));
         transitionsRex.add(new InputMove<CharPred, Character>(2, 2, new CharPred('0','8')));
         
-        LinkedList<Integer> inStates = new LinkedList<>();
-        inStates.add(0);
         LinkedList<Integer> finStates = new LinkedList<>();
         finStates.add(1);
         
@@ -43,14 +41,12 @@ public class SFAUnitTest {
         transitionsLeft.add(new InputMove<CharPred, Character>(1, 2, new CharPred('b')));
         transitionsLeft.add(new InputMove<CharPred, Character>(1, 1, new CharPred('0','9')));
         
-        LinkedList<Integer> inStates2 = new LinkedList<>();
-        inStates2.add(0);
         LinkedList<Integer> finStates2 = new LinkedList<>();
         finStates2.add(1);
         for(int i=0;i<100;i++){
         try {
-        	SFA<CharPred, Character> rex = SFA.MkSFA(transitionsRex, inStates, finStates, solver);
-        	SFA<CharPred, Character> left = SFA.MkSFA(transitionsLeft, inStates2, finStates2, solver);        
+        	SFA<CharPred, Character> rex = SFA.MkSFA(transitionsRex, 0, finStates, solver);
+        	SFA<CharPred, Character> left = SFA.MkSFA(transitionsLeft, 0, finStates2, solver);        
         	
         	SFA<CharPred, Character> min = left.minus(rex, solver);
         	if(min.isEmpty)
@@ -477,7 +473,7 @@ public class SFAUnitTest {
 		transitionsA.add(new InputMove<CharPred, Character>(1, 1,
 				geq0));
 		return SFA.MkSFA(transitionsA,
-				Arrays.asList(0), Arrays.asList(1), ba);
+				0, Arrays.asList(1), ba);
 	}
 	
 	private SFA<CharPred, Character> getUnambSFA(CharSolver ba) throws 
@@ -491,7 +487,7 @@ public class SFAUnitTest {
 		transitionsA.add(new InputMove<CharPred, Character>(0, 1,
 				geq0));
 		return SFA.MkSFA(transitionsA,
-				Arrays.asList(0), Arrays.asList(1), ba);
+				0, Arrays.asList(1), ba);
 	}
 	
 	
@@ -505,7 +501,7 @@ public class SFAUnitTest {
 		transitionsA.add(new InputMove<CharPred, Character>(0, 0,
 				geq0));
 		return SFA.MkSFA(transitionsA,
-				Arrays.asList(0), Arrays.asList(0,1), ba);
+				0, Arrays.asList(0,1), ba);
 	}
 	
 	private SFA<CharPred, Character> getSFAtoMin(CharSolver ba) throws 
@@ -521,7 +517,7 @@ public class SFAUnitTest {
 		transitionsA.add(new InputMove<CharPred, Character>(2, 2,
 				geq0));
 		return SFA.MkSFA(transitionsA,
-				Arrays.asList(0), Arrays.asList(1,2), ba);
+				0, Arrays.asList(1,2), ba);
 	}
 	
 	private SFA<CharPred, Character> getSFAc(CharSolver ba) throws
@@ -533,7 +529,7 @@ public class SFAUnitTest {
 		transitionsA.add(new InputMove<CharPred, Character>(0, 0,
 				geq0));
 		return SFA.MkSFA(transitionsA,
-				Arrays.asList(0), Arrays.asList(0), ba);
+				0, Arrays.asList(0), ba);
 	}
 	
 	private SFA<CharPred, Character> getSFAb(CharSolver ba) throws
@@ -554,7 +550,7 @@ public class SFAUnitTest {
 		transitionsB.add(new InputMove<CharPred, Character>(0, 2,
 				leq3));
 		return SFA.MkSFA(transitionsB,
-				Arrays.asList(0), Arrays.asList(1), ba);
+				0, Arrays.asList(1), ba);
 	}
 
 }
