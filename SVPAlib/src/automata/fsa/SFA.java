@@ -11,7 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import sun.nio.cs.ext.ISCII91;
 import theory.BooleanAlgebra;
 import utilities.Pair;
 import automata.Automaton;
