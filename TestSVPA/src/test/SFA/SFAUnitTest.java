@@ -96,10 +96,10 @@ public class SFAUnitTest {
 
 			SFA<CharPred, Character> autB = getSFAb(ba);			
 
-			assertTrue(autA.stateCount == 2);
+			assertTrue(autA.stateCount() == 2);
 			assertTrue(autA.transitionCount == 2);			
 			
-			assertTrue(autB.stateCount == 2);
+			assertTrue(autB.stateCount() == 2);
 			assertTrue(autB.transitionCount == 3);
 
 		} catch (AutomataException e) {
@@ -209,7 +209,7 @@ public class SFAUnitTest {
 			assertTrue(min.accepts(la, ba));
 			assertFalse(min.accepts(lnot, ba));
 			
-			assertTrue(min.stateCount==2);
+			assertTrue(min.stateCount()==2);
 
 		} catch (AutomataException e) {
 			System.out.print(e);
