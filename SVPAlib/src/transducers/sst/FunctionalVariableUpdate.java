@@ -1,9 +1,7 @@
 package transducers.sst;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import theory.BooleanAlgebraSubst;
 
@@ -11,11 +9,11 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 	public ArrayList<List<Token<P, F, S>>> variableUpdate;
 
-	public FunctionalVariableUpdate(){
+	public FunctionalVariableUpdate() {
 		super();
-		this.variableUpdate = new ArrayList<List<Token<P,F,S>>>();
+		this.variableUpdate = new ArrayList<List<Token<P, F, S>>>();
 	}
-	
+
 	public FunctionalVariableUpdate(
 			ArrayList<List<Token<P, F, S>>> variableUpdate) {
 		super();
@@ -36,8 +34,7 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	 * @return
 	 */
 	public VariableAssignment<S> applyTo(VariableAssignment<S> assignment,
-			Map<String, Integer> variablesToIndices, S input,
-			BooleanAlgebraSubst<P, F, S> ba) {
+			S input, BooleanAlgebraSubst<P, F, S> ba) {
 
 		int numVars = assignment.numVars();
 		ArrayList<List<S>> variableValues = new ArrayList<List<S>>(numVars);
@@ -45,8 +42,7 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 			List<S> value = new ArrayList<S>();
 
 			for (Token<P, F, S> token : variableUpdate.get(variable)) {
-				List<S> tokenApp = token.applyTo(assignment,
-						variablesToIndices, input, ba);
+				List<S> tokenApp = token.applyTo(assignment, input, ba);
 				value.addAll(tokenApp);
 			}
 
@@ -57,7 +53,10 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	}
 
 	public FunctionalVariableUpdate<P, F, S> renameVars(
-			HashMap<String, String> varRename) {
+			Integer varRename) {
+		if(varRename==0)
+			return this;
+		
 		ArrayList<List<Token<P, F, S>>> newVariableUpdate = new ArrayList<List<Token<P, F, S>>>();
 		for (List<Token<P, F, S>> singleVarUp : variableUpdate) {
 			newVariableUpdate.add(renameTokens(varRename, singleVarUp));
@@ -77,7 +76,8 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	}
 
 	private List<Token<P, F, S>> renameTokens(
-			HashMap<String, String> varRename, List<Token<P, F, S>> singleVarUp) {
+			Integer varRename,
+			List<Token<P, F, S>> singleVarUp) {
 		List<Token<P, F, S>> renamed = new ArrayList<Token<P, F, S>>();
 		for (Token<P, F, S> t : singleVarUp)
 			renamed.add(t.rename(varRename));
@@ -103,8 +103,8 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	 * using the disjoint rename functions
 	 */
 	public static <P1, F1, S1> FunctionalVariableUpdate<P1, F1, S1> combineUpdates(
-			HashMap<String, String> varRename1,
-			HashMap<String, String> varRename2,
+			Integer varRename1,
+			Integer varRename2,
 			FunctionalVariableUpdate<P1, F1, S1> update1,
 			FunctionalVariableUpdate<P1, F1, S1> update2) {
 
@@ -124,7 +124,7 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	 * using the disjoint rename functions
 	 */
 	public static <P1, F1, S1> FunctionalVariableUpdate<P1, F1, S1> addUpdate(
-			HashMap<String, String> varRename,
+			Integer varRename,
 			FunctionalVariableUpdate<P1, F1, S1> update1,
 			FunctionalVariableUpdate<P1, F1, S1> update2) {
 

@@ -3,7 +3,6 @@ package test.SST;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -23,8 +22,8 @@ import transducers.sst.SST;
 import transducers.sst.SSTEpsilon;
 import transducers.sst.SSTInputMove;
 import transducers.sst.SSTMove;
+import transducers.sst.SSTVariable;
 import transducers.sst.SimpleVariableUpdate;
-import transducers.sst.StringVariable;
 import transducers.sst.Token;
 import utilities.Pair;
 import automata.AutomataException;
@@ -158,7 +157,7 @@ public class SSTUnitTest {
 				.add(new Pair<SST<CharPred, CharFunc, Character>, SST<CharPred, CharFunc, Character>>(
 						sstBase, sstBase));
 		SST<CharPred, CharFunc, Character> sstShuffle = SST.computeShuffle(
-				combinedSstPairsWitEps, ba, false);		
+				combinedSstPairsWitEps, ba, false);
 
 		List<Character> input1 = lOfS("a");
 		List<Character> input2 = lOfS("ab");
@@ -170,9 +169,9 @@ public class SSTUnitTest {
 		assertTrue(sstShuffle.accepts(input3, ba));
 		assertTrue(sstShuffle.accepts(input4, ba));
 
-		List<Character> output2= sstShuffle.outputOn(input2, ba);
-		List<Character> output3= sstShuffle.outputOn(input3, ba);
-		List<Character> output4= sstShuffle.outputOn(input4, ba);
+		List<Character> output2 = sstShuffle.outputOn(input2, ba);
+		List<Character> output3 = sstShuffle.outputOn(input3, ba);
+		List<Character> output4 = sstShuffle.outputOn(input4, ba);
 
 		assertTrue(ba.stringOfList(output2).equals("AB"));
 		assertTrue(ba.stringOfList(output3).equals("ABBC"));
@@ -309,7 +308,7 @@ public class SSTUnitTest {
 	CharPred alpha = new CharPred('a', 'z');
 	CharPred num = new CharPred('1', '9');
 	CharPred comma = new CharPred(',');
-	List<String> onlyX = Arrays.asList("x");
+	Integer onlyX = 1;
 
 	// ---------------------------------------
 	// SSTs
@@ -497,8 +496,7 @@ public class SSTUnitTest {
 	// -------------------------
 
 	private FunctionalVariableUpdate<CharPred, CharFunc, Character> xEQx() {
-		StringVariable<CharPred, CharFunc, Character> xv = new StringVariable<>(
-				"x");
+		SSTVariable<CharPred, CharFunc, Character> xv = new SSTVariable<>(0);
 		LinkedList<Token<CharPred, CharFunc, Character>> justX = new LinkedList<>();
 		justX.add(xv);
 		return new FunctionalVariableUpdate<CharPred, CharFunc, Character>(
@@ -506,16 +504,14 @@ public class SSTUnitTest {
 	}
 
 	private SimpleVariableUpdate<CharPred, CharFunc, Character> justXsimple() {
-		StringVariable<CharPred, CharFunc, Character> xv = new StringVariable<>(
-				"x");
+		SSTVariable<CharPred, CharFunc, Character> xv = new SSTVariable<>(0);
 		LinkedList<ConstantToken<CharPred, CharFunc, Character>> justX = new LinkedList<>();
 		justX.add(xv);
 		return new SimpleVariableUpdate<CharPred, CharFunc, Character>(justX);
 	}
 
 	private FunctionalVariableUpdate<CharPred, CharFunc, Character> xEQxid() {
-		StringVariable<CharPred, CharFunc, Character> xv = new StringVariable<>(
-				"x");
+		SSTVariable<CharPred, CharFunc, Character> xv = new SSTVariable<>(0);
 		LinkedList<Token<CharPred, CharFunc, Character>> xa = new LinkedList<>();
 		xa.add(xv);
 		xa.add(new CharFunction<CharPred, CharFunc, Character>(CharFunc.ID()));

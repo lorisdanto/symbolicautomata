@@ -4,7 +4,6 @@
 package transducers.sst;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +28,8 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	protected Collection<Integer> states;
 	protected Integer initialState;
 
-	protected Map<String, Integer> variablesToIndices;
+	// protected int variablesToIndices;
+	protected int variableCount;
 	protected SimpleVariableUpdate<P, F, S> cachedIdentityVarUp;
 
 	// moves the output to the variable in position 0
@@ -52,9 +52,9 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		return getTransitions().size();
 	}
 
-	public Collection<String> getVariableNames() {
-		return variablesToIndices.keySet();
-	}
+	// public Collection<String> getVariableNames() {
+	// return variablesToIndices.keySet();
+	// }
 
 	public SimpleVariableUpdate<P, F, S> identityVarUp() {
 		if (cachedIdentityVarUp != null)
@@ -62,11 +62,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		ArrayList<List<ConstantToken<P, F, S>>> identityVariableUpdate = new ArrayList<List<ConstantToken<P, F, S>>>();
 
-		for (int i = 0; i < variablesToIndices.size(); i++) {
-			for (String var : getVariableNames()) {
-				if (variablesToIndices.get(var) == i)
-					identityVariableUpdate.add(getVarForStr(var));
-			}
+		for (int i = 0; i < variableCount; i++) {
+			List<ConstantToken<P, F, S>> varup = new ArrayList<ConstantToken<P, F, S>>();
+			varup.add(new SSTVariable<P, F, S>(i));
+			identityVariableUpdate.add(varup);
 		}
 
 		cachedIdentityVarUp = new SimpleVariableUpdate<P, F, S>(
@@ -77,7 +76,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	protected SST() {
 		super();
 		states = new HashSet<Integer>();
-		variablesToIndices = new HashMap<String, Integer>();
+		// variablesToIndices = new HashMap<String, Integer>();
 		outputFunction = new HashMap<Integer, SimpleVariableUpdate<P, F, S>>();
 		transitionsFrom = new HashMap<Integer, Collection<SSTInputMove<P, F, S>>>();
 		transitionsTo = new HashMap<Integer, Collection<SSTInputMove<P, F, S>>>();
@@ -93,7 +92,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	 */
 	public static <P1, F1, S1> SST<P1, F1, S1> MkSST(
 			Collection<SSTMove<P1, F1, S1>> transitions, Integer initialState,
-			List<String> variables,
+			int numberOfVariables,
 			Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction,
 			BooleanAlgebraSubst<P1, F1, S1> ba) {
 
@@ -105,19 +104,9 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		aut.states.add(initialState);
 		Collection<Integer> finalStates = outputFunction.keySet();
 		aut.states.addAll(finalStates);
+		aut.variableCount = numberOfVariables;
 
 		aut.outputFunction = outputFunction;
-
-		int index = 0;
-		ArrayList<List<ConstantToken<P1, F1, S1>>> identityVariableUpdate = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-		for (String var : variables) {
-			aut.variablesToIndices.put(var, index);
-			identityVariableUpdate.add(aut.getVarForStr(var));
-			index++;
-		}
-
-		aut.cachedIdentityVarUp = new SimpleVariableUpdate<P1, F1, S1>(
-				identityVariableUpdate);
 
 		for (SSTMove<P1, F1, S1> t : transitions)
 			aut.addTransition(t, ba, false);
@@ -127,12 +116,6 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		// aut = removeUnreachableStates(aut, ba);
 
 		return aut;
-	}
-
-	private List<ConstantToken<P, F, S>> getVarForStr(String s) {
-		List<ConstantToken<P, F, S>> idVar = new ArrayList<ConstantToken<P, F, S>>();
-		idVar.add(new StringVariable<P, F, S>(s));
-		return idVar;
 	}
 
 	/**
@@ -150,39 +133,37 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		aut.maxStateId = 1;
 		return aut;
 	}
-	
+
 	/**
 	 * Returns the SST only defined on epsilon that outputs output
 	 */
 	public static <P1, F1, S1> SST<P1, F1, S1> getEpsilonSST(
 			List<ConstantToken<P1, F1, S1>> output,
 			BooleanAlgebraSubst<P1, F1, S1> ba) {
-		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1,F1,S1>>();
-		List<String> variables = Arrays.asList("x0");
-		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1,F1,S1>>();
+		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
+		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
 		outputFunction.put(0, new SimpleVariableUpdate<P1, F1, S1>(output));
-		
-		return MkSST(transitions, 0, variables, outputFunction, ba);
+
+		return MkSST(transitions, 0, 1, outputFunction, ba);
 	}
-	
+
 	/**
 	 * Returns the SST only defined on predicate that outputs output
 	 */
-	public static <P1, F1, S1> SST<P1, F1, S1> getBaseSST(
-			P1 predicate,
-			List<Token<P1, F1, S1>> output,
-			BooleanAlgebraSubst<P1, F1, S1> ba) {
-		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1,F1,S1>>();
-		List<String> variables = Arrays.asList("x0");
-		transitions.add(new SSTInputMove<P1, F1, S1>(0, 1, predicate, new FunctionalVariableUpdate<P1, F1, S1>(output)));
-		
-		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1,F1,S1>>();
-		
-		List<ConstantToken<P1, F1, S1>> outputJustX0 = new ArrayList<ConstantToken<P1,F1,S1>>();
-		outputJustX0.add(new StringVariable<P1, F1, S1>("x0"));
-		outputFunction.put(1, new SimpleVariableUpdate<P1, F1, S1>(outputJustX0));
-		
-		return MkSST(transitions, 0, variables, outputFunction, ba);
+	public static <P1, F1, S1> SST<P1, F1, S1> getBaseSST(P1 predicate,
+			List<Token<P1, F1, S1>> output, BooleanAlgebraSubst<P1, F1, S1> ba) {
+		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
+		transitions.add(new SSTInputMove<P1, F1, S1>(0, 1, predicate,
+				new FunctionalVariableUpdate<P1, F1, S1>(output)));
+
+		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
+
+		List<ConstantToken<P1, F1, S1>> outputJustX0 = new ArrayList<ConstantToken<P1, F1, S1>>();
+		outputJustX0.add(new SSTVariable<P1, F1, S1>(0));
+		outputFunction.put(1,
+				new SimpleVariableUpdate<P1, F1, S1>(outputJustX0));
+
+		return MkSST(transitions, 0, 1, outputFunction, ba);
 	}
 
 	public List<S> outputOn(List<S> input, BooleanAlgebraSubst<P, F, S> ba) {
@@ -206,10 +187,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		Map<Integer, Collection<VariableAssignment<S1>>> currConf = new HashMap<Integer, Collection<VariableAssignment<S1>>>();
 
-		List<VariableAssignment<S1>> ini = new ArrayList<VariableAssignment<S1>>();
-		ini.add(VariableAssignment.MkInitialValue(
-				sst.variablesToIndices.size(), ba));
-		currConf.put(sst.initialState, ini);
+		List<VariableAssignment<S1>> initialVariableAssignment = new ArrayList<VariableAssignment<S1>>();
+		initialVariableAssignment.add(VariableAssignment.MkInitialValue(
+				sst.variableCount, ba));
+		currConf.put(sst.initialState, initialVariableAssignment);
 
 		for (S1 el : input)
 			currConf = sst.getNextConfig(currConf, el, ba);
@@ -223,7 +204,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 					SimpleVariableUpdate<P1, F1, S1> outputUpdate = sst.outputFunction
 							.get(state);
 					VariableAssignment<S1> v1 = outputUpdate.applyTo(
-							assignment, sst.variablesToIndices, ba);
+							assignment, ba);
 					return v1.outputVariableValue();
 				}
 			}
@@ -252,7 +233,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 					for (VariableAssignment<S> assig : sourceAssignments)
 						targetAssignments.add(move.variableUpdate.applyTo(
-								assig, variablesToIndices, input, ba));
+								assig, input, ba));
 				}
 		}
 		return newConfig;
@@ -280,7 +261,6 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
 		Integer initialState = 0;
-		List<String> variables = new ArrayList<String>();
 		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
 
 		HashMap<Pair<Integer, Integer>, Integer> reached = new HashMap<Pair<Integer, Integer>, Integer>();
@@ -297,21 +277,8 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		toVisit.add(p);
 
 		// Combined has set of variables the disjoint union of the two sets
-		HashMap<String, String> varRenameSst1 = new HashMap<String, String>();
-		HashMap<String, String> varRenameSst2 = new HashMap<String, String>();
-		int ind = 0;
-		for (String var1 : sst1.variablesToIndices.keySet()) {
-			String newVarName = "x" + ind;
-			varRenameSst1.put(var1, newVarName);
-			variables.add(newVarName);
-			ind++;
-		}
-		for (String var2 : sst2.variablesToIndices.keySet()) {
-			String newVarName = "x" + ind;
-			varRenameSst2.put(var2, newVarName);
-			variables.add(newVarName);
-			ind++;
-		}
+		Integer varRenameSst1 = 0;
+		Integer varRenameSst2 = sst1.variableCount;
 
 		while (!toVisit.isEmpty()) {
 			Pair<Integer, Integer> currState = toVisit.removeFirst();
@@ -323,7 +290,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 				// new output function x = x1x2
 				SimpleVariableUpdate<P1, F1, S1> outputUpdate = SimpleVariableUpdate
-						.combineOutputUpdates(varRenameSst1, varRenameSst2,
+						.combineOutputUpdates(0, 1,
 								sst1.outputFunction.get(currState.first),
 								sst2.outputFunction.get(currState.second));
 				outputFunction.put(currStateId, outputUpdate);
@@ -361,7 +328,9 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				}
 		}
 
-		return MkSST(transitions, initialState, variables, outputFunction, ba);
+		int varCount = sst1.variableCount + sst2.variableCount;
+
+		return MkSST(transitions, initialState, varCount, outputFunction, ba);
 	}
 
 	/**
@@ -372,7 +341,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	}
 
 	/**
-	 * TODO implement return an equivalent copy without epsilon moves
+	 * return an equivalent copy without epsilon moves
 	 */
 	protected static <P1, F1, S1> SST<P1, F1, S1> removeEpsilonMovesFrom(
 			SST<P1, F1, S1> sst, BooleanAlgebraSubst<P1, F1, S1> ba) {
@@ -380,7 +349,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		if (sst.isEpsilonFree)
 			return sst;
 
-		SST<P1, F1, S1> epsFree = new SST<P1, F1, S1>();
+		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
+		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
+		Integer initialState;
+		Integer numberOfVariables = sst.variableCount;
 
 		HashMap<Collection<Integer>, Integer> reachedStates = new HashMap<Collection<Integer>, Integer>();
 		HashMap<Integer, Map<Integer, SimpleVariableUpdate<P1, F1, S1>>> statesAss = new HashMap<Integer, Map<Integer, SimpleVariableUpdate<P1, F1, S1>>>();
@@ -390,12 +362,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> epsclInitial = sst
 				.getSSTEpsClosure(sst.initialState, ba);
 		Collection<Integer> p = epsclInitial.keySet();
-		epsFree.initialState = 0;
-		epsFree.states.add(epsFree.initialState);
-		statesAss.put(epsFree.initialState, epsclInitial);
-		epsFree.variablesToIndices = sst.variablesToIndices;
+		initialState = 0;
+		statesAss.put(initialState, epsclInitial);
 
-		reachedStates.put(p, epsFree.initialState);
+		reachedStates.put(p, initialState);
 		toVisitStates.add(p);
 
 		while (!toVisitStates.isEmpty()) {
@@ -417,11 +387,8 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			}
 			// set output state if one of the esp closure state is final
 			if (fin != null) {
-				epsFree.outputFunction.put(
-						currStateId,
-						stateToAss.get(fin).composeWith(
-								sst.outputFunction.get(fin),
-								sst.variablesToIndices));
+				outputFunction.put(currStateId, stateToAss.get(fin)
+						.composeWith(sst.outputFunction.get(fin)));
 			}
 
 			for (SSTInputMove<P1, F1, S1> t1 : sst.getInputMovesFrom(currState)) {
@@ -436,7 +403,6 @@ public class SST<P, F, S> extends Automaton<P, S> {
 					reachedStates.put(nextState, index);
 					toVisitStates.add(nextState);
 					statesAss.put(index, epsClosure);
-					epsFree.states.add(index);
 					nextStateId = index;
 				} else {
 					nextStateId = reachedStates.get(nextState);
@@ -450,15 +416,14 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				// TODO this should be compose stateToAss(t1.from)
 				// t1.variableUpdate
 				tnew.variableUpdate = stateToAss.get(t1.from).composeWith(
-						t1.variableUpdate, sst.variablesToIndices);
+						t1.variableUpdate);
 
-				epsFree.addTransition(tnew, ba, true);
+				transitions.add(tnew);
 			}
 
-		}
+		}			
 
-		epsFree.isEpsilonFree = true;
-		return epsFree;
+		return MkSST(transitions, initialState, numberOfVariables, outputFunction, ba);
 	}
 
 	/**
@@ -479,85 +444,61 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		if (sst1.isEmpty || sst2.isEmpty)
 			return getEmptySST(ba);
 
-		SST<P1, F1, S1> concat = new SST<P1, F1, S1>();
-		concat.isEmpty = false;
+		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
+		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
+		Integer initialState;
+		Integer numberOfVariables;
 
+		initialState = sst1.initialState;
+
+		int varRenameSst1 = 0;
+		int varRenameSst2 = 0;
 		int offSet = sst1.maxStateId + 1;
-		concat.maxStateId = sst2.maxStateId + offSet;
-
-		for (Integer state : sst1.states)
-			concat.states.add(state);
-
-		for (Integer state : sst2.states)
-			concat.states.add(state + offSet);
-
-		concat.initialState = sst1.initialState;
-
-		// set variable renames for the two ssts, they will share names
-		HashMap<String, String> varRenameSst1 = new HashMap<String, String>();
-		HashMap<String, String> varRenameSst2 = new HashMap<String, String>();
-		int ind1 = 0;
-		for (String var1 : sst1.variablesToIndices.keySet()) {
-			String newVarName = "x" + ind1;
-			varRenameSst1.put(var1, newVarName);
-			concat.variablesToIndices.put(newVarName, ind1);
-			ind1++;
-		}
-		// Reset indices since we want only Max(X1,X2) variables
-		int ind2 = 0;
-		for (String var2 : sst2.variablesToIndices.keySet()) {
-			String newVarName = "x" + ind2;
-			varRenameSst2.put(var2, newVarName);
-			concat.variablesToIndices.put(newVarName, ind2);
-			ind2++;
-		}
 
 		// xAcc will be the accumulation variable for the first machine
 		// whenever we leave from sst1 to sst2 we update x0 to output of sst1
-		int accId = Math.max(ind1, ind2);
-		String xAcc = "x" + accId;
-		concat.variablesToIndices.put(xAcc, accId);
+		int accId = Math.max(sst1.variableCount, sst2.variableCount);
+		SSTVariable<P1, F1, S1> accVar = new SSTVariable<P1, F1, S1>(accId);
 
-		int totVars = accId + 1;
+		numberOfVariables = accId + 1;
 
 		// every transition must have maxId variable Updates
 		for (SSTInputMove<P1, F1, S1> t : sst1.getInputMovesFrom(sst1.states)) {
 			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst1).liftToNVars(totVars);
+					.renameVars(varRenameSst1).liftToNVars(numberOfVariables);
 			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(
 					t.from, t.to, t.guard, variableUpdate);
-			concat.addTransition(newMove, ba, true);
+			transitions.add(newMove);
 		}
 		for (SSTEpsilon<P1, F1, S1> t : sst1.getEpsilonMovesFrom(sst1.states)) {
 			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst1).liftToNVars(totVars);
+					.renameVars(varRenameSst1).liftToNVars(numberOfVariables);
 			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from,
 					t.to, variableUpdate);
-			concat.addTransition(newMove, ba, true);
+			transitions.add(newMove);
 		}
 
 		// Moreover transitions in sst2 should perform the update xAcc:=xAcc
 		// Each state should also take into account the offset
 		for (SSTInputMove<P1, F1, S1> t : sst2.getInputMovesFrom(sst2.states)) {
 			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst2).liftToNVars(totVars);
+					.renameVars(varRenameSst2).liftToNVars(numberOfVariables);
 			// For last variable set xAcc := xAcc
-			variableUpdate.variableUpdate.get(accId).add(
-					new StringVariable<P1, F1, S1>(xAcc));
+			variableUpdate.variableUpdate.get(accId).add(accVar);
 			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(
 					t.from + offSet, t.to + offSet, t.guard, variableUpdate);
-			concat.addTransition(newMove, ba, true);
+			transitions.add(newMove);
 		}
 		for (SSTEpsilon<P1, F1, S1> t : sst2.getEpsilonMovesFrom(sst2.states)) {
 			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst2).liftToNVars(totVars);
+					.renameVars(varRenameSst2).liftToNVars(numberOfVariables);
 			// For last variable set xAcc := xAcc
-			variableUpdate.variableUpdate.get(accId).add(
-					new StringVariable<P1, F1, S1>(xAcc));
+			variableUpdate.variableUpdate.get(accId).add(accVar);
 
 			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from
 					+ offSet, t.to + offSet, variableUpdate);
-			concat.addTransition(newMove, ba, true);
+
+			transitions.add(newMove);
 		}
 
 		// add a transition from every final state q of sst1 to the initial
@@ -566,7 +507,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		for (Integer finStateSst1 : sst1.getFinalStates()) {
 			// Create the update xAcc = F(q), and x=epsilon for everyone else
 			ArrayList<List<ConstantToken<P1, F1, S1>>> resUpdate = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-			for (int i = 0; i < totVars; i++) {
+			for (int i = 0; i < numberOfVariables; i++) {
 				List<ConstantToken<P1, F1, S1>> updateList = new ArrayList<ConstantToken<P1, F1, S1>>();
 				// For last variable set xAcc := F(q)
 				if (i == accId)
@@ -579,18 +520,19 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(
 					finStateSst1, sst2.initialState + offSet,
 					new SimpleVariableUpdate<P1, F1, S1>(resUpdate));
-			concat.addTransition(newMove, ba, true);
+
+			transitions.add(newMove);
 		}
 
 		// create output function for sst2 so that it outputs xAcc F(q)
 		for (Integer finStateSst2 : sst2.getFinalStates()) {
 			// Create the update x0 = xAcc F(q), and x=epsilon for everyone else
 			ArrayList<List<ConstantToken<P1, F1, S1>>> outUpdate = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-			for (int i = 0; i < totVars; i++) {
+			for (int i = 0; i < numberOfVariables; i++) {
 				List<ConstantToken<P1, F1, S1>> updateList = new ArrayList<ConstantToken<P1, F1, S1>>();
 				// For first variable set xAcc := xAcc F(q)
 				if (i == 0) {
-					updateList.add(new StringVariable<P1, F1, S1>(xAcc));
+					updateList.add(accVar);
 					updateList.addAll(sst2.outputFunction.get(finStateSst2)
 							.renameVars(varRenameSst2)
 							.getOutputVariableUpdate());
@@ -598,11 +540,12 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				outUpdate.add(updateList);
 			}
 
-			concat.outputFunction.put(finStateSst2 + offSet,
+			outputFunction.put(finStateSst2 + offSet,
 					new SimpleVariableUpdate<P1, F1, S1>(outUpdate));
 		}
 
-		return concat;
+		return MkSST(transitions, initialState, numberOfVariables,
+				outputFunction, ba);
 	}
 
 	/**
@@ -628,99 +571,85 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		if (sst2.isEmpty)
 			return (SST<P1, F1, S1>) sst1.clone();
 
-		SST<P1, F1, S1> union = new SST<P1, F1, S1>();
-		union.isEmpty = false;
+		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
+		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
+		Integer initialState;
+		Integer numberOfVariables;
 
 		int offSet = sst1.maxStateId + 2;
-		union.maxStateId = sst2.maxStateId + offSet + 1;
 
-		for (Integer state : sst1.states)
-			union.states.add(state);
-
-		for (Integer state : sst2.states)
-			union.states.add(state + offSet);
-
-		Integer initState = union.maxStateId;
-		union.initialState = initState;
-		union.states.add(initState);
+		// Create fresh initial state for the union
+		initialState = sst1.maxStateId + offSet;
 
 		// set variable renames for the two ssts, they will share names
-		HashMap<String, String> varRenameSst1 = new HashMap<String, String>();
-		HashMap<String, String> varRenameSst2 = new HashMap<String, String>();
-		int ind1 = 0;
-		for (String var1 : sst1.variablesToIndices.keySet()) {
-			String newVarName = "x" + ind1;
-			varRenameSst1.put(var1, newVarName);
-			union.variablesToIndices.put(newVarName, ind1);
-			ind1++;
-		}
-		// Reset indices since we want only Max(X1,X2) variables
-		int ind2 = 0;
-		for (String var2 : sst2.variablesToIndices.keySet()) {
-			String newVarName = "x" + ind2;
-			varRenameSst2.put(var2, newVarName);
-			union.variablesToIndices.put(newVarName, ind2);
-			ind2++;
-		}
-		int totVars = Math.max(ind1, ind2);
+		Integer varRenameSst1 = 0;
+		Integer varRenameSst2 = 0;
+
+		numberOfVariables = Math.max(sst1.variableCount, sst2.variableCount);
 
 		// every transition must have maxId variable Updates
 		for (SSTInputMove<P1, F1, S1> t : sst1.getInputMovesFrom(sst1.states)) {
 			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst1).liftToNVars(totVars);
+					.renameVars(varRenameSst1).liftToNVars(numberOfVariables);
 			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(
 					t.from, t.to, t.guard, variableUpdate);
-			union.addTransition(newMove, ba, true);
+
+			transitions.add(newMove);
 		}
 		for (SSTEpsilon<P1, F1, S1> t : sst1.getEpsilonMovesFrom(sst1.states)) {
 			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst1).liftToNVars(totVars);
+					.renameVars(varRenameSst1).liftToNVars(numberOfVariables);
 			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from,
 					t.to, variableUpdate);
-			union.addTransition(newMove, ba, true);
+
+			transitions.add(newMove);
 		}
 		// Moreover transitions in sst2 should perform the update xAcc:=xAcc
 		// Each state should also take into account the offset
 		for (SSTInputMove<P1, F1, S1> t : sst2.getInputMovesFrom(sst2.states)) {
 			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst2).liftToNVars(totVars);
+					.renameVars(varRenameSst2).liftToNVars(numberOfVariables);
 			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(
 					t.from + offSet, t.to + offSet, t.guard, variableUpdate);
-			union.addTransition(newMove, ba, true);
+
+			transitions.add(newMove);
 		}
 		for (SSTEpsilon<P1, F1, S1> t : sst2.getEpsilonMovesFrom(sst2.states)) {
 			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst2).liftToNVars(totVars);
+					.renameVars(varRenameSst2).liftToNVars(numberOfVariables);
 			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from
 					+ offSet, t.to + offSet, variableUpdate);
-			union.addTransition(newMove, ba, true);
+
+			transitions.add(newMove);
 		}
 
 		// Add transitions from new initial state to old initial states
 		// Create the update x=epsilon for every var
 		ArrayList<List<ConstantToken<P1, F1, S1>>> resUpdate = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-		for (int i = 0; i < totVars; i++)
+		for (int i = 0; i < numberOfVariables; i++)
 			resUpdate.add(new ArrayList<ConstantToken<P1, F1, S1>>());
 
-		SSTEpsilon<P1, F1, S1> newMove1 = new SSTEpsilon<P1, F1, S1>(initState,
-				sst1.initialState, new SimpleVariableUpdate<P1, F1, S1>(
-						resUpdate));
-		union.addTransition(newMove1, ba, true);
-		SSTEpsilon<P1, F1, S1> newMove2 = new SSTEpsilon<P1, F1, S1>(initState,
-				sst2.initialState + offSet,
+		SSTEpsilon<P1, F1, S1> newMove1 = new SSTEpsilon<P1, F1, S1>(
+				initialState, sst1.initialState,
 				new SimpleVariableUpdate<P1, F1, S1>(resUpdate));
-		union.addTransition(newMove2, ba, true);
+		transitions.add(newMove1);
+
+		SSTEpsilon<P1, F1, S1> newMove2 = new SSTEpsilon<P1, F1, S1>(
+				initialState, sst2.initialState + offSet,
+				new SimpleVariableUpdate<P1, F1, S1>(resUpdate));
+		transitions.add(newMove2);
 
 		// Make all states of the two machines final
 		for (Integer state : sst1.getFinalStates())
-			union.outputFunction.put(state, sst1.outputFunction.get(state)
+			outputFunction.put(state, sst1.outputFunction.get(state)
 					.renameVars(varRenameSst1));
 
 		for (Integer state : sst2.getFinalStates())
-			union.outputFunction.put(state + offSet,
-					sst2.outputFunction.get(state).renameVars(varRenameSst2));
+			outputFunction.put(state + offSet, sst2.outputFunction.get(state)
+					.renameVars(varRenameSst2));
 
-		return union;
+		return MkSST(transitions, initialState, numberOfVariables,
+				outputFunction, ba);
 	}
 
 	/**
@@ -747,36 +676,24 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			return getEmptySST(ba);
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
-		Integer initialState = 0;
-		List<String> variables = new ArrayList<String>();
 		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
+		Integer initialState;
+		Integer numberOfVariables;
 
 		initialState = sst.maxStateId + 1;
-		;
-
-		// set variable renames for the two ssts, they will share names
-		HashMap<String, String> varRename = new HashMap<String, String>();
-		int ind = 0;
-		for (String var1 : sst.variablesToIndices.keySet()) {
-			String newVarName = "x" + ind;
-			varRename.put(var1, newVarName);
-			variables.add(newVarName);
-			ind++;
-		}
 
 		// xAcc will be the accumulating var
-		int accId = ind;
-		String xAcc = "x" + accId;
-		variables.add(xAcc);
-		int totVars = accId + 1;
+		int accId = sst.variableCount;
+		SSTVariable<P1, F1, S1> xAcc = new SSTVariable<P1, F1, S1>(accId);
+
+		numberOfVariables = accId + 1;
 
 		// every transition must have maxId variable Updates
 		for (SSTInputMove<P1, F1, S1> t : sst.getInputMovesFrom(sst.states)) {
 			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRename).liftToNVars(totVars);
+					.liftToNVars(numberOfVariables);
 			// For last variable set xAcc := xAcc
-			variableUpdate.variableUpdate.get(accId).add(
-					new StringVariable<P1, F1, S1>(xAcc));
+			variableUpdate.variableUpdate.get(accId).add(xAcc);
 
 			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(
 					t.from, t.to, t.guard, variableUpdate);
@@ -784,10 +701,9 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		}
 		for (SSTEpsilon<P1, F1, S1> t : sst.getEpsilonMovesFrom(sst.states)) {
 			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRename).liftToNVars(totVars);
+					.liftToNVars(numberOfVariables);
 			// For last variable set xAcc := xAcc
-			variableUpdate.variableUpdate.get(accId).add(
-					new StringVariable<P1, F1, S1>(xAcc));
+			variableUpdate.variableUpdate.get(accId).add(xAcc);
 
 			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from,
 					t.to, variableUpdate);
@@ -801,20 +717,18 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			// Create the update xAcc = xAcc F(q) (reverse if left iter), and
 			// x=epsilon for everyone else
 			ArrayList<List<ConstantToken<P1, F1, S1>>> resUpdate = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-			for (int i = 0; i < totVars; i++) {
+			for (int i = 0; i < numberOfVariables; i++) {
 				List<ConstantToken<P1, F1, S1>> updateList = new ArrayList<ConstantToken<P1, F1, S1>>();
 				// For last variable set xAcc := xAcc F(q) (reverse if left
 				// iter)
 				if (i == accId)
 					if (isLeftIter) {
 						updateList.addAll(sst.outputFunction.get(finStateSst)
-								.renameVars(varRename)
 								.getOutputVariableUpdate());
-						updateList.add(new StringVariable<P1, F1, S1>(xAcc));
+						updateList.add(xAcc);
 					} else {
-						updateList.add(new StringVariable<P1, F1, S1>(xAcc));
+						updateList.add(xAcc);
 						updateList.addAll(sst.outputFunction.get(finStateSst)
-								.renameVars(varRename)
 								.getOutputVariableUpdate());
 					}
 				resUpdate.add(updateList);
@@ -829,10 +743,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		// Create the update x=eps for all vars and xAcc = xAcc, for initial
 		// state to old initial state
 		ArrayList<List<ConstantToken<P1, F1, S1>>> initUpdate = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-		for (int i = 0; i < totVars; i++) {
+		for (int i = 0; i < numberOfVariables; i++) {
 			List<ConstantToken<P1, F1, S1>> updateList = new ArrayList<ConstantToken<P1, F1, S1>>();
 			if (i == accId)
-				updateList.add(new StringVariable<P1, F1, S1>(xAcc));
+				updateList.add(xAcc);
 			initUpdate.add(updateList);
 		}
 
@@ -843,16 +757,17 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		// Create the update x0=xAcc for output function in initialState
 		ArrayList<List<ConstantToken<P1, F1, S1>>> outUpdate = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-		for (int i = 0; i < totVars; i++) {
+		for (int i = 0; i < numberOfVariables; i++) {
 			List<ConstantToken<P1, F1, S1>> updateList = new ArrayList<ConstantToken<P1, F1, S1>>();
 			if (i == 0)
-				updateList.add(new StringVariable<P1, F1, S1>(xAcc));
+				updateList.add(xAcc);
 			outUpdate.add(updateList);
 		}
 		outputFunction.put(initialState, new SimpleVariableUpdate<P1, F1, S1>(
 				outUpdate));
 
-		return MkSST(transitions, initialState, variables, outputFunction, ba);
+		return MkSST(transitions, initialState, numberOfVariables,
+				outputFunction, ba);
 	}
 
 	/**
@@ -865,8 +780,8 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			BooleanAlgebraSubst<P1, F1, S1> ba, boolean isLeftShuffle) {
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
-		Integer initialState = null;
-		List<String> variables = new ArrayList<String>();
+		Integer initialState;
+		Integer numberOfVariables;
 		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
 
 		// Remove epsilon transitions from all ssts
@@ -894,30 +809,18 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		int totStates = 1;
 
 		// set of variables is the disjoint union of all the ssts
-		List<HashMap<String, String>> varRenames = new ArrayList<HashMap<String, String>>();
-		int ind = 0;
+		List<Integer> varRenames = new ArrayList<Integer>();
+		int offSet = 0;
 		for (SST<P1, F1, S1> sst : combinedSsts) {
-			HashMap<String, String> rename = new HashMap<String, String>();
-			for (String var1 : sst.variablesToIndices.keySet()) {
-				String newVarName = "x" + ind;
-				rename.put(var1, newVarName);
-				variables.add(newVarName);
-				ind++;
-			}
-			varRenames.add(rename);
+			varRenames.add(offSet);
+			offSet+= sst.variableCount;
 		}
 		// add two variables 1 for accumulating and 1 for buffering
-		int buffId = ind;
-		for (int i = 0; i < combinedSstPairsWitEps.size(); i++) {
-			String xBuff = "x" + ind;
-			variables.add(xBuff);
-			ind++;
-		}
-		String xAcc = "x" + ind;
-		variables.add(xAcc);
-		int accId = ind;
+		int buffId = offSet;
+		int accId = buffId+combinedSstPairsWitEps.size();		
+		SSTVariable<P1, F1, S1> xAcc = new SSTVariable<P1, F1, S1>(accId);
 
-		int totVars = variables.size();
+		numberOfVariables = accId+1;
 
 		Collection<SSTMove<P1, F1, S1>> transitionFirstStretch = new ArrayList<SSTMove<P1, F1, S1>>();
 		// Start composing them
@@ -953,13 +856,12 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 				// add buff:=buff and acc:=acc to updates
 				FunctionalVariableUpdate<P1, F1, S1> finalUpdate = triple.first.second
-						.liftToNVars(totVars);
+						.liftToNVars(numberOfVariables);
 				for (int i = 0; i < combinedSstPairsWitEps.size(); i++) {
 					finalUpdate.variableUpdate.get(buffId).add(
-							new StringVariable<P1, F1, S1>("x" + (buffId + i)));
+							new SSTVariable<P1, F1, S1>(buffId + i));
 				}
-				finalUpdate.variableUpdate.get(accId).add(
-						new StringVariable<P1, F1, S1>(xAcc));
+				finalUpdate.variableUpdate.get(accId).add(xAcc);
 
 				SSTInputMove<P1, F1, S1> newTrans = new SSTInputMove<P1, F1, S1>(
 						currStateId, nextStateId, triple.first.first,
@@ -989,7 +891,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 			// From 1 to 2 do: xbufi=F(qi.1)
 			ArrayList<List<ConstantToken<P1, F1, S1>>> resUpdate1 = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-			for (int i = 0; i < totVars; i++) {
+			for (int i = 0; i < numberOfVariables; i++) {
 				List<ConstantToken<P1, F1, S1>> updateList = new ArrayList<ConstantToken<P1, F1, S1>>();
 				// For buffer vars
 				if (i >= buffId && i < accId) {
@@ -1012,7 +914,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			// From 2 to 3, 3 to 4 and 4 to 3 do: xbufi=F(qi.1) xacc = xacc
 			// forall i xbufi F(qi.2)
 			ArrayList<List<ConstantToken<P1, F1, S1>>> resUpdate2 = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-			for (int i = 0; i < totVars; i++) {
+			for (int i = 0; i < numberOfVariables; i++) {
 				List<ConstantToken<P1, F1, S1>> updateList = new ArrayList<ConstantToken<P1, F1, S1>>();
 				// For buffer vars
 				if (i >= buffId && i < accId) {
@@ -1026,13 +928,11 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				} else {
 					if (i == accId) {
 						if (!isLeftShuffle)
-							updateList
-									.add(new StringVariable<P1, F1, S1>(xAcc));
+							updateList.add(xAcc);
 						for (int sstIndex = 0; sstIndex < combinedSstPairsWitEps
 								.size(); sstIndex++) {
 							int secondEl = sstIndex * 2 + 1;
-							updateList.add(new StringVariable<P1, F1, S1>("x"
-									+ (buffId + sstIndex)));
+							updateList.add(new SSTVariable<P1, F1, S1>(buffId + sstIndex));
 							SimpleVariableUpdate<P1, F1, S1> out = combinedSsts
 									.get(secondEl).outputFunction.get(sstStates
 									.get(secondEl));
@@ -1041,8 +941,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 									.getOutputVariableUpdate());
 						}
 						if (isLeftShuffle)
-							updateList
-									.add(new StringVariable<P1, F1, S1>(xAcc));
+							updateList.add(xAcc);
 					}
 				}
 				resUpdate2.add(updateList);
@@ -1052,24 +951,23 @@ public class SST<P, F, S> extends Automaton<P, S> {
 					initialState + 2 * offset,
 					new SimpleVariableUpdate<P1, F1, S1>(resUpdate2));
 			transitions.add(newMove);
-			newMove = new SSTEpsilon<P1, F1, S1>(finState + 2*offset ,
+			newMove = new SSTEpsilon<P1, F1, S1>(finState + 2 * offset,
 					initialState + 2 * offset,
 					new SimpleVariableUpdate<P1, F1, S1>(resUpdate2));
 			transitions.add(newMove);
 
 			// Create output function x0=xacc forall i xbufi F(qi.2)
 			ArrayList<List<ConstantToken<P1, F1, S1>>> finOut = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-			for (int i = 0; i < totVars; i++) {
+			for (int i = 0; i < numberOfVariables; i++) {
 				List<ConstantToken<P1, F1, S1>> updateList = new ArrayList<ConstantToken<P1, F1, S1>>();
 
 				if (i == 0) {
 					if (!isLeftShuffle)
-						updateList.add(new StringVariable<P1, F1, S1>(xAcc));
+						updateList.add(xAcc);
 					for (int sstIndex = 0; sstIndex < combinedSstPairsWitEps
 							.size(); sstIndex++) {
 						int secondEl = sstIndex * 2 + 1;
-						updateList.add(new StringVariable<P1, F1, S1>("x"
-								+ (buffId + sstIndex)));
+						updateList.add(new SSTVariable<P1, F1, S1>(buffId + sstIndex));
 						SimpleVariableUpdate<P1, F1, S1> out = combinedSsts
 								.get(secondEl).outputFunction.get(sstStates
 								.get(secondEl));
@@ -1078,16 +976,19 @@ public class SST<P, F, S> extends Automaton<P, S> {
 								.getOutputVariableUpdate());
 					}
 					if (isLeftShuffle)
-						updateList.add(new StringVariable<P1, F1, S1>(xAcc));
+						updateList.add(xAcc);
 				}
 				finOut.add(updateList);
 			}
-			outputFunction.put(finState + offset * 1, new SimpleVariableUpdate<P1, F1, S1>(finOut));
-			outputFunction.put(finState + offset * 2, new SimpleVariableUpdate<P1, F1, S1>(finOut));
-//			outputFunction.put(finState + offset * 3, new SimpleVariableUpdate<P1, F1, S1>(finOut));
+			outputFunction.put(finState + offset * 1,
+					new SimpleVariableUpdate<P1, F1, S1>(finOut));
+			outputFunction.put(finState + offset * 2,
+					new SimpleVariableUpdate<P1, F1, S1>(finOut));
+			// outputFunction.put(finState + offset * 3, new
+			// SimpleVariableUpdate<P1, F1, S1>(finOut));
 		}
 
-		return MkSST(transitions, initialState, variables, outputFunction, ba);
+		return MkSST(transitions, initialState, numberOfVariables, outputFunction, ba);
 
 	}
 
@@ -1096,7 +997,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	private static <P1, F1, S1> void accumulateMovesFromMultiSST(
 			List<Integer> currState,
 			List<SST<P1, F1, S1>> ssts,
-			List<HashMap<String, String>> varRenames,
+			List<Integer> varRenames,
 			int currIndex,
 			BooleanAlgebraSubst<P1, F1, S1> ba,
 			P1 currPred,
@@ -1116,7 +1017,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			return;
 		}
 
-		HashMap<String, String> currVarRen = varRenames.get(currIndex);
+		int currVarRen = varRenames.get(currIndex);
 		for (SSTInputMove<P1, F1, S1> move : ssts.get(currIndex)
 				.getInputMovesFrom(currState.get(currIndex))) {
 			P1 newPred = ba.MkAnd(currPred, move.guard);
@@ -1127,8 +1028,8 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			List<Integer> newNextState = new ArrayList<Integer>(currNextState);
 			newNextState.add(move.to);
 			accumulateMovesFromMultiSST(currState, ssts, varRenames,
-					currIndex + 1, ba, newPred, newVaribleUpdate,
-					newNextState, transitions);
+					currIndex + 1, ba, newPred, newVaribleUpdate, newNextState,
+					transitions);
 		}
 	}
 
@@ -1171,7 +1072,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 					toVisit.add(t.to);
 					// this should be compose fromUpdate t.variableUpdate
 					stateToAss.put(t.to, fromUpdate.composeWith(
-							t.variableUpdate, variablesToIndices));
+							t.variableUpdate));
 				} else {
 					throw new IllegalArgumentException(
 							"the epsilon transitions cause ambiguity ("
@@ -1418,8 +1319,6 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		cl.states = new HashSet<Integer>(states);
 		cl.initialState = initialState;
-
-		cl.variablesToIndices = new HashMap<String, Integer>(variablesToIndices);
 
 		cl.transitionsFrom = new HashMap<Integer, Collection<SSTInputMove<P, F, S>>>(
 				transitionsFrom);

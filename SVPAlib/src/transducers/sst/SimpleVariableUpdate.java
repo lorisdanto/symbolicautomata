@@ -1,9 +1,7 @@
 package transducers.sst;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import theory.BooleanAlgebraSubst;
 
@@ -24,7 +22,7 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	public List<ConstantToken<P, F, S>> getOutputVariableUpdate() {
 		return variableUpdate.get(0);
 	}
-	
+
 	/**
 	 * applies the current update to the current variable configuration
 	 * 
@@ -33,7 +31,6 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	 * @return
 	 */
 	public VariableAssignment<S> applyTo(VariableAssignment<S> assignment,
-			Map<String, Integer> variablesToIndices,
 			BooleanAlgebraSubst<P, F, S> ba) {
 
 		int numVars = assignment.numVars();
@@ -42,8 +39,7 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 			List<S> value = new ArrayList<S>();
 
 			for (ConstantToken<P, F, S> token : variableUpdate.get(variable)) {
-				List<S> tokenApp = token.applyTo(assignment,
-						variablesToIndices, null, ba);
+				List<S> tokenApp = token.applyTo(assignment, null, ba);
 				value.addAll(tokenApp);
 			}
 
@@ -53,7 +49,10 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return new VariableAssignment<S>(variableValues);
 	}
 
-	public SimpleVariableUpdate<P, F, S> renameVars(HashMap<String, String> varRename) {
+	public SimpleVariableUpdate<P, F, S> renameVars(Integer varRename) {
+		if (varRename == 0)
+			return this;
+
 		ArrayList<List<ConstantToken<P, F, S>>> newVariableUpdate = new ArrayList<List<ConstantToken<P, F, S>>>();
 		for (List<ConstantToken<P, F, S>> singleVarUp : variableUpdate) {
 			newVariableUpdate.add(renameTokens(varRename, singleVarUp));
@@ -61,46 +60,48 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 		return new SimpleVariableUpdate<P, F, S>(newVariableUpdate);
 	}
-	
+
 	public SimpleVariableUpdate<P, F, S> liftToNVars(int n) {
-		ArrayList<List<ConstantToken<P, F, S>>> newVariableUpdate = 
-				new ArrayList<List<ConstantToken<P, F, S>>>(variableUpdate);
-		for (int i=variableUpdate.size();i<n;i++) {
-			newVariableUpdate.add(new ArrayList<ConstantToken<P,F,S>>());
+		ArrayList<List<ConstantToken<P, F, S>>> newVariableUpdate = new ArrayList<List<ConstantToken<P, F, S>>>(
+				variableUpdate);
+		for (int i = variableUpdate.size(); i < n; i++) {
+			newVariableUpdate.add(new ArrayList<ConstantToken<P, F, S>>());
 		}
 
 		return new SimpleVariableUpdate<P, F, S>(newVariableUpdate);
 	}
-	
-	protected SimpleVariableUpdate<P, F, S> composeWith(SimpleVariableUpdate<P, F, S> varUp, Map<String, Integer> varToIndices){
-		ArrayList<List<ConstantToken<P, F, S>>> newVarUp = new ArrayList<List<ConstantToken<P,F,S>>>();
-		
+
+	protected SimpleVariableUpdate<P, F, S> composeWith(
+			SimpleVariableUpdate<P, F, S> varUp) {
+		ArrayList<List<ConstantToken<P, F, S>>> newVarUp = new ArrayList<List<ConstantToken<P, F, S>>>();
+
 		ArrayList<List<ConstantToken<P, F, S>>> variableUpdate2 = varUp.variableUpdate;
-		for(List<ConstantToken<P, F, S>> update: variableUpdate2){
-			List<ConstantToken<P, F, S>> newUpdate = new ArrayList<ConstantToken<P,F,S>>();
-			for(ConstantToken<P, F, S> t: update){
-				if(t instanceof StringVariable<?,?,?>){
-					StringVariable<P,F,S> ct = (StringVariable<P,F,S>) t;
-					newUpdate.addAll(this.variableUpdate.get(varToIndices.get(ct.name)));
-				}else
+		for (List<ConstantToken<P, F, S>> update : variableUpdate2) {
+			List<ConstantToken<P, F, S>> newUpdate = new ArrayList<ConstantToken<P, F, S>>();
+			for (ConstantToken<P, F, S> t : update) {
+				if (t instanceof SSTVariable<?, ?, ?>) {
+					SSTVariable<P, F, S> ct = (SSTVariable<P, F, S>) t;
+					newUpdate.addAll(this.variableUpdate.get(ct.id));
+				} else
 					newUpdate.add(t);
 			}
 			newVarUp.add(newUpdate);
 		}
 		return new SimpleVariableUpdate<P, F, S>(newVarUp);
 	}
-	
-	protected FunctionalVariableUpdate<P, F, S> composeWith(FunctionalVariableUpdate<P, F, S> varUp, Map<String, Integer> varToIndices){
-		ArrayList<List<Token<P, F, S>>> newVarUp = new ArrayList<List<Token<P,F,S>>>();
-		
+
+	protected FunctionalVariableUpdate<P, F, S> composeWith(
+			FunctionalVariableUpdate<P, F, S> varUp) {
+		ArrayList<List<Token<P, F, S>>> newVarUp = new ArrayList<List<Token<P, F, S>>>();
+
 		ArrayList<List<Token<P, F, S>>> variableUpdate2 = varUp.variableUpdate;
-		for(List<Token<P, F, S>> update: variableUpdate2){
-			List<Token<P, F, S>> newUpdate = new ArrayList<Token<P,F,S>>();
-			for(Token<P, F, S> t: update){
-				if(t instanceof StringVariable<?,?,?>){
-					StringVariable<P,F,S> ct = (StringVariable<P,F,S>) t;
-					newUpdate.addAll(this.variableUpdate.get(varToIndices.get(ct.name)));
-				}else
+		for (List<Token<P, F, S>> update : variableUpdate2) {
+			List<Token<P, F, S>> newUpdate = new ArrayList<Token<P, F, S>>();
+			for (Token<P, F, S> t : update) {
+				if (t instanceof SSTVariable<?, ?, ?>) {
+					SSTVariable<P, F, S> ct = (SSTVariable<P, F, S>) t;
+					newUpdate.addAll(this.variableUpdate.get(ct.id));
+				} else
 					newUpdate.add(t);
 			}
 			newVarUp.add(newUpdate);
@@ -108,8 +109,7 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return new FunctionalVariableUpdate<P, F, S>(newVarUp);
 	}
 
-	private List<ConstantToken<P, F, S>> renameTokens(
-			HashMap<String, String> varRename,
+	private List<ConstantToken<P, F, S>> renameTokens(Integer varRename,
 			List<ConstantToken<P, F, S>> singleVarUp) {
 		List<ConstantToken<P, F, S>> renamed = new ArrayList<ConstantToken<P, F, S>>();
 		for (ConstantToken<P, F, S> t : singleVarUp)
@@ -129,8 +129,6 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		}
 		return sb.toString();
 	}
-	
-
 
 	// STATIC METHODS
 	/**
@@ -138,8 +136,7 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	 * using the disjoint rename functions
 	 */
 	public static <P1, F1, S1> SimpleVariableUpdate<P1, F1, S1> combineUpdates(
-			HashMap<String, String> varRename1,
-			HashMap<String, String> varRename2,
+			Integer varRename1, Integer varRename2,
 			SimpleVariableUpdate<P1, F1, S1> update1,
 			SimpleVariableUpdate<P1, F1, S1> update2) {
 
@@ -158,8 +155,7 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	 * Combines two output updates o=o1o2
 	 */
 	public static <P1, F1, S1> SimpleVariableUpdate<P1, F1, S1> combineOutputUpdates(
-			HashMap<String, String> varRename1,
-			HashMap<String, String> varRename2,
+			Integer varRename1, Integer varRename2,
 			SimpleVariableUpdate<P1, F1, S1> update1,
 			SimpleVariableUpdate<P1, F1, S1> update2) {
 
@@ -183,15 +179,16 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	 * returns the identity assignment
 	 * */
 	public static <P1, F1, S1> SimpleVariableUpdate<P1, F1, S1> identity(
-			Map<String,Integer> varsToIndices) {
+			int varCount) {
 
-		ArrayList<List<ConstantToken<P1, F1, S1>>> variableUpdate = new ArrayList<List<ConstantToken<P1,F1,S1>>>(varsToIndices.size());
-		for(String s: varsToIndices.keySet()){
-			List<ConstantToken<P1, F1, S1>> idVar = new ArrayList<ConstantToken<P1,F1,S1>>();
-			idVar.add(new StringVariable<P1, F1, S1>(s));
-			variableUpdate.set(varsToIndices.get(s), idVar);
+		ArrayList<List<ConstantToken<P1, F1, S1>>> variableUpdate = new ArrayList<List<ConstantToken<P1, F1, S1>>>(
+				varCount);
+		for (int i = 0; i < varCount; i++) {
+			List<ConstantToken<P1, F1, S1>> idVar = new ArrayList<ConstantToken<P1, F1, S1>>();
+			idVar.add(new SSTVariable<P1, F1, S1>(i));
+			variableUpdate.set(i, idVar);
 		}
-		
+
 		return new SimpleVariableUpdate<P1, F1, S1>(variableUpdate);
 
 	}
