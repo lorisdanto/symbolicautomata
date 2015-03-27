@@ -1054,12 +1054,6 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 
 	// Accessory methods
 
-	// private void removeDeadTransitions(BooleanAlgebra<U, S> ba) {
-	//
-	// // TODO
-	// getMatchingCallsReturns(ba);
-	// }
-
 	@SuppressWarnings("unchecked")
 	private static <A, B> SVPA<A, B> removeUnreachableStates(SVPA<A, B> aut,
 			BooleanAlgebra<A, B> ba) {

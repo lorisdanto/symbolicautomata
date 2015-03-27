@@ -413,8 +413,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 						.clone();
 				tnew.from = currStateId;
 				tnew.to = nextStateId;
-				// TODO this should be compose stateToAss(t1.from)
-				// t1.variableUpdate
+
 				tnew.variableUpdate = stateToAss.get(t1.from).composeWith(
 						t1.variableUpdate);
 

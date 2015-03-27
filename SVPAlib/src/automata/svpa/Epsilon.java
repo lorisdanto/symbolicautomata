@@ -72,7 +72,6 @@ public class Epsilon<U, S> extends SVPAMove<U, S> {
 
 	@Override
 	public S getWitness(BooleanAlgebra<U, S> boolal) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

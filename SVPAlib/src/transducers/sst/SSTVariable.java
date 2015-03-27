@@ -1,6 +1,5 @@
 package transducers.sst;
 
-import java.util.HashMap;
 import java.util.List;
 
 import theory.BooleanAlgebraSubst;
@@ -21,14 +20,7 @@ public class SSTVariable<P, F, S> implements ConstantToken<P, F, S> {
 	}
 
 	@Override
-	public Token<P, F, S> rename(HashMap<Integer, Integer> varRename) {
-		// TODO Auto-generated method stub
-		return new SSTVariable<P, F, S>(varRename.get(id));
-	}
-
-	@Override
 	public Token<P, F, S> rename(int offset) {
-		// TODO Auto-generated method stub
 		return new SSTVariable<P, F, S>(id + offset);
 	}
 
