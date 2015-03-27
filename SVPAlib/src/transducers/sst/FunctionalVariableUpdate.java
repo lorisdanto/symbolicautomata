@@ -11,6 +11,11 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 	public ArrayList<List<Token<P, F, S>>> variableUpdate;
 
+	public FunctionalVariableUpdate(){
+		super();
+		this.variableUpdate = new ArrayList<List<Token<P,F,S>>>();
+	}
+	
 	public FunctionalVariableUpdate(
 			ArrayList<List<Token<P, F, S>>> variableUpdate) {
 		super();
@@ -51,7 +56,8 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return new VariableAssignment<S>(variableValues);
 	}
 
-	public FunctionalVariableUpdate<P, F, S> renameVars(HashMap<String, String> varRename) {
+	public FunctionalVariableUpdate<P, F, S> renameVars(
+			HashMap<String, String> varRename) {
 		ArrayList<List<Token<P, F, S>>> newVariableUpdate = new ArrayList<List<Token<P, F, S>>>();
 		for (List<Token<P, F, S>> singleVarUp : variableUpdate) {
 			newVariableUpdate.add(renameTokens(varRename, singleVarUp));
@@ -59,12 +65,12 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 		return new FunctionalVariableUpdate<P, F, S>(newVariableUpdate);
 	}
-	
+
 	public FunctionalVariableUpdate<P, F, S> liftToNVars(int n) {
-		ArrayList<List<Token<P, F, S>>> newVariableUpdate = 
-				new ArrayList<List<Token<P, F, S>>>(variableUpdate);
-		for (int i=variableUpdate.size();i<n;i++) {
-			newVariableUpdate.add(new ArrayList<Token<P,F,S>>());
+		ArrayList<List<Token<P, F, S>>> newVariableUpdate = new ArrayList<List<Token<P, F, S>>>(
+				variableUpdate);
+		for (int i = variableUpdate.size(); i < n; i++) {
+			newVariableUpdate.add(new ArrayList<Token<P, F, S>>());
 		}
 
 		return new FunctionalVariableUpdate<P, F, S>(newVariableUpdate);
@@ -78,14 +84,14 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 		return renamed;
 	}
-	
+
 	@Override
-	public String toString(){
+	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		for(List<Token<P, F, S>> ass :  variableUpdate){
-			for(Token<P, F, S> tok :  ass){
-				sb.append(tok.toString());				
-			}			
+		for (List<Token<P, F, S>> ass : variableUpdate) {
+			for (Token<P, F, S> tok : ass) {
+				sb.append(tok.toString());
+			}
 			sb.append(';');
 		}
 		return sb.toString();
@@ -108,6 +114,24 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		FunctionalVariableUpdate<P1, F1, S1> ren2 = (FunctionalVariableUpdate<P1, F1, S1>) update2
 				.renameVars(varRename2);
 		combinedVariableUpdate.addAll(ren1.variableUpdate);
+		combinedVariableUpdate.addAll(ren2.variableUpdate);
+		return new FunctionalVariableUpdate<P1, F1, S1>(combinedVariableUpdate);
+
+	}
+
+	/**
+	 * Combines two updates into a single one by renaming variables accordingly
+	 * using the disjoint rename functions
+	 */
+	public static <P1, F1, S1> FunctionalVariableUpdate<P1, F1, S1> addUpdate(
+			HashMap<String, String> varRename,
+			FunctionalVariableUpdate<P1, F1, S1> update1,
+			FunctionalVariableUpdate<P1, F1, S1> update2) {
+
+		ArrayList<List<Token<P1, F1, S1>>> combinedVariableUpdate = new ArrayList<List<Token<P1, F1, S1>>>();
+		FunctionalVariableUpdate<P1, F1, S1> ren2 = (FunctionalVariableUpdate<P1, F1, S1>) update2
+				.renameVars(varRename);
+		combinedVariableUpdate.addAll(update1.variableUpdate);
 		combinedVariableUpdate.addAll(ren2.variableUpdate);
 		return new FunctionalVariableUpdate<P1, F1, S1>(combinedVariableUpdate);
 

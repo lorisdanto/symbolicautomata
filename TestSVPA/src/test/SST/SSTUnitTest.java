@@ -3,6 +3,7 @@ package test.SST;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -14,6 +15,7 @@ import org.junit.Test;
 import theory.CharFunc;
 import theory.CharPred;
 import theory.CharSolver;
+import transducers.sst.CharConstant;
 import transducers.sst.CharFunction;
 import transducers.sst.ConstantToken;
 import transducers.sst.FunctionalVariableUpdate;
@@ -24,6 +26,7 @@ import transducers.sst.SSTMove;
 import transducers.sst.SimpleVariableUpdate;
 import transducers.sst.StringVariable;
 import transducers.sst.Token;
+import utilities.Pair;
 import automata.AutomataException;
 
 public class SSTUnitTest {
@@ -118,6 +121,66 @@ public class SSTUnitTest {
 	}
 
 	@Test
+	public void testEpsilonAndBaseSST() {
+
+		CharSolver ba = new CharSolver();
+		SST<CharPred, CharFunc, Character> sstEps = getEpsToSemicolon(ba);
+		SST<CharPred, CharFunc, Character> sstBase = getAlphaToUpperCase(ba);
+
+		List<Character> input1 = lOfS("");
+		List<Character> input2 = lOfS("a");
+		List<Character> input3 = lOfS("ab");
+
+		assertTrue(sstEps.accepts(input1, ba));
+		assertTrue(!sstEps.accepts(input2, ba));
+		assertTrue(!sstEps.accepts(input3, ba));
+
+		List<Character> output1 = sstEps.outputOn(input1, ba);
+
+		assertTrue(ba.stringOfList(output1).equals(";"));
+
+		assertTrue(!sstBase.accepts(input1, ba));
+		assertTrue(sstBase.accepts(input2, ba));
+		assertTrue(!sstBase.accepts(input3, ba));
+
+		List<Character> output2 = sstBase.outputOn(input2, ba);
+
+		assertTrue(ba.stringOfList(output2).equals("A"));
+	}
+
+	@Test
+	public void testShuffle() {
+		CharSolver ba = new CharSolver();
+		SST<CharPred, CharFunc, Character> sstBase = getAlphaToUpperCase(ba);
+
+		Collection<Pair<SST<CharPred, CharFunc, Character>, SST<CharPred, CharFunc, Character>>> combinedSstPairsWitEps = new ArrayList<Pair<SST<CharPred, CharFunc, Character>, SST<CharPred, CharFunc, Character>>>();
+		combinedSstPairsWitEps
+				.add(new Pair<SST<CharPred, CharFunc, Character>, SST<CharPred, CharFunc, Character>>(
+						sstBase, sstBase));
+		SST<CharPred, CharFunc, Character> sstShuffle = SST.computeShuffle(
+				combinedSstPairsWitEps, ba, false);		
+
+		List<Character> input1 = lOfS("a");
+		List<Character> input2 = lOfS("ab");
+		List<Character> input3 = lOfS("abc");
+		List<Character> input4 = lOfS("abcd");
+
+		assertTrue(!sstShuffle.accepts(input1, ba));
+		assertTrue(sstShuffle.accepts(input2, ba));
+		assertTrue(sstShuffle.accepts(input3, ba));
+		assertTrue(sstShuffle.accepts(input4, ba));
+
+		List<Character> output2= sstShuffle.outputOn(input2, ba);
+		List<Character> output3= sstShuffle.outputOn(input3, ba);
+		List<Character> output4= sstShuffle.outputOn(input4, ba);
+
+		assertTrue(ba.stringOfList(output2).equals("AB"));
+		assertTrue(ba.stringOfList(output3).equals("ABBC"));
+		assertTrue(ba.stringOfList(output4).equals("ABBCCD"));
+
+	}
+
+	@Test
 	public void testCombine() {
 
 		try {
@@ -171,13 +234,13 @@ public class SSTUnitTest {
 			List<Character> output2 = combined.outputOn(input2, ba);
 			assertTrue(ba.stringOfList(output2).equals("a22"));
 			List<Character> output3 = combined.outputOn(input3, ba);
-			assertTrue(ba.stringOfList(output3).equals("aa"));			
+			assertTrue(ba.stringOfList(output3).equals("aa"));
 
 		} catch (AutomataException e) {
 			System.out.print(e);
 		}
 	}
-	
+
 	@Test
 	public void testUnion() {
 
@@ -186,8 +249,7 @@ public class SSTUnitTest {
 
 			SST<CharPred, CharFunc, Character> sst1 = delNumKeepLettOnlyEndLett(ba);
 			SST<CharPred, CharFunc, Character> sst2 = getNumberCopy(ba);
-			SST<CharPred, CharFunc, Character> union = sst1.unionWith(
-					sst2, ba);
+			SST<CharPred, CharFunc, Character> union = sst1.unionWith(sst2, ba);
 
 			List<Character> input1 = lOfS("a2");
 			List<Character> input2 = lOfS("2a");
@@ -204,13 +266,13 @@ public class SSTUnitTest {
 			List<Character> output3 = union.outputOn(input3, ba);
 			assertTrue(ba.stringOfList(output3).equals("aa"));
 			List<Character> output4 = union.outputOn(input4, ba);
-			assertTrue(ba.stringOfList(output4).equals("22"));		
+			assertTrue(ba.stringOfList(output4).equals("22"));
 
 		} catch (AutomataException e) {
 			System.out.print(e);
 		}
 	}
-	
+
 	@Test
 	public void testStar() {
 
@@ -220,7 +282,6 @@ public class SSTUnitTest {
 			SST<CharPred, CharFunc, Character> sst1 = getCommaSepDelNumKeepAlph(ba);
 			SST<CharPred, CharFunc, Character> star = sst1.star(ba);
 			SST<CharPred, CharFunc, Character> leftStar = sst1.leftStar(ba);
-			
 
 			List<Character> input1 = lOfS("a2,bb,");
 			List<Character> input2 = lOfS("a22,b");
@@ -232,7 +293,7 @@ public class SSTUnitTest {
 
 			List<Character> output1r = star.outputOn(input1, ba);
 			assertTrue(ba.stringOfList(output1r).equals("a,bb,"));
-			
+
 			List<Character> output1l = leftStar.outputOn(input1, ba);
 			assertTrue(ba.stringOfList(output1l).equals("bb,a,"));
 
@@ -242,18 +303,18 @@ public class SSTUnitTest {
 
 	}
 
-	//---------------------------------------
+	// ---------------------------------------
 	// Predicates
-	//---------------------------------------	
+	// ---------------------------------------
 	CharPred alpha = new CharPred('a', 'z');
 	CharPred num = new CharPred('1', '9');
 	CharPred comma = new CharPred(',');
-	String[] onlyX = { "x" };
+	List<String> onlyX = Arrays.asList("x");
 
-	//---------------------------------------
+	// ---------------------------------------
 	// SSTs
-	//---------------------------------------
-	
+	// ---------------------------------------
+
 	// SST with one epsilon transition and two states, deletes all numbers and
 	// keeps all letters
 	// S: 0 -[a-z]/x{c+0};-> 0
@@ -310,8 +371,8 @@ public class SSTUnitTest {
 	// S: 0 -[a-z]/x{c+0};-> 1
 	// Initial States: 0
 	// Output Function: F(1)=x;
-	private SST<CharPred, CharFunc, Character> delNumKeepLettOnlyEndLett(CharSolver ba)
-			throws AutomataException {
+	private SST<CharPred, CharFunc, Character> delNumKeepLettOnlyEndLett(
+			CharSolver ba) throws AutomataException {
 
 		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();
 
@@ -389,14 +450,14 @@ public class SSTUnitTest {
 
 		return SST.MkSST(transitionsA, 0, onlyX, outputFunction, ba);
 	}
-	
+
 	// S: 0 -[a-z]/x{c+0};-> 0
 	// S: 0 -[1-9]/x;-> 0
 	// S: 0 -[,]/x{c+0};-> 0
 	// Initial States: 0
 	// Output Function: F(1)=x;
-	private SST<CharPred, CharFunc, Character> getCommaSepDelNumKeepAlph(CharSolver ba)
-			throws AutomataException {
+	private SST<CharPred, CharFunc, Character> getCommaSepDelNumKeepAlph(
+			CharSolver ba) throws AutomataException {
 
 		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();
 
@@ -412,6 +473,23 @@ public class SSTUnitTest {
 		outputFunction.put(1, justXsimple());
 
 		return SST.MkSST(transitionsA, 0, onlyX, outputFunction, ba);
+	}
+
+	// S: F(0) = a
+	private SST<CharPred, CharFunc, Character> getEpsToSemicolon(CharSolver ba) {
+
+		List<ConstantToken<CharPred, CharFunc, Character>> output = new ArrayList<ConstantToken<CharPred, CharFunc, Character>>();
+		output.add(new CharConstant<CharPred, CharFunc, Character>(';'));
+		return SST.getEpsilonSST(output, ba);
+	}
+
+	// S: F(0) = a
+	private SST<CharPred, CharFunc, Character> getAlphaToUpperCase(CharSolver ba) {
+
+		List<Token<CharPred, CharFunc, Character>> output = new ArrayList<Token<CharPred, CharFunc, Character>>();
+		output.add(new CharFunction<CharPred, CharFunc, Character>(CharFunc
+				.ToUpperCase()));
+		return SST.getBaseSST(alpha, output, ba);
 	}
 
 	// -------------------------
