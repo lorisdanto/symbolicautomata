@@ -19,10 +19,6 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		this.variableUpdate.add(singleUpdate);
 	}
 
-	public List<ConstantToken<P, F, S>> getOutputVariableUpdate() {
-		return variableUpdate.get(0);
-	}
-
 	/**
 	 * applies the current update to the current variable configuration
 	 * 
@@ -90,6 +86,19 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return new SimpleVariableUpdate<P, F, S>(newVarUp);
 	}
 
+	protected OutputUpdate<P, F, S> composeWith(OutputUpdate<P, F, S> outputExpression) {
+		List<ConstantToken<P, F, S>> newUpdate = new ArrayList<ConstantToken<P, F, S>>();
+		for (ConstantToken<P, F, S> t : outputExpression.update) {
+			if (t instanceof SSTVariable<?, ?, ?>) {
+				SSTVariable<P, F, S> ct = (SSTVariable<P, F, S>) t;
+				newUpdate.addAll(this.variableUpdate.get(ct.id));
+			} else
+				newUpdate.add(t);
+		}
+
+		return new OutputUpdate<P, F, S>(newUpdate);
+	}
+
 	protected FunctionalVariableUpdate<P, F, S> composeWith(
 			FunctionalVariableUpdate<P, F, S> varUp) {
 		ArrayList<List<Token<P, F, S>>> newVarUp = new ArrayList<List<Token<P, F, S>>>();
@@ -151,29 +160,33 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 	}
 
-	/**
-	 * Combines two output updates o=o1o2
-	 */
-	public static <P1, F1, S1> SimpleVariableUpdate<P1, F1, S1> combineOutputUpdates(
-			Integer varRename1, Integer varRename2,
-			SimpleVariableUpdate<P1, F1, S1> update1,
-			SimpleVariableUpdate<P1, F1, S1> update2) {
-
-		ArrayList<List<ConstantToken<P1, F1, S1>>> combinedVariableUpdate = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-
-		// final output is concat of the two outputs in first variable
-		SimpleVariableUpdate<P1, F1, S1> ren1 = (SimpleVariableUpdate<P1, F1, S1>) update1
-				.renameVars(varRename1);
-		SimpleVariableUpdate<P1, F1, S1> ren2 = (SimpleVariableUpdate<P1, F1, S1>) update2
-				.renameVars(varRename2);
-		List<ConstantToken<P1, F1, S1>> out2 = ren2.variableUpdate.get(0);
-		ren2.variableUpdate.set(0, new ArrayList<ConstantToken<P1, F1, S1>>());
-		combinedVariableUpdate.addAll(ren1.variableUpdate);
-		combinedVariableUpdate.addAll(ren2.variableUpdate);
-		combinedVariableUpdate.get(0).addAll(out2);
-
-		return new SimpleVariableUpdate<P1, F1, S1>(combinedVariableUpdate);
-	}
+	// /**
+	// * Combines two output updates o=o1o2
+	// */
+	// public static <P1, F1, S1> SimpleVariableUpdate<P1, F1, S1>
+	// combineOutputUpdates(
+	// Integer varRename1, Integer varRename2,
+	// SimpleVariableUpdate<P1, F1, S1> update1,
+	// SimpleVariableUpdate<P1, F1, S1> update2) {
+	//
+	// ArrayList<List<ConstantToken<P1, F1, S1>>> combinedVariableUpdate = new
+	// ArrayList<List<ConstantToken<P1, F1, S1>>>();
+	//
+	// // final output is concat of the two outputs in first variable
+	// SimpleVariableUpdate<P1, F1, S1> ren1 = (SimpleVariableUpdate<P1, F1,
+	// S1>) update1
+	// .renameVars(varRename1);
+	// SimpleVariableUpdate<P1, F1, S1> ren2 = (SimpleVariableUpdate<P1, F1,
+	// S1>) update2
+	// .renameVars(varRename2);
+	// List<ConstantToken<P1, F1, S1>> out2 = ren2.variableUpdate.get(0);
+	// ren2.variableUpdate.set(0, new ArrayList<ConstantToken<P1, F1, S1>>());
+	// combinedVariableUpdate.addAll(ren1.variableUpdate);
+	// combinedVariableUpdate.addAll(ren2.variableUpdate);
+	// combinedVariableUpdate.get(0).addAll(out2);
+	//
+	// return new SimpleVariableUpdate<P1, F1, S1>(combinedVariableUpdate);
+	// }
 
 	/**
 	 * returns the identity assignment

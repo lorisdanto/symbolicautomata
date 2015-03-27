@@ -18,6 +18,7 @@ import transducers.sst.CharConstant;
 import transducers.sst.CharFunction;
 import transducers.sst.ConstantToken;
 import transducers.sst.FunctionalVariableUpdate;
+import transducers.sst.OutputUpdate;
 import transducers.sst.SST;
 import transducers.sst.SSTEpsilon;
 import transducers.sst.SSTInputMove;
@@ -335,8 +336,8 @@ public class SSTUnitTest {
 				num, xEQx()));
 
 		// Output function just outputs x
-		Map<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>>();
-		outputFunction.put(0, justXsimple());
+		Map<Integer, OutputUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, OutputUpdate<CharPred, CharFunc, Character>>();
+		outputFunction.put(0, justXout());
 
 		return SST.MkSST(transitionsA, 0, onlyX, outputFunction, ba);
 	}
@@ -357,8 +358,8 @@ public class SSTUnitTest {
 				num, xEQx()));
 
 		// Output function just outputs x
-		Map<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>>();
-		outputFunction.put(0, justXsimple());
+		Map<Integer, OutputUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, OutputUpdate<CharPred, CharFunc, Character>>();
+		outputFunction.put(0, justXout());
 
 		return SST.MkSST(transitionsA, 0, onlyX, outputFunction, ba);
 	}
@@ -383,8 +384,8 @@ public class SSTUnitTest {
 				num, xEQx()));
 
 		// Output function just outputs x
-		Map<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>>();
-		outputFunction.put(1, justXsimple());
+		Map<Integer, OutputUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, OutputUpdate<CharPred, CharFunc, Character>>();
+		outputFunction.put(1, justXout());
 
 		return SST.MkSST(transitionsA, 0, onlyX, outputFunction, ba);
 	}
@@ -406,8 +407,8 @@ public class SSTUnitTest {
 				num, xEQx()));
 
 		// Output function just outputs x
-		Map<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>>();
-		outputFunction.put(0, justXsimple());
+		Map<Integer, OutputUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, OutputUpdate<CharPred, CharFunc, Character>>();
+		outputFunction.put(0, justXout());
 
 		return SST.MkSST(transitionsA, 0, onlyX, outputFunction, ba);
 	}
@@ -425,8 +426,8 @@ public class SSTUnitTest {
 				alpha, xEQxid()));
 
 		// Output function just outputs x
-		Map<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>>();
-		outputFunction.put(0, justXsimple());
+		Map<Integer, OutputUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, OutputUpdate<CharPred, CharFunc, Character>>();
+		outputFunction.put(0, justXout());
 
 		return SST.MkSST(transitionsA, 0, onlyX, outputFunction, ba);
 	}
@@ -444,8 +445,8 @@ public class SSTUnitTest {
 				num, xEQxid()));
 
 		// Output function just outputs x
-		Map<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>>();
-		outputFunction.put(0, justXsimple());
+		Map<Integer, OutputUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, OutputUpdate<CharPred, CharFunc, Character>>();
+		outputFunction.put(0, justXout());
 
 		return SST.MkSST(transitionsA, 0, onlyX, outputFunction, ba);
 	}
@@ -468,8 +469,8 @@ public class SSTUnitTest {
 				comma, xEQxid()));
 
 		// Output function just outputs x
-		Map<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<CharPred, CharFunc, Character>>();
-		outputFunction.put(1, justXsimple());
+		Map<Integer, OutputUpdate<CharPred, CharFunc, Character>> outputFunction = new HashMap<Integer, OutputUpdate<CharPred, CharFunc, Character>>();
+		outputFunction.put(1, justXout());
 
 		return SST.MkSST(transitionsA, 0, onlyX, outputFunction, ba);
 	}
@@ -501,6 +502,13 @@ public class SSTUnitTest {
 		justX.add(xv);
 		return new FunctionalVariableUpdate<CharPred, CharFunc, Character>(
 				justX);
+	}
+
+	private OutputUpdate<CharPred, CharFunc, Character> justXout() {
+		SSTVariable<CharPred, CharFunc, Character> xv = new SSTVariable<>(0);
+		LinkedList<ConstantToken<CharPred, CharFunc, Character>> justX = new LinkedList<>();
+		justX.add(xv);
+		return new OutputUpdate<CharPred, CharFunc, Character>(justX);
 	}
 
 	private SimpleVariableUpdate<CharPred, CharFunc, Character> justXsimple() {

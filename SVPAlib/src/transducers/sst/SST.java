@@ -33,7 +33,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	protected SimpleVariableUpdate<P, F, S> cachedIdentityVarUp;
 
 	// moves the output to the variable in position 0
-	protected Map<Integer, SimpleVariableUpdate<P, F, S>> outputFunction;
+	protected Map<Integer, OutputUpdate<P, F, S>> outputFunction;
 
 	protected Integer maxStateId;
 
@@ -76,13 +76,11 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	protected SST() {
 		super();
 		states = new HashSet<Integer>();
-		// variablesToIndices = new HashMap<String, Integer>();
-		outputFunction = new HashMap<Integer, SimpleVariableUpdate<P, F, S>>();
 		transitionsFrom = new HashMap<Integer, Collection<SSTInputMove<P, F, S>>>();
 		transitionsTo = new HashMap<Integer, Collection<SSTInputMove<P, F, S>>>();
 		epsTransitionsFrom = new HashMap<Integer, Collection<SSTEpsilon<P, F, S>>>();
 		epsTransitionsTo = new HashMap<Integer, Collection<SSTEpsilon<P, F, S>>>();
-		outputFunction = new HashMap<Integer, SimpleVariableUpdate<P, F, S>>();
+		outputFunction = new HashMap<Integer, OutputUpdate<P, F, S>>();
 		maxStateId = 0;
 		initialState = 0;
 	}
@@ -93,7 +91,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	public static <P1, F1, S1> SST<P1, F1, S1> MkSST(
 			Collection<SSTMove<P1, F1, S1>> transitions, Integer initialState,
 			int numberOfVariables,
-			Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction,
+			Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction,
 			BooleanAlgebraSubst<P1, F1, S1> ba) {
 
 		SST<P1, F1, S1> aut = new SST<P1, F1, S1>();
@@ -141,8 +139,8 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			List<ConstantToken<P1, F1, S1>> output,
 			BooleanAlgebraSubst<P1, F1, S1> ba) {
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
-		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
-		outputFunction.put(0, new SimpleVariableUpdate<P1, F1, S1>(output));
+		Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, OutputUpdate<P1, F1, S1>>();
+		outputFunction.put(0, new OutputUpdate<P1, F1, S1>(output));
 
 		return MkSST(transitions, 0, 1, outputFunction, ba);
 	}
@@ -156,12 +154,11 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		transitions.add(new SSTInputMove<P1, F1, S1>(0, 1, predicate,
 				new FunctionalVariableUpdate<P1, F1, S1>(output)));
 
-		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
+		Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, OutputUpdate<P1, F1, S1>>();
 
 		List<ConstantToken<P1, F1, S1>> outputJustX0 = new ArrayList<ConstantToken<P1, F1, S1>>();
 		outputJustX0.add(new SSTVariable<P1, F1, S1>(0));
-		outputFunction.put(1,
-				new SimpleVariableUpdate<P1, F1, S1>(outputJustX0));
+		outputFunction.put(1, new OutputUpdate<P1, F1, S1>(outputJustX0));
 
 		return MkSST(transitions, 0, 1, outputFunction, ba);
 	}
@@ -201,11 +198,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 						.get(state);
 				for (VariableAssignment<S1> assignment : varVals) {
 					// apply outputFunction
-					SimpleVariableUpdate<P1, F1, S1> outputUpdate = sst.outputFunction
+					OutputUpdate<P1, F1, S1> outputUpdate = sst.outputFunction
 							.get(state);
-					VariableAssignment<S1> v1 = outputUpdate.applyTo(
-							assignment, ba);
-					return v1.outputVariableValue();
+
+					return outputUpdate.applyTo(assignment, ba);
 				}
 			}
 		}
@@ -261,7 +257,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
 		Integer initialState = 0;
-		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
+		Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, OutputUpdate<P1, F1, S1>>();
 
 		HashMap<Pair<Integer, Integer>, Integer> reached = new HashMap<Pair<Integer, Integer>, Integer>();
 		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<Pair<Integer, Integer>>();
@@ -289,7 +285,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 					&& sst2.isFinalState(currState.second)) {
 
 				// new output function x = x1x2
-				SimpleVariableUpdate<P1, F1, S1> outputUpdate = SimpleVariableUpdate
+				OutputUpdate<P1, F1, S1> outputUpdate = OutputUpdate
 						.combineOutputUpdates(0, 1,
 								sst1.outputFunction.get(currState.first),
 								sst2.outputFunction.get(currState.second));
@@ -350,7 +346,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			return sst;
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
-		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
+		Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, OutputUpdate<P1, F1, S1>>();
 		Integer initialState;
 		Integer numberOfVariables = sst.variableCount;
 
@@ -420,9 +416,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				transitions.add(tnew);
 			}
 
-		}			
+		}
 
-		return MkSST(transitions, initialState, numberOfVariables, outputFunction, ba);
+		return MkSST(transitions, initialState, numberOfVariables,
+				outputFunction, ba);
 	}
 
 	/**
@@ -444,7 +441,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			return getEmptySST(ba);
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
-		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
+		Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, OutputUpdate<P1, F1, S1>>();
 		Integer initialState;
 		Integer numberOfVariables;
 
@@ -511,8 +508,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				// For last variable set xAcc := F(q)
 				if (i == accId)
 					updateList = sst1.outputFunction.get(finStateSst1)
-							.renameVars(varRenameSst1)
-							.getOutputVariableUpdate();
+							.renameVars(varRenameSst1).update;
 				resUpdate.add(updateList);
 			}
 
@@ -526,21 +522,14 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		// create output function for sst2 so that it outputs xAcc F(q)
 		for (Integer finStateSst2 : sst2.getFinalStates()) {
 			// Create the update x0 = xAcc F(q), and x=epsilon for everyone else
-			ArrayList<List<ConstantToken<P1, F1, S1>>> outUpdate = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-			for (int i = 0; i < numberOfVariables; i++) {
-				List<ConstantToken<P1, F1, S1>> updateList = new ArrayList<ConstantToken<P1, F1, S1>>();
-				// For first variable set xAcc := xAcc F(q)
-				if (i == 0) {
-					updateList.add(accVar);
-					updateList.addAll(sst2.outputFunction.get(finStateSst2)
-							.renameVars(varRenameSst2)
-							.getOutputVariableUpdate());
-				}
-				outUpdate.add(updateList);
-			}
+
+			List<ConstantToken<P1, F1, S1>> outUpdateExpr = new ArrayList<ConstantToken<P1, F1, S1>>();
+			outUpdateExpr.add(accVar);
+			outUpdateExpr.addAll(sst2.outputFunction.get(finStateSst2)
+					.renameVars(varRenameSst2).update);
 
 			outputFunction.put(finStateSst2 + offSet,
-					new SimpleVariableUpdate<P1, F1, S1>(outUpdate));
+					new OutputUpdate<P1, F1, S1>(outUpdateExpr));
 		}
 
 		return MkSST(transitions, initialState, numberOfVariables,
@@ -571,7 +560,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			return (SST<P1, F1, S1>) sst1.clone();
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
-		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
+		Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, OutputUpdate<P1, F1, S1>>();
 		Integer initialState;
 		Integer numberOfVariables;
 
@@ -675,7 +664,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			return getEmptySST(ba);
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
-		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
+		Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, OutputUpdate<P1, F1, S1>>();
 		Integer initialState;
 		Integer numberOfVariables;
 
@@ -722,13 +711,13 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				// iter)
 				if (i == accId)
 					if (isLeftIter) {
-						updateList.addAll(sst.outputFunction.get(finStateSst)
-								.getOutputVariableUpdate());
+						updateList
+								.addAll(sst.outputFunction.get(finStateSst).update);
 						updateList.add(xAcc);
 					} else {
 						updateList.add(xAcc);
-						updateList.addAll(sst.outputFunction.get(finStateSst)
-								.getOutputVariableUpdate());
+						updateList
+								.addAll(sst.outputFunction.get(finStateSst).update);
 					}
 				resUpdate.add(updateList);
 			}
@@ -755,15 +744,11 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		transitions.add(initMove);
 
 		// Create the update x0=xAcc for output function in initialState
-		ArrayList<List<ConstantToken<P1, F1, S1>>> outUpdate = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-		for (int i = 0; i < numberOfVariables; i++) {
-			List<ConstantToken<P1, F1, S1>> updateList = new ArrayList<ConstantToken<P1, F1, S1>>();
-			if (i == 0)
-				updateList.add(xAcc);
-			outUpdate.add(updateList);
-		}
-		outputFunction.put(initialState, new SimpleVariableUpdate<P1, F1, S1>(
-				outUpdate));
+		List<ConstantToken<P1, F1, S1>> outUpdate = new ArrayList<ConstantToken<P1, F1, S1>>();
+		outUpdate.add(xAcc);
+
+		outputFunction.put(initialState,
+				new OutputUpdate<P1, F1, S1>(outUpdate));
 
 		return MkSST(transitions, initialState, numberOfVariables,
 				outputFunction, ba);
@@ -781,7 +766,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
 		Integer initialState;
 		Integer numberOfVariables;
-		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, SimpleVariableUpdate<P1, F1, S1>>();
+		Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, OutputUpdate<P1, F1, S1>>();
 
 		// Remove epsilon transitions from all ssts
 		List<SST<P1, F1, S1>> combinedSsts = new ArrayList<SST<P1, F1, S1>>();
@@ -812,14 +797,14 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		int offSet = 0;
 		for (SST<P1, F1, S1> sst : combinedSsts) {
 			varRenames.add(offSet);
-			offSet+= sst.variableCount;
+			offSet += sst.variableCount;
 		}
 		// add two variables 1 for accumulating and 1 for buffering
 		int buffId = offSet;
-		int accId = buffId+combinedSstPairsWitEps.size();		
+		int accId = buffId + combinedSstPairsWitEps.size();
 		SSTVariable<P1, F1, S1> xAcc = new SSTVariable<P1, F1, S1>(accId);
 
-		numberOfVariables = accId+1;
+		numberOfVariables = accId + 1;
 
 		Collection<SSTMove<P1, F1, S1>> transitionFirstStretch = new ArrayList<SSTMove<P1, F1, S1>>();
 		// Start composing them
@@ -896,11 +881,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				if (i >= buffId && i < accId) {
 					// only take even position (i.e. the first els of all pairs)
 					int sstIndex = (i - buffId) * 2;
-					SimpleVariableUpdate<P1, F1, S1> out = combinedSsts
-							.get(sstIndex).outputFunction.get(sstStates
-							.get(sstIndex));
-					updateList.addAll(out.renameVars(varRenames.get(sstIndex))
-							.getOutputVariableUpdate());
+					OutputUpdate<P1, F1, S1> out = combinedSsts.get(sstIndex).outputFunction
+							.get(sstStates.get(sstIndex));
+					updateList
+							.addAll(out.renameVars(varRenames.get(sstIndex)).update);
 				}
 				resUpdate1.add(updateList);
 			}
@@ -919,11 +903,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				if (i >= buffId && i < accId) {
 					// only take even position (i.e. the first els of all pairs)
 					int sstIndex = (i - buffId) * 2;
-					SimpleVariableUpdate<P1, F1, S1> out = combinedSsts
-							.get(sstIndex).outputFunction.get(sstStates
-							.get(sstIndex));
-					updateList.addAll(out.renameVars(varRenames.get(sstIndex))
-							.getOutputVariableUpdate());
+					OutputUpdate<P1, F1, S1> out = combinedSsts.get(sstIndex).outputFunction
+							.get(sstStates.get(sstIndex));
+					updateList
+							.addAll(out.renameVars(varRenames.get(sstIndex)).update);
 				} else {
 					if (i == accId) {
 						if (!isLeftShuffle)
@@ -931,13 +914,13 @@ public class SST<P, F, S> extends Automaton<P, S> {
 						for (int sstIndex = 0; sstIndex < combinedSstPairsWitEps
 								.size(); sstIndex++) {
 							int secondEl = sstIndex * 2 + 1;
-							updateList.add(new SSTVariable<P1, F1, S1>(buffId + sstIndex));
-							SimpleVariableUpdate<P1, F1, S1> out = combinedSsts
+							updateList.add(new SSTVariable<P1, F1, S1>(buffId
+									+ sstIndex));
+							OutputUpdate<P1, F1, S1> out = combinedSsts
 									.get(secondEl).outputFunction.get(sstStates
 									.get(secondEl));
-							updateList.addAll(out.renameVars(
-									varRenames.get(secondEl))
-									.getOutputVariableUpdate());
+							updateList.addAll(out.renameVars(varRenames
+									.get(secondEl)).update);
 						}
 						if (isLeftShuffle)
 							updateList.add(xAcc);
@@ -956,38 +939,28 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			transitions.add(newMove);
 
 			// Create output function x0=xacc forall i xbufi F(qi.2)
-			ArrayList<List<ConstantToken<P1, F1, S1>>> finOut = new ArrayList<List<ConstantToken<P1, F1, S1>>>();
-			for (int i = 0; i < numberOfVariables; i++) {
-				List<ConstantToken<P1, F1, S1>> updateList = new ArrayList<ConstantToken<P1, F1, S1>>();
-
-				if (i == 0) {
-					if (!isLeftShuffle)
-						updateList.add(xAcc);
-					for (int sstIndex = 0; sstIndex < combinedSstPairsWitEps
-							.size(); sstIndex++) {
-						int secondEl = sstIndex * 2 + 1;
-						updateList.add(new SSTVariable<P1, F1, S1>(buffId + sstIndex));
-						SimpleVariableUpdate<P1, F1, S1> out = combinedSsts
-								.get(secondEl).outputFunction.get(sstStates
-								.get(secondEl));
-						updateList.addAll(out.renameVars(
-								varRenames.get(secondEl))
-								.getOutputVariableUpdate());
-					}
-					if (isLeftShuffle)
-						updateList.add(xAcc);
-				}
-				finOut.add(updateList);
+			List<ConstantToken<P1, F1, S1>> outputExpr = new ArrayList<ConstantToken<P1, F1, S1>>();
+			if (!isLeftShuffle)
+				outputExpr.add(xAcc);
+			for (int sstIndex = 0; sstIndex < combinedSstPairsWitEps.size(); sstIndex++) {
+				int secondEl = sstIndex * 2 + 1;
+				outputExpr.add(new SSTVariable<P1, F1, S1>(buffId + sstIndex));
+				OutputUpdate<P1, F1, S1> out = combinedSsts.get(secondEl).outputFunction
+						.get(sstStates.get(secondEl));
+				outputExpr
+						.addAll(out.renameVars(varRenames.get(secondEl)).update);
 			}
+			if (isLeftShuffle)
+				outputExpr.add(xAcc);
+
 			outputFunction.put(finState + offset * 1,
-					new SimpleVariableUpdate<P1, F1, S1>(finOut));
+					new OutputUpdate<P1, F1, S1>(outputExpr));
 			outputFunction.put(finState + offset * 2,
-					new SimpleVariableUpdate<P1, F1, S1>(finOut));
-			// outputFunction.put(finState + offset * 3, new
-			// SimpleVariableUpdate<P1, F1, S1>(finOut));
+					new OutputUpdate<P1, F1, S1>(outputExpr));
 		}
 
-		return MkSST(transitions, initialState, numberOfVariables, outputFunction, ba);
+		return MkSST(transitions, initialState, numberOfVariables,
+				outputFunction, ba);
 
 	}
 
@@ -1070,8 +1043,8 @@ public class SST<P, F, S> extends Automaton<P, S> {
 					reached.add(t.to);
 					toVisit.add(t.to);
 					// this should be compose fromUpdate t.variableUpdate
-					stateToAss.put(t.to, fromUpdate.composeWith(
-							t.variableUpdate));
+					stateToAss.put(t.to,
+							fromUpdate.composeWith(t.variableUpdate));
 				} else {
 					throw new IllegalArgumentException(
 							"the epsilon transitions cause ambiguity ("
@@ -1329,7 +1302,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		cl.epsTransitionsTo = new HashMap<Integer, Collection<SSTEpsilon<P, F, S>>>(
 				epsTransitionsTo);
 
-		cl.outputFunction = new HashMap<Integer, SimpleVariableUpdate<P, F, S>>(
+		cl.outputFunction = new HashMap<Integer, OutputUpdate<P, F, S>>(
 				outputFunction);
 
 		return cl;
