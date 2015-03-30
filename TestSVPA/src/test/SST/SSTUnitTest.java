@@ -28,6 +28,7 @@ import transducers.sst.SimpleVariableUpdate;
 import transducers.sst.Token;
 import utilities.Pair;
 import automata.AutomataException;
+import automata.fsa.SFA;
 
 public class SSTUnitTest {
 
@@ -160,6 +161,38 @@ public class SSTUnitTest {
 		SST<CharPred, CharFunc, Character> sstShuffle = SST.computeShuffle(
 				combinedSstPairsWitEps, ba, false);
 
+		List<Character> input1 = lOfS("a");
+		List<Character> input2 = lOfS("ab");
+		List<Character> input3 = lOfS("abc");
+		List<Character> input4 = lOfS("abcd");
+
+		assertTrue(!sstShuffle.accepts(input1, ba));
+		assertTrue(sstShuffle.accepts(input2, ba));
+		assertTrue(sstShuffle.accepts(input3, ba));
+		assertTrue(sstShuffle.accepts(input4, ba));
+
+		List<Character> output2 = sstShuffle.outputOn(input2, ba);
+		List<Character> output3 = sstShuffle.outputOn(input3, ba);
+		List<Character> output4 = sstShuffle.outputOn(input4, ba);
+
+		assertTrue(ba.stringOfList(output2).equals("AB"));
+		assertTrue(ba.stringOfList(output3).equals("ABBC"));
+		assertTrue(ba.stringOfList(output4).equals("ABBCCD"));
+
+	}
+	
+	@Test
+	public void testShuffleWithAut() {
+		CharSolver ba = new CharSolver();
+		SST<CharPred, CharFunc, Character> sstBase = getAlphaToUpperCase(ba);
+		SST<CharPred, CharFunc, Character> sstsst = sstBase.concatenateWith(sstBase, ba);
+		SFA<CharPred, Character> domain = sstBase.getDomain(ba);
+
+		SST<CharPred, CharFunc, Character> sstShuffle = SST.computeShuffle(
+				sstsst, domain, ba, false).normalize(ba);		
+		
+		SST<CharPred, CharFunc, Character> deb = sstShuffle.removeEpsilonMoves(ba);
+		
 		List<Character> input1 = lOfS("a");
 		List<Character> input2 = lOfS("ab");
 		List<Character> input3 = lOfS("abc");

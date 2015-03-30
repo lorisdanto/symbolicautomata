@@ -103,17 +103,13 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	 * using the disjoint rename functions
 	 */
 	public static <P1, F1, S1> FunctionalVariableUpdate<P1, F1, S1> combineUpdates(
-			Integer varRename1,
-			Integer varRename2,
 			FunctionalVariableUpdate<P1, F1, S1> update1,
 			FunctionalVariableUpdate<P1, F1, S1> update2) {
 
 		ArrayList<List<Token<P1, F1, S1>>> combinedVariableUpdate = new ArrayList<List<Token<P1, F1, S1>>>();
-		FunctionalVariableUpdate<P1, F1, S1> ren1 = (FunctionalVariableUpdate<P1, F1, S1>) update1
-				.renameVars(varRename1);
 		FunctionalVariableUpdate<P1, F1, S1> ren2 = (FunctionalVariableUpdate<P1, F1, S1>) update2
-				.renameVars(varRename2);
-		combinedVariableUpdate.addAll(ren1.variableUpdate);
+				.renameVars(update1.variableUpdate.size());
+		combinedVariableUpdate.addAll(update1.variableUpdate);
 		combinedVariableUpdate.addAll(ren2.variableUpdate);
 		return new FunctionalVariableUpdate<P1, F1, S1>(combinedVariableUpdate);
 

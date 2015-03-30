@@ -29,7 +29,7 @@ public abstract class Automaton<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<Move<P, S>> getMoves(){
+	public Collection<Move<P, S>> getMoves() {
 		return getMovesFrom(getStates());
 	}
 
@@ -47,12 +47,12 @@ public abstract class Automaton<P, S> {
 			transitions.addAll(getMovesFrom(state));
 		return transitions;
 	}
-	
+
 	/**
 	 * Set of moves to state
 	 */
 	public abstract Collection<Move<P, S>> getMovesTo(Integer state);
-	
+
 	/**
 	 * Set of moves to set of states
 	 */
@@ -62,9 +62,6 @@ public abstract class Automaton<P, S> {
 			transitions.addAll(getMovesTo(state));
 		return transitions;
 	}
-
-	
-	
 
 	/**
 	 * Saves in the file <code>name</code> under the path <code>path</code> the
@@ -124,10 +121,10 @@ public abstract class Automaton<P, S> {
 			s = s + fs + "\n";
 		return s;
 	}
-	
-	
+
 	/**
 	 * Returns a sequence in the input domain
+	 * 
 	 * @param ba
 	 * @return a list in the domain language, , null if empty
 	 */
@@ -135,45 +132,46 @@ public abstract class Automaton<P, S> {
 		if (isEmpty)
 			return null;
 
-		Map<Integer,LinkedList<S>> witMap = new HashMap<Integer, LinkedList<S>>(); 
-		for(Integer state: getFinalStates())
+		Map<Integer, LinkedList<S>> witMap = new HashMap<Integer, LinkedList<S>>();
+		for (Integer state : getFinalStates())
 			witMap.put(state, new LinkedList<S>());
-		
+
 		HashSet<Integer> reachedStates = new HashSet<Integer>(getFinalStates());
 		HashSet<Integer> barreer = new HashSet<Integer>(getFinalStates());
-		
+
 		while (!barreer.isEmpty()) {
-						
+
 			ArrayList<Move<P, S>> moves = new ArrayList<Move<P, S>>(
 					getMovesTo(barreer));
-			
-			barreer = new HashSet<Integer>();			
-			for(Move<P, S> move: moves){
-				if(!reachedStates.contains(move.from)){
+
+			barreer = new HashSet<Integer>();
+			for (Move<P, S> move : moves) {
+				if (!reachedStates.contains(move.from)) {
 					barreer.add(move.from);
 					reachedStates.add(move.from);
 				}
 				LinkedList<S> newWit = new LinkedList<S>(witMap.get(move.to));
 				if (!move.isEpsilonTransition()) {
 					newWit.addFirst(move.getWitness(ba));
-				}					
-				if(!witMap.containsKey(move.from))
+				}
+				if (!witMap.containsKey(move.from))
 					witMap.put(move.from, newWit);
-				else{
+				else {
 					LinkedList<S> oldWit = witMap.get(move.from);
-					if(oldWit.size()>newWit.size())
+					if (oldWit.size() > newWit.size())
 						witMap.put(move.from, newWit);
 				}
 			}
-										
+
 		}
-		for(Integer st: getInitialStates())
+		for (Integer st : getInitialStates())
 			return witMap.get(st);
 		return null;
 	}
-	
+
 	/**
 	 * Returns true if the machine accepts the input list
+	 * 
 	 * @param input
 	 * @param ba
 	 * @return true if accepted false otherwise
@@ -190,10 +188,7 @@ public abstract class Automaton<P, S> {
 		return isFinalConfiguration(currConf);
 	}
 
-	
-	
-	
-	//Accessors functions	
+	// Accessors functions
 	/**
 	 * Returns the set of states
 	 */
@@ -208,9 +203,8 @@ public abstract class Automaton<P, S> {
 	 * Returns the set of final states
 	 */
 	public abstract Collection<Integer> getFinalStates();
-	
-	
-	//Utility methods
+
+	// Utility methods
 	protected boolean isInitialConfiguration(Collection<Integer> conf) {
 		for (Integer state : conf)
 			if (isInitialState(state))
@@ -232,7 +226,7 @@ public abstract class Automaton<P, S> {
 	protected boolean isFinalState(Integer state) {
 		return getFinalStates().contains(state);
 	}
-		
+
 	protected Collection<Integer> getEpsClosure(Integer state,
 			BooleanAlgebra<P, S> ba) {
 
@@ -259,17 +253,28 @@ public abstract class Automaton<P, S> {
 		}
 		return reached;
 	}
-	
+
 	protected Collection<Integer> getNextState(Collection<Integer> currState,
 			S inputElement, BooleanAlgebra<P, S> ba) {
 		Collection<Integer> nextState = new HashSet<Integer>();
 		for (Move<P, S> t : getMovesFrom(currState)) {
 			if (!t.isEpsilonTransition()) {
-				if(t.hasModel(inputElement, ba))
+				if (t.hasModel(inputElement, ba))
 					nextState.add(t.to);
 			}
 		}
 
 		return nextState;
+	}
+
+	public static <A, B> int getStateId(A nextState, Map<A, Integer> reached,
+			LinkedList<A> toVisit) {
+		if (!reached.containsKey(nextState)) {
+			int newId = reached.size();
+			reached.put(nextState, newId);
+			toVisit.add(nextState);
+			return newId;
+		} else
+			return reached.get(nextState);
 	}
 }

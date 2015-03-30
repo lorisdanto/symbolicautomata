@@ -199,7 +199,7 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		for (int i = 0; i < varCount; i++) {
 			List<ConstantToken<P1, F1, S1>> idVar = new ArrayList<ConstantToken<P1, F1, S1>>();
 			idVar.add(new SSTVariable<P1, F1, S1>(i));
-			variableUpdate.set(i, idVar);
+			variableUpdate.add(idVar);
 		}
 
 		return new SimpleVariableUpdate<P1, F1, S1>(variableUpdate);

@@ -54,7 +54,7 @@ public class SFA<U, S> extends Automaton<U, S> {
 	}
 
 	protected Collection<Integer> states;
-	protected Integer initialState;
+	public Integer initialState;
 	protected Collection<Integer> finalStates;
 
 	public Integer stateCount(){
