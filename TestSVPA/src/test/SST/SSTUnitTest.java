@@ -191,7 +191,7 @@ public class SSTUnitTest {
 		SST<CharPred, CharFunc, Character> sstShuffle = SST.computeShuffle(
 				sstsst, domain, ba, false).normalize(ba);		
 		
-		SST<CharPred, CharFunc, Character> deb = sstShuffle.removeEpsilonMoves(ba);
+		//SST<CharPred, CharFunc, Character> deb = sstShuffle.removeEpsilonMoves(ba);
 		
 		List<Character> input1 = lOfS("a");
 		List<Character> input2 = lOfS("ab");
