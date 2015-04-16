@@ -2,7 +2,7 @@ package theory;
 
 public class CharFunc {
 
-	public int increment;
+	public long increment;
 
 	public static CharFunc ID() {
 		return new CharFunc(0);
@@ -16,7 +16,7 @@ public class CharFunc {
 		return new CharFunc(-32);
 	}
 	
-	public CharFunc(int increment) {
+	public CharFunc(long increment) {
 		this.increment = increment;
 	}
 

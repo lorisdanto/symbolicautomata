@@ -172,7 +172,7 @@ public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Characte
 	@Override
 	public Character MkSubstFuncConst(CharFunc f, Character c) {
 		//TODO test this
-		return Character.toChars(f.increment+c)[0];
+		return Character.toChars((int)(f.increment+c))[0];
 	}
     
 	/**
