@@ -28,7 +28,6 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	protected Collection<Integer> states;
 	protected Integer initialState;
 
-	// protected int variablesToIndices;
 	protected int variableCount;
 	protected SimpleVariableUpdate<P, F, S> cachedIdentityVarUp;
 
@@ -1132,7 +1131,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		transitions = new ArrayList<SSTMove<P1, F1, S1>>(transitionFirstStretch);
 		// Now copy other transitions 3 times
 		for (SSTMove<P1, F1, S1> t : transitionOtherStretches) {
-			for (int i = 1; i < 4; i++) {
+			for (int i = 1; i <= 4; i++) {
 				SSTMove<P1, F1, S1> newTrans = (SSTMove<P1, F1, S1>) t.clone();
 				newTrans.from = newTrans.from + i * offset;
 				newTrans.to = newTrans.to + i * offset;
@@ -1243,7 +1242,8 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				}
 				update2to3.add(updateList);
 			}
-			SimpleVariableUpdate<P1, F1, S1> svu2to3 = new SimpleVariableUpdate<P1, F1, S1>(update2to3);
+			SimpleVariableUpdate<P1, F1, S1> svu2to3 = new SimpleVariableUpdate<P1, F1, S1>(
+					update2to3);
 
 			// next state
 			List<Integer> nextState = Arrays.asList(sst1state,
@@ -1333,6 +1333,98 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		return SFA.MkSFA(transitions, initialState, finalStates, ba);
 	}
+
+	/**
+	 * Computes the pre-image on the set outputNonMin
+	 */
+	public boolean typeCheck(SFA<P, S> inputNonMin, SFA<P, S> outputNonMin,
+			BooleanAlgebraSubst<P, F, S> ba) {
+		SFA<P, S> complement = outputNonMin.complement(ba);
+		SFA<P,S> preim = SST.preImage(this, complement, ba);
+		SFA<P,S> inters = preim.intersectionWith(inputNonMin, ba);
+	
+		return inters.isEmpty;
+	}
+	
+	/**
+	 * Computes the pre-image on the set outputNonMin
+	 */
+	public SFA<P, S> getPreImage(SFA<P, S> outputNonMin,
+			BooleanAlgebraSubst<P, F, S> ba) {
+		return SST.preImage(this, outputNonMin, ba);
+	}
+
+	/**
+	 * Computes the pre-image of sst on the set outputNonMin
+	 */
+	public static <A, B, C> SFA<A, C> preImage(SST<A, B, C> sstWithEps,
+			SFA<A, C> outputNonMin, BooleanAlgebraSubst<A, B, C> ba) {
+		SFA<A, C> output = outputNonMin.minimize(ba);
+		SST<A, B, C> sst = sstWithEps.removeEpsilonMoves(ba);
+
+		Collection<SFAMove<A, C>> transitions = new ArrayList<SFAMove<A, C>>();
+		Collection<Integer> finalStates = new HashSet<Integer>();
+		Integer initialState = 0;
+
+		// A state is a pair (q, f) where q is a state of the sst and f: X -> QO
+		// -> QO is a function
+		// mapping each variable x to a function from QO to QO (the
+		// summarization)
+		Map<Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>>, Integer> reached = new HashMap<Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>>, Integer>();
+		LinkedList<Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> toVisit = new LinkedList<Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>();
+
+		// The initial state is the identity for every variable
+		HashMap<Integer, Integer> identityStateMap = new HashMap<Integer, Integer>();
+		HashMap<Integer, HashMap<Integer, Integer>> identityMap = new HashMap<Integer, HashMap<Integer, Integer>>();
+		for (int stateId : output.getStates())
+			identityStateMap.put(stateId, stateId);
+		for (int varId = 0; varId < sst.variableCount; varId++)
+			identityMap.put(varId, identityStateMap);
+
+		Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>> initialStatePair = new Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>>(
+				sst.initialState, identityMap);
+		reached.put(initialStatePair, 0);
+		toVisit.add(initialStatePair);
+
+		// do a DFS and look for reachable states
+		while (!toVisit.isEmpty()) {
+			Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>> currState = toVisit
+					.removeFirst();
+			int currStateId = reached.get(currState);
+
+			int sstState = currState.first;
+			HashMap<Integer, HashMap<Integer, Integer>> currFun = currState.second;
+
+			// set final states to those for which the output func summarized on initial state gives a final state of O
+			if(sst.isFinalState(sstState)){
+				Integer fromqoOnOutputFunction = sst.outputFunction.get(sstState).getInitStateSummary(currFun, output, ba);
+				if(fromqoOnOutputFunction!= null && output.getFinalStates().contains(fromqoOnOutputFunction))
+					finalStates.add(currStateId);
+			}
+
+			// For each move of the sst compute the next state
+			for (SSTInputMove<A, B, C> t : sst.getInputMovesFrom(sstState)) {
+
+				Collection<Pair<HashMap<Integer, HashMap<Integer, Integer>>, A>> nextFuns = t.variableUpdate
+						.getNextSummary(currFun, t.guard, output, ba);
+				for(Pair<HashMap<Integer, HashMap<Integer, Integer>>, A> pair: nextFuns){	
+					
+					Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>> nextState = 
+							new Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>>(
+							t.to, pair.first);
+
+					int nextStateId = getStateId(nextState, reached, toVisit);
+					
+					transitions.add(new InputMove<A,C>(currStateId, nextStateId, pair.second));
+				}
+			}
+
+		}
+
+		return SFA.MkSFA(transitions, initialState, finalStates, ba);
+	}
+
+	// non-public methods
 
 	protected Map<Integer, SimpleVariableUpdate<P, F, S>> getSSTEpsClosure(
 			Integer fronteer, BooleanAlgebra<P, S> ba) {

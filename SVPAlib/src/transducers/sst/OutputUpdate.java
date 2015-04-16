@@ -1,7 +1,10 @@
 package transducers.sst;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import automata.fsa.SFA;
 
 import theory.BooleanAlgebraSubst;
 
@@ -31,7 +34,6 @@ public class OutputUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return value;
 	}
 
-
 	public OutputUpdate<P, F, S> renameVars(Integer varRename) {
 		if (varRename == 0)
 			return this;
@@ -59,28 +61,26 @@ public class OutputUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return sb.toString();
 	}
 
-	// // STATIC METHODS
-	// /**
-	// * Combines two updates into a single one by renaming variables
-	// accordingly
-	// * using the disjoint rename functions
-	// */
-	// public static <P1, F1, S1> OutputUpdate<P1, F1, S1> combineUpdates(
-	// Integer varRename1, Integer varRename2,
-	// OutputUpdate<P1, F1, S1> update1, OutputUpdate<P1, F1, S1> update2) {
-	//
-	// ArrayList<List<ConstantToken<P1, F1, S1>>> combinedVariableUpdate = new
-	// ArrayList<List<ConstantToken<P1, F1, S1>>>();
-	// OutputUpdate<P1, F1, S1> ren1 = (OutputUpdate<P1, F1, S1>) update1
-	// .renameVars(varRename1);
-	// OutputUpdate<P1, F1, S1> ren2 = (OutputUpdate<P1, F1, S1>) update2
-	// .renameVars(varRename2);
-	// combinedVariableUpdate.addAll(ren1.update);
-	// combinedVariableUpdate.addAll(ren2.update);
-	// return new OutputUpdate<P1, F1, S1>(combinedVariableUpdate);
-	//
-	// }
-	//
+	public Integer getInitStateSummary(
+			HashMap<Integer, HashMap<Integer, Integer>> f, SFA<P, S> aut,
+			BooleanAlgebraSubst<P, F, S> ba) {
+		HashMap<Integer, P> currState = new HashMap<Integer, P>();
+		currState.put(aut.initialState, ba.True());
+
+		for (ConstantToken<P, F, S> token : update){
+			HashMap<Integer, P> newState = new HashMap<Integer, P>();
+			for (int state : currState.keySet())			
+				newState.putAll(token.getNextState(f, ba.True(), aut, state, ba));
+			currState = newState;
+		}
+
+		for (int state : currState.keySet())
+			return state;
+		
+		return null;
+	}
+
+	// STATIC METHODS
 
 	/**
 	 * Combines two output updates o=o1o2
@@ -101,24 +101,4 @@ public class OutputUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 		return new OutputUpdate<P1, F1, S1>(newOut);
 	}
-	//
-	// /**
-	// * returns the identity assignment
-	// * */
-	// public static <P1, F1, S1> OutputUpdate<P1, F1, S1> identity(int
-	// varCount) {
-	//
-	// ArrayList<List<ConstantToken<P1, F1, S1>>> variableUpdate = new
-	// ArrayList<List<ConstantToken<P1, F1, S1>>>(
-	// varCount);
-	// for (int i = 0; i < varCount; i++) {
-	// List<ConstantToken<P1, F1, S1>> idVar = new ArrayList<ConstantToken<P1,
-	// F1, S1>>();
-	// idVar.add(new SSTVariable<P1, F1, S1>(i));
-	// variableUpdate.set(i, idVar);
-	// }
-	//
-	// return new OutputUpdate<P1, F1, S1>(variableUpdate);
-	//
-	// }
 }

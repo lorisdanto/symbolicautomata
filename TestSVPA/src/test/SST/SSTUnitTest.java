@@ -3,6 +3,7 @@ package test.SST;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -28,7 +29,9 @@ import transducers.sst.SimpleVariableUpdate;
 import transducers.sst.Token;
 import utilities.Pair;
 import automata.AutomataException;
+import automata.fsa.InputMove;
 import automata.fsa.SFA;
+import automata.fsa.SFAMove;
 
 public class SSTUnitTest {
 
@@ -180,19 +183,21 @@ public class SSTUnitTest {
 		assertTrue(ba.stringOfList(output4).equals("ABBCCD"));
 
 	}
-	
+
 	@Test
 	public void testShuffleWithAut() {
 		CharSolver ba = new CharSolver();
 		SST<CharPred, CharFunc, Character> sstBase = getAlphaToUpperCase(ba);
-		SST<CharPred, CharFunc, Character> sstsst = sstBase.concatenateWith(sstBase, ba);
+		SST<CharPred, CharFunc, Character> sstsst = sstBase.concatenateWith(
+				sstBase, ba);
 		SFA<CharPred, Character> domain = sstBase.getDomain(ba);
 
 		SST<CharPred, CharFunc, Character> sstShuffle = SST.computeShuffle(
-				sstsst, domain, ba, false).normalize(ba);		
-		
-		//SST<CharPred, CharFunc, Character> deb = sstShuffle.removeEpsilonMoves(ba);
-		
+				sstsst, domain, ba, false).normalize(ba);
+
+		// SST<CharPred, CharFunc, Character> deb =
+		// sstShuffle.removeEpsilonMoves(ba);
+
 		List<Character> input1 = lOfS("a");
 		List<Character> input2 = lOfS("ab");
 		List<Character> input3 = lOfS("abc");
@@ -211,6 +216,19 @@ public class SSTUnitTest {
 		assertTrue(ba.stringOfList(output3).equals("ABBC"));
 		assertTrue(ba.stringOfList(output4).equals("ABBCCD"));
 
+	}
+
+	@Test
+	public void testPreImage() {
+		CharSolver ba = new CharSolver();
+		SST<CharPred, CharFunc, Character> sstBase = getLetterCopy(ba);
+
+		SFA<CharPred, Character> atLeast2As = atLeastTwoAs(ba);
+
+		SFA<CharPred, Character> tcdom = sstBase.getPreImage(atLeast2As, ba);
+		assertTrue(tcdom.isEquivalentTo(atLeast2As, ba));
+		
+		assertTrue(sstBase.typeCheck(atLeast2As, atLeast2As, ba));
 	}
 
 	@Test
@@ -340,6 +358,7 @@ public class SSTUnitTest {
 	// Predicates
 	// ---------------------------------------
 	CharPred alpha = new CharPred('a', 'z');
+	CharPred a = new CharPred('a');
 	CharPred num = new CharPred('1', '9');
 	CharPred comma = new CharPred(',');
 	Integer onlyX = 1;
@@ -450,8 +469,7 @@ public class SSTUnitTest {
 	// S: 0 -[a-z]/x{c+0};-> 0
 	// Initial States: 0
 	// Output Function: F(0)=x;
-	private SST<CharPred, CharFunc, Character> getLetterCopy(CharSolver ba)
-			throws AutomataException {
+	private SST<CharPred, CharFunc, Character> getLetterCopy(CharSolver ba) {
 
 		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();
 
@@ -463,6 +481,22 @@ public class SSTUnitTest {
 		outputFunction.put(0, justXout());
 
 		return SST.MkSST(transitionsA, 0, onlyX, outputFunction, ba);
+	}
+
+	// SFA that accepts strings contatining at least two as
+	private SFA<CharPred, Character> atLeastTwoAs(CharSolver ba) {
+
+		Collection<SFAMove<CharPred, Character>> transitionsA = new ArrayList<SFAMove<CharPred, Character>>();
+
+		transitionsA.add(new InputMove<CharPred, Character>(0, 0, alpha));
+		transitionsA.add(new InputMove<CharPred, Character>(1, 1, alpha));
+		transitionsA.add(new InputMove<CharPred, Character>(2, 2, alpha));
+		transitionsA.add(new InputMove<CharPred, Character>(0, 1, a));
+		transitionsA.add(new InputMove<CharPred, Character>(1, 2, a));
+
+		// Output function just outputs x
+
+		return SFA.MkSFA(transitionsA, 0, Arrays.asList(2), ba);
 	}
 
 	// SST with one state, keeps all numbers. Defined only on numbers
