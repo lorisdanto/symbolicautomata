@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import automata.fsa.InputMove;
-import automata.fsa.SFA;
+import automata.sfa.SFA;
+import automata.sfa.SFAInputMove;
 
 import theory.BooleanAlgebraSubst;
 
@@ -44,7 +44,7 @@ public class CharConstant<P, F, S> implements ConstantToken<P, F, S> {
 			SFA<P, S> aut, Integer currState, BooleanAlgebraSubst<P, F, S> ba) {
 		HashMap<Integer, P> res = new HashMap<Integer, P>();
 		
-		for(InputMove<P, S> move: aut.getInputMovesFrom(currState)){
+		for(SFAInputMove<P, S> move: aut.getInputMovesFrom(currState)){
 			if(ba.HasModel(move.guard, constant)){
 				res.put(move.to, guard);
 				break;

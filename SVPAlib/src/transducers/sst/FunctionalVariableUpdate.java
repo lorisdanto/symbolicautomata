@@ -8,7 +8,7 @@ import java.util.List;
 
 import theory.BooleanAlgebraSubst;
 import utilities.Pair;
-import automata.fsa.SFA;
+import automata.sfa.SFA;
 
 public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 

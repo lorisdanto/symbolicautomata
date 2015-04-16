@@ -14,53 +14,20 @@ import theory.BooleanAlgebra;
 
 public abstract class Automaton<P, S> {
 
-	public boolean isEmpty;
-	public boolean isDeterministic;
-	public boolean isEpsilonFree;
-	public boolean isTotal;
+	// ------------------------------------------------------
+	// Automata properties
+	// ------------------------------------------------------
+
+	protected boolean isEmpty;
+	protected boolean isDeterministic;
+	protected boolean isEpsilonFree;
+	protected boolean isTotal;
 
 	public Automaton() {
 		isEmpty = false;
 		isDeterministic = false;
 		isEpsilonFree = true;
 		isTotal = false;
-	}
-
-	/**
-	 * Returns the set of transitions starting set of states
-	 */
-	public Collection<Move<P, S>> getMoves() {
-		return getMovesFrom(getStates());
-	}
-
-	/**
-	 * Set of moves from state
-	 */
-	public abstract Collection<Move<P, S>> getMovesFrom(Integer state);
-
-	/**
-	 * Set of moves from set of states
-	 */
-	public Collection<Move<P, S>> getMovesFrom(Collection<Integer> states) {
-		Collection<Move<P, S>> transitions = new LinkedList<Move<P, S>>();
-		for (Integer state : states)
-			transitions.addAll(getMovesFrom(state));
-		return transitions;
-	}
-
-	/**
-	 * Set of moves to state
-	 */
-	public abstract Collection<Move<P, S>> getMovesTo(Integer state);
-
-	/**
-	 * Set of moves to set of states
-	 */
-	public Collection<Move<P, S>> getMovesTo(Collection<Integer> states) {
-		Collection<Move<P, S>> transitions = new LinkedList<Move<P, S>>();
-		for (Integer state : states)
-			transitions.addAll(getMovesTo(state));
-		return transitions;
 	}
 
 	/**
@@ -79,13 +46,12 @@ public abstract class Automaton<P, S> {
 					fw.write(",peripheries=2");
 
 				fw.write("]\n");
-				if (getInitialStates().contains(state))
+				if (isInitialState(state))
 					fw.write("XX" + state + " [color=white, label=\"\"]");
 			}
 
-			for (Integer state : getInitialStates()) {
-				fw.write("XX" + state + " -> " + state + "\n");
-			}
+			fw.write("XX" + getInitialState() + " -> " + getInitialState()
+					+ "\n");
 
 			for (Integer state : getStates()) {
 				for (Move<P, S> t : getMovesFrom(state))
@@ -113,9 +79,10 @@ public abstract class Automaton<P, S> {
 		s += "Transitions \n";
 		for (Move<P, S> t : getMoves())
 			s = s + t + "\n";
-		s += "Initial States \n";
-		for (Integer is : getInitialStates())
-			s = s + is + "\n";
+
+		s += "Initial State \n";
+		s = s + getInitialState() + "\n";
+
 		s += "Final States \n";
 		for (Integer fs : getFinalStates())
 			s = s + fs + "\n";
@@ -123,10 +90,9 @@ public abstract class Automaton<P, S> {
 	}
 
 	/**
-	 * Returns a sequence in the input domain
+	 * Returns a sequence in the input domain that is accepted by the automaton
 	 * 
-	 * @param ba
-	 * @return a list in the domain language, , null if empty
+	 * @return a list in the domain language, null if empty
 	 */
 	public List<S> getWitness(BooleanAlgebra<P, S> ba) {
 		if (isEmpty)
@@ -164,9 +130,7 @@ public abstract class Automaton<P, S> {
 			}
 
 		}
-		for (Integer st : getInitialStates())
-			return witMap.get(st);
-		return null;
+		return witMap.get(getInitialState());
 	}
 
 	/**
@@ -177,7 +141,7 @@ public abstract class Automaton<P, S> {
 	 * @return true if accepted false otherwise
 	 */
 	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba) {
-		Collection<Integer> currConf = getEpsClosure(getInitialStates(), ba);
+		Collection<Integer> currConf = getEpsClosure(getInitialState(), ba);
 		for (S el : input) {
 			currConf = getNextState(currConf, el, ba);
 			currConf = getEpsClosure(currConf, ba);
@@ -188,44 +152,99 @@ public abstract class Automaton<P, S> {
 		return isFinalConfiguration(currConf);
 	}
 
-	// Accessors functions
+	// ------------------------------------------------------
+	// Accessory functions
+	// ------------------------------------------------------
+
+	/**
+	 * Returns the set of transitions starting set of states
+	 */
+	public Collection<Move<P, S>> getMoves() {
+		return getMovesFrom(getStates());
+	}
+
+	/**
+	 * Set of moves from state
+	 */
+	public abstract Collection<Move<P, S>> getMovesFrom(Integer state);
+
+	/**
+	 * Set of moves from set of states
+	 */
+	public Collection<Move<P, S>> getMovesFrom(Collection<Integer> states) {
+		Collection<Move<P, S>> transitions = new LinkedList<Move<P, S>>();
+		for (Integer state : states)
+			transitions.addAll(getMovesFrom(state));
+		return transitions;
+	}
+
+	/**
+	 * Set of moves to <code>state</code>
+	 */
+	public abstract Collection<Move<P, S>> getMovesTo(Integer state);
+
+	/**
+	 * Set of moves to a set of states <code>states</code>
+	 */
+	public Collection<Move<P, S>> getMovesTo(Collection<Integer> states) {
+		Collection<Move<P, S>> transitions = new LinkedList<Move<P, S>>();
+		for (Integer state : states)
+			transitions.addAll(getMovesTo(state));
+		return transitions;
+	}
+
 	/**
 	 * Returns the set of states
 	 */
 	public abstract Collection<Integer> getStates();
 
 	/**
-	 * Returns the set of initial states
+	 * Returns initial state
 	 */
-	public abstract Collection<Integer> getInitialStates();
+	public abstract Integer getInitialState();
 
 	/**
 	 * Returns the set of final states
 	 */
 	public abstract Collection<Integer> getFinalStates();
 
-	// Utility methods
-	protected boolean isInitialConfiguration(Collection<Integer> conf) {
+	/**
+	 * @return true if the set <code>conf</code> contains an initial state
+	 */
+	public boolean isInitialConfiguration(Collection<Integer> conf) {
 		for (Integer state : conf)
 			if (isInitialState(state))
 				return true;
 		return false;
 	}
 
-	protected boolean isInitialState(Integer state) {
-		return getInitialStates().contains(state);
+	/**
+	 * @return true if <code>state</code> is an initial state
+	 */
+	public boolean isInitialState(Integer state) {
+		return getInitialState() == state;
 	}
 
-	protected boolean isFinalConfiguration(Collection<Integer> conf) {
+	/**
+	 * @return true if <code>conf</code> contains a final state
+	 */
+	public boolean isFinalConfiguration(Collection<Integer> conf) {
 		for (Integer state : conf)
 			if (isFinalState(state))
 				return true;
 		return false;
 	}
 
-	protected boolean isFinalState(Integer state) {
+	/**
+	 * @return true if <code>state</code> is a final state
+	 */
+	public boolean isFinalState(Integer state) {
 		return getFinalStates().contains(state);
 	}
+
+	// ------------------------------------------------------
+	// Auxiliary protected functions
+	// ------------------------------------------------------
 
 	protected Collection<Integer> getEpsClosure(Integer state,
 			BooleanAlgebra<P, S> ba) {
@@ -267,14 +286,50 @@ public abstract class Automaton<P, S> {
 		return nextState;
 	}
 
-	public static <A, B> int getStateId(A nextState, Map<A, Integer> reached,
+	/**
+	 * If <code>state<code> belongs to reached returns reached(state)
+	 * otherwise add state to reached and to toVisit and return corresponding id
+	 */
+	public static <A, B> int getStateId(A state, Map<A, Integer> reached,
 			LinkedList<A> toVisit) {
-		if (!reached.containsKey(nextState)) {
+		if (!reached.containsKey(state)) {
 			int newId = reached.size();
-			reached.put(nextState, newId);
-			toVisit.add(nextState);
+			reached.put(state, newId);
+			toVisit.add(state);
 			return newId;
 		} else
-			return reached.get(nextState);
+			return reached.get(state);
+	}
+
+	// ------------------------------------------------------
+	// Getters
+	// ------------------------------------------------------
+
+	/**
+	 * @return the isEmpty
+	 */
+	public boolean isEmpty() {
+		return isEmpty;
+	}
+
+	/**
+	 * @return the isDeterministic
+	 */
+	public boolean isDeterministic() {
+		return isDeterministic;
+	}
+
+	/**
+	 * @return the isEpsilonFree
+	 */
+	public boolean isEpsilonFree() {
+		return isEpsilonFree;
+	}
+
+	/**
+	 * @return the isTotal
+	 */
+	public boolean isTotal() {
+		return isTotal;
 	}
 }

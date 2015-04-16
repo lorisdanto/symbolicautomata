@@ -1,11 +1,11 @@
 /**
  * 
  */
-package automata.fsa;
+package automata.sfa;
 
 import theory.BooleanAlgebra;
 
-public class InputMove<U,S> extends SFAMove<U, S>{
+public class SFAInputMove<U,S> extends SFAMove<U, S>{
 
 	public U guard;
 	
@@ -13,7 +13,7 @@ public class InputMove<U,S> extends SFAMove<U, S>{
 	 * Constructs an FSA Transition that starts from state <code>from</code> and ends at state
 	 * <code>to</code> with input <code>input</code>
 	 */
-	public InputMove(Integer from, Integer to, U guard) {
+	public SFAInputMove(Integer from, Integer to, U guard) {
 		super(from, to);
 		this.guard=guard;
 	}
@@ -26,7 +26,7 @@ public class InputMove<U,S> extends SFAMove<U, S>{
 		if(t.isEpsilonTransition())
 			return true;
 		if (from.equals(t.from)){			
-			InputMove<U, S> ct = (InputMove<U, S>) t;			
+			SFAInputMove<U, S> ct = (SFAInputMove<U, S>) t;			
 			if(ba.IsSatisfiable(ba.MkAnd(guard,ct.guard)))
 				return false;
 		}
@@ -45,8 +45,8 @@ public class InputMove<U,S> extends SFAMove<U, S>{
 
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof InputMove<?, ?>) {
-			InputMove<?, ?> otherCasted = (InputMove<?, ?>) other;
+		if (other instanceof SFAInputMove<?, ?>) {
+			SFAInputMove<?, ?> otherCasted = (SFAInputMove<?, ?>) other;
 			return otherCasted.from==from && otherCasted.to==to && otherCasted.guard==guard;
 		}
 
@@ -55,7 +55,7 @@ public class InputMove<U,S> extends SFAMove<U, S>{
 
 	@Override
 	public Object clone(){
-		  return new InputMove<U, S>(from,to, guard);
+		  return new SFAInputMove<U, S>(from,to, guard);
 	}
 
 	@Override

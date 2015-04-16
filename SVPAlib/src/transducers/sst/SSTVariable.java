@@ -3,7 +3,7 @@ package transducers.sst;
 import java.util.HashMap;
 import java.util.List;
 
-import automata.fsa.SFA;
+import automata.sfa.SFA;
 
 import theory.BooleanAlgebraSubst;
 

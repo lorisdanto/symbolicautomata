@@ -1,7 +1,7 @@
 /**
  * 
  */
-package automata.fsa;
+package automata.sfa;
 
 import theory.BooleanAlgebra;
 import automata.Move;

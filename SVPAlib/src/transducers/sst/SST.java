@@ -17,10 +17,10 @@ import theory.BooleanAlgebraSubst;
 import utilities.Pair;
 import automata.Automaton;
 import automata.Move;
-import automata.fsa.Epsilon;
-import automata.fsa.InputMove;
-import automata.fsa.SFA;
-import automata.fsa.SFAMove;
+import automata.sfa.Epsilon;
+import automata.sfa.SFA;
+import automata.sfa.SFAInputMove;
+import automata.sfa.SFAMove;
 
 public class SST<P, F, S> extends Automaton<P, S> {
 
@@ -348,7 +348,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		// Add initial state
 		Pair<Integer, Integer> p = new Pair<Integer, Integer>(
-				sst.initialState, aut.initialState);
+				sst.initialState, aut.getInitialState());
 
 		initialState = 0;
 
@@ -368,7 +368,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 			for (SSTInputMove<P1, F1, S1> t1 : sst
 					.getInputMovesFrom(currState.first))
-				for (InputMove<P1, S1> t2 : aut
+				for (SFAInputMove<P1, S1> t2 : aut
 						.getInputMovesFrom(currState.second)) {
 					P1 intersGuard = ba.MkAnd(t1.guard, t2.guard);
 					if (ba.IsSatisfiable(intersGuard)) {
@@ -1082,7 +1082,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		// state is a triple (sst1 sst2 aut), sst is -1 if it hasn't started yet
 		List<Integer> firstState = Arrays.asList(sst.initialState, -1,
-				aut.initialState);
+				aut.getInitialState());
 
 		initialState = 0;
 		int initialStateMod = 0;
@@ -1124,18 +1124,18 @@ public class SST<P, F, S> extends Automaton<P, S> {
 					// Create an initial state in the second machine so that I
 					// will explore it later
 					List<Integer> initStateStart = Arrays.asList(sst1state,
-							sst.initialState, aut.initialState);
+							sst.initialState, aut.getInitialState());
 					getStateId(initStateStart, reached, toVisit);
 				} else {
 					if (sst.isFinalState(sst1state)) {
 						finalStatesOtherStretches1.add(currStateId);
 						List<Integer> initStateStart = Arrays.asList(
-								sst.initialState, sst2state, aut.initialState);
+								sst.initialState, sst2state, aut.getInitialState());
 						getStateId(initStateStart, reached, toVisit);
 					} else {
 						finalStatesOtherStretches2.add(currStateId);
 						List<Integer> initStateStart = Arrays.asList(sst1state,
-								sst.initialState, aut.initialState);
+								sst.initialState, aut.getInitialState());
 						getStateId(initStateStart, reached, toVisit);
 					}
 				}
@@ -1143,7 +1143,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			// Find product moves
 			for (SSTInputMove<P1, F1, S1> sst1move : sst
 					.getInputMovesFrom(sst1state))
-				for (InputMove<P1, S1> autmove : aut
+				for (SFAInputMove<P1, S1> autmove : aut
 						.getInputMovesFrom(autstate)) {
 
 					P1 guard = ba.MkAnd(autmove.guard, sst1move.guard);
@@ -1223,7 +1223,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				int sst1state = listOfStates.get(0);
 
 				List<Integer> nextState = Arrays.asList(sst1state,
-						sst.initialState, aut.initialState);
+						sst.initialState,aut.getInitialState());
 				int nextStateId = reached.get(nextState);
 
 				SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(
@@ -1267,7 +1267,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 			// next state
 			List<Integer> nextState = Arrays.asList(sst.initialState,
-					sst2state, aut.initialState);
+					sst2state, aut.getInitialState());
 			int nextStateId = reached.get(nextState);
 
 			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(
@@ -1321,7 +1321,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 			// next state
 			List<Integer> nextState = Arrays.asList(sst1state,
-					sst.initialState, aut.initialState);
+					sst.initialState, aut.getInitialState());
 			int nextStateId = reached.get(nextState);
 
 			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(
@@ -1398,7 +1398,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		Collection<SFAMove<P, S>> transitions = new ArrayList<SFAMove<P, S>>();
 
 		for (SSTInputMove<P, F, S> t : getInputMovesFrom(states))
-			transitions.add(new InputMove<P, S>(t.from, t.to, t.guard));
+			transitions.add(new SFAInputMove<P, S>(t.from, t.to, t.guard));
 
 		for (SSTEpsilon<P, F, S> t : getEpsilonMovesFrom(states))
 			transitions.add(new Epsilon<P, S>(t.from, t.to));
@@ -1417,7 +1417,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		SFA<P,S> preim = SST.preImage(this, complement, ba);
 		SFA<P,S> inters = preim.intersectionWith(inputNonMin, ba);
 	
-		return inters.isEmpty;
+		return inters.isEmpty();
 	}
 	
 	/**
@@ -1489,7 +1489,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 					int nextStateId = getStateId(nextState, reached, toVisit);
 					
-					transitions.add(new InputMove<A,C>(currStateId, nextStateId, pair.second));
+					transitions.add(new SFAInputMove<A,C>(currStateId, nextStateId, pair.second));
 				}
 			}
 
@@ -1742,10 +1742,8 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	}
 
 	@Override
-	public Collection<Integer> getInitialStates() {
-		Collection<Integer> is = new HashSet<Integer>();
-		is.add(initialState);
-		return is;
+	public Integer getInitialState() {
+		return initialState;
 	}
 
 	@Override

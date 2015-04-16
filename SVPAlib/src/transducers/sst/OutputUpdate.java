@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import automata.fsa.SFA;
+import automata.sfa.SFA;
 
 import theory.BooleanAlgebraSubst;
 
@@ -65,7 +65,7 @@ public class OutputUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 			HashMap<Integer, HashMap<Integer, Integer>> f, SFA<P, S> aut,
 			BooleanAlgebraSubst<P, F, S> ba) {
 		HashMap<Integer, P> currState = new HashMap<Integer, P>();
-		currState.put(aut.initialState, ba.True());
+		currState.put(aut.getInitialState(), ba.True());
 
 		for (ConstantToken<P, F, S> token : update){
 			HashMap<Integer, P> newState = new HashMap<Integer, P>();
