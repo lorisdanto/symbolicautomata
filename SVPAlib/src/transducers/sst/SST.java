@@ -319,6 +319,80 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	}
 
 	/**
+	 * Computes the combination with <code>sst</code> as a new SST
+	 * combine(w)=f1(w)f2(w)
+	 */
+	public SST<P, F, S> restrictInput(SFA<P, S> aut,
+			BooleanAlgebraSubst<P, F, S> ba) {
+		return restrictInput(this, aut, ba);
+	}
+
+	/**
+	 * Computes the combination of <code>sst1</code> and <code>sst2</code>
+	 */
+	public static <P1, F1, S1> SST<P1, F1, S1> restrictInput(
+			SST<P1, F1, S1> sst1withEps, SFA<P1, S1> inputSfa,
+			BooleanAlgebraSubst<P1, F1, S1> ba) {
+
+		// Remove epsilons
+		SST<P1, F1, S1> sst = sst1withEps.removeEpsilonMoves(ba);
+		SFA<P1, S1> aut = inputSfa.removeEpsilonMoves(ba).determinize(ba).minimize(ba);
+
+		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
+		Integer initialState = 0;
+		Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, OutputUpdate<P1, F1, S1>>();
+		Integer variableCount = sst.variableCount;
+		
+		HashMap<Pair<Integer, Integer>, Integer> reached = new HashMap<Pair<Integer, Integer>, Integer>();
+		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<Pair<Integer, Integer>>();
+
+		// Add initial state
+		Pair<Integer, Integer> p = new Pair<Integer, Integer>(
+				sst.initialState, aut.initialState);
+
+		initialState = 0;
+
+		reached.put(p, initialState);
+		toVisit.add(p);
+
+		// Combined has set of variables the disjoint union of the two sets
+		while (!toVisit.isEmpty()) {
+			Pair<Integer, Integer> currState = toVisit.removeFirst();
+			int currStateId = reached.get(currState);
+
+			// If both states are final, restrict is final
+			if (sst.isFinalState(currState.first)
+					&& aut.getFinalStates().contains(currState.second)) {
+				outputFunction.put(currStateId, sst.outputFunction.get(currState.first));
+			}
+
+			for (SSTInputMove<P1, F1, S1> t1 : sst
+					.getInputMovesFrom(currState.first))
+				for (InputMove<P1, S1> t2 : aut
+						.getInputMovesFrom(currState.second)) {
+					P1 intersGuard = ba.MkAnd(t1.guard, t2.guard);
+					if (ba.IsSatisfiable(intersGuard)) {
+
+						Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(
+								t1.to, t2.to);
+
+						int nextStateId = getStateId(nextState, reached,
+								toVisit);
+
+						SSTInputMove<P1, F1, S1> newTrans = new SSTInputMove<P1, F1, S1>(
+								currStateId, nextStateId, intersGuard,
+								t1.variableUpdate);
+
+						transitions.add(newTrans);
+					}
+				}
+		}
+
+		return MkSST(transitions, initialState, variableCount, outputFunction, ba);
+	}
+
+	
+	/**
 	 * return an equivalent copy without epsilon moves
 	 */
 	public SST<P, F, S> removeEpsilonMoves(BooleanAlgebraSubst<P, F, S> ba) {

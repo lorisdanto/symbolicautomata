@@ -230,6 +230,17 @@ public class SSTUnitTest {
 		
 		assertTrue(sstBase.typeCheck(atLeast2As, atLeast2As, ba));
 	}
+	
+	@Test
+	public void testRestrict() {
+		CharSolver ba = new CharSolver();
+		SST<CharPred, CharFunc, Character> sstBase = getLetterCopy(ba);
+
+		SFA<CharPred, Character> atLeast2As = atLeastTwoAs(ba);
+
+		SST<CharPred, CharFunc, Character> rest = sstBase.restrictInput(atLeast2As, ba);
+		assertTrue(rest.getDomain(ba).isEquivalentTo(atLeast2As, ba));
+	}
 
 	@Test
 	public void testCombine() {
