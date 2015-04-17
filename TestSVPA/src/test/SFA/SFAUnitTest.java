@@ -13,7 +13,7 @@ import org.junit.Test;
 import theory.CharPred;
 import theory.CharSolver;
 import automata.AutomataException;
-import automata.sfa.Epsilon;
+import automata.sfa.SFAEpsilon;
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
@@ -455,7 +455,7 @@ public class SFAUnitTest {
 		CharPred geq0 = new CharPred((char) 10, (char) Character.MAX_VALUE);
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
-		transitionsA.add(new Epsilon<CharPred, Character>(0, 1));
+		transitionsA.add(new SFAEpsilon<CharPred, Character>(0, 1));
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 0, geq0));
 		return SFA.MkSFA(transitionsA, 0, Arrays.asList(0, 1), ba);
 	}

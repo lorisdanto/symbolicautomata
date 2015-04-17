@@ -184,23 +184,23 @@ public abstract class VPAutomaton<P, S> {
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
 	 */
-	public abstract Collection<Epsilon<P, S>> getEpsilonsFrom(Integer state);
+	public abstract Collection<SVPAEpsilon<P, S>> getEpsilonsFrom(Integer state);
 
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
 	 */
-	public abstract Collection<Epsilon<P, S>> getEpsilonsTo(Integer state);
+	public abstract Collection<SVPAEpsilon<P, S>> getEpsilonsTo(Integer state);
 
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
 	 */
-	public abstract Collection<Epsilon<P, S>> getEpsilonsFrom(
+	public abstract Collection<SVPAEpsilon<P, S>> getEpsilonsFrom(
 			Collection<Integer> stateSet);
 
 	/**
 	 * Returns the set of return transitions to state <code>s</code>
 	 */
-	public abstract Collection<Epsilon<P, S>> getEpsilonsTo(
+	public abstract Collection<SVPAEpsilon<P, S>> getEpsilonsTo(
 			Collection<Integer> stateSet);
 
 	/**
@@ -389,7 +389,7 @@ public abstract class VPAutomaton<P, S> {
 					}
 
 		// Epsilon Transition
-		for (Epsilon<P, S> t : getEpsilonsFrom(from))
+		for (SVPAEpsilon<P, S> t : getEpsilonsFrom(from))
 			if (!tried.contains(new Pair<Integer, Integer>(t.to, to)))
 				if (rel.get(t.to).contains(to))
 					return getWitness(ba, wmrel, rel, t.to, to, ran,
@@ -439,7 +439,7 @@ public abstract class VPAutomaton<P, S> {
 					if_check: if (!reachabilityRelation[id1][id2]) {
 
 						// Epsilon Transition
-						for (Epsilon<P, S> t : getEpsilonsFrom(state1))
+						for (SVPAEpsilon<P, S> t : getEpsilonsFrom(state1))
 							if (reachabilityRelation[stateToId.get(t.to)][id2]) {
 								reachabilityRelation[id1][id2] = true;
 								break if_check;
@@ -536,7 +536,7 @@ public abstract class VPAutomaton<P, S> {
 					if_check: if (!reachabilityRelation[id1][id2]) {
 
 						// Epsilon Transition
-						for (Epsilon<P, S> t : getEpsilonsFrom(state1))
+						for (SVPAEpsilon<P, S> t : getEpsilonsFrom(state1))
 							if (reachabilityRelation[stateToId.get(t.to)][id2]) {
 								reachabilityRelation[id1][id2] = true;
 								break if_check;
@@ -597,7 +597,7 @@ public abstract class VPAutomaton<P, S> {
 					if_check2: if (!reachabilityRelationCall[id1][id2]) {
 
 						// Epsilon Transition
-						for (Epsilon<P, S> t : getEpsilonsFrom(state1))
+						for (SVPAEpsilon<P, S> t : getEpsilonsFrom(state1))
 							if (reachabilityRelationCall[stateToId.get(t.to)][id2]) {
 								reachabilityRelationCall[id1][id2] = true;
 								break if_check2;
@@ -649,7 +649,7 @@ public abstract class VPAutomaton<P, S> {
 					if_check3: if (!reachabilityRelationReturn[id1][id2]) {
 
 						// Epsilon Transition
-						for (Epsilon<P, S> t : getEpsilonsFrom(state1))
+						for (SVPAEpsilon<P, S> t : getEpsilonsFrom(state1))
 							if (reachabilityRelationReturn[stateToId.get(t.to)][id2]) {
 								reachabilityRelationReturn[id1][id2] = true;
 								break if_check3;

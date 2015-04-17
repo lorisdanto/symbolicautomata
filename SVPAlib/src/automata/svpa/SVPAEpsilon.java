@@ -10,13 +10,13 @@ import java.util.Stack;
 import theory.BooleanAlgebra;
 import utilities.Pair;
 
-public class Epsilon<U, S> extends SVPAMove<U, S> {
+public class SVPAEpsilon<U, S> extends SVPAMove<U, S> {
 
 	/**
 	 * Constructs an FSA Transition that starts from state <code>from</code> and
 	 * ends at state <code>to</code> with input <code>input</code>
 	 */
-	public Epsilon(Integer from, Integer to) {
+	public SVPAEpsilon(Integer from, Integer to) {
 		super(from, to, Tag.Epsilon);
 	}
 
@@ -41,7 +41,7 @@ public class Epsilon<U, S> extends SVPAMove<U, S> {
 
 	@Override
 	public Object clone() {
-		return new Epsilon<U, S>(from, to);
+		return new SVPAEpsilon<U, S>(from, to);
 	}
 
 	@Override
@@ -52,8 +52,8 @@ public class Epsilon<U, S> extends SVPAMove<U, S> {
 
     @Override
 	public boolean equals(Object other) {
-		if (other instanceof Epsilon<?, ?>) {
-			Epsilon<?, ?> otherCasted = (Epsilon<?, ?>) other;
+		if (other instanceof SVPAEpsilon<?, ?>) {
+			SVPAEpsilon<?, ?> otherCasted = (SVPAEpsilon<?, ?>) other;
 			return otherCasted.from == from && otherCasted.to == to;
 		}
 

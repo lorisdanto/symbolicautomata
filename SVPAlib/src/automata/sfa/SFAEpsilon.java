@@ -5,13 +5,13 @@ package automata.sfa;
 
 import theory.BooleanAlgebra;
 
-public class Epsilon<U,S> extends SFAMove<U,S> {
+public class SFAEpsilon<U,S> extends SFAMove<U,S> {
 
 	/**
 	 * Constructs an FSA Transition that starts from state <code>from</code> and ends at state
 	 * <code>to</code> with input <code>input</code>
 	 */
-	public Epsilon(Integer from, Integer to) {
+	public SFAEpsilon(Integer from, Integer to) {
 		super(from, to);
 	}
 
@@ -31,8 +31,8 @@ public class Epsilon<U,S> extends SFAMove<U,S> {
 	
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof Epsilon<?, ?>) {
-			Epsilon<?, ?> otherCasted = (Epsilon<?, ?>) other;
+		if (other instanceof SFAEpsilon<?, ?>) {
+			SFAEpsilon<?, ?> otherCasted = (SFAEpsilon<?, ?>) other;
 			return otherCasted.from==from && otherCasted.to==to;
 		}
 
@@ -46,7 +46,7 @@ public class Epsilon<U,S> extends SFAMove<U,S> {
 	
 	@Override
 	public Object clone(){
-		  return new Epsilon<U, S>(from, to);
+		  return new SFAEpsilon<U, S>(from, to);
 	}
 
 	@Override

@@ -69,8 +69,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 	protected Map<Integer, Collection<SFAInputMove<P, S>>> inputMovesFrom;
 	protected Map<Integer, Collection<SFAInputMove<P, S>>> inputMovesTo;
-	protected Map<Integer, Collection<Epsilon<P, S>>> epsilonFrom;
-	protected Map<Integer, Collection<Epsilon<P, S>>> epsilonTo;
+	protected Map<Integer, Collection<SFAEpsilon<P, S>>> epsilonFrom;
+	protected Map<Integer, Collection<SFAEpsilon<P, S>>> epsilonTo;
 
 	private Integer maxStateId;
 	private Integer transitionCount;
@@ -107,8 +107,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 		states = new HashSet<Integer>();
 		inputMovesFrom = new HashMap<Integer, Collection<SFAInputMove<P, S>>>();
 		inputMovesTo = new HashMap<Integer, Collection<SFAInputMove<P, S>>>();
-		epsilonFrom = new HashMap<Integer, Collection<Epsilon<P, S>>>();
-		epsilonTo = new HashMap<Integer, Collection<Epsilon<P, S>>>();
+		epsilonFrom = new HashMap<Integer, Collection<SFAEpsilon<P, S>>>();
+		epsilonTo = new HashMap<Integer, Collection<SFAEpsilon<P, S>>>();
 		transitionCount = 0;
 		maxStateId = 0;
 	}
@@ -194,8 +194,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 				getInputMovesTo(transition.to).add(
 						(SFAInputMove<P, S>) transition);
 			} else {
-				getEpsilonFrom(transition.from).add((Epsilon<P, S>) transition);
-				getEpsilonTo(transition.to).add((Epsilon<P, S>) transition);
+				getEpsilonFrom(transition.from).add((SFAEpsilon<P, S>) transition);
+				getEpsilonTo(transition.to).add((SFAEpsilon<P, S>) transition);
 			}
 		}
 	}
@@ -355,8 +355,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 		// Add transitions from new initial state to
 		// the the initial state of aut1 and
 		// the initial state of aut2 shifted by offset
-		transitions.add(new Epsilon<A, B>(initialState, aut1.initialState));
-		transitions.add(new Epsilon<A, B>(initialState, aut2.initialState
+		transitions.add(new SFAEpsilon<A, B>(initialState, aut1.initialState));
+		transitions.add(new SFAEpsilon<A, B>(initialState, aut2.initialState
 				+ offSet));
 
 		// Make all states of the two machines final
@@ -572,7 +572,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 		}
 
 		for (Integer state1 : aut1.finalStates)
-			transitions.add(new Epsilon<A, B>(state1, aut2.initialState
+			transitions.add(new SFAEpsilon<A, B>(state1, aut2.initialState
 					+ offSet));
 
 		for (Integer state : aut2.finalStates)
@@ -598,10 +598,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 		// add eps transition from finalStates to initial state
 		for (Integer finState : aut.finalStates)
-			transitions.add(new Epsilon<A, B>(finState, initialState));
+			transitions.add(new SFAEpsilon<A, B>(finState, initialState));
 
 		// add eps transition from new initial state to old initial state
-		transitions.add(new Epsilon<A, B>(initialState, aut.initialState));
+		transitions.add(new SFAEpsilon<A, B>(initialState, aut.initialState));
 
 		// The only final state is the new initial state
 		finalStates.add(initialState);
@@ -743,7 +743,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 				inputMoves.put(fromTo, move.guard);
 		}
 		// Keep at most one epsilon move between every two state
-		for (Epsilon<A, B> move : aut.getEpsilonFrom(aut.states)) {
+		for (SFAEpsilon<A, B> move : aut.getEpsilonFrom(aut.states)) {
 			Pair<Integer, Integer> fromTo = new Pair<Integer, Integer>(
 					move.from, move.to);
 			epsMoves.add(fromTo);
@@ -754,7 +754,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 			transitions.add(new SFAInputMove<A, B>(p.first, p.second,
 					inputMoves.get(p)));
 		for (Pair<Integer, Integer> p : epsMoves)
-			transitions.add(new Epsilon<A, B>(p.first, p.second));
+			transitions.add(new SFAEpsilon<A, B>(p.first, p.second));
 
 		return MkSFA(transitions, initialState, finalStates, ba, false, false);
 	}
@@ -1250,10 +1250,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions to state <code>s</code>
 	 */
-	public Collection<Epsilon<P, S>> getEpsilonTo(Integer state) {
-		Collection<Epsilon<P, S>> trset = epsilonTo.get(state);
+	public Collection<SFAEpsilon<P, S>> getEpsilonTo(Integer state) {
+		Collection<SFAEpsilon<P, S>> trset = epsilonTo.get(state);
 		if (trset == null) {
-			trset = new HashSet<Epsilon<P, S>>();
+			trset = new HashSet<SFAEpsilon<P, S>>();
 			epsilonTo.put(state, trset);
 			return trset;
 		}
@@ -1263,8 +1263,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<Epsilon<P, S>> getEpsilonTo(Collection<Integer> stateSet) {
-		Collection<Epsilon<P, S>> transitions = new LinkedList<Epsilon<P, S>>();
+	public Collection<SFAEpsilon<P, S>> getEpsilonTo(Collection<Integer> stateSet) {
+		Collection<SFAEpsilon<P, S>> transitions = new LinkedList<SFAEpsilon<P, S>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getEpsilonTo(state));
 		return transitions;
@@ -1273,10 +1273,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions to state <code>s</code>
 	 */
-	public Collection<Epsilon<P, S>> getEpsilonFrom(Integer state) {
-		Collection<Epsilon<P, S>> trset = epsilonFrom.get(state);
+	public Collection<SFAEpsilon<P, S>> getEpsilonFrom(Integer state) {
+		Collection<SFAEpsilon<P, S>> trset = epsilonFrom.get(state);
 		if (trset == null) {
-			trset = new HashSet<Epsilon<P, S>>();
+			trset = new HashSet<SFAEpsilon<P, S>>();
 			epsilonFrom.put(state, trset);
 			return trset;
 		}
@@ -1286,8 +1286,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<Epsilon<P, S>> getEpsilonFrom(Collection<Integer> stateSet) {
-		Collection<Epsilon<P, S>> transitions = new LinkedList<Epsilon<P, S>>();
+	public Collection<SFAEpsilon<P, S>> getEpsilonFrom(Collection<Integer> stateSet) {
+		Collection<SFAEpsilon<P, S>> transitions = new LinkedList<SFAEpsilon<P, S>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getEpsilonFrom(state));
 		return transitions;
@@ -1411,9 +1411,9 @@ public class SFA<P, S> extends Automaton<P, S> {
 		cl.inputMovesTo = new HashMap<Integer, Collection<SFAInputMove<P, S>>>(
 				inputMovesTo);
 
-		cl.epsilonFrom = new HashMap<Integer, Collection<Epsilon<P, S>>>(
+		cl.epsilonFrom = new HashMap<Integer, Collection<SFAEpsilon<P, S>>>(
 				epsilonFrom);
-		cl.epsilonTo = new HashMap<Integer, Collection<Epsilon<P, S>>>(
+		cl.epsilonTo = new HashMap<Integer, Collection<SFAEpsilon<P, S>>>(
 				epsilonTo);
 
 		return cl;

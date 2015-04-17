@@ -69,13 +69,13 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 	protected Collection<Integer> initialStates;
 	protected Collection<Integer> finalStates;
 
-	protected Map<Integer, Collection<Epsilon<U, S>>> epsilonsFrom;
+	protected Map<Integer, Collection<SVPAEpsilon<U, S>>> epsilonsFrom;
 	protected Map<Integer, Collection<Internal<U, S>>> internalsFrom;
 	protected Map<Integer, Collection<Call<U, S>>> callsFrom;
 	protected Map<Pair<Integer, Integer>, Collection<Return<U, S>>> returnsFrom;
 	protected Map<Integer, Collection<ReturnBS<U, S>>> returnBSFrom;
 
-	protected Map<Integer, Collection<Epsilon<U, S>>> epsilonsTo;
+	protected Map<Integer, Collection<SVPAEpsilon<U, S>>> epsilonsTo;
 	protected Map<Integer, Collection<Internal<U, S>>> internalsTo;
 	protected Map<Integer, Collection<Call<U, S>>> callsTo;
 	protected Map<Pair<Integer, Integer>, Collection<Return<U, S>>> returnsTo;
@@ -94,13 +94,13 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 		states = new HashSet<Integer>();
 		stackStates = new HashSet<Integer>();
 
-		epsilonsFrom = new HashMap<Integer, Collection<Epsilon<U, S>>>();
+		epsilonsFrom = new HashMap<Integer, Collection<SVPAEpsilon<U, S>>>();
 		internalsFrom = new HashMap<Integer, Collection<Internal<U, S>>>();
 		callsFrom = new HashMap<Integer, Collection<Call<U, S>>>();
 		returnsFrom = new HashMap<Pair<Integer, Integer>, Collection<Return<U, S>>>();
 		returnBSFrom = new HashMap<Integer, Collection<ReturnBS<U, S>>>();
 
-		epsilonsTo = new HashMap<Integer, Collection<Epsilon<U, S>>>();
+		epsilonsTo = new HashMap<Integer, Collection<SVPAEpsilon<U, S>>>();
 		internalsTo = new HashMap<Integer, Collection<Internal<U, S>>>();
 		callsTo = new HashMap<Integer, Collection<Call<U, S>>>();
 		returnsTo = new HashMap<Pair<Integer, Integer>, Collection<Return<U, S>>>();
@@ -173,7 +173,7 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 		while (toVisit.size() > 0) {
 			Pair<Integer, Stack<Pair<Integer, S>>> visState = toVisit.remove();
 
-			for (Epsilon<U, S> t : getEpsilonsFrom(visState.first)) {
+			for (SVPAEpsilon<U, S> t : getEpsilonsFrom(visState.first)) {
 				Pair<Integer, Stack<Pair<Integer, S>>> newEl = new Pair<Integer, Stack<Pair<Integer, S>>>(
 						t.to, visState.second);
 				if (!currConfEps.contains(newEl)) {
@@ -200,7 +200,7 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 		LinkedList<Integer> toVisit = new LinkedList<Integer>(fronteer);
 
 		while (toVisit.size() > 0) {
-			for (Epsilon<U, S> t : getEpsilonsFrom(toVisit.removeFirst())) {
+			for (SVPAEpsilon<U, S> t : getEpsilonsFrom(toVisit.removeFirst())) {
 				if (!reached.contains(t.to)) {
 					reached.add(t.to);
 					toVisit.add(t.to);
@@ -517,10 +517,10 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 		}
 
 		for (Integer state : aut1.initialStates)
-			union.addTransition(new Epsilon<A, B>(0, state + 1), ba, true);
+			union.addTransition(new SVPAEpsilon<A, B>(0, state + 1), ba, true);
 
 		for (Integer state : aut2.initialStates)
-			union.addTransition(new Epsilon<A, B>(0, state + offSet), ba, true);
+			union.addTransition(new SVPAEpsilon<A, B>(0, state + offSet), ba, true);
 
 		for (Integer state : aut1.finalStates)
 			union.finalStates.add(state + 1);
@@ -1353,10 +1353,10 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
 	 */
-	public Collection<Epsilon<U, S>> getEpsilonsFrom(Integer state) {
-		Collection<Epsilon<U, S>> trset = epsilonsFrom.get(state);
+	public Collection<SVPAEpsilon<U, S>> getEpsilonsFrom(Integer state) {
+		Collection<SVPAEpsilon<U, S>> trset = epsilonsFrom.get(state);
 		if (trset == null) {
-			trset = new HashSet<Epsilon<U, S>>();
+			trset = new HashSet<SVPAEpsilon<U, S>>();
 			epsilonsFrom.put(state, trset);
 		}
 		return trset;
@@ -1365,10 +1365,10 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
 	 */
-	public Collection<Epsilon<U, S>> getEpsilonsTo(Integer state) {
-		Collection<Epsilon<U, S>> trset = epsilonsTo.get(state);
+	public Collection<SVPAEpsilon<U, S>> getEpsilonsTo(Integer state) {
+		Collection<SVPAEpsilon<U, S>> trset = epsilonsTo.get(state);
 		if (trset == null) {
-			trset = new HashSet<Epsilon<U, S>>();
+			trset = new HashSet<SVPAEpsilon<U, S>>();
 			epsilonsTo.put(state, trset);
 		}
 		return trset;
@@ -1377,9 +1377,9 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
 	 */
-	public Collection<Epsilon<U, S>> getEpsilonsFrom(
+	public Collection<SVPAEpsilon<U, S>> getEpsilonsFrom(
 			Collection<Integer> stateSet) {
-		Collection<Epsilon<U, S>> returns = new HashSet<Epsilon<U, S>>();
+		Collection<SVPAEpsilon<U, S>> returns = new HashSet<SVPAEpsilon<U, S>>();
 		for (Integer st : stateSet)
 			returns.addAll(getEpsilonsFrom(st));
 		return returns;
@@ -1388,8 +1388,8 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 	/**
 	 * Returns the set of return transitions to state <code>s</code>
 	 */
-	public Collection<Epsilon<U, S>> getEpsilonsTo(Collection<Integer> stateSet) {
-		Collection<Epsilon<U, S>> returns = new HashSet<Epsilon<U, S>>();
+	public Collection<SVPAEpsilon<U, S>> getEpsilonsTo(Collection<Integer> stateSet) {
+		Collection<SVPAEpsilon<U, S>> returns = new HashSet<SVPAEpsilon<U, S>>();
 		for (Integer st : stateSet)
 			returns.addAll(getEpsilonsTo(st));
 		return returns;
@@ -1642,7 +1642,7 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 				break;
 			}
 			case Epsilon: {
-				Epsilon<U, S> ct = (Epsilon<U, S>) transition;
+				SVPAEpsilon<U, S> ct = (SVPAEpsilon<U, S>) transition;
 				getEpsilonsFrom(transition.from).add(ct);
 				getEpsilonsTo(transition.to).add(ct);
 				break;
@@ -1709,9 +1709,9 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 				internalsFrom);
 		cl.internalsTo = new HashMap<Integer, Collection<Internal<U, S>>>(
 				internalsTo);
-		cl.epsilonsFrom = new HashMap<Integer, Collection<Epsilon<U, S>>>(
+		cl.epsilonsFrom = new HashMap<Integer, Collection<SVPAEpsilon<U, S>>>(
 				epsilonsFrom);
-		cl.epsilonsTo = new HashMap<Integer, Collection<Epsilon<U, S>>>(
+		cl.epsilonsTo = new HashMap<Integer, Collection<SVPAEpsilon<U, S>>>(
 				epsilonsTo);
 		cl.callsFrom = new HashMap<Integer, Collection<Call<U, S>>>(callsFrom);
 		cl.callsTo = new HashMap<Integer, Collection<Call<U, S>>>(callsTo);

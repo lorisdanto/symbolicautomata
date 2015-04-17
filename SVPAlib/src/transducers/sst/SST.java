@@ -17,7 +17,7 @@ import theory.BooleanAlgebraSubst;
 import utilities.Pair;
 import automata.Automaton;
 import automata.Move;
-import automata.sfa.Epsilon;
+import automata.sfa.SFAEpsilon;
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
@@ -1401,7 +1401,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			transitions.add(new SFAInputMove<P, S>(t.from, t.to, t.guard));
 
 		for (SSTEpsilon<P, F, S> t : getEpsilonMovesFrom(states))
-			transitions.add(new Epsilon<P, S>(t.from, t.to));
+			transitions.add(new SFAEpsilon<P, S>(t.from, t.to));
 
 		Collection<Integer> finalStates = getFinalStates();
 
