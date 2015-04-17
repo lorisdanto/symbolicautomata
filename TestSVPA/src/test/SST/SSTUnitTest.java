@@ -29,9 +29,9 @@ import transducers.sst.SimpleVariableUpdate;
 import transducers.sst.Token;
 import utilities.Pair;
 import automata.AutomataException;
-import automata.fsa.InputMove;
-import automata.fsa.SFA;
-import automata.fsa.SFAMove;
+import automata.sfa.SFA;
+import automata.sfa.SFAInputMove;
+import automata.sfa.SFAMove;
 
 public class SSTUnitTest {
 
@@ -499,11 +499,11 @@ public class SSTUnitTest {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new ArrayList<SFAMove<CharPred, Character>>();
 
-		transitionsA.add(new InputMove<CharPred, Character>(0, 0, alpha));
-		transitionsA.add(new InputMove<CharPred, Character>(1, 1, alpha));
-		transitionsA.add(new InputMove<CharPred, Character>(2, 2, alpha));
-		transitionsA.add(new InputMove<CharPred, Character>(0, 1, a));
-		transitionsA.add(new InputMove<CharPred, Character>(1, 2, a));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 0, alpha));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(1, 1, alpha));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(2, 2, alpha));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, a));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(1, 2, a));
 
 		// Output function just outputs x
 
