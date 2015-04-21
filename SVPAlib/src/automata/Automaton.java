@@ -1,3 +1,9 @@
+/**
+ * SVPAlib
+ * automata
+ * Apr 21, 2015
+ * @author Loris D'Antoni
+ */
 package automata;
 
 import java.io.FileWriter;
@@ -12,6 +18,11 @@ import java.util.Map;
 
 import theory.BooleanAlgebra;
 
+/**
+ * Automaton abstract class 
+ * @param <P> set of predicates over the domain S
+ * @param <S> domain of the automaton alphabet
+ */
 public abstract class Automaton<P, S> {
 
 	// ------------------------------------------------------

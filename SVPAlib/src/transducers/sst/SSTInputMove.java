@@ -1,24 +1,33 @@
 /**
- * 
+ * SVPAlib
+ * transducers.sst
+ * Apr 21, 2015
+ * @author Loris D'Antoni
  */
+
 package transducers.sst;
 
 import theory.BooleanAlgebra;
 
+/**
+ * SSTInputMove
+ * @param <P>
+ *            The type of predicates forming the Boolean algebra
+ * @param <F>
+ *            The type of functions S->S in the Boolean Algebra
+ * @param <S>
+ *            The domain of the Boolean algebra
+*/
 public class SSTInputMove<P, F, S> extends SSTMove<P, F, S>{
 
 	public P guard;
 	public FunctionalVariableUpdate<P, F, S> variableUpdate;
 	
 	/**
-	 * Constructs an FSA Transition that starts from state <code>from</code> and ends at state
-	 * <code>to</code> with input <code>input</code>
+	 * SST Transition that from <code>from</code> to
+	 * <code>to</code> with input <code>guard</code> and variable
+	 * update <code>variableUpdate</code>
 	 */
-//	public SSTInputMove(Integer from, Integer to, U guard, List<Token<P, F, S>>[] variableUpdate) {
-//		super(from, to, variableUpdate);
-//		this.guard=guard;
-//	}
-	
 	public SSTInputMove(Integer from, 
 			Integer to, P guard, 
 			FunctionalVariableUpdate<P, F, S> variableUpdate) {
@@ -27,10 +36,12 @@ public class SSTInputMove<P, F, S> extends SSTMove<P, F, S>{
 		this.variableUpdate = variableUpdate;
 	}
 	
+	@Override
 	public boolean isSatisfiable(BooleanAlgebra<P,S> ba){
 		return ba.IsSatisfiable(guard);
 	}
 	
+	@Override
 	public boolean isDisjointFrom(SSTMove<P, F, S> t, BooleanAlgebra<P,S> ba){
 		if(t.isEpsilonTransition())
 			return true;

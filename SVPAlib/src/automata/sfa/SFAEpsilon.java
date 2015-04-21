@@ -1,10 +1,18 @@
 /**
- * 
+ * SVPAlib
+ * automata.sfa
+ * Apr 21, 2015
+ * @author Loris D'Antoni
  */
 package automata.sfa;
 
 import theory.BooleanAlgebra;
 
+/**
+ * Epsilon move of an SFA
+ * @param <P> set of predicates over the domain S
+ * @param <S> domain of the automaton alphabet
+ */
 public class SFAEpsilon<U,S> extends SFAMove<U,S> {
 
 	/**
@@ -15,6 +23,7 @@ public class SFAEpsilon<U,S> extends SFAMove<U,S> {
 		super(from, to);
 	}
 
+	@Override
 	public boolean isDisjointFrom(SFAMove<U,S> t, BooleanAlgebra<U,S> ba){		
 		return t.from!=from;
 	}

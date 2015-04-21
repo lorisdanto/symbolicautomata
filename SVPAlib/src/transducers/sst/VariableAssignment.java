@@ -1,3 +1,10 @@
+/**
+ * SVPAlib
+ * transducers.sst
+ * Apr 21, 2015
+ * @author Loris D'Antoni
+ */
+
 package transducers.sst;
 
 import java.util.ArrayList;
@@ -6,6 +13,11 @@ import java.util.List;
 
 import theory.BooleanAlgebraSubst;
 
+/**
+ * A variable assignment. A function mapping each variable to its current value
+ * @param <S>
+ *            The domain of the Boolean algebra
+ */
 public class VariableAssignment<S> {
 
 	ArrayList<List<S>> variableAssignments;

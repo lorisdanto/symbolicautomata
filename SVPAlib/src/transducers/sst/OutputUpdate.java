@@ -1,3 +1,10 @@
+/**
+ * SVPAlib
+ * transducers.sst
+ * Apr 21, 2015
+ * @author Loris D'Antoni
+ */
+
 package transducers.sst;
 
 import java.util.ArrayList;
@@ -16,14 +23,8 @@ public class OutputUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		this.update = update;
 	}
 
-	/**
-	 * applies the output update to the current variable configuration
-	 * 
-	 * @param assignment
-	 * @param ba
-	 * @return
-	 */
-	public List<S> applyTo(VariableAssignment<S> assignment,
+	//applies the output update to the current variable configuration
+	protected List<S> applyTo(VariableAssignment<S> assignment,
 			BooleanAlgebraSubst<P, F, S> ba) {
 		List<S> value = new ArrayList<S>();
 		for (ConstantToken<P, F, S> token : update) {
@@ -34,13 +35,15 @@ public class OutputUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return value;
 	}
 
-	public OutputUpdate<P, F, S> renameVars(Integer varRename) {
+	// renames all variables applying offset varRename
+	protected OutputUpdate<P, F, S> renameVars(Integer varRename) {
 		if (varRename == 0)
 			return this;
 
 		return new OutputUpdate<P, F, S>(renameTokens(varRename, this.update));
 	}
 
+	// renames tokens applying offset varRename
 	private static <P1, F1, S1> List<ConstantToken<P1, F1, S1>> renameTokens(
 			Integer varRename, List<ConstantToken<P1, F1, S1>> singleVarUp) {
 		List<ConstantToken<P1, F1, S1>> renamed = new ArrayList<ConstantToken<P1, F1, S1>>();
@@ -61,7 +64,8 @@ public class OutputUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return sb.toString();
 	}
 
-	public Integer getInitStateSummary(
+	// given a summary extract where we would end up starting in q0 on var x0
+	protected Integer getInitStateSummary(
 			HashMap<Integer, HashMap<Integer, Integer>> f, SFA<P, S> aut,
 			BooleanAlgebraSubst<P, F, S> ba) {
 		HashMap<Integer, P> currState = new HashMap<Integer, P>();
@@ -82,10 +86,8 @@ public class OutputUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 	// STATIC METHODS
 
-	/**
-	 * Combines two output updates o=o1o2
-	 */
-	public static <P1, F1, S1> OutputUpdate<P1, F1, S1> combineOutputUpdates(
+	//Combines two output updates o=o1o2
+	protected static <P1, F1, S1> OutputUpdate<P1, F1, S1> combineOutputUpdates(
 			Integer varRename1, Integer varRename2,
 			OutputUpdate<P1, F1, S1> update1, OutputUpdate<P1, F1, S1> update2) {
 

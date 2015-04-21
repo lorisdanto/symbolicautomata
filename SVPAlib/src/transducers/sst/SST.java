@@ -1,6 +1,10 @@
 /**
- * 
+ * SVPAlib
+ * transducers.sst
+ * Apr 21, 2015
+ * @author Loris D'Antoni
  */
+
 package transducers.sst;
 
 import java.util.ArrayList;
@@ -22,6 +26,12 @@ import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
 
+/**
+ * A symbolic streaming string transducer
+ * @param <P> The type of predicates forming the Boolean algebra
+ * @param <F> The type of functions S->S in the Boolean Algebra 
+ * @param <S> The domain of the Boolean algebra
+*/
 public class SST<P, F, S> extends Automaton<P, S> {
 
 	// SST properties

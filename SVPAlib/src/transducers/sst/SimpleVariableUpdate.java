@@ -1,3 +1,10 @@
+/**
+ * SVPAlib
+ * transducers.sst
+ * Apr 21, 2015
+ * @author Loris D'Antoni
+ */
+
 package transducers.sst;
 
 import java.util.ArrayList;
@@ -5,28 +12,40 @@ import java.util.List;
 
 import theory.BooleanAlgebraSubst;
 
+/**
+ * A variable update that cannot contain tokens which depend on the input being
+ * read
+ * 
+ * @param <P>
+ *            The type of predicates forming the Boolean algebra
+ * @param <F>
+ *            The type of functions S->S in the Boolean Algebra
+ * @param <S>
+ *            The domain of the Boolean algebra
+ */
 public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 	public ArrayList<List<ConstantToken<P, F, S>>> variableUpdate;
 
+	/**
+	 * The update <code>variableUpdate</code>. The i-th element of the list is
+	 * the value being assigned to the i-th variable
+	 */
 	public SimpleVariableUpdate(
 			ArrayList<List<ConstantToken<P, F, S>>> variableUpdate) {
 		this.variableUpdate = variableUpdate;
 	}
 
+	/**
+	 * A one variable update (if the only variable is 0)
+	 */
 	public SimpleVariableUpdate(List<ConstantToken<P, F, S>> singleUpdate) {
 		this.variableUpdate = new ArrayList<List<ConstantToken<P, F, S>>>();
 		this.variableUpdate.add(singleUpdate);
 	}
 
-	/**
-	 * applies the current update to the current variable configuration
-	 * 
-	 * @param assignment
-	 * @param ba
-	 * @return
-	 */
-	public VariableAssignment<S> applyTo(VariableAssignment<S> assignment,
+	// applies the current update to the current variable configuration
+	protected VariableAssignment<S> applyTo(VariableAssignment<S> assignment,
 			BooleanAlgebraSubst<P, F, S> ba) {
 
 		int numVars = assignment.numVars();
@@ -45,7 +64,8 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return new VariableAssignment<S>(variableValues);
 	}
 
-	public SimpleVariableUpdate<P, F, S> renameVars(Integer varRename) {
+	// rename all vars shifting them by offset varRename
+	protected SimpleVariableUpdate<P, F, S> renameVars(Integer varRename) {
 		if (varRename == 0)
 			return this;
 
@@ -57,7 +77,10 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return new SimpleVariableUpdate<P, F, S>(newVariableUpdate);
 	}
 
-	public SimpleVariableUpdate<P, F, S> liftToNVars(int n) {
+	/**
+	 * A one variable update (if the only variable is 0)
+	 */
+	protected SimpleVariableUpdate<P, F, S> liftToNVars(int n) {
 		ArrayList<List<ConstantToken<P, F, S>>> newVariableUpdate = new ArrayList<List<ConstantToken<P, F, S>>>(
 				variableUpdate);
 		for (int i = variableUpdate.size(); i < n; i++) {
@@ -67,6 +90,8 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return new SimpleVariableUpdate<P, F, S>(newVariableUpdate);
 	}
 
+	// composes two variable update by replacing each variable x in varUp update
+	// with the variable update for x in this
 	protected SimpleVariableUpdate<P, F, S> composeWith(
 			SimpleVariableUpdate<P, F, S> varUp) {
 		ArrayList<List<ConstantToken<P, F, S>>> newVarUp = new ArrayList<List<ConstantToken<P, F, S>>>();
@@ -86,7 +111,10 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return new SimpleVariableUpdate<P, F, S>(newVarUp);
 	}
 
-	protected OutputUpdate<P, F, S> composeWith(OutputUpdate<P, F, S> outputExpression) {
+	// replacing each variable x in outputExpression
+	// with the variable update for x in this
+	protected OutputUpdate<P, F, S> composeWith(
+			OutputUpdate<P, F, S> outputExpression) {
 		List<ConstantToken<P, F, S>> newUpdate = new ArrayList<ConstantToken<P, F, S>>();
 		for (ConstantToken<P, F, S> t : outputExpression.update) {
 			if (t instanceof SSTVariable<?, ?, ?>) {
@@ -99,6 +127,8 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return new OutputUpdate<P, F, S>(newUpdate);
 	}
 
+	// composes two variable update by replacing each variable x in varUp update
+	// with the variable update for x in this
 	protected FunctionalVariableUpdate<P, F, S> composeWith(
 			FunctionalVariableUpdate<P, F, S> varUp) {
 		ArrayList<List<Token<P, F, S>>> newVarUp = new ArrayList<List<Token<P, F, S>>>();
@@ -118,15 +148,6 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return new FunctionalVariableUpdate<P, F, S>(newVarUp);
 	}
 
-	private List<ConstantToken<P, F, S>> renameTokens(Integer varRename,
-			List<ConstantToken<P, F, S>> singleVarUp) {
-		List<ConstantToken<P, F, S>> renamed = new ArrayList<ConstantToken<P, F, S>>();
-		for (ConstantToken<P, F, S> t : singleVarUp)
-			renamed.add((ConstantToken<P, F, S>) t.rename(varRename));
-
-		return renamed;
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -140,11 +161,10 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	}
 
 	// STATIC METHODS
-	/**
-	 * Combines two updates into a single one by renaming variables accordingly
-	 * using the disjoint rename functions
-	 */
-	public static <P1, F1, S1> SimpleVariableUpdate<P1, F1, S1> combineUpdates(
+	
+	// Combines two updates into a single one by renaming variables accordingly
+	// using the disjoint rename functions
+	protected static <P1, F1, S1> SimpleVariableUpdate<P1, F1, S1> combineUpdates(
 			Integer varRename1, Integer varRename2,
 			SimpleVariableUpdate<P1, F1, S1> update1,
 			SimpleVariableUpdate<P1, F1, S1> update2) {
@@ -160,10 +180,8 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 	}
 
-	/**
-	 * returns the identity assignment
-	 * */
-	public static <P1, F1, S1> SimpleVariableUpdate<P1, F1, S1> identity(
+	// returns the identity assignment with varCount variables
+	protected static <P1, F1, S1> SimpleVariableUpdate<P1, F1, S1> identity(
 			int varCount) {
 
 		ArrayList<List<ConstantToken<P1, F1, S1>>> variableUpdate = new ArrayList<List<ConstantToken<P1, F1, S1>>>(
@@ -176,4 +194,14 @@ public class SimpleVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 		return new SimpleVariableUpdate<P1, F1, S1>(variableUpdate);
 	}
+
+	// renames the tokens using the offset varRename
+	private static <P1, F1, S1> List<ConstantToken<P1, F1, S1>> renameTokens(
+			Integer varRename, List<ConstantToken<P1, F1, S1>> singleVarUp) {
+		List<ConstantToken<P1, F1, S1>> renamed = new ArrayList<ConstantToken<P1, F1, S1>>();
+		for (ConstantToken<P1, F1, S1> t : singleVarUp)
+			renamed.add((ConstantToken<P1, F1, S1>) t.rename(varRename));
+
+		return renamed;
+	}	
 }

@@ -1,14 +1,23 @@
 /**
- * 
+ * SVPAlib
+ * automata
+ * Apr 21, 2015
+ * @author Loris D'Antoni
  */
 package automata;
 
 import theory.BooleanAlgebra;
 
-public abstract class Move<U, S> {
+/**
+ * Abstract automaton move
+ * @param <P> set of predicates over the domain S
+ * @param <S> domain of the automaton alphabet
+ */
+public abstract class Move<P, S> {
 
+	// Source state
 	public Integer from;
-
+	// Target state
 	public Integer to;
 
 	/**
@@ -22,18 +31,18 @@ public abstract class Move<U, S> {
 	/**
 	 * @return whether the transition can ever be enabled
 	 */
-	public abstract boolean isSatisfiable(BooleanAlgebra<U, S> ba);
+	public abstract boolean isSatisfiable(BooleanAlgebra<P, S> ba);
 
 	/**
 	 * @return an input triggering the transition. Null if it's an epsilon
 	 *         transition
 	 */
-	public abstract S getWitness(BooleanAlgebra<U, S> ba);
+	public abstract S getWitness(BooleanAlgebra<P, S> ba);
 
 	/**
 	 * @return true iff <code>input</code> can trigger the transition
 	 */
-	public abstract boolean hasModel(S input, BooleanAlgebra<U, S> ba);
+	public abstract boolean hasModel(S input, BooleanAlgebra<P, S> ba);
 
 	/**
 	 * @return true iff it is an epsilon transition

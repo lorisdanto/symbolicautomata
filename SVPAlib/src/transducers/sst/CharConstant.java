@@ -1,3 +1,10 @@
+/**
+ * SVPAlib
+ * transducers.sst
+ * Apr 21, 2015
+ * @author Loris D'Antoni
+ */
+
 package transducers.sst;
 
 import java.util.HashMap;
@@ -9,11 +16,23 @@ import automata.sfa.SFAInputMove;
 
 import theory.BooleanAlgebraSubst;
 
+
+/**
+ * A char constant that can appear in a variable update
+ * @param <P>
+ *            The type of predicates forming the Boolean algebra
+ * @param <F>
+ *            The type of functions S->S in the Boolean Algebra
+ * @param <S>
+ *            The domain of the Boolean algebra
+ */
 public class CharConstant<P, F, S> implements ConstantToken<P, F, S> {
 
-	// This has to be made symbolic
 	public S constant;
 
+	/**
+	 * The constant <code>constant<code>
+	 */
 	public CharConstant(S constant) {
 		super();
 		this.constant = constant;
@@ -39,18 +58,18 @@ public class CharConstant<P, F, S> implements ConstantToken<P, F, S> {
 	}
 
 	@Override
-	public HashMap<Integer, P> getNextState(HashMap<Integer, HashMap<Integer, Integer>> f,
-			P guard,
+	public HashMap<Integer, P> getNextState(
+			HashMap<Integer, HashMap<Integer, Integer>> f, P guard,
 			SFA<P, S> aut, Integer currState, BooleanAlgebraSubst<P, F, S> ba) {
 		HashMap<Integer, P> res = new HashMap<Integer, P>();
-		
-		for(SFAInputMove<P, S> move: aut.getInputMovesFrom(currState)){
-			if(ba.HasModel(move.guard, constant)){
+
+		for (SFAInputMove<P, S> move : aut.getInputMovesFrom(currState)) {
+			if (ba.HasModel(move.guard, constant)) {
 				res.put(move.to, guard);
 				break;
 			}
 		}
-		
+
 		return res;
 	}
 }

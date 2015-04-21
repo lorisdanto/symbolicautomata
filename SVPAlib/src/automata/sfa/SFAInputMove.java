@@ -1,32 +1,42 @@
 /**
- * 
+ * SVPAlib
+ * automata
+ * Apr 21, 2015
+ * @author Loris D'Antoni
  */
 package automata.sfa;
 
 import theory.BooleanAlgebra;
 
-public class SFAInputMove<U,S> extends SFAMove<U, S>{
+/**
+ * SFAInputMove
+ * @param <P> set of predicates over the domain S
+ * @param <S> domain of the automaton alphabet
+ */
+public class SFAInputMove<P,S> extends SFAMove<P, S>{
 
-	public U guard;
+	public P guard;
 	
 	/**
 	 * Constructs an FSA Transition that starts from state <code>from</code> and ends at state
 	 * <code>to</code> with input <code>input</code>
 	 */
-	public SFAInputMove(Integer from, Integer to, U guard) {
+	public SFAInputMove(Integer from, Integer to, P guard) {
 		super(from, to);
 		this.guard=guard;
 	}
 	
-	public boolean isSatisfiable(BooleanAlgebra<U,S> boolal){
+	@Override
+	public boolean isSatisfiable(BooleanAlgebra<P,S> boolal){
 		return boolal.IsSatisfiable(guard);
 	}
 	
-	public boolean isDisjointFrom(SFAMove<U,S> t, BooleanAlgebra<U,S> ba){
+	@Override
+	public boolean isDisjointFrom(SFAMove<P,S> t, BooleanAlgebra<P,S> ba){
 		if(t.isEpsilonTransition())
 			return true;
 		if (from.equals(t.from)){			
-			SFAInputMove<U, S> ct = (SFAInputMove<U, S>) t;			
+			SFAInputMove<P, S> ct = (SFAInputMove<P, S>) t;			
 			if(ba.IsSatisfiable(ba.MkAnd(guard,ct.guard)))
 				return false;
 		}
@@ -55,7 +65,7 @@ public class SFAInputMove<U,S> extends SFAMove<U, S>{
 
 	@Override
 	public Object clone(){
-		  return new SFAInputMove<U, S>(from,to, guard);
+		  return new SFAInputMove<P, S>(from,to, guard);
 	}
 
 	@Override
@@ -64,12 +74,12 @@ public class SFAInputMove<U,S> extends SFAMove<U, S>{
 	}
 
 	@Override
-	public S getWitness(BooleanAlgebra<U, S> ba) {
+	public S getWitness(BooleanAlgebra<P, S> ba) {
 		return ba.generateWitness(guard);
 	}
 
 	@Override
-	public boolean hasModel(S el, BooleanAlgebra<U, S> ba) {
+	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) {
 		return ba.HasModel(guard, el);
 	}
 	

@@ -1,9 +1,13 @@
 /**
- * 
+ * SVPAlib
+ * automata.sfa
+ * Apr 21, 2015
+ * @author Loris D'Antoni
  */
 package automata.sfa;
 
 import java.util.ArrayList;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +23,11 @@ import utilities.Pair;
 import automata.Automaton;
 import automata.Move;
 
+/**
+ * Symbolic finite automaton
+ * @param <P> set of predicates over the domain S
+ * @param <S> domain of the automaton alphabet
+ */
 public class SFA<P, S> extends Automaton<P, S> {
 
 	// ------------------------------------------------------

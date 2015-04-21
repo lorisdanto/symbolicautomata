@@ -1,3 +1,10 @@
+/**
+ * SVPAlib
+ * transducers.sst
+ * Apr 21, 2015
+ * @author Loris D'Antoni
+ */
+
 package transducers.sst;
 
 import java.util.ArrayList;
@@ -10,35 +17,51 @@ import theory.BooleanAlgebraSubst;
 import utilities.Pair;
 import automata.sfa.SFA;
 
+/**
+ * A variable update that can contain tokens which depend on the input being
+ * read
+ * 
+ * @param <P>
+ *            The type of predicates forming the Boolean algebra
+ * @param <F>
+ *            The type of functions S->S in the Boolean Algebra
+ * @param <S>
+ *            The domain of the Boolean algebra
+ */
 public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 	public ArrayList<List<Token<P, F, S>>> variableUpdate;
 
+	/**
+	 * the empty update
+	 */
 	public FunctionalVariableUpdate() {
 		super();
 		this.variableUpdate = new ArrayList<List<Token<P, F, S>>>();
 	}
 
+	/**
+	 * The update <code>variableUpdate</code>. The i-th element of the list is
+	 * the value being assigned to the i-th variable
+	 */
 	public FunctionalVariableUpdate(
 			ArrayList<List<Token<P, F, S>>> variableUpdate) {
 		super();
 		this.variableUpdate = variableUpdate;
 	}
 
+	/**
+	 * A one variable update (if the only variable is 0)
+	 */
 	public FunctionalVariableUpdate(List<Token<P, F, S>> singleUpdate) {
 		super();
 		this.variableUpdate = new ArrayList<List<Token<P, F, S>>>();
 		this.variableUpdate.add(singleUpdate);
 	}
 
-	/**
-	 * applies the current update to the current variable configuration
-	 * 
-	 * @param assignment
-	 * @param ba
-	 * @return
-	 */
-	public VariableAssignment<S> applyTo(VariableAssignment<S> assignment,
+	// applies the current update to the variable configuration
+	// <code>assignment</code>
+	protected VariableAssignment<S> applyTo(VariableAssignment<S> assignment,
 			S input, BooleanAlgebraSubst<P, F, S> ba) {
 
 		int numVars = assignment.numVars();
@@ -57,7 +80,8 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return new VariableAssignment<S>(variableValues);
 	}
 
-	public FunctionalVariableUpdate<P, F, S> renameVars(Integer varRename) {
+	// Renames all variable by an offset varRename
+	protected FunctionalVariableUpdate<P, F, S> renameVars(Integer varRename) {
 		if (varRename == 0)
 			return this;
 
@@ -69,7 +93,8 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		return new FunctionalVariableUpdate<P, F, S>(newVariableUpdate);
 	}
 
-	public FunctionalVariableUpdate<P, F, S> liftToNVars(int n) {
+	// Adds spare variables to have a list of length n
+	protected FunctionalVariableUpdate<P, F, S> liftToNVars(int n) {
 		ArrayList<List<Token<P, F, S>>> newVariableUpdate = new ArrayList<List<Token<P, F, S>>>(
 				variableUpdate);
 		for (int i = variableUpdate.size(); i < n; i++) {
@@ -77,15 +102,6 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		}
 
 		return new FunctionalVariableUpdate<P, F, S>(newVariableUpdate);
-	}
-
-	private List<Token<P, F, S>> renameTokens(Integer varRename,
-			List<Token<P, F, S>> singleVarUp) {
-		List<Token<P, F, S>> renamed = new ArrayList<Token<P, F, S>>();
-		for (Token<P, F, S> t : singleVarUp)
-			renamed.add(t.rename(varRename));
-
-		return renamed;
 	}
 
 	@Override
@@ -101,11 +117,9 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	}
 
 	// STATIC METHODS
-	/**
-	 * Combines two updates into a single one by renaming variables accordingly
-	 * using the disjoint rename functions
-	 */
-	public static <P1, F1, S1> FunctionalVariableUpdate<P1, F1, S1> combineUpdates(
+	
+	// Combines two updates into a single one 
+	protected static <P1, F1, S1> FunctionalVariableUpdate<P1, F1, S1> combineUpdates(
 			FunctionalVariableUpdate<P1, F1, S1> update1,
 			FunctionalVariableUpdate<P1, F1, S1> update2) {
 
@@ -118,11 +132,10 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 	}
 
-	/**
-	 * Combines two updates into a single one by renaming variables accordingly
-	 * using the disjoint rename functions
-	 */
-	public static <P1, F1, S1> FunctionalVariableUpdate<P1, F1, S1> addUpdate(
+	// Combines two updates into a single one by renaming variables accordingly
+	// using the disjoint rename functions
+	// the second update variables are shifted by varRename
+	protected static <P1, F1, S1> FunctionalVariableUpdate<P1, F1, S1> addUpdate(
 			Integer varRename, FunctionalVariableUpdate<P1, F1, S1> update1,
 			FunctionalVariableUpdate<P1, F1, S1> update2) {
 
@@ -135,16 +148,12 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 	}
 
-	public Collection<Pair<HashMap<Integer, HashMap<Integer, Integer>>, P>> getNextSummary(
+	// Used for type-checking
+	// Given a summary, a guard, the output automaton
+	// compute all possible summaries by all possible guards of output automaton
+	protected Collection<Pair<HashMap<Integer, HashMap<Integer, Integer>>, P>> getNextSummary(
 			HashMap<Integer, HashMap<Integer, Integer>> f, P guard,
 			SFA<P, S> aut, BooleanAlgebraSubst<P, F, S> ba) {
-
-		// HashMap<HashMap<Integer, HashMap<Integer, Integer>>, P> currMap = new
-		// HashMap<HashMap<Integer, HashMap<Integer, Integer>>, P>();
-		// currMap.put(f, guard);
-
-		// HashMap<Integer, HashMap<Integer, Integer>> newFun = new
-		// HashMap<Integer, HashMap<Integer, Integer>>();
 
 		ArrayList<Collection<Pair<P, HashMap<Integer, Integer>>>> variableToFunsCrossPred = new ArrayList<Collection<Pair<P, HashMap<Integer, Integer>>>>();
 
@@ -182,7 +191,11 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 
 	}
 
-	// Auxiliary accumulation functions
+	// Auxiliary accumulation functions used to perform type-checking and
+	// compute
+	// possible predicates on summarization
+	// explore the variable update of a var and try to execute the output
+	// automaton on it
 	private void accumulatePerVar(
 			Collection<Pair<P, HashMap<Integer, Integer>>> funcs,
 			HashMap<Integer, HashMap<Integer, P>> stateToSetOfPairs,
@@ -211,6 +224,11 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 		}
 	}
 
+	// Auxiliary accumulation functions used to perform type-checking and
+	// compute
+	// possible predicates on summarization
+	// explore the variable update func and acumulate all possible predicates of
+	// output automaton
 	private static <P, F, S> void accumulate(
 			Collection<Pair<HashMap<Integer, HashMap<Integer, Integer>>, P>> output,
 			ArrayList<Collection<Pair<P, HashMap<Integer, Integer>>>> variableToFunsCrossPred,
@@ -224,18 +242,29 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 					fun, p));
 		} else {
 			// need to recurse over other variables
-			Collection<Pair<P, HashMap<Integer, Integer>>> currVarOptions = variableToFunsCrossPred.get(varId);
+			Collection<Pair<P, HashMap<Integer, Integer>>> currVarOptions = variableToFunsCrossPred
+					.get(varId);
 			for (Pair<P, HashMap<Integer, Integer>> pair : currVarOptions) {
 				P inters = ba.MkAnd(p, pair.first);
 				if (ba.IsSatisfiable(p)) {
-					HashMap<Integer, HashMap<Integer, Integer>> newFun = new HashMap<Integer, HashMap<Integer,Integer>>();
+					HashMap<Integer, HashMap<Integer, Integer>> newFun = new HashMap<Integer, HashMap<Integer, Integer>>();
 					newFun.put(varId, pair.second);
-					
+
 					accumulate(output, variableToFunsCrossPred, varId + 1,
 							inters, newFun, ba);
 				}
 			}
 
 		}
+	}
+
+	// renames the tokens using the offset varRename
+	private static <P1, F1, S1> List<Token<P1, F1, S1>> renameTokens(
+			Integer varRename, List<Token<P1, F1, S1>> singleVarUp) {
+		List<Token<P1, F1, S1>> renamed = new ArrayList<Token<P1, F1, S1>>();
+		for (Token<P1, F1, S1> t : singleVarUp)
+			renamed.add(t.rename(varRename));
+
+		return renamed;
 	}
 }

@@ -1,24 +1,37 @@
 /**
- * 
+ * SVPAlib
+ * transducers.sst
+ * Apr 21, 2015
+ * @author Loris D'Antoni
  */
+
 package transducers.sst;
 
 import theory.BooleanAlgebra;
 
+/**
+ * SST epsilon transition
+ * @param <P>
+ *            The type of predicates forming the Boolean algebra
+ * @param <F>
+ *            The type of functions S->S in the Boolean Algebra
+ * @param <S>
+ *            The domain of the Boolean algebra
+ */
 public class SSTEpsilon<P, F, S> extends SSTMove<P, F, S> {	
 	
 	SimpleVariableUpdate<P, F, S> variableUpdate;
 	
 	/**
-	 * Constructs an FSA Transition that starts from state <code>from</code> and ends at state
-	 * <code>to</code> with input <code>input</code>
+	 * An Epsilon transition from <code>from<code> to <code>to</code> performing the update
+	 * <code>variableUpdate</code>
 	 */
-	
 	public SSTEpsilon(Integer from, Integer to, SimpleVariableUpdate<P, F, S> variableUpdate) {
 		super(from, to);
 		this.variableUpdate = variableUpdate;
 	}
 
+	@Override
 	public boolean isDisjointFrom(SSTMove<P, F, S> t, BooleanAlgebra<P,S> ba){		
 		return t.from!=from;
 	}

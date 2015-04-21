@@ -1,31 +1,42 @@
 /**
- * 
+ * SVPAlib
+ * transducers.sst
+ * Apr 21, 2015
+ * @author Loris D'Antoni
  */
+
 package transducers.sst;
 
 import theory.BooleanAlgebra;
 import automata.Move;
 
-public abstract class SSTMove<U, F, S> extends Move<U, S>{
-		
+/**
+ * An SST move.
+ * 
+ * @param <P>
+ *            The type of predicates forming the Boolean algebra
+ * @param <F>
+ *            The type of functions S->S in the Boolean Algebra
+ * @param <S>
+ *            The domain of the Boolean algebra
+ */
+public abstract class SSTMove<P, F, S> extends Move<P, S> {
+
 	/**
-	 * Constructs an FSA Transition that starts from state <code>from</code> and ends at state
-	 * <code>to</code> with input <code>input</code>
-	 */	
+	 * Constructs an FSA Transition that starts from state <code>from</code> and
+	 * ends at state <code>to</code> with input <code>input</code>
+	 */
 	public SSTMove(Integer from, Integer to) {
 		super(from, to);
 	}
-	
-	public abstract boolean isSatisfiable(BooleanAlgebra<U,S> boolal);
-	
-	public abstract boolean isDisjointFrom(SSTMove<U, F, S> t, BooleanAlgebra<U,S> ba);
-	
+
 	/**
-	 * Checks if the transition is an epsilon transition
-	 * <code>to</code> with input <code>input</code>
+	 * Checks if the move is disjoint from the move <code>t</code> (they are not
+	 * from same state on same predicate)
 	 */
-	public abstract boolean isEpsilonTransition();
-	
+	public abstract boolean isDisjointFrom(SSTMove<P, F, S> t,
+			BooleanAlgebra<P, S> ba);
+
 	@Override
 	public abstract Object clone();
 

@@ -1,3 +1,9 @@
+/**
+ * SVPAlib
+ * transducers.sst
+ * Apr 21, 2015
+ * @author Loris D'Antoni
+ */
 package transducers.sst;
 
 import java.util.HashMap;
@@ -9,10 +15,18 @@ import automata.sfa.SFAInputMove;
 
 import theory.BooleanAlgebraSubst;
 
+/**
+ * CharFunction to be used in a variable update
+ * @param <P>
+ *            The type of predicates forming the Boolean algebra
+ * @param <F>
+ *            The type of functions S->S in the Boolean Algebra
+ * @param <S>
+ *            The domain of the Boolean algebra
+ */
 public class CharFunction<P, F, S> implements Token<P, F, S> {
 
-	// This has to be made symbolic
-	public F unaryFunction;
+	protected F unaryFunction;
 
 	public CharFunction(F unaryFunction) {
 		super();

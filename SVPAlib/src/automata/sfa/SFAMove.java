@@ -1,31 +1,35 @@
 /**
- * 
+ * SVPAlib
+ * automata
+ * Apr 21, 2015
+ * @author Loris D'Antoni
  */
 package automata.sfa;
 
 import theory.BooleanAlgebra;
 import automata.Move;
 
-public abstract class SFAMove<U,S> extends Move<U, S>{
-	
+/**
+ * Abstract SFA Move
+ * @param <P> set of predicates over the domain S
+ * @param <S> domain of the automaton alphabet
+ */
+public abstract class SFAMove<P, S> extends Move<P, S> {
+
 	/**
-	 * Constructs an FSA Transition that starts from state <code>from</code> and ends at state
-	 * <code>to</code> with input <code>input</code>
+	 * Constructs an FSA Transition that starts from state <code>from</code> and
+	 * ends at state <code>to</code> with input <code>input</code>
 	 */
 	public SFAMove(Integer from, Integer to) {
 		super(from, to);
 	}
-	
-	public abstract boolean isSatisfiable(BooleanAlgebra<U,S> boolal);
-	
-	public abstract boolean isDisjointFrom(SFAMove<U,S> t, BooleanAlgebra<U,S> ba);
-	
+
 	/**
-	 * Checks if the transition is an epsilon transition
-	 * <code>to</code> with input <code>input</code>
+	 * Checks if the move is disjoint from the move <code>t</code> (they are not from same state on same predicate)
 	 */
-	public abstract boolean isEpsilonTransition();
-	
+	public abstract boolean isDisjointFrom(SFAMove<P, S> t,
+			BooleanAlgebra<P, S> ba);
+
 	@Override
 	public abstract Object clone();
 
