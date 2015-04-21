@@ -1,3 +1,9 @@
+/**
+ * BooleanAlgebras
+ * theory
+ * Apr 21, 2015
+ * @author Loris D'Antoni
+ */
 package theory;
 
 import java.util.ArrayList;
@@ -7,8 +13,7 @@ import java.util.List;
 import utilities.Pair;
 
 /**
- *
- * @author lorisdan
+ * CharSolver: an interval based solver for the theory of characters
  */
 public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Character>{
 
