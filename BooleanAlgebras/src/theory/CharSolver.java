@@ -152,32 +152,22 @@ public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Characte
 
     @Override
     public Pair<Character, Character> generateWitnesses(CharPred u) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); 
     }
 
 	@Override
 	public CharFunc MkSubstFuncFunc(CharFunc f1, CharFunc f2) {
-		//TODO Careful with overflows, check at transition level??
-		return new CharFunc(f1.increment+f2.increment);
+		return f2.SubstIn(f1);		
 	}
 
 	@Override
 	public CharPred MkSubstFuncPred(CharFunc f, CharPred p) {
-		//TODO test this
-		ArrayList<Pair<Character,Character>> intervals = new ArrayList<Pair<Character,Character>>();
-		for (Pair<Character, Character> interval : p.intervals) {
-			intervals.add(
-					new Pair<Character, Character>(
-							(char)(interval.first-f.increment), 
-							(char)(interval.second-f.increment)));			
-		}
-		return new CharPred(intervals);
+		return f.SubstIn(p, this);
 	}
 
 	@Override
 	public Character MkSubstFuncConst(CharFunc f, Character c) {
-		//TODO test this
-		return Character.toChars((int)(f.increment+c))[0];
+		return f.InstantiateWith(c);
 	}
     
 	/**

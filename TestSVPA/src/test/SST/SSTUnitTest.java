@@ -13,6 +13,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import theory.CharFunc;
+import theory.CharOffset;
 import theory.CharPred;
 import theory.CharSolver;
 import transducers.sst.CharConstant;
@@ -565,7 +566,7 @@ public class SSTUnitTest {
 	private SST<CharPred, CharFunc, Character> getAlphaToUpperCase(CharSolver ba) {
 
 		List<Token<CharPred, CharFunc, Character>> output = new ArrayList<Token<CharPred, CharFunc, Character>>();
-		output.add(new CharFunction<CharPred, CharFunc, Character>(CharFunc
+		output.add(new CharFunction<CharPred, CharFunc, Character>(CharOffset
 				.ToUpperCase()));
 		return SST.getBaseSST(alpha, output, ba);
 	}
@@ -600,7 +601,7 @@ public class SSTUnitTest {
 		SSTVariable<CharPred, CharFunc, Character> xv = new SSTVariable<>(0);
 		LinkedList<Token<CharPred, CharFunc, Character>> xa = new LinkedList<>();
 		xa.add(xv);
-		xa.add(new CharFunction<CharPred, CharFunc, Character>(CharFunc.ID()));
+		xa.add(new CharFunction<CharPred, CharFunc, Character>(CharOffset.ID()));
 		return new FunctionalVariableUpdate<>(xa);
 	}
 
