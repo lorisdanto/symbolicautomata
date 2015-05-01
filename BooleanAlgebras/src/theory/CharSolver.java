@@ -17,8 +17,8 @@ import utilities.Pair;
  */
 public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Character>{
 
-    final Character minChar = Character.MIN_VALUE;
-    final Character maxChar = Character.MAX_VALUE;
+    public static final char MIN_CHAR = Character.MIN_VALUE;
+    public static final char MAX_CHAR = Character.MAX_VALUE;
     
     
     @Override
@@ -32,16 +32,22 @@ public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Characte
         Pair<Character,Character> curr = intervals.get(0);
         Character curBot = curr.first;
         Character prevTop = curr.second;
-        if(minChar<curr.first)
+        if(MIN_CHAR<curr.first)
             newIntervals.add(new Pair<Character, Character>((char)0,(char)(curBot-1)));
+        
         for(int i=1;i<intervals.size();i++){
             curr = intervals.get(i);
-            curBot = curr.first;            
-            newIntervals.add(new Pair<Character, Character>((char)(prevTop+1),(char)(curBot-1)));            
+            curBot = curr.first;          
+            char newIntLo = (char)(prevTop + 1);
+            char newIntHi = (char)(curBot - 1);
+            if (newIntLo <= newIntHi) 
+            	newIntervals.add(new Pair<Character, Character>(newIntLo,newIntHi));
+            
             prevTop = curr.second;
         }
-        if(prevTop<maxChar)
-            newIntervals.add(new Pair<Character, Character>((char)(prevTop+1),(char)(maxChar)));
+        
+        if(prevTop<MAX_CHAR)
+            newIntervals.add(new Pair<Character, Character>((char)(prevTop+1),(char)(MAX_CHAR)));
         
         return new CharPred(newIntervals);
     }
@@ -50,7 +56,7 @@ public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Characte
     public CharPred MkOr(Collection<CharPred> clctn) {
         CharPred or = False();
        for(CharPred a:clctn)
-           or = MkAnd(or,a);
+           or = MkOr(or,a);
        return or;
     }
 
@@ -89,6 +95,7 @@ public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Characte
                     lastInd2 = ind2;
                     break;
                 }
+                
                 if(top2>=bot1){
                     int newBot = Math.max(bot1, bot2);
                     int newTop = Math.min(top1, top2);
@@ -106,7 +113,7 @@ public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Characte
 
     @Override
     public CharPred True() {
-        return new CharPred(minChar, maxChar);
+        return new CharPred(MIN_CHAR, MAX_CHAR);
     }
 
     @Override

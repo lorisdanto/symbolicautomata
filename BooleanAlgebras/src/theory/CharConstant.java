@@ -44,7 +44,7 @@ public class CharConstant implements CharFunc {
 			return cs.False();
 	}
 
-	public Character InstantiateWith(Character c) {
+	public Character InstantiateWith(Character ch) {
 		return c;
 	}
 }
