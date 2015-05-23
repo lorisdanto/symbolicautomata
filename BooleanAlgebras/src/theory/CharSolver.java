@@ -6,58 +6,64 @@
  */
 package theory;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import utilities.Pair;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * CharSolver: an interval based solver for the theory of characters
  */
-public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Character>{
-
-    public static final char MIN_CHAR = Character.MIN_VALUE;
-    public static final char MAX_CHAR = Character.MAX_VALUE;
-    
+public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Character> {
     
     @Override
     public CharPred MkNot(CharPred u) {
-        ArrayList<Pair<Character,Character>> intervals = u.intervals;
-        ArrayList<Pair<Character,Character>> newIntervals = new ArrayList<Pair<Character, Character>>();
-        
-        if(intervals.isEmpty())
-            return True();
-        
-        Pair<Character,Character> curr = intervals.get(0);
-        Character curBot = curr.first;
-        Character prevTop = curr.second;
-        if(MIN_CHAR<curr.first)
-            newIntervals.add(new Pair<Character, Character>((char)0,(char)(curBot-1)));
-        
-        for(int i=1;i<intervals.size();i++){
-            curr = intervals.get(i);
-            curBot = curr.first;          
-            char newIntLo = (char)(prevTop + 1);
-            char newIntHi = (char)(curBot - 1);
-            if (newIntLo <= newIntHi) 
-            	newIntervals.add(new Pair<Character, Character>(newIntLo,newIntHi));
-            
-            prevTop = curr.second;
+        List<ImmutablePair<Character,Character>> newIntervals =
+        		new ArrayList<ImmutablePair<Character, Character>>();
+
+        if(checkNotNull(u).intervals.isEmpty()) {
+            return StdCharPred.TRUE;
         }
         
-        if(prevTop<MAX_CHAR)
-            newIntervals.add(new Pair<Character, Character>((char)(prevTop+1),(char)(MAX_CHAR)));
-        
-        return new CharPred(newIntervals);
+        Character curBot = u.intervals.get(0).left;
+        if(CharPred.MIN_CHAR < curBot) {
+            newIntervals.add(ImmutablePair.of(CharPred.MIN_CHAR, (char)(curBot - 1)));
+        }
+
+        char prevTop = u.intervals.get(0).right;
+        for(int i = 1; i < u.intervals.size(); i++) {
+        	ImmutablePair<Character,Character> curr = u.intervals.get(i);
+            curBot = curr.left;          
+            char newIntLo = (char)(prevTop + 1);
+            char newIntHi = (char)(curBot - 1);
+            if (newIntLo <= newIntHi) {
+            	newIntervals.add(ImmutablePair.of(newIntLo, newIntHi));
+            }
+
+            prevTop = curr.right;
+        }
+
+        if(prevTop < CharPred.MAX_CHAR) {
+            newIntervals.add(ImmutablePair.of((char)(prevTop + 1), CharPred.MAX_CHAR));
+        }
+
+        return new CharPred(ImmutableList.copyOf(newIntervals));
     }
 
     @Override
     public CharPred MkOr(Collection<CharPred> clctn) {
-        CharPred or = False();
-       for(CharPred a:clctn)
-           or = MkOr(or,a);
-       return or;
+    	CharPred or = StdCharPred.FALSE;
+    	for(CharPred a : clctn) {
+    		or = MkOr(or, a);
+    	}
+    	return or;
     }
 
     @Override
@@ -67,94 +73,84 @@ public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Characte
 
     @Override
     public CharPred MkAnd(Collection<CharPred> clctn) {
-       CharPred and = True();
-       for(CharPred a:clctn)
-           and = MkAnd(and,a);
+       CharPred and = StdCharPred.TRUE;
+       for(CharPred a : clctn) {
+           and = MkAnd(and, a);
+       }
        return and;
     }
 
     @Override
     public CharPred MkAnd(CharPred u1, CharPred u2) {
-        ArrayList<Pair<Character,Character>> intervals1 = u1.intervals;
-        ArrayList<Pair<Character,Character>> intervals2 = u2.intervals;
-        ArrayList<Pair<Character,Character>> newIntervals = new ArrayList<Pair<Character, Character>>();
-        
-        if(intervals1.isEmpty() || intervals2.isEmpty())
-            return False();        
-        
-        int lastInd2 = 0;        
-        for (Pair<Character, Character> cur1 : intervals1) {
-            Character bot1 = cur1.first;
-            Character top1 = cur1.second;
-            for(int ind2 =lastInd2;ind2<intervals2.size();ind2++){
-                Pair<Character,Character> cur2 = intervals2.get(ind2);
-                Character bot2 = cur2.first;
-                Character top2 = cur2.second;
-                //Interval is after curr one
-                if(bot2>top1){
-                    lastInd2 = ind2;
-                    break;
-                }
-                
-                if(top2>=bot1){
-                    int newBot = Math.max(bot1, bot2);
-                    int newTop = Math.min(top1, top2);
-                    newIntervals.add(new Pair<Character, Character>((char)newBot,(char)newTop));     
-                    if(top2> top1){
-                        lastInd2 =ind2;
-                        break;
-                    }
-                }
-            }
+        if(checkNotNull(u1).intervals.isEmpty() || checkNotNull(u2).intervals.isEmpty()) {
+            return False();
         }
-        
-        return new CharPred(newIntervals);
+
+        List<ImmutablePair<Character,Character>> newIntervals =
+        		new ArrayList<ImmutablePair<Character, Character>>();
+
+        for (int i = 0, j = 0; i < u1.intervals.size() && j < u2.intervals.size(); ) {
+        	ImmutablePair<Character, Character> cur1 = u1.intervals.get(i);
+        	ImmutablePair<Character, Character> cur2 = u2.intervals.get(j);
+
+        	char lo = (char)Math.max(cur1.left, cur2.left);
+        	char hi = (char)Math.min(cur1.right, cur2.right);
+        	if (lo <= hi) {
+        		newIntervals.add(ImmutablePair.of(lo, hi));
+        	}
+
+        	if (cur1.right == hi) {
+        		i++;
+        	} else {
+        		j++;
+        	}
+        }
+
+        return new CharPred(ImmutableList.copyOf(newIntervals));
     }
 
     @Override
     public CharPred True() {
-        return new CharPred(MIN_CHAR, MAX_CHAR);
+    	return StdCharPred.TRUE;
     }
 
     @Override
     public CharPred False() {
-        return new CharPred();
+    	return StdCharPred.FALSE;
     }
 
     @Override
     public boolean AreEquivalent(CharPred u1, CharPred u2) {
-        CharPred u1minusu2 = MkAnd(MkNot(u2),u1);
-        if(IsSatisfiable(u1minusu2))
-            return false;
-        CharPred u2minusu1 = MkAnd(MkNot(u1),u2);
-        return !IsSatisfiable(u2minusu1);
+    	checkNotNull(u1);
+    	checkNotNull(u2);
+
+    	boolean nonEquivalent = IsSatisfiable(MkAnd(u1, MkNot(u2))) ||
+    			IsSatisfiable(MkAnd(MkNot(u1),u2)); 
+    	return !nonEquivalent;
     }
 
     @Override
     public boolean IsSatisfiable(CharPred u) {
-        return !u.intervals.isEmpty();
+        return !checkNotNull(u).intervals.isEmpty();
     }
 
     @Override
     public boolean HasModel(CharPred u, Character s) {
-        ArrayList<Pair<Character,Character>> intervals = u.intervals;
-        for(Pair<Character,Character> interval:intervals)
-        	if(interval.first<=s && s<=interval.second)
-        		return true;
-        return false;
+    	return checkNotNull(u).isSatisfiedBy(checkNotNull(s));
     }
 
     @Override
     public boolean HasModel(CharPred u, Character s, Character s1) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public Character generateWitness(CharPred u) {
-        ArrayList<Pair<Character,Character>> intervals = u.intervals;
-        if(intervals.isEmpty())
+        if (checkNotNull(u).intervals.isEmpty()) {
             return null;
-        return intervals.get(0).first;                
+        } else {
+        	return u.intervals.get(0).left;
+        }
     }
 
     @Override
@@ -164,17 +160,17 @@ public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Characte
 
 	@Override
 	public CharFunc MkSubstFuncFunc(CharFunc f1, CharFunc f2) {
-		return f2.SubstIn(f1);		
+		return checkNotNull(f2).substIn(checkNotNull(f1));		
 	}
 
 	@Override
 	public CharPred MkSubstFuncPred(CharFunc f, CharPred p) {
-		return f.SubstIn(p, this);
+		return checkNotNull(f).substIn(checkNotNull(p), this);
 	}
 
 	@Override
 	public Character MkSubstFuncConst(CharFunc f, Character c) {
-		return f.InstantiateWith(c);
+		return checkNotNull(f).instantiateWith(checkNotNull(c));
 	}
     
 	/**
@@ -184,8 +180,10 @@ public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Characte
 	 */
 	public String stringOfList(List<Character> chars){
 		StringBuilder sb = new StringBuilder();
-		for(Character c: chars)
+		for(Character c : checkNotNull(chars)) {
 			sb.append(c);
+		}
 		return sb.toString();
 	}
+
 }

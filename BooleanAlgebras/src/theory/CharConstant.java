@@ -7,44 +7,31 @@
 
 package theory;
 
-/**
- * CharFunc: a character function of the form x0+off where off is an offset
- */
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class CharConstant implements CharFunc {
 
-	Character c;
-
-	/**
-	 * The constant c
-	 */
-	public CharConstant(Character c) {
+	public CharConstant(char c) {
 		this.c = c;
 	}
 
 	@Override
 	public String toString() {
-		if(Character.isSpaceChar(c) || c<33 || c>126)
-    		return "\\u" + Integer.toHexString(c | 0x10000).substring(1);
-    	return c.toString();
+		return String.format("x -> %s", CharPred.printChar(c));
 	}
 
-	public CharFunc SubstIn(CharFunc f1) {
-		if(f1 instanceof CharConstant)
-			return f1;	
-		else{
-			CharOffset co = (CharOffset)f1;
-			return new CharConstant((char)(c+co.increment));
-		}
+	public CharFunc substIn(CharFunc f1) {
+		return new CharConstant(checkNotNull(f1).instantiateWith(c));
 	}
 
-	public CharPred SubstIn(CharPred p, CharSolver cs) {
-		if(cs.HasModel(p,c))
-			return cs.True();
-		else
-			return cs.False();
+	public CharPred substIn(CharPred p, CharSolver cs) {
+		return checkNotNull(p).isSatisfiedBy(c) ? StdCharPred.TRUE : StdCharPred.FALSE;
 	}
 
-	public Character InstantiateWith(Character ch) {
+	public char instantiateWith(char ch) {
 		return c;
 	}
+
+	public final char c;
+
 }

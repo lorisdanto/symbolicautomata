@@ -7,15 +7,14 @@ import org.junit.Test;
 
 import theory.CharPred;
 import theory.CharSolver;
+import theory.StdCharPred;
 
 public class TestCharTheory {
 
 	final CharSolver solver = new CharSolver();
-	
+
 	@Test
     public void solverTestBasic() {
-        
-
         final CharPred isDigit = new CharPred('0','9');
         assertTrue(solver.HasModel(isDigit, '5'));
         assertTrue(solver.HasModel(isDigit, '0'));
@@ -34,16 +33,16 @@ public class TestCharTheory {
         assertFalse(solver.IsSatisfiable(empty));
         assertTrue(solver.AreEquivalent(full, solver.True()));
 
-        assertTrue(solver.HasModel(CharPred.alpha(), 'a'));
-        assertFalse(solver.HasModel(CharPred.alpha(), '3'));
-        assertTrue(solver.HasModel(CharPred.alphaNum(), '4'));
-        assertTrue(solver.HasModel(CharPred.num(), '4'));
-        assertFalse(solver.HasModel(CharPred.num(), 'a'));
+        assertTrue(solver.HasModel(StdCharPred.ALPHA, 'a'));
+        assertFalse(solver.HasModel(StdCharPred.ALPHA, '3'));
+        assertTrue(solver.HasModel(StdCharPred.ALPHA_NUM, '4'));
+        assertTrue(solver.HasModel(StdCharPred.NUM, '4'));
+        assertFalse(solver.HasModel(StdCharPred.NUM, 'a'));
     }
 	
 	@Test
     public void test1() {
-        final CharPred p = new CharPred();
+        final CharPred p = StdCharPred.FALSE;
         assertFalse(solver.HasModel(p,'a'));
         assertFalse(solver.HasModel(p,'b'));
         assertFalse(solver.HasModel(p,'A'));
@@ -86,7 +85,7 @@ public class TestCharTheory {
 
     @Test
     public void test7() {
-        final CharPred p = CharPred.alpha();
+        final CharPred p = StdCharPred.ALPHA;
         assertTrue(solver.HasModel(p,'a'));
         assertTrue(solver.HasModel(p,'b'));
         assertTrue(solver.HasModel(p,'A'));
@@ -100,7 +99,7 @@ public class TestCharTheory {
 
     @Test
     public void test8() {
-        final CharPred p = CharPred.num();
+        final CharPred p = StdCharPred.NUM;
         assertFalse(solver.HasModel(p,'a'));
         assertFalse(solver.HasModel(p,'b'));
         assertFalse(solver.HasModel(p,'A'));
@@ -114,7 +113,7 @@ public class TestCharTheory {
 
     @Test
     public void test9() {
-        final CharPred p = CharPred.alphaNum();
+        final CharPred p = StdCharPred.ALPHA_NUM;
         assertTrue(solver.HasModel(p,'a'));
         assertTrue(solver.HasModel(p,'b'));
         assertTrue(solver.HasModel(p,'A'));

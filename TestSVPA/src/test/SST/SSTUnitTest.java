@@ -373,7 +373,7 @@ public class SSTUnitTest {
 	CharPred a = new CharPred('a');
 	CharPred num = new CharPred('1', '9');
 	CharPred comma = new CharPred(',');
-	Integer onlyX = 1;
+	int onlyX = 1;
 
 	// ---------------------------------------
 	// SSTs
@@ -566,8 +566,7 @@ public class SSTUnitTest {
 	private SST<CharPred, CharFunc, Character> getAlphaToUpperCase(CharSolver ba) {
 
 		List<Token<CharPred, CharFunc, Character>> output = new ArrayList<Token<CharPred, CharFunc, Character>>();
-		output.add(new CharFunction<CharPred, CharFunc, Character>(CharOffset
-				.ToUpperCase()));
+		output.add(new CharFunction<CharPred, CharFunc, Character>(CharOffset.TO_UPPER_CASE));
 		return SST.getBaseSST(alpha, output, ba);
 	}
 
@@ -601,7 +600,7 @@ public class SSTUnitTest {
 		SSTVariable<CharPred, CharFunc, Character> xv = new SSTVariable<>(0);
 		LinkedList<Token<CharPred, CharFunc, Character>> xa = new LinkedList<>();
 		xa.add(xv);
-		xa.add(new CharFunction<CharPred, CharFunc, Character>(CharOffset.ID()));
+		xa.add(new CharFunction<CharPred, CharFunc, Character>(CharOffset.IDENTITY));
 		return new FunctionalVariableUpdate<>(xa);
 	}
 

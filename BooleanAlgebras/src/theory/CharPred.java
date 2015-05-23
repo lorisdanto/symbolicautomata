@@ -7,31 +7,30 @@
 
 package theory;
 
+import com.google.common.collect.ImmutableList;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import utilities.Pair;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /**
  * CharPred: a set of characters represented as contiguous intervals
  */
 public class CharPred {
-	public ArrayList<Pair<Character, Character>> intervals;
-
-	/**
-	 * The empty set
-	 */
-	public CharPred() {
-		intervals = new ArrayList<Pair<Character, Character>>();
-	}
 
 	/**
 	 * The set containing only the character <code>c</code>
 	 */
-	public CharPred(Character c) {
-		intervals = new ArrayList<Pair<Character, Character>>();
-		intervals.add(new Pair<Character, Character>(c, c));
+	public CharPred(char c) {
+		this(c, c);
 	}
 
 	/**
@@ -39,106 +38,99 @@ public class CharPred {
 	 * included)
 	 */
 	public CharPred(Character bot, Character top) {
-		intervals = new ArrayList<Pair<Character, Character>>();
-		if (bot <= top) {
-			intervals.add(new Pair<Character, Character>(bot, top));
+		this(ImmutableList.of(ImmutablePair.of(bot, top)));
+	}
+
+	public static CharPred of(ImmutableList<Character> characters) {
+		ImmutableList.Builder<ImmutablePair<Character, Character>> intervals = ImmutableList.builder();
+		for (Character c : checkNotNull(characters)) {
+			intervals.add(ImmutablePair.of(checkNotNull(c), c));
 		}
+		return new CharPred(intervals.build());
 	}
 
 	/**
 	 * The set containing all intervals (the intervals must arrive in order and
 	 * must not overlap)
 	 */
-	public CharPred(ArrayList<Pair<Character, Character>> intervals) {
-		for (Pair<Character, Character> interval : intervals) {
-			if (interval.first > interval.second)
-				throw new IllegalArgumentException(String.format(
-						"Illegal interval [%s-%s]", interval.first,
-						interval.second));
+	public CharPred(ImmutableList<ImmutablePair<Character, Character>> intervals) {
+		for (ImmutablePair<Character, Character> interval : checkNotNull(intervals)) {
+			checkArgument(interval.left != null && interval.right != null &&
+					interval.left <= interval.right);
 		}
 
-		for (int i = 1; i < intervals.size(); i++) {
-			Pair<Character, Character> curr = intervals.get(i);
-			Pair<Character, Character> prev = intervals.get(i - 1);
-			if (prev.second > curr.first)
-				throw new IllegalArgumentException(
-						"The intervals are not correctly ordered");
-			if (prev.second >= curr.first)
-				throw new IllegalArgumentException("The intervals are adjacent");
+		this.intervals = sortIntervals(checkNotNull(intervals));
+	}
+
+	private static ImmutableList<ImmutablePair<Character, Character>> sortIntervals(
+			ImmutableList<ImmutablePair<Character, Character>> intervals) {
+		for (ImmutablePair<Character, Character> interval : checkNotNull(intervals)) {
+			checkArgument(interval.left != null && interval.right != null &&
+					interval.left <= interval.right);
 		}
 
-		this.intervals = intervals;
+		List<ImmutablePair<Character, Character>> sortLeft = new ArrayList<ImmutablePair<Character, Character>>(intervals);
+		Collections.sort(sortLeft, new Comparator<ImmutablePair<Character, Character>>() {
+				public int compare(ImmutablePair<Character, Character> o1,
+						ImmutablePair<Character, Character> o2) {
+					return checkNotNull(o1).left - checkNotNull(o2).left;
+				}
+			});
+
+		ImmutableList.Builder<ImmutablePair<Character, Character>> ansBuilder = ImmutableList.builder();
+		for (int i = 0; i < sortLeft.size(); i++) {
+			char left = sortLeft.get(i).left;
+			char right = sortLeft.get(i).right;
+			for (int j = i + 1; j < sortLeft.size() && sortLeft.get(j).left <= right + 1; j++) {
+				right = (char)Math.max(right, sortLeft.get(j).right);
+				i++;
+			}
+			ansBuilder.add(ImmutablePair.of(left, right));
+		}
+
+		ImmutableList<ImmutablePair<Character, Character>> ans = ansBuilder.build();
+		for (int i = 1; i < ans.size(); i++) {
+			ImmutablePair<Character, Character> curr = ans.get(i);
+			ImmutablePair<Character, Character> prev = ans.get(i - 1);
+			checkArgument(prev.right < curr.left);
+			checkArgument(prev.right + 1 < curr.left);
+		}
+
+		return ans;
 	}
 
-	/**
-	 * @return the set [A-Z]
-	 */
-	public final static CharPred upperAlpha() {
-		return new CharPred('A', 'Z');
-	}
+	public boolean isSatisfiedBy(char c) {
+		for (ImmutablePair<Character, Character> interval : intervals) {
+			if (interval.left <= c && c <= interval.right) {
+				return true;
+			}
+		}
 
-	/**
-	 * @return the set [a-z]
-	 */
-	public final static CharPred lowerAlpha() {
-		return new CharPred('a', 'z');
-	}
-
-	/**
-	 * @return the set [A-Za-z]
-	 */
-	public final static CharPred alpha() {
-		ArrayList<Pair<Character, Character>> intervals = new ArrayList<Pair<Character, Character>>();
-		intervals.add(new Pair<Character, Character>('A', 'Z'));
-		intervals.add(new Pair<Character, Character>('a', 'z'));
-		return new CharPred(intervals);
-	}
-	
-	/**
-	 * @return the set [0-9A-Za-z]
-	 */
-	public final static CharPred alphaNum() {
-		ArrayList<Pair<Character, Character>> intervals = new ArrayList<Pair<Character, Character>>();
-		intervals.add(new Pair<Character, Character>('0', '9'));
-		intervals.add(new Pair<Character, Character>('A', 'Z'));
-		intervals.add(new Pair<Character, Character>('a', 'z'));
-		return new CharPred(intervals);
-	}
-
-	/**
-	 * @return the set [0-9]
-	 */
-	public final static CharPred num() {
-		return new CharPred('0', '9');
-	}
-	
-	/**
-	 * @return the set [\\t-\\r\\s]
-	 */
-	public final static CharPred spaces() {
-		ArrayList<Pair<Character, Character>> intervals = new ArrayList<Pair<Character, Character>>();
-		intervals.add(new Pair<Character, Character>('\t', '\r'));
-		intervals.add(new Pair<Character, Character>(' ', ' '));
-		return new CharPred(intervals);
+		return false;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");
-		for (Pair<Character, Character> pair : intervals) {
-			if (pair.first == pair.second)
-				sb.append(printChar(pair.first));
+		for (ImmutablePair<Character, Character> pair : intervals) {
+			if (pair.left == pair.right)
+				sb.append(printChar(pair.left));
 			else {
-				sb.append(printChar(pair.first));
+				sb.append(printChar(pair.left));
 				sb.append("-");
-				sb.append(printChar(pair.second));
+				sb.append(printChar(pair.right));
 			}
 		}
 		sb.append("]");
 
 		return sb.toString();
 	}
+
+	public final ImmutableList<ImmutablePair<Character, Character>> intervals;
+
+	public static final char MIN_CHAR = Character.MIN_VALUE;
+    public static final char MAX_CHAR = Character.MAX_VALUE;
 
 	// Only prints readable chars, otherwise print unicode
 	public static String printChar(char c) {

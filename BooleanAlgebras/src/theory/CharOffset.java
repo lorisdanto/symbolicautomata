@@ -7,83 +7,52 @@
 
 package theory;
 
-import java.util.ArrayList;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import utilities.Pair;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.collect.ImmutableList;
 
-/**
- * CharFunc: a character function of the form x0+off where off is an offset
- */
 public class CharOffset implements CharFunc{
 
-	public long increment;
-
-	/**
-	 * @return the identity function
-	 */
-	public static CharOffset ID() {
-		return new CharOffset(0);
-	}
-
-	/**
-	 * @return the function the gives lower-case (only works correctly on
-	 *         upper-case letters)
-	 */
-	public static CharOffset ToLowerCase() {
-		return new CharOffset(32);
-	}
-
-	/**
-	 * @return the function the gives upper-case (only works correctly on
-	 *         lower-case letters)
-	 */
-	public static CharOffset ToUpperCase() {
-		return new CharOffset(-32);
-	}
-
-	/**
-	 * The function x0+increment
-	 */
 	public CharOffset(long increment) {
-		if(increment> Character.MAX_VALUE)
-			throw new IllegalArgumentException("The offset has to be smaller than Character.MAX_VALUE");
-		if(increment< -Character.MAX_VALUE)
-			throw new IllegalArgumentException("The offset has to be greater than minus Character.MAX_VALUE");
-			
+		checkArgument(increment >= -CharPred.MAX_CHAR &&
+				increment <= CharPred.MAX_CHAR);
 		this.increment = increment;
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("c+");
-		sb.append(increment);
-
-		return sb.toString();
+		return String.format("x -> x + %d", increment);
 	}
 
-	public CharFunc SubstIn(CharFunc f1) {
-		if(f1 instanceof CharConstant)
-			return f1;	
-		else{
+	public CharFunc substIn(CharFunc f1) {
+		if(checkNotNull(f1) instanceof CharConstant) {
+			return f1;
+		} else {
 			CharOffset co = (CharOffset)f1;				
-			return new CharOffset(increment+co.increment);
+			return new CharOffset(increment + co.increment);
 		}
-	}	
+	}
 	
-	public CharPred SubstIn(CharPred p, CharSolver cs) {
-		ArrayList<Pair<Character,Character>> intervals = new ArrayList<Pair<Character,Character>>();
-		for (Pair<Character, Character> interval : p.intervals) {
-			intervals.add(
-					new Pair<Character, Character>(
-							(char)(interval.first-increment), 
-							(char)(interval.second-increment)));			
+	public CharPred substIn(CharPred p, CharSolver cs) {
+		ImmutableList.Builder<ImmutablePair<Character,Character>> intervals = ImmutableList.builder();
+		for (ImmutablePair<Character, Character> interval : checkNotNull(p).intervals) {
+			intervals.add(ImmutablePair.of((char)(interval.left - increment),
+					(char)(interval.right - increment)));
 		}
-		return new CharPred(intervals);
+		return new CharPred(intervals.build());
 	}
 
-	public Character InstantiateWith(Character c) {
+	public char instantiateWith(char c) {
 		//TODO safety check?
-		return (char) (c+increment);
+		return (char)(c + increment);
 	}
+
+	public final long increment;
+
+	public static final CharOffset IDENTITY = new CharOffset(0);
+	public static final CharOffset TO_LOWER_CASE = new CharOffset('a' - 'A');
+	public static final CharOffset TO_UPPER_CASE = new CharOffset('A' - 'a');
+
 }

@@ -15,15 +15,16 @@ public interface CharFunc {
 	/**
 	 * @return the result of replacing f1's argument with this
 	 */
-	CharFunc SubstIn(CharFunc f1);
-	
+	CharFunc substIn(CharFunc f1);
+
 	/**
 	 * @return the result of replacing p's argument with this
 	 */
-	CharPred SubstIn(CharPred p, CharSolver cs);
+	CharPred substIn(CharPred p, CharSolver cs);
 
 	/**
 	 * @return the result of replacing this's argument with c
 	 */
-	Character InstantiateWith(Character c);
+	char instantiateWith(char c);
+
 }

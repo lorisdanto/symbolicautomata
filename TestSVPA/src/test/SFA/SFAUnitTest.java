@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import theory.CharPred;
 import theory.CharSolver;
+import theory.StdCharPred;
 import automata.sfa.SFA;
 import automata.sfa.SFAEpsilon;
 import automata.sfa.SFAInputMove;
@@ -267,10 +268,10 @@ public class SFAUnitTest {
 	// Predicates
 	// ---------------------------------------
 	CharSolver ba = new CharSolver();
-	CharPred alpha = CharPred.lowerAlpha();
-	CharPred allAlpha = CharPred.alpha();
+	CharPred alpha = StdCharPred.LOWER_ALPHA;
+	CharPred allAlpha = StdCharPred.ALPHA;
 	CharPred a = new CharPred('a');
-	CharPred num = CharPred.num();
+	CharPred num = StdCharPred.NUM;
 	CharPred comma = new CharPred(',');
 	Integer onlyX = 1;
 
