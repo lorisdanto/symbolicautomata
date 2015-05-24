@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -49,10 +50,6 @@ public class CharPred {
 		return new CharPred(intervals.build());
 	}
 
-	/**
-	 * The set containing all intervals (the intervals must arrive in order and
-	 * must not overlap)
-	 */
 	public CharPred(ImmutableList<ImmutablePair<Character, Character>> intervals) {
 		for (ImmutablePair<Character, Character> interval : checkNotNull(intervals)) {
 			checkArgument(interval.left != null && interval.right != null &&
@@ -125,6 +122,20 @@ public class CharPred {
 		sb.append("]");
 
 		return sb.toString();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof CharPred) {
+			return Objects.equals(intervals, ((CharPred)obj).intervals);
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(CharPred.class, intervals);
 	}
 
 	public final ImmutableList<ImmutablePair<Character, Character>> intervals;

@@ -27,4 +27,10 @@ public interface CharFunc {
 	 */
 	char instantiateWith(char c);
 
+	@Override
+	public abstract boolean equals(Object obj);
+
+	@Override
+	public abstract int hashCode();
+
 }

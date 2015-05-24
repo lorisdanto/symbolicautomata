@@ -9,6 +9,8 @@ package theory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Objects;
+
 public class CharConstant implements CharFunc {
 
 	public CharConstant(char c) {
@@ -30,6 +32,20 @@ public class CharConstant implements CharFunc {
 
 	public char instantiateWith(char ch) {
 		return c;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof CharConstant) {
+			return Objects.equals(c, ((CharConstant)obj).c);
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(CharConstant.class, c);
 	}
 
 	public final char c;

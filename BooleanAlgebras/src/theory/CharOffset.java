@@ -7,13 +7,16 @@
 
 package theory;
 
+import java.util.Objects;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.collect.ImmutableList;
 
-public class CharOffset implements CharFunc{
+public class CharOffset implements CharFunc {
 
 	public CharOffset(long increment) {
 		checkArgument(increment >= -CharPred.MAX_CHAR &&
@@ -47,6 +50,20 @@ public class CharOffset implements CharFunc{
 	public char instantiateWith(char c) {
 		//TODO safety check?
 		return (char)(c + increment);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof CharOffset) {
+			return Objects.equals(increment, ((CharOffset)obj).increment);
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(CharOffset.class, increment);
 	}
 
 	public final long increment;
