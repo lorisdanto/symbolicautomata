@@ -771,9 +771,9 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			transitions.add(newMove);
 		}
 
-		// add a transition from every final state q of to the new initial state
+		// add a transition from every final state q of sst to the new initial state
 		// state of sst2
-		// with the update xAcc = F(q), and x=epsilon for everyone else
+		// with the update xAcc = xAcc F(q), and x=epsilon for everyone else
 		for (Integer finStateSst : sst.getFinalStates()) {
 			// Create the update xAcc = xAcc F(q) (reverse if left iter), and
 			// x=epsilon for everyone else

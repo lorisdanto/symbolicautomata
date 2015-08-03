@@ -117,8 +117,8 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	}
 
 	// STATIC METHODS
-	
-	// Combines two updates into a single one 
+
+	// Combines two updates into a single one
 	protected static <P1, F1, S1> FunctionalVariableUpdate<P1, F1, S1> combineUpdates(
 			FunctionalVariableUpdate<P1, F1, S1> update1,
 			FunctionalVariableUpdate<P1, F1, S1> update2) {
@@ -149,16 +149,19 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	}
 
 	// Used for type-checking
-	// Given a summary, a guard, the output automaton
+	// Given a summary, a guard, and the output automaton
 	// compute all possible summaries by all possible guards of output automaton
 	protected Collection<Pair<HashMap<Integer, HashMap<Integer, Integer>>, P>> getNextSummary(
 			HashMap<Integer, HashMap<Integer, Integer>> f, P guard,
 			SFA<P, S> aut, BooleanAlgebraSubst<P, F, S> ba) {
 
+		// Ordered of collections of tuples (phi, s->s).
+		// The i-th elem contains all possible summaries matching the i-th variable
 		ArrayList<Collection<Pair<P, HashMap<Integer, Integer>>>> variableToFunsCrossPred = new ArrayList<Collection<Pair<P, HashMap<Integer, Integer>>>>();
 
 		// Update each variable
 		for (int curVar = 0; curVar < this.variableUpdate.size(); curVar++) {
+
 			HashMap<Integer, HashMap<Integer, P>> stateToSetOfPairs = new HashMap<Integer, HashMap<Integer, P>>();
 			for (int state : aut.getStates()) {
 				HashMap<Integer, P> currState = new HashMap<Integer, P>();
@@ -247,7 +250,7 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 			for (Pair<P, HashMap<Integer, Integer>> pair : currVarOptions) {
 				P inters = ba.MkAnd(p, pair.first);
 				if (ba.IsSatisfiable(p)) {
-					HashMap<Integer, HashMap<Integer, Integer>> newFun = new HashMap<Integer, HashMap<Integer, Integer>>();
+					HashMap<Integer, HashMap<Integer, Integer>> newFun = new HashMap<Integer, HashMap<Integer, Integer>>(fun);
 					newFun.put(varId, pair.second);
 
 					accumulate(output, variableToFunsCrossPred, varId + 1,
