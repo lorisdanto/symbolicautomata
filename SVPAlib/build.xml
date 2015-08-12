@@ -8,6 +8,7 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
+    <property name="build.compiler" value="extJavac"/>
     <path id="SVPAlib.classpath">
         <pathelement location="bin"/>
         <pathelement location="lib/guava-18.0.jar"/>
