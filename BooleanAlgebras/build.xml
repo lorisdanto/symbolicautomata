@@ -14,7 +14,8 @@
         <pathelement location="${SVPAlib.location}/lib/guava-18.0.jar"/>
     </path>
     <path id="JUnit 4.libraryclasspath">
-	<pathelement location="/usr/share/maven-repo/junit/junit/4.x/junit-4.x.jar"/>
+        <pathelement location="lib/junit-4.12.jar"/>
+        <pathelement location="lib/hamcrest-core-1.3.jar"/>
     </path>
     <path id="BooleanAlgebras.classpath">
         <pathelement location="bin"/>
