@@ -13,16 +13,12 @@
         <pathelement location="${SVPAlib.location}/bin"/>
         <pathelement location="${SVPAlib.location}/lib/guava-18.0.jar"/>
     </path>
-    <path id="JUnit 4.libraryclasspath">
-        <pathelement location="lib/junit-4.12.jar"/>
-        <pathelement location="lib/hamcrest-core-1.3.jar"/>
-    </path>
     <path id="BooleanAlgebras.classpath">
         <pathelement location="bin"/>
         <path refid="SVPAlib.classpath"/>
-        <path refid="JUnit 4.libraryclasspath"/>
         <pathelement location="lib/guava-18.0.jar"/>
         <pathelement location="lib/commons-lang3-3.4.jar"/>
+        <pathelement location="lib/junit-4.12.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
