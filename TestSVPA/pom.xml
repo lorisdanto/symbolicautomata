@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <artifactId>TestSVPA</artifactId>
     <groupId>edu.upenn.cis</groupId>
-    <artifactId>BooleanAlgebras</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
     <dependencies>
@@ -17,13 +18,13 @@
             <version>4.10</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.3.2</version>
+            <groupId>edu.upenn.cis</groupId>
+            <artifactId>SVPAlib</artifactId>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>edu.upenn.cis</groupId>
-            <artifactId>SVPAlib</artifactId>
+            <artifactId>BooleanAlgebras</artifactId>
             <version>1.0</version>
         </dependency>
     </dependencies>
@@ -32,9 +33,9 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
-    <name>BooleanAlgebras</name>
+    <name>TestSVPA</name>
+
     <build>
-      <sourceDirectory>src</sourceDirectory>
-      <testSourceDirectory>src/test</testSourceDirectory>
+        <testSourceDirectory>src/test</testSourceDirectory>
     </build>
 </project>
