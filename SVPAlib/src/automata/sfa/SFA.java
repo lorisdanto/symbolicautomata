@@ -162,6 +162,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 		aut.initialState = initialState;
 		aut.finalStates = finalStates;
+		if(finalStates.isEmpty())
+			return getEmptySFA(ba);
 
 		for (SFAMove<A, B> t : transitions)
 			aut.addTransition(t, ba, false);
@@ -172,6 +174,9 @@ public class SFA<P, S> extends Automaton<P, S> {
 		if (remUnreachableStates)
 			aut = removeDeadOrUnreachableStates(aut, ba);
 
+		if(aut.finalStates.isEmpty())			
+			return getEmptySFA(ba);
+		
 		return aut;
 	}
 
@@ -515,7 +520,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 				else
 					totGuard = ba.MkAnd(totGuard, ba.MkNot(move.guard));
 			}
-			if (totGuard != null && ba.IsSatisfiable(totGuard)) {
+			//If there are not transitions out of the state set the guard to the sink to true
+			if(totGuard==null)
+				totGuard=ba.True();
+			if (ba.IsSatisfiable(totGuard)) {
 				addSink = true;
 				transitions.add(new SFAInputMove<A, B>(state, sinkState,
 						totGuard));

@@ -263,6 +263,19 @@ public class SFAUnitTest {
 		assertFalse(difference.accepts(lab, ba));
 		assertFalse(difference.accepts(lnot, ba));
 	}
+	
+	@Test
+	public void testMinus(){
+		SFA<CharPred, Character> justA = justAlpha(ba);
+		SFA<CharPred, Character> plus = justA.concatenateWith(SFA.star(justA, ba),ba);
+
+
+        SFA<CharPred, Character> sfaAMPlus = justA.minus(plus, ba);
+        assertTrue(sfaAMPlus.isEmpty());
+
+        SFA<CharPred, Character> sfaPlusMA = plus.minus(justA, ba);
+        assertFalse(sfaPlusMA.isEmpty());
+	}
 
 	// ---------------------------------------
 	// Predicates
@@ -284,6 +297,14 @@ public class SFAUnitTest {
 	List<Character> lab = lOfS("a"); // accepted only by both autA and autB
 	List<Character> lnot = lOfS("44"); // accepted only by neither autA nor autB
 
+	// [a-z]+ ambiguous
+		private SFA<CharPred, Character> justAlpha(CharSolver ba) {
+
+			Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();		
+			transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));		
+			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
+		}
+	
 	// [a-z]+ ambiguous
 	private SFA<CharPred, Character> getAmbSFA(CharSolver ba) {
 
