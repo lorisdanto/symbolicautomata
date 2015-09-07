@@ -19,12 +19,22 @@ The library supports:
 - *Symbolic streaming string transducers*
 - The character theory of intervals
 
-Instructions
+Instructions with Eclipse
 ----------------
-*Requirements*: Java 1.8
+*Requirements*: Java SE >= 1.8
 
 The easiest way to use the libraries and build them is to open them in Eclipse. You need to use a recent version of Eclipse (> Mars) otherwise you might see some problems.
 
 The main library resides in the project SVPALib. 
 The character theory of interval resides in the project BooleanAlgebras.
 To see usage examples of the library check the project TestSVPA.
+
+Instructions from command line
+----------------
+*Requirements*: 
+1. Java SE >= 1.8
+2. Apache Maven >= 3.2.1
+
+Just run "mvn clean install" in the symbolicautomata directory. 
+
+
