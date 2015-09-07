@@ -33,7 +33,6 @@ public class CharFunction<P, F, S> implements Token<P, F, S> {
 		this.unaryFunction = unaryFunction;
 	}
 
-	@Override
 	public List<S> applyTo(VariableAssignment<S> assignment, S input,
 			BooleanAlgebraSubst<P, F, S> ba) {
 		List<S> out = new LinkedList<S>();
@@ -41,17 +40,10 @@ public class CharFunction<P, F, S> implements Token<P, F, S> {
 		return out;
 	}
 
-	@Override
 	public Token<P, F, S> rename(int offset) {
 		return this;
 	}
 
-	@Override
-	public String toString() {
-		return "{" + unaryFunction.toString() + "}";
-	}
-
-	@Override
 	public HashMap<Integer, P> getNextState(HashMap<Integer, HashMap<Integer, Integer>> f,
 			P guard,
 			SFA<P, S> aut, Integer currState, BooleanAlgebraSubst<P, F, S> ba) {
@@ -65,6 +57,11 @@ public class CharFunction<P, F, S> implements Token<P, F, S> {
 		}
 		
 		return res;
+	}
+	
+	@Override
+	public String toString() {
+		return "{" + unaryFunction.toString() + "}";
 	}
 	
 }

@@ -38,7 +38,6 @@ public class CharConstant<P, F, S> implements ConstantToken<P, F, S> {
 		this.constant = constant;
 	}
 
-	@Override
 	public List<S> applyTo(VariableAssignment<S> assignment, S input,
 			BooleanAlgebraSubst<P, F, S> ba) {
 
@@ -47,17 +46,10 @@ public class CharConstant<P, F, S> implements ConstantToken<P, F, S> {
 		return out;
 	}
 
-	@Override
 	public Token<P, F, S> rename(int offset) {
 		return this;
 	}
 
-	@Override
-	public String toString() {
-		return constant.toString();
-	}
-
-	@Override
 	public HashMap<Integer, P> getNextState(
 			HashMap<Integer, HashMap<Integer, Integer>> f, P guard,
 			SFA<P, S> aut, Integer currState, BooleanAlgebraSubst<P, F, S> ba) {
@@ -72,4 +64,10 @@ public class CharConstant<P, F, S> implements ConstantToken<P, F, S> {
 
 		return res;
 	}
+	
+	@Override
+	public String toString() {
+		return constant.toString();
+	}
+
 }
