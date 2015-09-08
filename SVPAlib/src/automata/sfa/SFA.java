@@ -47,6 +47,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 		aut.isEmpty = true;
 		aut.isEpsilonFree = true;
 		aut.maxStateId = 1;
+                aut.addTransition(new SFAInputMove<A, B>(0, 0, ba.True()), ba, true);
 		return aut;
 	}
 
