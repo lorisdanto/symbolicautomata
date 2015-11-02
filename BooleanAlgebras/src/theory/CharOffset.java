@@ -33,23 +33,33 @@ public class CharOffset implements CharFunc {
 		if(checkNotNull(f1) instanceof CharConstant) {
 			return f1;
 		} else {
-			CharOffset co = (CharOffset)f1;				
-			return new CharOffset(increment + co.increment);
+			CharOffset co = (CharOffset)f1;
+                        return new CharOffset(increment + co.increment);
 		}
 	}
 	
+        public long charSnap(long input) {
+            if (input < CharPred.MIN_CHAR) {
+                return CharPred.MIN_CHAR;
+            } else if (input > CharPred.MAX_CHAR) {
+                return CharPred.MAX_CHAR;
+            } else {
+                return input;
+            }
+        }
+        
 	public CharPred substIn(CharPred p, CharSolver cs) {
 		ImmutableList.Builder<ImmutablePair<Character,Character>> intervals = ImmutableList.builder();
-		for (ImmutablePair<Character, Character> interval : checkNotNull(p).intervals) {
-			intervals.add(ImmutablePair.of((char)(interval.left - increment),
-					(char)(interval.right - increment)));
-		}
+                for (ImmutablePair<Character, Character> interval : checkNotNull(p).intervals) {
+                    long leftPrime = charSnap(interval.left - increment);
+                    long rightPrime = charSnap(interval.right - increment);
+                    intervals.add(ImmutablePair.of((char)leftPrime, (char)rightPrime));
+                }
 		return new CharPred(intervals.build());
 	}
 
 	public char instantiateWith(char c) {
-		//TODO safety check?
-		return (char)(c + increment);
+            return (char)charSnap(c + increment);
 	}
 
 	@Override

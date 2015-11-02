@@ -640,7 +640,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		int offSet = sst1.maxStateId + 2;
 
 		// Create fresh initial state for the union
-		initialState = sst1.maxStateId + offSet;
+		initialState = sst1.maxStateId + 1;
 
 		// set variable renames for the two ssts, they will share names
 		Integer varRenameSst1 = 0;
