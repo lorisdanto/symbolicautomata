@@ -96,6 +96,29 @@ public class CharPred {
 		return ans;
 	}
 
+	public static ImmutableList<ImmutablePair<Character, Character>> invertIntervals(
+                ImmutableList<ImmutablePair<Character, Character>> intervals) {
+
+                List<ImmutablePair<Character, Character>> ret =
+                    new ArrayList<ImmutablePair<Character, Character>>();
+
+                intervals = sortIntervals(intervals);
+
+                char end_point = MIN_CHAR;
+                for (int i = 0; i < intervals.size(); i++) {
+                    ImmutablePair<Character, Character> interval = intervals.get(i);
+                    if (interval.left != MIN_CHAR) {
+                        ret.add(ImmutablePair.of(end_point, (char)(interval.left - 1)));
+                        end_point = (char) (interval.right + 1);
+                    }
+                    if (i == intervals.size() - 1) {
+                        if (interval.right != MAX_CHAR)
+                            ret.add(ImmutablePair.of((char)(interval.right + 1), MAX_CHAR));
+                    }
+                }
+                return ImmutableList.copyOf(ret);
+        }
+
 	public boolean isSatisfiedBy(char c) {
 		for (ImmutablePair<Character, Character> interval : intervals) {
 			if (interval.left <= c && c <= interval.right) {
