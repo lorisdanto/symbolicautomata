@@ -18,6 +18,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import theory.CharConstant;
 import theory.CharFunc;
 import theory.CharOffset;
 import theory.CharPred;
@@ -57,6 +58,64 @@ public class DReXUnitTest {
 		// SFA<CharPred, Character> tcdom = sstBase.getPreImage(atLeast2As, ba);
 		assertTrue(sstID.typeCheck(alphanum, alphanum, ba));
 	}
+	
+	
+//	Hi Loris,
+//
+//	The sst preimage computation throws an exception for the following test
+//	case. I don't want to mess around too much in that bit of code, I don't
+//	understand it too well. I will add a proper test case and commit it in
+//	about an hour. Could you please take a look at it?
+//
+//	Arjun
+//
+//	POST: (concat (concat (concat epsilon (star [0])) [1-9]) (star [0-9]))
+//	NOT POST AUT:
+//
+//	Transitions
+//	S: 0 -[1-9]-> 1
+//	S: 0 -[\u0000-/:-\uffff]-> 4
+//	S: 0 -[0]-> 2
+//	S: 1 -[0-9]-> 3
+//	S: 1 -[\u0000-/:-\uffff]-> 4
+//	S: 2 -[0]-> 2
+//	S: 2 -[1-9]-> 1
+//	S: 2 -[\u0000-/:-\uffff]-> 4
+//	S: 3 -[\u0000-/:-\uffff]-> 4
+//	S: 3 -[0-9]-> 3
+//	S: 4 -[\u0000-\uffff]-> 4
+//	Initial State
+//	0
+//	Final States
+//	0
+//	2
+//	4
+//
+//	SST: (ifelse 
+//			(iter bot) 
+		//	(split 
+		//		(ifelse 
+		//				(split (epsilon "1") (symbol [9] [x + -9])) 
+		//				(split (iter (symbol [0-9] [x + 0])) (symbol [0-8] [x + 1]))
+		//		)
+		//		(iter (symbol [9] [x -> 0]))))
+//
+//	(Generate SST by e.getSST(solver))
+	
+	@Test
+	public void testPrePostArjunEmail() {
+		CharSolver ba = new CharSolver();
+		SST<CharPred, CharFunc, Character> sst = getSTTArjun(ba);
+
+		
+		
+		SFA<CharPred, Character> outputSFA = arjunOutputSFA(ba);
+
+		SFA<CharPred, Character> pre = sst.getPreImage(outputSFA, ba);
+
+		// SFA<CharPred, Character> tcdom = sstBase.getPreImage(atLeast2As, ba);
+		assertTrue(!pre.isEmpty());
+	}
 
 	// S: F(0) = a
 	private SST<CharPred, CharFunc, Character> getID(CharSolver ba) {
@@ -65,7 +124,7 @@ public class DReXUnitTest {
 		output.add(new CharFunction<CharPred, CharFunc, Character>(CharOffset.IDENTITY));
 		
 		return SST.getBaseSST(ba.True(), output, ba);
-	}
+	}	
 
 	// string str1 = "Hello".
 	// string str2 = "Hello".
@@ -83,6 +142,29 @@ public class DReXUnitTest {
 	// language post = ("a".."z" or "A".."Z")*.
 	// assert(not(triple(pre, id, post))).
 
+	
+	// Identity transducer
+	private SST<CharPred, CharFunc, Character> getSTTArjun(CharSolver ba) {
+
+		SST<CharPred, CharFunc, Character> symbol9xm9 = SST.getBaseSST(new CharPred('9'), justXp(-9), ba);
+		SST<CharPred, CharFunc, Character> epsilon1 = SST.getEpsilonSST(consttokclist('1'), ba);
+		SST<CharPred, CharFunc, Character> splitep1sym9 =  SST.concatenate(epsilon1,symbol9xm9,ba);
+		
+		SST<CharPred, CharFunc, Character> symbol08xxp1 = SST.getBaseSST(new CharPred('0','8'), justXp(1), ba);
+		SST<CharPred, CharFunc, Character> symbol09xx = SST.getBaseSST(new CharPred('0','9'), justXp(0), ba);		
+		SST<CharPred, CharFunc, Character> splititersymbol = SST.concatenate(symbol09xx.star(ba), symbol08xxp1, ba);
+		SST<CharPred, CharFunc, Character> ifelsesplitsplit = SST.union(splitep1sym9,splititersymbol, ba);
+		
+		
+		SST<CharPred, CharFunc, Character> symbol9x0 = SST.getBaseSST(new CharPred('9'), consttoklist('0'), ba);
+		SST<CharPred, CharFunc, Character> itersymbol9x0 = symbol9x0.star(ba);
+		SST<CharPred, CharFunc, Character> bot = SST.getEmptySST(ba);
+		SST<CharPred, CharFunc, Character> iterbot = bot.star(ba);
+		SST<CharPred, CharFunc, Character> splitbig = SST.concatenate(ifelsesplitsplit, itersymbol9x0, ba);
+							
+		return SST.union(iterbot, splitbig, ba);
+	}
+	
 	// Identity transducer
 	private SST<CharPred, CharFunc, Character> getIDSTT(CharSolver ba) {
 
@@ -111,9 +193,34 @@ public class DReXUnitTest {
 		return SFA.MkSFA(transitionsA, 0, Arrays.asList(0), ba);
 	}
 
+	// SFA that accepts strings contatining at least two as
+	private SFA<CharPred, Character> arjunOutputSFA(CharSolver ba) {
+
+		Collection<SFAMove<CharPred, Character>> transitionsA = new ArrayList<SFAMove<CharPred, Character>>();
+		CharPred num09 = ba.MkOr(num0, num);
+		CharPred notnum = ba.MkNot(num09);
+
+		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, num));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 4, notnum));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 2, num0));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(1, 3, num09));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(1, 4, notnum));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(2, 2, num0));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(2, 1, num));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(2, 4, notnum));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(3, 4, notnum));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(3, 3, num09));
+		transitionsA.add(new SFAInputMove<CharPred, Character>(4, 4, ba.True()));
+		
+
+		return SFA.MkSFA(transitionsA, 0, Arrays.asList(0,2,4), ba);
+	}
+
+	
 	CharPred alpha = new CharPred('a', 'z');
 	CharPred a = new CharPred('a');
 	CharPred num = new CharPred('1', '9');
+	CharPred num0 = new CharPred('0');
 	CharPred comma = new CharPred(',');
 	int onlyX = 1;
 
@@ -124,6 +231,33 @@ public class DReXUnitTest {
 		return new OutputUpdate<CharPred, CharFunc, Character>(justX);
 	}
 
+	private List<ConstantToken<CharPred, CharFunc, Character>> consttokclist(char c) {
+		LinkedList<ConstantToken<CharPred, CharFunc, Character>> l = new LinkedList<>();
+		l.add(new transducers.sst.CharConstant(c));
+		return l;
+	}
+	
+	private List<Token<CharPred, CharFunc, Character>> consttoklist(char c) {
+		LinkedList<Token<CharPred, CharFunc, Character>> l = new LinkedList<>();
+		l.add(new transducers.sst.CharConstant(c));
+		return l;
+	}
+
+//	private List<Token<CharPred, CharFunc, Character>> justXlist() {
+//		SSTVariable<CharPred, CharFunc, Character> xv = new SSTVariable<>(0);
+//		LinkedList<Token<CharPred, CharFunc, Character>> justX = new LinkedList<>();
+//		justX.add(xv);
+//		return justX;
+//	}
+	
+	private List<Token<CharPred, CharFunc, Character>> justXp(int i) {
+		Token<CharPred, CharFunc, Character> xp1 = new CharFunction<CharPred, CharFunc, Character>(
+					new CharOffset(i));
+		LinkedList<Token<CharPred, CharFunc, Character>> justX = new LinkedList<>();
+		justX.add(xp1);
+		return justX;
+	}
+	
 	private SimpleVariableUpdate<CharPred, CharFunc, Character> justXsimple() {
 		SSTVariable<CharPred, CharFunc, Character> xv = new SSTVariable<>(0);
 		LinkedList<ConstantToken<CharPred, CharFunc, Character>> justX = new LinkedList<>();

@@ -136,6 +136,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		aut.initialState = 0;
 		aut.isDeterministic = true;
 		aut.isEmpty = true;
+		aut.variableCount=0;
 		aut.isEpsilonFree = true;
 		aut.maxStateId = 1;
 		return aut;
@@ -733,8 +734,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	public static <P1, F1, S1> SST<P1, F1, S1> computeStar(SST<P1, F1, S1> sst,
 			BooleanAlgebraSubst<P1, F1, S1> ba, boolean isLeftIter) {
 
-		if (sst.isEmpty)
-			return getEmptySST(ba);
+		if (sst.isEmpty){
+			return getEpsilonSST(new LinkedList<ConstantToken<P1,F1,S1>>(), ba);
+			//return getEmptySST(ba);
+		}
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
 		Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, OutputUpdate<P1, F1, S1>>();
