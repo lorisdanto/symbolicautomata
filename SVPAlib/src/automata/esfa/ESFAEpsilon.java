@@ -1,13 +1,8 @@
-/**
- * SVPAlib
- * automata.sfa
- * Apr 21, 2015
- * @author Loris D'Antoni
- */
-package automata.sfa;
+package automata.esfa;
 
 import java.util.List;
 
+import automata.esfa.ESFAMove;
 import theory.BooleanAlgebra;
 
 /**
@@ -15,18 +10,18 @@ import theory.BooleanAlgebra;
  * @param <P> set of predicates over the domain S
  * @param <S> domain of the automaton alphabet
  */
-public class SFAEpsilon<U,S> extends SFAMove<U,S> {
+public class ESFAEpsilon<U,S> extends ESFAMove<U,S> {
 
 	/**
 	 * Constructs an FSA Transition that starts from state <code>from</code> and ends at state
 	 * <code>to</code> with input <code>input</code>
 	 */
-	public SFAEpsilon(Integer from, Integer to) {
+	public ESFAEpsilon(Integer from, Integer to) {
 		super(from, to);
 	}
 
 	@Override
-	public boolean isDisjointFrom(SFAMove<U,S> t, BooleanAlgebra<U,S> ba){		
+	public boolean isDisjointFrom(ESFAMove<U,S> t, BooleanAlgebra<U,S> ba){		
 		return t.from!=from;
 	}
 
@@ -42,8 +37,8 @@ public class SFAEpsilon<U,S> extends SFAMove<U,S> {
 	
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof SFAEpsilon<?, ?>) {
-			SFAEpsilon<?, ?> otherCasted = (SFAEpsilon<?, ?>) other;
+		if (other instanceof ESFAEpsilon<?, ?>) {
+			ESFAEpsilon<?, ?> otherCasted = (ESFAEpsilon<?, ?>) other;
 			return otherCasted.from==from && otherCasted.to==to;
 		}
 
@@ -57,7 +52,7 @@ public class SFAEpsilon<U,S> extends SFAMove<U,S> {
 	
 	@Override
 	public Object clone(){
-		  return new SFAEpsilon<U, S>(from, to);
+		  return new ESFAEpsilon<U, S>(from, to);
 	}
 
 	@Override
@@ -82,5 +77,4 @@ public class SFAEpsilon<U,S> extends SFAMove<U,S> {
 	}
 
 
-	
 }

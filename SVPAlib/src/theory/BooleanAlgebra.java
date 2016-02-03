@@ -9,6 +9,7 @@ package theory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 import utilities.Pair;
 
@@ -74,6 +75,7 @@ public abstract class BooleanAlgebra<P, S> {
 	 */
 	public abstract boolean HasModel(P p1, S el1, S el2);
 
+	public abstract boolean HasModel(P p1, List<S> ellist,Integer lookahead);
 	/**
 	 * @return a witness of the predicate <code>p1</code> if satisfiable, null otherwise
 	 */

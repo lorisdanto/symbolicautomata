@@ -186,4 +186,10 @@ public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Characte
 		return sb.toString();
 	}
 
+	@Override
+	public boolean HasModel(CharPred p1, List<Character> ellist, Integer lookahead) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
