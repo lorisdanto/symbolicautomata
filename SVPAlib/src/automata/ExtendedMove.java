@@ -15,17 +15,19 @@ import theory.BooleanAlgebra;
  * @param <P> set of predicates over the domain S
  * @param <S> domain of the automaton alphabet
  */
-public abstract class Move<P, S> {
+public abstract class ExtendedMove<P, S> {
 
 	// Source state
 	public Integer from;
 	// Target state
 	public Integer to;
 	
+	public Integer lookahead;
+	
 	/**
 	 * Transition from state <code>from</code> to state <code>to</code>
 	 */
-	public Move(Integer from, Integer to) {
+	public ExtendedMove(Integer from, Integer to) {
 		this.from = from;
 		this.to = to;
 	}

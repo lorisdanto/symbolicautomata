@@ -5,8 +5,6 @@
  * @author Qinheping Hu
  */
 package automata.esfa;
-import java.util.ArrayList;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,16 +12,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import theory.BooleanAlgebra;
 import automata.Automaton;
 import automata.Move;
+import theory.BooleanAlgebra;
 
 /**
  * Symbolic finite automaton
  * @param <P> set of predicates over the domain S
  * @param <S> domain of the automaton alphabet
  */
-public class ESFA<P,S> extends Automaton<P, S> {
+public class CartesianESFA<P,S> extends Automaton<P, S> {
 
 	
 	
@@ -31,8 +29,8 @@ public class ESFA<P,S> extends Automaton<P, S> {
 	private Collection<Integer> states;
 	private Collection<Integer> finalStates;
 
-	protected Map<Integer, Collection<ESFAInputMove<P, S>>> inputMovesFrom;
-	protected Map<Integer, Collection<ESFAInputMove<P, S>>> inputMovesTo;
+	protected Map<Integer, Collection<CartesianESFAInputMove<P, S>>> inputMovesFrom;
+	protected Map<Integer, Collection<CartesianESFAInputMove<P, S>>> inputMovesTo;
 	protected Map<Integer, Collection<ESFAEpsilon<P, S>>> epsilonFrom;
 	protected Map<Integer, Collection<ESFAEpsilon<P, S>>> epsilonTo;
 
@@ -72,12 +70,12 @@ public class ESFA<P,S> extends Automaton<P, S> {
 		return accepts(input,ba,currConf);
 	}
 	
-	private ESFA() {
+	private CartesianESFA() {
 		super();
 		finalStates = new HashSet<Integer>();
 		states = new HashSet<Integer>();
-		inputMovesFrom = new HashMap<Integer, Collection<ESFAInputMove<P, S>>>();
-		inputMovesTo = new HashMap<Integer, Collection<ESFAInputMove<P, S>>>();
+		inputMovesFrom = new HashMap<Integer, Collection<CartesianESFAInputMove<P, S>>>();
+		inputMovesTo = new HashMap<Integer, Collection<CartesianESFAInputMove<P, S>>>();
 		epsilonFrom = new HashMap<Integer, Collection<ESFAEpsilon<P, S>>>();
 		epsilonTo = new HashMap<Integer, Collection<ESFAEpsilon<P, S>>>();
 		transitionCount = 0;
@@ -87,7 +85,7 @@ public class ESFA<P,S> extends Automaton<P, S> {
 	/**
 	 * Create an automaton and removes unreachable states
 	 */
-	public static <A, B> ESFA<A, B> MkESFA(Collection<ESFAMove<A, B>> transitions,
+	public static <A, B> CartesianESFA<A, B> MkESFA(Collection<ESFAMove<A, B>> transitions,
 			Integer initialState, Collection<Integer> finalStates,
 			BooleanAlgebra<A, B> ba) {
 
@@ -98,7 +96,7 @@ public class ESFA<P,S> extends Automaton<P, S> {
 	 * Create an automaton and removes unreachable states and only removes
 	 * unreachable states if <code>remUnreachableStates<code> is true
 	 */
-	public static <A, B> ESFA<A, B> MkESFA(Collection<ESFAMove<A, B>> transitions,
+	public static <A, B> CartesianESFA<A, B> MkESFA(Collection<ESFAMove<A, B>> transitions,
 			Integer initialState, Collection<Integer> finalStates,
 			BooleanAlgebra<A, B> ba, boolean remUnreachableStates) {
 		return MkESFA(transitions, initialState, finalStates, ba,
@@ -110,12 +108,12 @@ public class ESFA<P,S> extends Automaton<P, S> {
 	 * unreachable states if remUnreachableStates is true and normalizes the
 	 * automaton if normalize is true
 	 */
-	private static <A, B> ESFA<A, B> MkESFA(
+	private static <A, B> CartesianESFA<A, B> MkESFA(
 			Collection<ESFAMove<A, B>> transitions, Integer initialState,
 			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba,
 			boolean remUnreachableStates, boolean normalize) {
 
-		ESFA<A, B> aut = new ESFA<A, B>();
+		CartesianESFA<A, B> aut = new CartesianESFA<A, B>();
 
 		aut.states = new HashSet<Integer>();
 		aut.states.add(initialState);
@@ -142,8 +140,8 @@ public class ESFA<P,S> extends Automaton<P, S> {
 	}
 	
 	
-	public static <A, B> ESFA<A, B> getEmptyESFA(BooleanAlgebra<A, B> ba) {
-		ESFA<A, B> aut = new ESFA<A, B>();
+	public static <A, B> CartesianESFA<A, B> getEmptyESFA(BooleanAlgebra<A, B> ba) {
+		CartesianESFA<A, B> aut = new CartesianESFA<A, B>();
 		aut.states = new HashSet<Integer>();
 		aut.states.add(0);
 		aut.finalStates = new HashSet<Integer>();
@@ -152,7 +150,7 @@ public class ESFA<P,S> extends Automaton<P, S> {
 		aut.isEmpty = true;
 		aut.isEpsilonFree = true;
 		aut.maxStateId = 1;
-        aut.addTransition(new ESFAInputMove<A, B>(0, 0, ba.True(),1), ba, true);
+        aut.addTransition(new CartesianESFAInputMove<A, B>(0, 0, ba.True(),1), ba, true);
 		return aut;
 	}
 	
@@ -178,9 +176,9 @@ public class ESFA<P,S> extends Automaton<P, S> {
 
 			if (!transition.isEpsilonTransition()) {
 				getInputMovesFrom(transition.from).add(
-						(ESFAInputMove<P, S>) transition);
+						(CartesianESFAInputMove<P, S>) transition);
 				getInputMovesTo(transition.to).add(
-						(ESFAInputMove<P, S>) transition);
+						(CartesianESFAInputMove<P, S>) transition);
 			} else {
 				getEpsilonFrom(transition.from).add((ESFAEpsilon<P, S>) transition);
 				getEpsilonTo(transition.to).add((ESFAEpsilon<P, S>) transition);
@@ -279,10 +277,10 @@ public class ESFA<P,S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions to state <code>s</code>
 	 */
-	public Collection<ESFAInputMove<P, S>> getInputMovesTo(Integer state) {
-		Collection<ESFAInputMove<P, S>> trset = inputMovesTo.get(state);
+	public Collection<CartesianESFAInputMove<P, S>> getInputMovesTo(Integer state) {
+		Collection<CartesianESFAInputMove<P, S>> trset = inputMovesTo.get(state);
 		if (trset == null) {
-			trset = new HashSet<ESFAInputMove<P, S>>();
+			trset = new HashSet<CartesianESFAInputMove<P, S>>();
 			inputMovesTo.put(state, trset);
 			return trset;
 		}
@@ -292,9 +290,9 @@ public class ESFA<P,S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<ESFAInputMove<P, S>> getInputMovesTo(
+	public Collection<CartesianESFAInputMove<P, S>> getInputMovesTo(
 			Collection<Integer> stateSet) {
-		Collection<ESFAInputMove<P, S>> transitions = new LinkedList<ESFAInputMove<P, S>>();
+		Collection<CartesianESFAInputMove<P, S>> transitions = new LinkedList<CartesianESFAInputMove<P, S>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getInputMovesTo(state));
 		return transitions;
@@ -303,10 +301,10 @@ public class ESFA<P,S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions to state <code>s</code>
 	 */
-	public Collection<ESFAInputMove<P, S>> getInputMovesFrom(Integer state) {
-		Collection<ESFAInputMove<P, S>> trset = inputMovesFrom.get(state);
+	public Collection<CartesianESFAInputMove<P, S>> getInputMovesFrom(Integer state) {
+		Collection<CartesianESFAInputMove<P, S>> trset = inputMovesFrom.get(state);
 		if (trset == null) {
-			trset = new HashSet<ESFAInputMove<P, S>>();
+			trset = new HashSet<CartesianESFAInputMove<P, S>>();
 			inputMovesFrom.put(state, trset);
 			return trset;
 		}
@@ -316,9 +314,9 @@ public class ESFA<P,S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<ESFAInputMove<P, S>> getInputMovesFrom(
+	public Collection<CartesianESFAInputMove<P, S>> getInputMovesFrom(
 			Collection<Integer> stateSet) {
-		Collection<ESFAInputMove<P, S>> transitions = new LinkedList<ESFAInputMove<P, S>>();
+		Collection<CartesianESFAInputMove<P, S>> transitions = new LinkedList<CartesianESFAInputMove<P, S>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getInputMovesFrom(state));
 		return transitions;

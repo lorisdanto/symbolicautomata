@@ -70,11 +70,4 @@ public class ESFAEpsilon<U,S> extends ESFAMove<U,S> {
 		return false;
 	}
 
-	@Override
-	public boolean hasModel(List<S> input, BooleanAlgebra<U, S> ba, Integer lookahead) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-
 }

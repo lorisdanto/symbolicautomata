@@ -11,27 +11,28 @@ import theory.BooleanAlgebra;
  * @param <P> set of predicates over the domain S*
  * @param <S> domain of the automaton alphabet
  */
-public class ESFAInputMove<P,S> extends ESFAMove<P, S>{
+public class CartesianESFAInputMove<P,S> extends ESFAMove<P, S>{
 
 	/**
 	 * <code> P <code> is a predicate from S^k -> {0,1}
 	 */
-	public P guard; 
+	public P[] guard; 
 	public Integer lookahead;
 	
 	/**
 	 * Constructs an FSA Transition that starts from state <code>from</code> and ends at state
 	 * <code>to</code> with input <code>input</code>
 	 */
-	public ESFAInputMove(Integer from, Integer to, P guard, Integer lookahead) {
+	public CartesianESFAInputMove(Integer from, Integer to, P[] guard) {
 		super(from, to);
 		this.guard=guard;
-		this.lookahead = lookahead;
+		this.lookahead = guard.length;
 	}
 	
 	@Override
 	public boolean isSatisfiable(BooleanAlgebra<P,S> boolal){
-		return boolal.IsSatisfiable(guard);
+		//TODO return boolal.IsSatisfiable(guard);
+		return true;
 	}
 	
 	@Override
@@ -62,8 +63,8 @@ public class ESFAInputMove<P,S> extends ESFAMove<P, S>{
 
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof ESFAInputMove<?, ?>) {
-			ESFAInputMove<?, ?> otherCasted = (ESFAInputMove<?, ?>) other;
+		if (other instanceof CartesianESFAInputMove<?, ?>) {
+			CartesianESFAInputMove<?, ?> otherCasted = (CartesianESFAInputMove<?, ?>) other;
 			return otherCasted.from==from && otherCasted.to==to && otherCasted.guard==guard&&lookahead==otherCasted.lookahead;
 		}
 
@@ -72,7 +73,7 @@ public class ESFAInputMove<P,S> extends ESFAMove<P, S>{
 
 	@Override
 	public Object clone(){
-		  return new ESFAInputMove<P, S>(from,to, guard,lookahead);
+		  return new CartesianESFAInputMove<P, S>(from,to, guard);
 	}
 
 	@Override
