@@ -98,7 +98,7 @@ public class SAFA<P, S> {
 		for (SAFAInputMove<A, B> t : transitions)
 			aut.addTransition(t, ba, false);
 
-		return aut;
+		return aut.normalize(ba);
 	}
 
 	// Adds a transition to the SFA
@@ -243,7 +243,7 @@ public class SAFA<P, S> {
 	/**
 	 * Normalizes the SAFA by having at most one transition for each symbol out of each state
 	 */
-	public SAFA<P, S> normalize(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+	public SAFA<P, S> normalize(BooleanAlgebra<P, S> ba) {
 
 		// Copy all transitions (with proper renaming for aut2)
 		Collection<SAFAInputMove<P, S>> transitions = new ArrayList<SAFAInputMove<P, S>>();
