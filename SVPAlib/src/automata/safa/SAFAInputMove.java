@@ -19,13 +19,13 @@ import theory.BooleanAlgebra;
 public class SAFAInputMove<P,S> {
 
 	public Integer from;
-	public SumOfProducts<Integer> to;
+	public BooleanExpr to;
 	public Set<Integer> toStates;
 	public int maxState;
 	
 	public P guard;
 		
-	public SAFAInputMove(Integer from, SumOfProducts<Integer> to, P guard) {
+	public SAFAInputMove(Integer from, BooleanExpr to, P guard) {
 		super();
 		this.from = from;
 		this.to = to;
