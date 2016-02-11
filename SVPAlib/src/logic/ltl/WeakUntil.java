@@ -1,16 +1,12 @@
 package logic.ltl;
 
-import java.util.Collection;
-import java.util.HashMap;
-
 import automata.safa.SAFA;
-import automata.safa.SAFAInputMove;
 
-public class And<P, S> extends LTLFormula<P, S> {
+public class WeakUntil<P, S> extends LTLFormula<P, S> {
 
 	protected LTLFormula<P, S> left, right;
 
-	public And(LTLFormula<P, S> left, LTLFormula<P, S> right) {
+	public WeakUntil(LTLFormula<P, S> left, LTLFormula<P, S> right) {
 		super();
 		this.left = left;
 		this.right = right;
@@ -31,10 +27,10 @@ public class And<P, S> extends LTLFormula<P, S> {
 			return true;
 		if (obj == null)
 			return false;
-		if (!(obj instanceof And))
+		if (!(obj instanceof WeakUntil))
 			return false;
 		@SuppressWarnings("unchecked")
-		And<P, S> other = (And<P, S>) obj;
+		WeakUntil<P, S> other = (WeakUntil<P, S>) obj;
 		if (left == null) {
 			if (other.left != null)
 				return false;

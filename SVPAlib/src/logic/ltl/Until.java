@@ -1,7 +1,5 @@
 package logic.ltl;
 
-import java.util.Set;
-
 import automata.safa.SAFA;
 
 public class Until<P, S> extends LTLFormula<P, S> {
@@ -14,19 +12,6 @@ public class Until<P, S> extends LTLFormula<P, S> {
 		this.right = right;
 	}
 
-	@Override
-	public SAFA<P, S> getSAFA() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	void accumulateCLphi(Set<LTLFormula<P, S>> cl) {
-		cl.add(this);
-		cl.add(new Not<P, S>(this));
-		left.accumulateCLphi(cl);
-		right.accumulateCLphi(cl);
-	}
 
 	@Override
 	public int hashCode() {
