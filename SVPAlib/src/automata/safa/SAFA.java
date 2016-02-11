@@ -166,7 +166,7 @@ public class SAFA<P, S> {
 	protected Collection<Integer> getPrevState(Collection<Integer> currState, S inputElement, BooleanAlgebra<P, S> ba) {
 		Collection<Integer> prevState = new HashSet<Integer>();
 		for (SAFAInputMove<P, S> t : getInputMoves()) {
-			BooleanExpr b = t.to;
+			BooleanExpression b = t.to;
 			if (b.hasModel(currState))
 				prevState.add(t.from);
 		}
@@ -225,8 +225,8 @@ public class SAFA<P, S> {
 					A newGuard = ba.MkAnd(t1.guard, t2.guard);
 					if (ba.IsSatisfiable(newGuard)) {
 						// Compute intersected output state
-						BooleanExpr liftedt2 = t2.to.offset(offset);
-						BooleanExpr newTo = t1.to.interesectWith(liftedt2);
+						BooleanExpression liftedt2 = t2.to.offset(offset);
+						BooleanExpression newTo = t1.to.and(liftedt2);
 
 						transitions.add(new SAFAInputMove<A, B>(initialState, newTo, newGuard));
 					}
@@ -241,7 +241,8 @@ public class SAFA<P, S> {
 	}
 
 	/**
-	 * Normalizes the SAFA by having at most one transition for each symbol out of each state
+	 * Normalizes the SAFA by having at most one transition for each symbol out
+	 * of each state
 	 */
 	public SAFA<P, S> normalize(BooleanAlgebra<P, S> ba) {
 
@@ -256,9 +257,12 @@ public class SAFA<P, S> {
 
 			Collection<Pair<P, ArrayList<Integer>>> minterms = ba.GetMinterms(predicates);
 			for (Pair<P, ArrayList<Integer>> minterm : minterms) {
-				BooleanExpr newTo = SumOfProducts.empty();
+				BooleanExpression newTo = null;
 				for (int i : minterm.second)
-					newTo = newTo.unionWith(trFromState.get(i).to);			
+					if (newTo == null)
+						newTo = trFromState.get(i).to;
+					else
+						newTo = newTo.or(trFromState.get(i).to);
 
 				transitions.add(new SAFAInputMove<P, S>(state, newTo, minterm.first));
 			}

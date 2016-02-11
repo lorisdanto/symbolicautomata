@@ -1,4 +1,4 @@
-package automata.safa;
+package automata.safa.booleanexpression;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -6,7 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class SumOfProducts extends BooleanExpr {
+import automata.safa.BooleanExpression;
+
+public class SumOfProducts extends BooleanExpression {
 
 	protected List<List<Integer>> dnf;
 
@@ -20,12 +22,7 @@ public class SumOfProducts extends BooleanExpr {
 		dnf.stream().forEach(acc::addAll);
 		return acc;
 	}
-
-	public static BooleanExpr empty() {
-		List<List<Integer>> emptydnf = new LinkedList<>();
-		return new SumOfProducts(emptydnf);
-	}
-
+	
 	@Override
 	public Object clone() {
 		List<List<Integer>> newDnf = new LinkedList<>();
@@ -44,7 +41,7 @@ public class SumOfProducts extends BooleanExpr {
 	}
 
 	@Override
-	public BooleanExpr unionWith(BooleanExpr p1) {
+	public BooleanExpression or(BooleanExpression p1) {
 		if (!(p1 instanceof SumOfProducts))
 			throw new IllegalArgumentException("can only interesect SumOfProducts with SumOfProducts");
 
@@ -56,7 +53,7 @@ public class SumOfProducts extends BooleanExpr {
 	}
 
 	@Override
-	public BooleanExpr interesectWith(BooleanExpr p1) {
+	public BooleanExpression and(BooleanExpression p1) {
 		if (!(p1 instanceof SumOfProducts))
 			throw new IllegalArgumentException("can only interesect SumOfProducts with SumOfProducts");
 
@@ -74,7 +71,7 @@ public class SumOfProducts extends BooleanExpr {
 	}
 
 	@Override
-	public BooleanExpr offset(int offset) {
+	public BooleanExpression offset(int offset) {
 		List<List<Integer>> newDnf = new LinkedList<>();
 		for (List<Integer> l1 : dnf) {
 			List<Integer> newl1 = new LinkedList<>();
