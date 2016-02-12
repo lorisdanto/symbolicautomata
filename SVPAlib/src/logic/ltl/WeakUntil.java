@@ -1,6 +1,12 @@
 package logic.ltl;
 
-import automata.safa.SAFA;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+
+import automata.safa.SAFAInputMove;
+import automata.safa.booleanexpression.PositiveId;
+import theory.BooleanAlgebra;
 
 public class WeakUntil<P, S> extends LTLFormula<P, S> {
 
@@ -44,4 +50,46 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 		return true;
 	}
 
+	@Override
+	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
+			HashMap<Integer, LTLFormula<P, S>> idToFormula, HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+
+		// If I already visited avoid recomputing
+		if (formulaToStateId.containsKey(this))
+			return;
+
+		// Update hash tables
+		int id = formulaToStateId.size();
+		formulaToStateId.put(this, id);
+		idToFormula.put(id, this);
+
+		// Compute transitions for children
+		left.accumulateSAFAStatesTransitions(formulaToStateId, idToFormula, moves, finalStates, ba);
+		right.accumulateSAFAStatesTransitions(formulaToStateId, idToFormula, moves, finalStates, ba);
+
+		// delta(l U r, p) = delta(r, p) or (delta(l,p) and lUr)
+		int leftId = formulaToStateId.get(left);
+		int rightId = formulaToStateId.get(right);
+		Collection<SAFAInputMove<P, S>> leftMoves = moves.get(leftId);
+		Collection<SAFAInputMove<P, S>> rightMoves = moves.get(rightId);
+		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
+		for (SAFAInputMove<P, S> leftMove : leftMoves)
+			for (SAFAInputMove<P, S> rightMove : rightMoves) {
+				P newPred = ba.MkAnd(leftMove.guard, rightMove.guard);
+				if (ba.IsSatisfiable(newPred))
+					newMoves.add(
+							new SAFAInputMove<P, S>(id, rightMove.to.or(leftMove.to.and(new PositiveId(id))), newPred));
+			}
+
+		// Weak until are final states (unlike regular until)
+		finalStates.add(id);
+
+		moves.put(id, newMoves);
+	}
+
+	@Override
+	protected boolean isFinalState() {
+		return true;
+	}
 }
