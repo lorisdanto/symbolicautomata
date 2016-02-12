@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import automata.safa.SAFAInputMove;
-import automata.safa.booleanexpression.PositiveId;
+import automata.safa.booleanexpression.SumOfProducts;
 import theory.BooleanAlgebra;
 
 public class Eventually<P, S> extends LTLFormula<P, S> {
@@ -60,12 +60,15 @@ public class Eventually<P, S> extends LTLFormula<P, S> {
 		// Compute transitions for children
 		phi.accumulateSAFAStatesTransitions(formulaToStateId, idToFormula, moves, finalStates, ba);
 
-		// delta(F phi, p) = delta(phi, p) V F phi
+		// delta(F phi, p) = delta(phi, p) 
+		// delta(F phi, true) = F phi
 		Collection<SAFAInputMove<P, S>> phiMoves = moves.get(phi);
 		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
 		for (SAFAInputMove<P, S> move : phiMoves)
-			newMoves.add(new SAFAInputMove<P, S>(id, move.to.or(new PositiveId(id)), move.guard));
-
+			newMoves.add(new SAFAInputMove<P, S>(id, move.to, move.guard));
+		
+		newMoves.add(new SAFAInputMove<P, S>(id, new SumOfProducts(id), ba.True()));
+		
 		moves.put(id, newMoves);
 	}
 

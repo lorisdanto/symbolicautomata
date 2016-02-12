@@ -16,6 +16,14 @@ public class SumOfProducts extends BooleanExpression {
 		super();
 		this.dnf = dnf;
 	}
+	
+	public SumOfProducts(Integer state) {
+		super();
+		this.dnf = new LinkedList<>();
+		List<Integer> l = new LinkedList<>();
+		l.add(state);
+		this.dnf.add(l);
+	}
 
 	public Set<Integer> getStates() {
 		HashSet<Integer> acc = new HashSet<Integer>();

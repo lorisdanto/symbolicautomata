@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import automata.safa.SAFAInputMove;
-import automata.safa.booleanexpression.PositiveId;
+import automata.safa.booleanexpression.SumOfProducts;
 import theory.BooleanAlgebra;
 
 public class WeakUntil<P, S> extends LTLFormula<P, S> {
@@ -68,20 +68,18 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 		left.accumulateSAFAStatesTransitions(formulaToStateId, idToFormula, moves, finalStates, ba);
 		right.accumulateSAFAStatesTransitions(formulaToStateId, idToFormula, moves, finalStates, ba);
 
-		// delta(l U r, p) = delta(r, p) or (delta(l,p) and lUr)
+		// delta(l W r, p) = delta(l, p) and lWr
+		// delta(l W r, p) = delta(r, p)
 		int leftId = formulaToStateId.get(left);
 		int rightId = formulaToStateId.get(right);
 		Collection<SAFAInputMove<P, S>> leftMoves = moves.get(leftId);
 		Collection<SAFAInputMove<P, S>> rightMoves = moves.get(rightId);
 		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
 		for (SAFAInputMove<P, S> leftMove : leftMoves)
-			for (SAFAInputMove<P, S> rightMove : rightMoves) {
-				P newPred = ba.MkAnd(leftMove.guard, rightMove.guard);
-				if (ba.IsSatisfiable(newPred))
-					newMoves.add(
-							new SAFAInputMove<P, S>(id, rightMove.to.or(leftMove.to.and(new PositiveId(id))), newPred));
-			}
+			newMoves.add(new SAFAInputMove<P, S>(id, leftMove.to.and(new SumOfProducts(id)), leftMove.guard));
 
+		for (SAFAInputMove<P, S> rightMove : rightMoves)
+			newMoves.add(new SAFAInputMove<P, S>(id, rightMove.to, rightMove.guard));
 		// Weak until are final states (unlike regular until)
 		finalStates.add(id);
 

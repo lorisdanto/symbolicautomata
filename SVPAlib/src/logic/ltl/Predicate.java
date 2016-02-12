@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import automata.safa.SAFAInputMove;
-import automata.safa.booleanexpression.PositiveId;
+import automata.safa.booleanexpression.SumOfProducts;
 import theory.BooleanAlgebra;
 
 public class Predicate<P, S> extends LTLFormula<P, S> {
@@ -64,7 +64,7 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 		// delta([p], p) = true
 		int trueId = formulaToStateId.get(t);		
 		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
-		newMoves.add(new SAFAInputMove<P, S>(id, new PositiveId(trueId), predicate));		
+		newMoves.add(new SAFAInputMove<P, S>(id, new SumOfProducts(trueId), predicate));		
 
 		moves.put(id, newMoves);
 	}

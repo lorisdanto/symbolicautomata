@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import automata.safa.SAFAInputMove;
-import automata.safa.booleanexpression.PositiveId;
+import automata.safa.booleanexpression.SumOfProducts;
 import theory.BooleanAlgebra;
 
 public class True<P, S> extends LTLFormula<P, S> {
@@ -46,7 +46,7 @@ public class True<P, S> extends LTLFormula<P, S> {
 		
 		// delta(True, true) = True		
 		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
-		newMoves.add(new SAFAInputMove<P, S>(id, new PositiveId(id), ba.True()));		
+		newMoves.add(new SAFAInputMove<P, S>(id, new SumOfProducts(id), ba.True()));		
 
 		// True is a final state
 		finalStates.add(id);
