@@ -7,8 +7,6 @@
 
 package transducers.sst;
 
-import java.util.List;
-
 import theory.BooleanAlgebra;
 
 /**
@@ -99,12 +97,6 @@ public class SSTInputMove<P, F, S> extends SSTMove<P, F, S>{
 	@Override
 	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) {
 		return ba.HasModel(guard, el);
-	}
-
-	@Override
-	public boolean hasModel(List<S> input, BooleanAlgebra<P, S> ba, Integer lookahead) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 	
 }

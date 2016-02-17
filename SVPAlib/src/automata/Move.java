@@ -6,8 +6,6 @@
  */
 package automata;
 
-import java.util.List;
-
 import theory.BooleanAlgebra;
 
 /**
@@ -21,7 +19,7 @@ public abstract class Move<P, S> {
 	public Integer from;
 	// Target state
 	public Integer to;
-	
+
 	/**
 	 * Transition from state <code>from</code> to state <code>to</code>
 	 */

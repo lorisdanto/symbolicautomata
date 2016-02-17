@@ -6,8 +6,6 @@
  */
 package automata.sfa;
 
-import java.util.List;
-
 import theory.BooleanAlgebra;
 
 /**

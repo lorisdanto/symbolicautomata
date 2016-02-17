@@ -5,6 +5,7 @@
  * @author Qinheping Hu
  */
 package automata.esfa;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,8 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import automata.Automaton;
-import automata.Move;
+import automata.ExtendedAutomaton;
+import automata.ExtendedMove;
 import theory.BooleanAlgebra;
 
 /**
@@ -21,7 +22,7 @@ import theory.BooleanAlgebra;
  * @param <P> set of predicates over the domain S
  * @param <S> domain of the automaton alphabet
  */
-public class CartesianESFA<P,S> extends Automaton<P, S> {
+public class CartesianESFA<P,S> extends ExtendedAutomaton<P, S> {
 
 	
 	
@@ -38,7 +39,6 @@ public class CartesianESFA<P,S> extends Automaton<P, S> {
 	private Integer transitionCount;
 	
 	
-	
 	/**
 	 * Returns true if the machine accepts the input list
 	 * 
@@ -48,11 +48,11 @@ public class CartesianESFA<P,S> extends Automaton<P, S> {
 	 */
 	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba,Collection<Integer> departConf) {
 		if(input.size()==0&& isFinalConfiguration(departConf)) return true;
-		for(Move<P, S> t : getMovesFrom(departConf)){
+		for(ExtendedMove<P, S> t : getMovesFrom(departConf)){
 			Integer lh = t.lookahead;
 			if(!t.isEpsilonTransition()){
 				List<S> temp = input.subList(0, lh-1);
-				if(t.hasModel(temp, ba,lh)){
+				if(t.hasModel(temp, ba)){
 					Collection<Integer> nextState = new HashSet<Integer>();
 					nextState.add(t.to);
 					nextState = getEpsClosure(nextState,ba);
@@ -150,7 +150,9 @@ public class CartesianESFA<P,S> extends Automaton<P, S> {
 		aut.isEmpty = true;
 		aut.isEpsilonFree = true;
 		aut.maxStateId = 1;
-        aut.addTransition(new CartesianESFAInputMove<A, B>(0, 0, ba.True(),1), ba, true);
+		List<A> guard = new ArrayList<A>();
+		guard.add(ba.True());
+        aut.addTransition(new CartesianESFAInputMove<A, B>(0, 0, guard), ba, true);
 		return aut;
 	}
 	
@@ -332,17 +334,20 @@ public class CartesianESFA<P,S> extends Automaton<P, S> {
 		return transitions;
 	}
 	
+
 	
 	@Override
-	public Collection<Move<P, S>> getMovesFrom(Integer state) {
-		Collection<Move<P, S>> transitions = new LinkedList<Move<P, S>>();
+	public Collection<ExtendedMove<P, S>> getMovesFrom(Integer state) {
+		Collection<ExtendedMove<P, S>> transitions = new LinkedList<ExtendedMove<P, S>>();
 		transitions.addAll(getTransitionsFrom(state));
 		return transitions;
 	}
 
+
+	
 	@Override
-	public Collection<Move<P, S>> getMovesTo(Integer state) {
-		Collection<Move<P, S>> transitions = new LinkedList<Move<P, S>>();
+	public Collection<ExtendedMove<P, S>> getMovesTo(Integer state) {
+		Collection<ExtendedMove<P, S>> transitions = new LinkedList<ExtendedMove<P, S>>();
 		transitions.addAll(getTransitionsTo(state));
 		return transitions;
 	}

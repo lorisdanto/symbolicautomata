@@ -61,12 +61,12 @@ public class ESFAEpsilon<U,S> extends ESFAMove<U,S> {
 	}
 
 	@Override
-	public S getWitness(BooleanAlgebra<U, S> boolal) {
+	public List<S> getWitness(BooleanAlgebra<U, S> boolal) {
 		return null;
 	}
 
 	@Override
-	public boolean hasModel(S el, BooleanAlgebra<U, S> ba) {
+	public boolean hasModel(List<S> el, BooleanAlgebra<U, S> ba) {
 		return false;
 	}
 

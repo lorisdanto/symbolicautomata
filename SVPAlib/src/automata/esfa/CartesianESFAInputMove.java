@@ -1,6 +1,7 @@
 package automata.esfa;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import automata.esfa.ESFAMove;
@@ -16,17 +17,17 @@ public class CartesianESFAInputMove<P,S> extends ESFAMove<P, S>{
 	/**
 	 * <code> P <code> is a predicate from S^k -> {0,1}
 	 */
-	public P[] guard; 
+	public List<P> guard; 
 	public Integer lookahead;
 	
 	/**
 	 * Constructs an FSA Transition that starts from state <code>from</code> and ends at state
 	 * <code>to</code> with input <code>input</code>
 	 */
-	public CartesianESFAInputMove(Integer from, Integer to, P[] guard) {
+	public CartesianESFAInputMove(Integer from, Integer to, List<P> guard) {
 		super(from, to);
 		this.guard=guard;
-		this.lookahead = guard.length;
+		this.lookahead = guard.size();
 	}
 	
 	@Override
@@ -82,19 +83,23 @@ public class CartesianESFAInputMove<P,S> extends ESFAMove<P, S>{
 	}
 
 	@Override
-	public S getWitness(BooleanAlgebra<P, S> ba) {
-		return ba.generateWitness(guard);
+	public List<S> getWitness(BooleanAlgebra<P, S> ba) {
+		List<S> result = new ArrayList<S>();
+		for(int i=0; i<guard.size();i++){
+			result.add(ba.generateWitness(guard.get(i)));
+		}
+		return result;
 	}
 
 	@Override
-	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) {
-		return ba.HasModel(guard, el);
+	public boolean hasModel(List<S> el, BooleanAlgebra<P, S> ba) {
+		if(el.size() != guard.size()) return false;
+		for(int i = 0; i < el.size(); i++)
+			if(!ba.HasModel(guard.get(i), el.get(i))) return false;
+		return true;
 	}
 
-	@Override
-	public boolean hasModel(List<S> input, BooleanAlgebra<P, S> ba, Integer lookahead) {
-		return ba.HasModel(guard, input.subList(0, lookahead-1), lookahead);
-	}
+
 
 
 	
