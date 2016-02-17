@@ -23,5 +23,7 @@ public abstract class ESFAMove<P, S> extends ExtendedMove<P, S> {
 	 */
 	public abstract boolean isDisjointFrom(ESFAMove<P, S> t,
 			BooleanAlgebra<P, S> ba);
+	@Override
+	public abstract Object clone();
 
 }

@@ -18,17 +18,17 @@ import automata.sfa.SFAEpsilon;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
 import automata.esfa.*;
-import theory.kCharPred;
-import theory.kCharSolver;
 
 public class ESFAUnitTest {
 
 	
 	@Test
 	public void testMkESFA() {
-		assertTrue(autA.stateCount() == 3);
-		assertTrue(autA.getTransitionCount() == 1);
-		//assertTrue(autA.accepts(la, kba));
+		assertTrue(autA.stateCount() == 5);
+		assertTrue(autA.getTransitionCount() == 5);
+
+		System.out.println(autA.getAmbiguousInput(ba));
+		assertTrue(autA.accepts(la, ba));
 		
 		
 		//assertTrue(autB.stateCount() == 2);
@@ -36,34 +36,38 @@ public class ESFAUnitTest {
 	}
 
 	
-	kCharSolver kba = new kCharSolver();
 	CharSolver ba = new CharSolver();
-	kCharPred kalpha = new kCharPred();
 	CharPred alpha = StdCharPred.LOWER_ALPHA;
 	CharPred allAlpha = StdCharPred.ALPHA;
 	CharPred a = new CharPred('a');
+	CharPred b = new CharPred('b');
+	CharPred c = new CharPred('c');
 	CharPred num = StdCharPred.NUM;
 	CharPred comma = new CharPred(',');
 	Integer onlyX = 1;
 
-	ESFA<kCharPred, Character> autA = getESFAa(kba);
+	CartesianESFA<CharPred, Character> autA = getESFAa(ba);
 //	SFA<CharPred, Character> autB = getSFAb(ba);
 
 	// Test strings
-	List<Character> la = lOfS("a"); // accepted only by autA
+	List<Character> la = lOfS("aa"); // accepted only by autA
 	List<Character> lb = lOfS("a3"); // accepted only by autB
 	List<Character> lab = lOfS("a"); // accepted only by both autA and autB
 	List<Character> lnot = lOfS("44"); // accepted only by neither autA nor autB
 
-	private ESFA<kCharPred, Character> getESFAa(kCharSolver kba) {
-
-		Collection<ESFAMove<kCharPred, Character>> transitionsA = new LinkedList<ESFAMove<kCharPred, Character>>();
-		transitionsA.add(new ESFAEpsilon<kCharPred, Character>(0, 1));
-		kalpha.setk(1);
-		kalpha.addPre(a, 0);
-		transitionsA.add(new ESFAInputMove<kCharPred, Character>(0, 2, kalpha,1));
+	private CartesianESFA<CharPred, Character> getESFAa(CharSolver kba) {
+		Collection<ESFAMove<CharPred, Character>> transitionsA = new LinkedList<ESFAMove<CharPred, Character>>();
+		transitionsA.add(new ESFAEpsilon<CharPred, Character>(1, 3));
+		List<CharPred> guard_1 = new ArrayList<CharPred>();
+		guard_1.add(a);
+		List<CharPred> guard_2 = new ArrayList<CharPred>();
+		guard_2.add(a);
+		transitionsA.add(new CartesianESFAInputMove<CharPred, Character>(0, 1, guard_1));
+		transitionsA.add(new CartesianESFAInputMove<CharPred, Character>(0, 2, guard_1));
+		transitionsA.add(new CartesianESFAInputMove<CharPred, Character>(2, 4, guard_1));
+		transitionsA.add(new CartesianESFAInputMove<CharPred, Character>(3, 4, guard_1));
 		System.out.println(transitionsA.toString());
-		return ESFA.MkESFA(transitionsA, 0, Arrays.asList(2), kba);
+		return CartesianESFA.MkESFA(transitionsA, 0, Arrays.asList(4), kba);
 	}
 
 	// -------------------------

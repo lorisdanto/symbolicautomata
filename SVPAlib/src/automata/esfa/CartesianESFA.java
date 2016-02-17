@@ -15,7 +15,11 @@ import java.util.Map;
 
 import automata.ExtendedAutomaton;
 import automata.ExtendedMove;
+import automata.sfa.SFA;
+import automata.sfa.SFAEpsilon;
+import automata.sfa.SFAMove;
 import theory.BooleanAlgebra;
+import utilities.Pair;
 
 /**
  * Symbolic finite automaton
@@ -48,10 +52,12 @@ public class CartesianESFA<P,S> extends ExtendedAutomaton<P, S> {
 	 */
 	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba,Collection<Integer> departConf) {
 		if(input.size()==0&& isFinalConfiguration(departConf)) return true;
+
+
 		for(ExtendedMove<P, S> t : getMovesFrom(departConf)){
 			Integer lh = t.lookahead;
 			if(!t.isEpsilonTransition()){
-				List<S> temp = input.subList(0, lh-1);
+				List<S> temp = input.subList(0, lh);
 				if(t.hasModel(temp, ba)){
 					Collection<Integer> nextState = new HashSet<Integer>();
 					nextState.add(t.to);
@@ -188,6 +194,256 @@ public class CartesianESFA<P,S> extends ExtendedAutomaton<P, S> {
 		}
 	}
 	
+	/**
+	 * Checks whether the SFA is ambiguous
+	 * 
+	 * @return an ambiguous input if the automaton is ambiguous,
+	 *         <code>null</code> otherwise
+	 */
+	public List<S> getAmbiguousInput(BooleanAlgebra<P, S> ba) {
+		return getAmbiguousInput(this, ba);
+	}
+
+	
+	@SuppressWarnings("unchecked")
+	public static <A, B> List<B> getAmbiguousInput(CartesianESFA<A, B> aut,
+			BooleanAlgebra<A, B> ba) {
+
+		CartesianESFA<A, B> aut1 = (CartesianESFA<A, B>) aut.clone();
+		CartesianESFA<A, B> aut2 = (CartesianESFA<A, B>) aut.clone();
+
+		CartesianESFA<A, B> product = new CartesianESFA<A, B>();
+
+		// maps a product state to its id
+		HashMap<Pair<Integer, Integer>, Integer> reached = new HashMap<Pair<Integer, Integer>, Integer>();
+		// maps and id to its product state
+		HashMap<Integer, Pair<Integer, Integer>> reachedRev = new HashMap<Integer, Pair<Integer, Integer>>();
+		// list on unexplored product states
+		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<Pair<Integer, Integer>>();
+
+		// The initial state is the pair consisting of the initial
+		// states of aut1 and aut2
+		Pair<Integer, Integer> initStatePair = new Pair<Integer, Integer>(
+				aut1.initialState, aut2.initialState);
+		product.initialState = 0;
+		product.states.add(0);
+
+		reached.put(initStatePair, 0);
+		reachedRev.put(0, initStatePair);
+		toVisit.add(initStatePair);
+
+		int totStates = 1;
+
+		while (!toVisit.isEmpty()) {
+			Pair<Integer, Integer> currState = toVisit.removeFirst();
+
+			
+			int currStateId = reached.get(currState);
+			// get the set of states reachable from currentState via epsilon
+			// moves
+			Collection<Integer> epsilonClosure1 = aut1.getEpsClosure(
+					currState.first, ba);
+			Collection<Integer> epsilonClosure2 = aut2.getEpsClosure(
+					currState.second, ba);
+
+			// Set final states
+			// if both the epsilon closures contain a final state currentStateID
+			// is final
+
+			if (aut1.isFinalConfiguration(epsilonClosure1)
+					&& aut2.isFinalConfiguration(epsilonClosure2))
+				product.finalStates.add(currStateId);
+			
+			// Try to pair transitions out of both automata
+			for (CartesianESFAInputMove<A, B> t1 : aut1
+					.getInputMovesFrom(epsilonClosure1))
+				for (CartesianESFAInputMove<A, B> t2 : aut2
+						.getInputMovesFrom(epsilonClosure2)) {
+					if(t1.lookahead != t2.lookahead) continue;
+					// create conjunction of the two guards and create
+					// transition only if the conjunction is satisfiable
+					List<A> intersGuard = new ArrayList<A>();
+					boolean satofinter = true;
+					for(int i=0;i<t1.lookahead;i++){
+						intersGuard.add(ba.MkAnd(t1.guard.get(i), t2.guard.get(i)));
+						if(!ba.IsSatisfiable(ba.MkAnd(t1.guard.get(i), t2.guard.get(i)))) satofinter = false;
+					}
+					if (satofinter) {
+
+						// Create new product transition and add it to
+						// transitions
+						Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(
+								t1.to, t2.to);
+						int nextStateId = 0;
+
+						if (!reached.containsKey(nextState)) {
+							product.inputMovesTo.put(totStates,
+									new HashSet<CartesianESFAInputMove<A, B>>());
+
+							reached.put(nextState, totStates);
+							reachedRev.put(totStates, nextState);
+
+							toVisit.add(nextState);
+							product.states.add(totStates);
+							nextStateId = totStates;
+							totStates++;
+						} else
+							nextStateId = reached.get(nextState);
+
+						CartesianESFAInputMove<A, B> newTrans = new CartesianESFAInputMove<A, B>(
+								currStateId, nextStateId, intersGuard);
+
+						product.addTransition(newTrans, ba, true);
+						
+					}
+
+				}
+		}
+		System.out.println(product);
+		product = removeDeadOrUnreachableStates(product, ba);
+		// Check if a state that of the form (s1,s2) such that s1!=s2 is still
+		// alive, if so any string passing to it is ambiguous
+		for (Integer aliveSt : product.states) {
+			Pair<Integer, Integer> stP = reachedRev.get(aliveSt);
+			if (stP.first != stP.second) {
+				CartesianESFA<A, B> left = (CartesianESFA<A, B>) product.clone();
+				CartesianESFA<A, B> right = (CartesianESFA<A, B>) product.clone();
+				left.finalStates = new HashSet<Integer>();
+				left.finalStates.add(aliveSt);
+				right.initialState = aliveSt;
+
+				CartesianESFA<A, B> c = left.concatenateWith(right, ba);
+				CartesianESFA<A, B> clean = removeDeadOrUnreachableStates(c, ba);
+				return clean.getWitness(ba);
+			}
+		}
+		return null;
+	}
+	
+
+	/**
+	 * concatenation with aut
+	 */
+	public CartesianESFA<P, S> concatenateWith(CartesianESFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+		return concatenate(this, aut, ba);
+	}
+
+	/**
+	 * concatenates aut1 with aut2
+	 */
+	@SuppressWarnings("unchecked")
+	public static <A, B> CartesianESFA<A, B> concatenate(CartesianESFA<A, B> aut1, CartesianESFA<A, B> aut2,
+			BooleanAlgebra<A, B> ba) {
+
+		if (aut1.isEmpty || aut2.isEmpty)
+			return getEmptyESFA(ba);
+
+		Collection<ESFAMove<A, B>> transitions = new ArrayList<ESFAMove<A, B>>();
+		Integer initialState = aut1.initialState;
+		Collection<Integer> finalStates = new HashSet<Integer>();
+
+		int offSet = aut1.maxStateId + 1;
+
+		for (ESFAMove<A, B> t : aut1.getTransitions())
+			transitions.add((ESFAMove<A, B>) t.clone());
+
+		for (ESFAMove<A, B> t : aut2.getTransitions()) {
+			ESFAMove<A, B> newMove = (ESFAMove<A, B>) t.clone();
+			newMove.from += offSet;
+			newMove.to += offSet;
+			transitions.add(newMove);
+		}
+
+		for (Integer state1 : aut1.finalStates)
+			transitions.add(new ESFAEpsilon<A, B>(state1, aut2.initialState
+					+ offSet));
+
+		for (Integer state : aut2.finalStates)
+			finalStates.add(state + offSet);
+
+		return MkESFA(transitions, initialState, finalStates, ba, false);
+	}
+	// ------------------------------------------------------
+		// Reachability methods
+		// ------------------------------------------------------
+
+		// creates a new SFA where all unreachable or dead states have been removed
+		private static <A, B> CartesianESFA<A, B> removeDeadOrUnreachableStates(
+				CartesianESFA<A, B> aut, BooleanAlgebra<A, B> ba) {
+
+			// components of new SFA
+			Collection<ESFAMove<A, B>> transitions = new ArrayList<ESFAMove<A, B>>();
+			Integer initialState = 0;
+			Collection<Integer> finalStates = new HashSet<Integer>();
+
+			HashSet<Integer> initStates = new HashSet<Integer>();
+			initStates.add(aut.initialState);
+			Collection<Integer> reachableFromInit = aut
+					.getReachableStatesFrom(initStates);
+			Collection<Integer> reachingFinal = aut
+					.getReachingStates(aut.finalStates);
+
+			Collection<Integer> aliveStates = new HashSet<Integer>();
+
+			// Computes states that reachable from initial state and can reach a
+			// final state
+			for (Integer state : reachableFromInit)
+				if (reachingFinal.contains(state)) {
+					aliveStates.add(state);
+				}
+
+			if (aliveStates.size() == 0)
+				return getEmptyESFA(ba);
+
+			for (Integer state : aliveStates)
+				for (ESFAMove<A, B> t : aut.getTransitionsFrom(state))
+					if (aliveStates.contains(t.to))
+						transitions.add(t);
+
+			initialState = aut.initialState;
+
+			for (Integer state : aut.finalStates)
+				if (aliveStates.contains(state))
+					finalStates.add(state);
+
+			return MkESFA(transitions, initialState, finalStates, ba, false, false);
+		}
+		
+		// Computes states that reachable from states
+		private Collection<Integer> getReachableStatesFrom(
+				Collection<Integer> states) {
+			HashSet<Integer> result = new HashSet<Integer>();
+			for (Integer state : states)
+				visitForward(state, result);
+			return result;
+		}
+		// Computes states that can reach states
+		private Collection<Integer> getReachingStates(Collection<Integer> states) {
+			HashSet<Integer> result = new HashSet<Integer>();
+			for (Integer state : states)
+				visitBackward(state, result);
+			return result;
+		}
+		// DFS accumulates in reached
+		private void visitForward(Integer state, HashSet<Integer> reached) {
+			if (!reached.contains(state)) {
+				reached.add(state);
+				for (ESFAMove<P, S> t : this.getTransitionsFrom(state)) {
+					Integer nextState = t.to;
+					visitForward(nextState, reached);
+				}
+			}
+		}	
+		// backward DFS accumulates in reached
+		private void visitBackward(Integer state, HashSet<Integer> reached) {
+			if (!reached.contains(state)) {
+				reached.add(state);
+				for (ESFAMove<P, S> t : this.getTransitionsTo(state)) {
+					Integer predState = t.from;
+					visitBackward(predState, reached);
+				}
+			}
+		}
 	/**
 	 * Returns the set of transitions starting at state <code>s</code>
 	 */
@@ -386,6 +642,35 @@ public class CartesianESFA<P,S> extends ExtendedAutomaton<P, S> {
 	 */
 	public Integer getTransitionCount() {
 		return transitionCount;
+	}
+	
+	@Override
+	public Object clone() {
+		CartesianESFA<P, S> cl = new CartesianESFA<P, S>();
+
+		cl.isDeterministic = isDeterministic;
+		cl.isTotal = isTotal;
+		cl.isEmpty = isEmpty;
+		cl.isEpsilonFree = isEpsilonFree;
+
+		cl.maxStateId = maxStateId;
+		cl.transitionCount = transitionCount;
+
+		cl.states = new HashSet<Integer>(states);
+		cl.initialState = initialState;
+		cl.finalStates = new HashSet<Integer>(finalStates);
+
+		cl.inputMovesFrom = new HashMap<Integer, Collection<CartesianESFAInputMove<P, S>>>(
+				inputMovesFrom);
+		cl.inputMovesTo = new HashMap<Integer, Collection<CartesianESFAInputMove<P, S>>>(
+				inputMovesTo);
+
+		cl.epsilonFrom = new HashMap<Integer, Collection<ESFAEpsilon<P, S>>>(
+				epsilonFrom);
+		cl.epsilonTo = new HashMap<Integer, Collection<ESFAEpsilon<P, S>>>(
+				epsilonTo);
+
+		return cl;
 	}
 
 }

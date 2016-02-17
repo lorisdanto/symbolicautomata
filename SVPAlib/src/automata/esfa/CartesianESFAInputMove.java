@@ -28,6 +28,7 @@ public class CartesianESFAInputMove<P,S> extends ESFAMove<P, S>{
 		super(from, to);
 		this.guard=guard;
 		this.lookahead = guard.size();
+		super.lookahead = this.lookahead;
 	}
 	
 	@Override
