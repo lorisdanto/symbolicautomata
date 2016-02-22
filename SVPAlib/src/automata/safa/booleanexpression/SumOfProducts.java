@@ -91,5 +91,27 @@ public class SumOfProducts extends BooleanExpression {
 		return new SumOfProducts(newDnf);
 	}
 
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		boolean firstel = true;
+		for (List<Integer> l : dnf){
+			if(!firstel)
+				sb.append("+");
+			firstel=false;
+			sb.append("(");
+			boolean first =true;
+			for (Integer i : l){
+				if(!first)
+					sb.append(",");
+				sb.append(i);	
+				first = false;
+			}
+			sb.append(")");
+		}
+		return sb.toString();
+	}
+
+	
 	// TODO equals clone...
 }

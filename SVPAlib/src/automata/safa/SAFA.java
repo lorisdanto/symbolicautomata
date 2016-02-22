@@ -85,6 +85,16 @@ public class SAFA<P, S> {
 	 */
 	public static <A, B> SAFA<A, B> MkSAFA(Collection<SAFAInputMove<A, B>> transitions, Integer initialState,
 			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba) {
+		return MkSAFA(transitions, initialState, finalStates, ba, true);
+	}
+	
+	/*
+	 * Create an automaton and removes unreachable states and only removes
+	 * unreachable states if remUnreachableStates is true and normalizes the
+	 * automaton if normalize is true
+	 */
+	public static <A, B> SAFA<A, B> MkSAFA(Collection<SAFAInputMove<A, B>> transitions, Integer initialState,
+			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba, boolean normalize) {
 
 		SAFA<A, B> aut = new SAFA<A, B>();
 
@@ -98,7 +108,10 @@ public class SAFA<P, S> {
 		for (SAFAInputMove<A, B> t : transitions)
 			aut.addTransition(t, ba, false);
 
-		return aut.normalize(ba);
+		if(normalize)
+			return aut.normalize(ba);
+		else
+			return aut;
 	}
 
 	// Adds a transition to the SFA
@@ -167,11 +180,11 @@ public class SAFA<P, S> {
 		Collection<Integer> prevState = new HashSet<Integer>();
 		for (SAFAInputMove<P, S> t : getInputMoves()) {
 			BooleanExpression b = t.to;
-			if (b.hasModel(currState))
+			if (b.hasModel(currState) && ba.HasModel(t.guard, inputElement))
 				prevState.add(t.from);
 		}
 
-		return null;
+		return prevState;
 	}
 
 	// ------------------------------------------------------
@@ -183,6 +196,13 @@ public class SAFA<P, S> {
 	 */
 	public SAFA<P, S> intersectionWith(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) {
 		return binaryOp(this, aut, ba, BoolOp.Intersection);
+	}
+
+	/**
+	 * Computes the intersection with <code>aut</code> as a new SFA
+	 */
+	public SAFA<P, S> unionWith(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+		return binaryOp(this, aut, ba, BoolOp.Union);
 	}
 
 	public enum BoolOp {
@@ -237,7 +257,7 @@ public class SAFA<P, S> {
 			break;
 		}
 
-		return MkSAFA(transitions, initialState, finalStates, ba);
+		return MkSAFA(transitions, initialState, finalStates, ba,true);
 	}
 
 	/**
@@ -258,17 +278,18 @@ public class SAFA<P, S> {
 			Collection<Pair<P, ArrayList<Integer>>> minterms = ba.GetMinterms(predicates);
 			for (Pair<P, ArrayList<Integer>> minterm : minterms) {
 				BooleanExpression newTo = null;
-				for (int i : minterm.second)
-					if (newTo == null)
-						newTo = trFromState.get(i).to;
-					else
-						newTo = newTo.or(trFromState.get(i).to);
+				for (int i = 0; i < minterm.second.size(); i++)
+					if (minterm.second.get(i) == 1)
+						if (newTo == null)
+							newTo = trFromState.get(i).to;
+						else
+							newTo = newTo.or(trFromState.get(i).to);
 
 				transitions.add(new SAFAInputMove<P, S>(state, newTo, minterm.first));
 			}
 		}
 
-		return MkSAFA(transitions, initialState, finalStates, ba);
+		return MkSAFA(transitions, initialState, finalStates, ba, false);
 	}
 
 	// ------------------------------------------------------
