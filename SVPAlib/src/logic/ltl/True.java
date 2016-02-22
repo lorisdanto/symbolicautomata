@@ -32,7 +32,7 @@ public class True<P, S> extends LTLFormula<P, S> {
 	
 	@Override
 	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, LTLFormula<P, S>> idToFormula, HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
+			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
 			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
 
 		// If I already visited avoid recomputing
@@ -42,7 +42,6 @@ public class True<P, S> extends LTLFormula<P, S> {
 		// Update hash tables
 		int id = formulaToStateId.size();
 		formulaToStateId.put(this, id);
-		idToFormula.put(id, this);	
 		
 		// delta(True, true) = True		
 		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();

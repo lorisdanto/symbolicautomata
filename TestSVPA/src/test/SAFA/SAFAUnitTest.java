@@ -60,7 +60,6 @@ public class SAFAUnitTest {
 		assertTrue(union.accepts(lab, ba));
 		assertFalse(union.accepts(lnot, ba));
 	}
-	
 
 	// ---------------------------------------
 	// Predicates

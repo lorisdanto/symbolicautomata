@@ -16,6 +16,7 @@ import java.util.Map;
 
 import com.google.common.collect.Lists;
 
+import automata.Move;
 import theory.BooleanAlgebra;
 import utilities.Pair;
 
@@ -285,7 +286,8 @@ public class SAFA<P, S> {
 						else
 							newTo = newTo.or(trFromState.get(i).to);
 
-				transitions.add(new SAFAInputMove<P, S>(state, newTo, minterm.first));
+				if(newTo!=null)
+					transitions.add(new SAFAInputMove<P, S>(state, newTo, minterm.first));
 			}
 		}
 
@@ -340,6 +342,28 @@ public class SAFA<P, S> {
 		cl.inputMovesFrom = new HashMap<Integer, Collection<SAFAInputMove<P, S>>>(inputMovesFrom);
 
 		return cl;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		String s = "";
+		s = "Automaton: " + getTransitionCount() + " transitions, "
+				+ stateCount() + " states" + "\n";
+		s += "Transitions \n";
+		for (SAFAInputMove<P, S> t : getInputMoves())
+			s = s + t + "\n";
+
+		s += "Initial State \n";
+		s = s + initialState + "\n";
+
+		s += "Final States \n";
+		for (Integer fs : finalStates)
+			s = s + fs + "\n";
+		return s;
 	}
 
 }
