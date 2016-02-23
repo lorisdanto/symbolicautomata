@@ -9,7 +9,7 @@ This allows you to represent large characters sets like UTF.
 For example a transition 0-[a-z]->1 represents a transition for going from state 0 to state 1 with every symbol in the interval [a-z].
 
 You can read more about symbolic automata here:
-*http://www.cis.upenn.edu/~lorisdan/symbolicautomata.html*
+*http://pages.cs.wisc.edu/~loris/symbolicautomata.html*
 
 The library
 ----------------
