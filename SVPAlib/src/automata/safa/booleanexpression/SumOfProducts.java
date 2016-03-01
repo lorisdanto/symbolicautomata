@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import automata.safa.BooleanExpression;
 
@@ -23,6 +24,18 @@ public class SumOfProducts extends BooleanExpression {
 		List<Integer> l = new LinkedList<>();
 		l.add(state);
 		this.dnf.add(l);
+	}
+	
+	public SumOfProducts(boolean b) {
+		super();
+		this.dnf = new LinkedList<>();
+		if (b) {
+			this.dnf.add(new LinkedList<>());
+		}
+	}
+	
+	public List<List<Integer>> getCubes() {
+		return this.dnf;
 	}
 
 	public Set<Integer> getStates() {
@@ -89,6 +102,19 @@ public class SumOfProducts extends BooleanExpression {
 			newDnf.add(newl1);
 		}
 		return new SumOfProducts(newDnf);
+	}
+
+	@Override
+	public BooleanExpression substitute(Function<Integer, BooleanExpression> sigma) {
+		BooleanExpression result = new SumOfProducts(false);
+		for (List<Integer> cube : dnf) {
+			BooleanExpression sigmaCube = new SumOfProducts(true);
+			for(Integer literal : cube) {
+				sigmaCube = sigmaCube.and(sigma.apply(literal));
+			}
+			result = result.or(sigmaCube);
+		}
+		return result;
 	}
 
 	// TODO equals clone...

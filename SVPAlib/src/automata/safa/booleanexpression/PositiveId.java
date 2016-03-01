@@ -3,12 +3,13 @@ package automata.safa.booleanexpression;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import automata.safa.BooleanExpression;
 
 public class PositiveId extends PositiveBooleanExpression {
 
-	protected Integer state;
+	public Integer state;
 
 	public PositiveId(Integer state) {
 		super();
@@ -37,4 +38,8 @@ public class PositiveId extends PositiveBooleanExpression {
 		return new PositiveId(state);
 	}
 
+	@Override
+	public BooleanExpression substitute(Function<Integer, BooleanExpression> sigma) {
+		return sigma.apply(state);
+	}
 }

@@ -13,9 +13,13 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.sat4j.specs.TimeoutException;
 
 import com.google.common.collect.Lists;
 
+import automata.safa.booleanexpression.SumOfProducts;
 import theory.BooleanAlgebra;
 import utilities.Pair;
 
@@ -161,6 +165,78 @@ public class SAFA<P, S> {
 		}
 
 		return currConf.contains(initialState);
+	}
+
+	/**
+	 * Return a list [<g1, t1>, ..., <gn, tn>] of <guard, transition table> pairs such that:
+	 * 	- For each i and each state s, s transitions to ti[s] on reading a letter satisfying gi
+	 *  - {g1, ..., gn} is the set of all satisfiable conjunctions of guards on outgoing transitions
+	 *  	leaving the input set of states
+	 * @param states The states from which to compute the outgoing transitions
+	 * @param ba
+	 * @param guard All transitions in the list must comply with guard
+	 * @return
+	 */
+	private LinkedList<Pair<P, BooleanExpression[]>> getTransitionTablesFrom(
+			Collection<Integer> states,
+			BooleanAlgebra<P, S> ba,
+			P guard)
+	{
+		LinkedList<Pair<P, BooleanExpression[]>> moves = new LinkedList<>();
+		moves.add(new Pair<>(guard, new BooleanExpression[maxStateId]));
+		for (Integer s : states) {
+			LinkedList<Pair<P, BooleanExpression[]>> moves2 = new LinkedList<>();
+			for (SAFAInputMove<P,S> t : getInputMovesFrom(s)) {
+				for (Pair<P, BooleanExpression[]> move : moves) {
+					P newGuard = ba.MkAnd(t.guard, move.getFirst());
+					if (ba.IsSatisfiable(newGuard)) {				
+						BooleanExpression[] map = move.getSecond().clone();
+						map[s] = t.to;
+						moves2.add(new Pair<>(newGuard, map));
+					}
+				}
+			}
+			moves = moves2;
+		}
+		return moves;
+	}
+	
+	public static <P,S> boolean isEquivalent(SAFA<P, S> laut, SAFA<P, S> raut, BooleanAlgebra<P, S> ba) throws TimeoutException {
+		SAFARelation similar = new SATRelation();
+		List<Pair<BooleanExpression, BooleanExpression>> worklist = new LinkedList<>();
+		
+		BooleanExpression leftInitial = new SumOfProducts(laut.initialState);
+		BooleanExpression rightInitial = new SumOfProducts(raut.initialState);
+		similar.add(leftInitial, rightInitial);
+		worklist.add(new Pair<>(leftInitial, rightInitial));
+		while (!worklist.isEmpty()) {
+			Pair<BooleanExpression, BooleanExpression> next = worklist.get(0);
+			worklist.remove(0);
+			
+			BooleanExpression left = next.getFirst();
+			BooleanExpression right = next.getSecond();
+			
+			LinkedList<Pair<P, BooleanExpression[]>> leftMoves =
+					laut.getTransitionTablesFrom(left.getStates(), ba, ba.True());
+			for (Pair<P, BooleanExpression[]> leftMove : leftMoves) {
+				BooleanExpression leftSucc = left.substitute((lit) -> leftMove.getSecond()[lit]);
+				boolean leftSuccAccept = leftSucc.hasModel(laut.finalStates);
+
+				LinkedList<Pair<P, BooleanExpression[]>> rightMoves =
+						raut.getTransitionTablesFrom(right.getStates(), ba, leftMove.getFirst());
+				for (Pair<P, BooleanExpression[]> rightMove : rightMoves) {
+					BooleanExpression rightSucc = right.substitute((lit) -> rightMove.getSecond()[lit]);
+					if (leftSuccAccept == rightSucc.hasModel(raut.finalStates)) {
+						// leftSucc is accepting and rightSucc is rejecting or vice versa
+						return false;
+					} else if (!similar.isMember(leftSucc, rightSucc)) {
+						similar.add(leftSucc, rightSucc);
+						worklist.add(new Pair<>(leftSucc, rightSucc));
+					}
+				}
+			}
+		}
+		return true;
 	}
 
 	protected Collection<Integer> getPrevState(Collection<Integer> currState, S inputElement, BooleanAlgebra<P, S> ba) {

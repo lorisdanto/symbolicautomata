@@ -2,12 +2,13 @@ package automata.safa.booleanexpression;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.Function;
 
 import automata.safa.BooleanExpression;
 
 public class PositiveAnd extends PositiveBooleanExpression {
 
-	protected PositiveBooleanExpression left, right;
+	public PositiveBooleanExpression left, right;
 
 	public PositiveAnd(PositiveBooleanExpression left, PositiveBooleanExpression right) {
 		super();
@@ -39,4 +40,7 @@ public class PositiveAnd extends PositiveBooleanExpression {
 		return new PositiveAnd(cl, cr);
 	}
 
+	public BooleanExpression substitute(Function<Integer, BooleanExpression> sigma) {
+		return left.substitute(sigma).and(right.substitute(sigma));
+	}
 }
