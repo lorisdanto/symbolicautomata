@@ -15,12 +15,11 @@ public abstract class LTLFormula<P,S> {
 		
 		Integer initialState = 0;
 		HashMap<LTLFormula<P, S>, Integer> formulaToStateId = new HashMap<>();
-		HashMap<Integer, LTLFormula<P, S>> idToFormula = new HashMap<>();
 		
 		Collection<Integer> finalStates = new HashSet<>();
 		HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves = new HashMap<>();
 		
-		this.accumulateSAFAStatesTransitions(formulaToStateId, idToFormula, moves, finalStates, ba);
+		this.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
 
 		Collection<SAFAInputMove<P, S>> transitions = new LinkedList<>();
 		for(Collection<SAFAInputMove<P, S>> c: moves.values())
@@ -32,7 +31,6 @@ public abstract class LTLFormula<P,S> {
 	// returns set of disjoint predicates that are the triggers of transitions out of this state
 	protected abstract void accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, LTLFormula<P, S>> idToFormula,
 			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, 
 			Collection<Integer> finalStates,
 			BooleanAlgebra<P, S> ba
