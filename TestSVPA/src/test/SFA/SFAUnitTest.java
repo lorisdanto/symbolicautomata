@@ -223,6 +223,29 @@ public class SFAUnitTest {
 		assertTrue(cUcB.isEquivalentTo(SFA.getFullSFA(ba), ba));
 		assertTrue(cUcB.isEquivalentTo(cUcA, ba));
 	}
+	
+	@Test
+	public void testEquivalenceHK() {
+		SFA<CharPred, Character> cA = autA.complement(ba);
+		SFA<CharPred, Character> cUcA = autA.unionWith(cA, ba);
+		SFA<CharPred, Character> ccA = cA.complement(ba);
+		SFA<CharPred, Character> cB = autB.complement(ba);
+		SFA<CharPred, Character> cUcB = autB.unionWith(cB, ba);
+		SFA<CharPred, Character> ccB = cB.complement(ba);
+
+		assertFalse(autA.isHopcroftKarpEquivalentTo(autB, ba));
+
+		assertTrue(autA.isHopcroftKarpEquivalentTo(ccA, ba));
+
+		boolean res = autB.isHopcroftKarpEquivalentTo(ccB, ba);
+
+		assertTrue(res);
+
+		assertTrue(cUcA.isHopcroftKarpEquivalentTo(SFA.getFullSFA(ba), ba));
+
+		assertTrue(cUcB.isHopcroftKarpEquivalentTo(SFA.getFullSFA(ba), ba));
+		assertTrue(cUcB.isHopcroftKarpEquivalentTo(cUcA, ba));
+	}
 
 	@Test
 	public void testUnion() {

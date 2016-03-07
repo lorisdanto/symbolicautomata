@@ -13,14 +13,15 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.sat4j.specs.TimeoutException;
 
 import com.google.common.collect.Lists;
 
 import automata.safa.booleanexpression.SumOfProducts;
-import automata.Move;
+import automata.sfa.SFA;
+import automata.sfa.SFAInputMove;
+import automata.sfa.SFAMove;
 import theory.BooleanAlgebra;
 import utilities.Pair;
 
@@ -92,7 +93,7 @@ public class SAFA<P, S> {
 			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba) {
 		return MkSAFA(transitions, initialState, finalStates, ba, true);
 	}
-	
+
 	/*
 	 * Create an automaton and removes unreachable states and only removes
 	 * unreachable states if remUnreachableStates is true and normalizes the
@@ -113,7 +114,7 @@ public class SAFA<P, S> {
 		for (SAFAInputMove<A, B> t : transitions)
 			aut.addTransition(t, ba, false);
 
-		if(normalize)
+		if (normalize)
 			return aut.normalize(ba);
 		else
 			return aut;
@@ -182,28 +183,29 @@ public class SAFA<P, S> {
 	}
 
 	/**
-	 * Return a list [<g1, t1>, ..., <gn, tn>] of <guard, transition table> pairs such that:
-	 * 	- For each i and each state s, s transitions to ti[s] on reading a letter satisfying gi
-	 *  - {g1, ..., gn} is the set of all satisfiable conjunctions of guards on outgoing transitions
-	 *  	leaving the input set of states
-	 * @param states The states from which to compute the outgoing transitions
+	 * Return a list [<g1, t1>, ..., <gn, tn>] of <guard, transition table>
+	 * pairs such that: - For each i and each state s, s transitions to ti[s] on
+	 * reading a letter satisfying gi - {g1, ..., gn} is the set of all
+	 * satisfiable conjunctions of guards on outgoing transitions leaving the
+	 * input set of states
+	 * 
+	 * @param states
+	 *            The states from which to compute the outgoing transitions
 	 * @param ba
-	 * @param guard All transitions in the list must comply with guard
+	 * @param guard
+	 *            All transitions in the list must comply with guard
 	 * @return
 	 */
-	private LinkedList<Pair<P, BooleanExpression[]>> getTransitionTablesFrom(
-			Collection<Integer> states,
-			BooleanAlgebra<P, S> ba,
-			P guard)
-	{
+	private LinkedList<Pair<P, BooleanExpression[]>> getTransitionTablesFrom(Collection<Integer> states,
+			BooleanAlgebra<P, S> ba, P guard) {
 		LinkedList<Pair<P, BooleanExpression[]>> moves = new LinkedList<>();
 		moves.add(new Pair<>(guard, new BooleanExpression[maxStateId]));
 		for (Integer s : states) {
 			LinkedList<Pair<P, BooleanExpression[]>> moves2 = new LinkedList<>();
-			for (SAFAInputMove<P,S> t : getInputMovesFrom(s)) {
+			for (SAFAInputMove<P, S> t : getInputMovesFrom(s)) {
 				for (Pair<P, BooleanExpression[]> move : moves) {
 					P newGuard = ba.MkAnd(t.guard, move.getFirst());
-					if (ba.IsSatisfiable(newGuard)) {				
+					if (ba.IsSatisfiable(newGuard)) {
 						BooleanExpression[] map = move.getSecond().clone();
 						map[s] = t.to;
 						moves2.add(new Pair<>(newGuard, map));
@@ -214,11 +216,12 @@ public class SAFA<P, S> {
 		}
 		return moves;
 	}
-	
-	public static <P,S> boolean isEquivalent(SAFA<P, S> laut, SAFA<P, S> raut, BooleanAlgebra<P, S> ba) throws TimeoutException {
+
+	public static <P, S> boolean isEquivalent(SAFA<P, S> laut, SAFA<P, S> raut, BooleanAlgebra<P, S> ba)
+			throws TimeoutException {
 		SAFARelation similar = new SATRelation();
 		List<Pair<BooleanExpression, BooleanExpression>> worklist = new LinkedList<>();
-		
+
 		BooleanExpression leftInitial = new SumOfProducts(laut.initialState);
 		BooleanExpression rightInitial = new SumOfProducts(raut.initialState);
 		similar.add(leftInitial, rightInitial);
@@ -226,22 +229,23 @@ public class SAFA<P, S> {
 		while (!worklist.isEmpty()) {
 			Pair<BooleanExpression, BooleanExpression> next = worklist.get(0);
 			worklist.remove(0);
-			
+
 			BooleanExpression left = next.getFirst();
 			BooleanExpression right = next.getSecond();
-			
-			LinkedList<Pair<P, BooleanExpression[]>> leftMoves =
-					laut.getTransitionTablesFrom(left.getStates(), ba, ba.True());
+
+			LinkedList<Pair<P, BooleanExpression[]>> leftMoves = laut.getTransitionTablesFrom(left.getStates(), ba,
+					ba.True());
 			for (Pair<P, BooleanExpression[]> leftMove : leftMoves) {
 				BooleanExpression leftSucc = left.substitute((lit) -> leftMove.getSecond()[lit]);
 				boolean leftSuccAccept = leftSucc.hasModel(laut.finalStates);
 
-				LinkedList<Pair<P, BooleanExpression[]>> rightMoves =
-						raut.getTransitionTablesFrom(right.getStates(), ba, leftMove.getFirst());
+				LinkedList<Pair<P, BooleanExpression[]>> rightMoves = raut.getTransitionTablesFrom(right.getStates(),
+						ba, leftMove.getFirst());
 				for (Pair<P, BooleanExpression[]> rightMove : rightMoves) {
 					BooleanExpression rightSucc = right.substitute((lit) -> rightMove.getSecond()[lit]);
 					if (leftSuccAccept == rightSucc.hasModel(raut.finalStates)) {
-						// leftSucc is accepting and rightSucc is rejecting or vice versa
+						// leftSucc is accepting and rightSucc is rejecting or
+						// vice versa
 						return false;
 					} else if (!similar.isMember(leftSucc, rightSucc)) {
 						similar.add(leftSucc, rightSucc);
@@ -262,6 +266,70 @@ public class SAFA<P, S> {
 		}
 
 		return prevState;
+	}
+
+	public static <P, S> boolean isReverseEquivalent(SAFA<P, S> laut, SAFA<P, S> raut, BooleanAlgebra<P, S> ba) {
+		return getReverseSFA(laut,ba).isHopcroftKarpEquivalentTo(getReverseSFA(raut, ba), ba);
+	}
+	
+	/**
+	 * Returns true if the SAFA accepts the input list
+	 * 
+	 * @param input
+	 * @param ba
+	 * @return true if accepted false otherwise
+	 */
+	public static <P,S> SFA<P, S> getReverseSFA(SAFA<P,S> aut, BooleanAlgebra<P, S> ba) {
+
+		// components of new SFA
+		Collection<SFAMove<P, S>> transitions = new ArrayList<SFAMove<P, S>>();
+		Integer initialState = 0;
+		Collection<Integer> finalStates = new ArrayList<Integer>();
+
+		HashMap<HashSet<Integer>, Integer> reached = new HashMap<HashSet<Integer>, Integer>();
+		LinkedList<HashSet<Integer>> toVisit = new LinkedList<HashSet<Integer>>();
+
+		HashSet<Integer> init = new HashSet<>(aut.finalStates);
+		reached.put(init, 0);
+		toVisit.add(init);
+
+		// Explore the product automaton until no new states can be reached
+		while (!toVisit.isEmpty()) {
+			HashSet<Integer> currentState = toVisit.removeFirst();
+			int currentStateID = reached.get(currentState);
+			ArrayList<SAFAInputMove<P, S>> movesToCurr = new ArrayList<>();
+			ArrayList<P> predicatesToCurr = new ArrayList<>();
+
+			if(currentState.contains(aut.initialState))
+				finalStates.add(currentStateID);
+			
+			for (SAFAInputMove<P, S> t : aut.getInputMoves())
+				if (t.to.hasModel(currentState)) {
+					movesToCurr.add(t);
+					predicatesToCurr.add(t.guard);
+				}
+
+			Collection<Pair<P, ArrayList<Integer>>> minterms = ba.GetMinterms(predicatesToCurr);
+			for (Pair<P, ArrayList<Integer>> minterm : minterms) {
+				
+				ArrayList<Integer> moveBits = minterm.second;
+				HashSet<Integer> fromState = new HashSet<Integer>();
+				for (int moveIndex = 0; moveIndex < moveBits.size(); moveIndex++)
+					if (moveBits.get(moveIndex) == 1)
+						fromState.add(movesToCurr.get(moveIndex).from);
+
+				// Add new move if target state is not the empty set
+				if (fromState.size() > 0) {
+					int fromSt = getStateId(fromState, reached,toVisit);
+					transitions.add(new SFAInputMove<P, S>(currentStateID,
+							fromSt, minterm.first));
+				}				
+			}
+		}
+
+		SFA<P,S> rev =  SFA.MkSFA(transitions, initialState, finalStates, ba);
+		rev.setIsDet(true);
+		return rev;
 	}
 
 	// ------------------------------------------------------
@@ -334,7 +402,7 @@ public class SAFA<P, S> {
 			break;
 		}
 
-		return MkSAFA(transitions, initialState, finalStates, ba,true);
+		return MkSAFA(transitions, initialState, finalStates, ba, true);
 	}
 
 	/**
@@ -362,7 +430,7 @@ public class SAFA<P, S> {
 						else
 							newTo = newTo.or(trFromState.get(i).to);
 
-				if(newTo!=null)
+				if (newTo != null)
 					transitions.add(new SAFAInputMove<P, S>(state, newTo, minterm.first));
 			}
 		}
@@ -419,7 +487,7 @@ public class SAFA<P, S> {
 
 		return cl;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -427,8 +495,7 @@ public class SAFA<P, S> {
 	 */
 	public String toString() {
 		String s = "";
-		s = "Automaton: " + getTransitionCount() + " transitions, "
-				+ stateCount() + " states" + "\n";
+		s = "Automaton: " + getTransitionCount() + " transitions, " + stateCount() + " states" + "\n";
 		s += "Transitions \n";
 		for (SAFAInputMove<P, S> t : getInputMoves())
 			s = s + t + "\n";
@@ -440,6 +507,21 @@ public class SAFA<P, S> {
 		for (Integer fs : finalStates)
 			s = s + fs + "\n";
 		return s;
+	}
+	
+	/**
+	 * If <code>state<code> belongs to reached returns reached(state)
+	 * otherwise add state to reached and to toVisit and return corresponding id
+	 */
+	public static <A, B> int getStateId(A state, Map<A, Integer> reached,
+			LinkedList<A> toVisit) {
+		if (!reached.containsKey(state)) {
+			int newId = reached.size();
+			reached.put(state, newId);
+			toVisit.add(state);
+			return newId;
+		} else
+			return reached.get(state);
 	}
 
 }

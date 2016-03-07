@@ -19,14 +19,19 @@ import java.util.Stack;
 
 import theory.BooleanAlgebra;
 import utilities.Block;
+import utilities.DisjointSet;
 import utilities.Pair;
 import automata.Automaton;
 import automata.Move;
 
 /**
  * Symbolic finite automaton
- * @param <P> set of predicates over the domain S
- * @param <S> domain of the automaton alphabet
+ * 
+ * @param
+ * 			<P>
+ *            set of predicates over the domain S
+ * @param <S>
+ *            domain of the automaton alphabet
  */
 public class SFA<P, S> extends Automaton<P, S> {
 
@@ -34,6 +39,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 	// Constant automata
 	// ------------------------------------------------------
 
+	public void setIsDet(boolean b){
+		isDeterministic=b;
+	}
+	
 	/**
 	 * Returns the empty SFA for the Boolean algebra <code>ba</code>
 	 */
@@ -47,7 +56,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 		aut.isEmpty = true;
 		aut.isEpsilonFree = true;
 		aut.maxStateId = 1;
-                aut.addTransition(new SFAInputMove<A, B>(0, 0, ba.True()), ba, true);
+		aut.addTransition(new SFAInputMove<A, B>(0, 0, ba.True()), ba, true);
 		return aut;
 	}
 
@@ -126,9 +135,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * Create an automaton and removes unreachable states
 	 */
-	public static <A, B> SFA<A, B> MkSFA(Collection<SFAMove<A, B>> transitions,
-			Integer initialState, Collection<Integer> finalStates,
-			BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> MkSFA(Collection<SFAMove<A, B>> transitions, Integer initialState,
+			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba) {
 
 		return MkSFA(transitions, initialState, finalStates, ba, true);
 	}
@@ -137,12 +145,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 * Create an automaton and removes unreachable states and only removes
 	 * unreachable states if <code>remUnreachableStates<code> is true
 	 */
-	public static <A, B> SFA<A, B> MkSFA(Collection<SFAMove<A, B>> transitions,
-			Integer initialState, Collection<Integer> finalStates,
-			BooleanAlgebra<A, B> ba, boolean remUnreachableStates) {
+	public static <A, B> SFA<A, B> MkSFA(Collection<SFAMove<A, B>> transitions, Integer initialState,
+			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba, boolean remUnreachableStates) {
 
-		return MkSFA(transitions, initialState, finalStates, ba,
-				remUnreachableStates, true);
+		return MkSFA(transitions, initialState, finalStates, ba, remUnreachableStates, true);
 	}
 
 	/*
@@ -150,10 +156,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 * unreachable states if remUnreachableStates is true and normalizes the
 	 * automaton if normalize is true
 	 */
-	private static <A, B> SFA<A, B> MkSFA(
-			Collection<SFAMove<A, B>> transitions, Integer initialState,
-			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba,
-			boolean remUnreachableStates, boolean normalize) {
+	private static <A, B> SFA<A, B> MkSFA(Collection<SFAMove<A, B>> transitions, Integer initialState,
+			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba, boolean remUnreachableStates, boolean normalize) {
 
 		SFA<A, B> aut = new SFA<A, B>();
 
@@ -163,7 +167,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 		aut.initialState = initialState;
 		aut.finalStates = finalStates;
-		if(finalStates.isEmpty())
+		if (finalStates.isEmpty())
 			return getEmptySFA(ba);
 
 		for (SFAMove<A, B> t : transitions)
@@ -175,15 +179,14 @@ public class SFA<P, S> extends Automaton<P, S> {
 		if (remUnreachableStates)
 			aut = removeDeadOrUnreachableStates(aut, ba);
 
-		if(aut.finalStates.isEmpty())			
+		if (aut.finalStates.isEmpty())
 			return getEmptySFA(ba);
-		
+
 		return aut;
 	}
 
 	// Adds a transition to the SFA
-	private void addTransition(SFAMove<P, S> transition,
-			BooleanAlgebra<P, S> ba, boolean skipSatCheck) {
+	private void addTransition(SFAMove<P, S> transition, BooleanAlgebra<P, S> ba, boolean skipSatCheck) {
 
 		if (transition.isEpsilonTransition()) {
 			if (transition.to == transition.from)
@@ -204,17 +207,15 @@ public class SFA<P, S> extends Automaton<P, S> {
 			states.add(transition.to);
 
 			if (!transition.isEpsilonTransition()) {
-				getInputMovesFrom(transition.from).add(
-						(SFAInputMove<P, S>) transition);
-				getInputMovesTo(transition.to).add(
-						(SFAInputMove<P, S>) transition);
+				getInputMovesFrom(transition.from).add((SFAInputMove<P, S>) transition);
+				getInputMovesTo(transition.to).add((SFAInputMove<P, S>) transition);
 			} else {
 				getEpsilonFrom(transition.from).add((SFAEpsilon<P, S>) transition);
 				getEpsilonTo(transition.to).add((SFAEpsilon<P, S>) transition);
 			}
 		}
 	}
-	
+
 	// ------------------------------------------------------
 	// Boolean automata operations
 	// ------------------------------------------------------
@@ -230,8 +231,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 * Computes the intersection with <code>aut1</code> and <code>aut2</code> as
 	 * a new SFA
 	 */
-	public static <A, B> SFA<A, B> intersection(SFA<A, B> aut1, SFA<A, B> aut2,
-			BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> intersection(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
 
 		// if one of the automata is empty return the empty SFA
 		if (aut1.isEmpty || aut2.isEmpty)
@@ -250,8 +250,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 		// The initial state is the pair consisting of the initial
 		// states of aut1 and aut2
-		Pair<Integer, Integer> initPair = new Pair<Integer, Integer>(
-				aut1.initialState, aut2.initialState);
+		Pair<Integer, Integer> initPair = new Pair<Integer, Integer>(aut1.initialState, aut2.initialState);
 		reached.put(initPair, 0);
 		toVisit.add(initPair);
 
@@ -263,22 +262,17 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 			// get the set of states reachable from currentState via epsilon
 			// moves
-			Collection<Integer> epsilonClosure1 = aut1.getEpsClosure(
-					currentState.first, ba);
-			Collection<Integer> epsilonClosure2 = aut2.getEpsClosure(
-					currentState.second, ba);
+			Collection<Integer> epsilonClosure1 = aut1.getEpsClosure(currentState.first, ba);
+			Collection<Integer> epsilonClosure2 = aut2.getEpsClosure(currentState.second, ba);
 
 			// if both the epsilon closures contain a final state currentStateID
 			// is final
-			if (aut1.isFinalConfiguration(epsilonClosure1)
-					&& aut2.isFinalConfiguration(epsilonClosure2))
+			if (aut1.isFinalConfiguration(epsilonClosure1) && aut2.isFinalConfiguration(epsilonClosure2))
 				finalStates.add(currentStateID);
 
 			// Try to pair transitions out of both automata
-			for (SFAInputMove<A, B> ct1 : aut1
-					.getInputMovesFrom(epsilonClosure1))
-				for (SFAInputMove<A, B> ct2 : aut2
-						.getInputMovesFrom(epsilonClosure2)) {
+			for (SFAInputMove<A, B> ct1 : aut1.getInputMovesFrom(epsilonClosure1))
+				for (SFAInputMove<A, B> ct2 : aut2.getInputMovesFrom(epsilonClosure2)) {
 
 					// create conjunction of the two guards and create
 					// transition only if the conjunction is satisfiable
@@ -287,14 +281,11 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 						// Create new product transition and add it to
 						// transitions
-						Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(
-								ct1.to, ct2.to);
+						Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(ct1.to, ct2.to);
 
-						int nextStateId = getStateId(nextState, reached,
-								toVisit);
+						int nextStateId = getStateId(nextState, reached, toVisit);
 
-						SFAInputMove<A, B> newTrans = new SFAInputMove<A, B>(
-								currentStateID, nextStateId, intersGuard);
+						SFAInputMove<A, B> newTrans = new SFAInputMove<A, B>(currentStateID, nextStateId, intersGuard);
 
 						transitions.add(newTrans);
 					}
@@ -315,8 +306,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * Computes <code>aut1</code> minus <code>aut2</code> as a new SFA
 	 */
-	public static <A, B> SFA<A, B> difference(SFA<A, B> aut1, SFA<A, B> aut2,
-			BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> difference(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
 		return aut1.intersectionWith(aut2.complement(ba), ba);
 	}
 
@@ -331,8 +321,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 * Computes the union of <code>aut1</code> and <code>aut2</code> as a new
 	 * SFA
 	 */
-	public static <A, B> SFA<A, B> union(SFA<A, B> aut1, SFA<A, B> aut2,
-			BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> union(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
 
 		// if both automata are empty return the empty SFA
 		if (aut1.isEmpty && aut2.isEmpty)
@@ -371,8 +360,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 		// the the initial state of aut1 and
 		// the initial state of aut2 shifted by offset
 		transitions.add(new SFAEpsilon<A, B>(initialState, aut1.initialState));
-		transitions.add(new SFAEpsilon<A, B>(initialState, aut2.initialState
-				+ offSet));
+		transitions.add(new SFAEpsilon<A, B>(initialState, aut2.initialState + offSet));
 
 		// Make all states of the two machines final
 		finalStates.addAll(aut1.finalStates);
@@ -394,8 +382,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * @return the complement of <code>aut</code> as a new SFA
 	 */
-	public static <A, B> SFA<A, B> complementOf(SFA<A, B> aut,
-			BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> complementOf(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
 
 		// make aut total to make sure it has a sink state
 		SFA<A, B> autTotal = aut.mkTotal(ba);
@@ -407,8 +394,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 			if (!autTotal.finalStates.contains(st))
 				newFinalStates.add(st);
 
-		return MkSFA(autTotal.getTransitions(), autTotal.initialState,
-				newFinalStates, ba, false);
+		return MkSFA(autTotal.getTransitions(), autTotal.initialState, newFinalStates, ba, false);
 	}
 
 	// ------------------------------------------------------
@@ -425,8 +411,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 * @return an equivalent copy without epsilon moves
 	 */
 	@SuppressWarnings("unchecked")
-	public static <A, B> SFA<A, B> removeEpsilonMovesFrom(SFA<A, B> aut,
-			BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> removeEpsilonMovesFrom(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
 
 		if (aut.isEpsilonFree)
 			return (SFA<A, B>) aut.clone();
@@ -439,8 +424,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 		LinkedList<Collection<Integer>> toVisitStates = new LinkedList<Collection<Integer>>();
 
 		// Add initial state
-		Collection<Integer> reachableFromInit = aut.getEpsClosure(
-				aut.initialState, ba);
+		Collection<Integer> reachableFromInit = aut.getEpsClosure(aut.initialState, ba);
 
 		reachedStates.put(reachableFromInit, 0);
 		toVisitStates.add(reachableFromInit);
@@ -451,8 +435,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 			for (SFAMove<A, B> t1 : aut.getTransitionsFrom(currState)) {
 				if (!t1.isEpsilonTransition()) {
-					Collection<Integer> nextState = aut
-							.getEpsClosure(t1.to, ba);
+					Collection<Integer> nextState = aut.getEpsClosure(t1.to, ba);
 
 					int nextStateId = 0;
 
@@ -495,8 +478,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 *         every state) equivalent to <code>aut</code>
 	 */
 	@SuppressWarnings("unchecked")
-	public static <A, B> SFA<A, B> mkTotal(SFA<A, B> aut,
-			BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> mkTotal(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
 
 		if (aut.isTotal) {
 			return (SFA<A, B>) aut.clone();
@@ -521,18 +503,17 @@ public class SFA<P, S> extends Automaton<P, S> {
 				else
 					totGuard = ba.MkAnd(totGuard, ba.MkNot(move.guard));
 			}
-			//If there are not transitions out of the state set the guard to the sink to true
-			if(totGuard==null)
-				totGuard=ba.True();
+			// If there are not transitions out of the state set the guard to
+			// the sink to true
+			if (totGuard == null)
+				totGuard = ba.True();
 			if (ba.IsSatisfiable(totGuard)) {
 				addSink = true;
-				transitions.add(new SFAInputMove<A, B>(state, sinkState,
-						totGuard));
+				transitions.add(new SFAInputMove<A, B>(state, sinkState, totGuard));
 			}
 		}
 		if (addSink)
-			transitions.add(new SFAInputMove<A, B>(sinkState, sinkState, ba
-					.True()));
+			transitions.add(new SFAInputMove<A, B>(sinkState, sinkState, ba.True()));
 
 		// Do not remove unreachable states otherwise the sink will be removed
 		// again
@@ -547,13 +528,85 @@ public class SFA<P, S> extends Automaton<P, S> {
 	}
 
 	/**
-	 * checks wheter aut1 is equivalent to aut2
+	 * checks whether aut1 is equivalent to aut2
 	 */
-	public static <A, B> boolean areEquivalent(SFA<A, B> aut1, SFA<A, B> aut2,
-			BooleanAlgebra<A, B> ba) {
+	public static <A, B> boolean areEquivalent(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
 		if (!difference(aut1, aut2, ba).isEmpty)
 			return false;
 		return difference(aut2, aut1, ba).isEmpty;
+	}
+
+	/**
+	 * checks whether the aut accepts the same language
+	 */
+	public boolean isHopcroftKarpEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+		return areHopcroftKarpEquivalent(this.determinize(ba).mkTotal(ba).normalize(ba),
+				aut.determinize(ba).mkTotal(ba).normalize(ba), ba);
+	}
+
+	/**
+	 * checks whether aut1 is equivalent to aut2 using Hopcroft Karp's algorithm
+	 */
+	public static <A, B> boolean areHopcroftKarpEquivalent(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
+
+		DisjointSet ds = new DisjointSet(aut1.stateCount() + aut2.stateCount());
+		int offset = aut1.stateCount();
+
+		ds.mergeSets(aut1.initialState, aut2.initialState + offset);
+
+		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<>();
+		toVisit.add(new Pair<Integer, Integer>(aut1.initialState, aut2.initialState));
+		while (!toVisit.isEmpty()) {
+			Pair<Integer, Integer> curr = toVisit.removeFirst();
+			for (SFAInputMove<A, B> move1 : aut1.getInputMovesFrom(curr.first))
+				for (SFAInputMove<A, B> move2 : aut2.getInputMovesFrom(curr.second))
+					if (ba.IsSatisfiable(ba.MkAnd(move1.guard, move2.guard))) {
+						int r1 = move1.to, r2 = move2.to + offset;
+						boolean isFinal1 = aut1.isFinalState(move1.to);
+						boolean isFinal2 = aut2.isFinalState(move2.to);
+						if (isFinal1 && !isFinal2)
+							return false;
+						if (isFinal2 && !isFinal1)
+							return false;
+
+						if (!ds.areInSameSet(r1, r2)) {
+							ds.mergeSets(r1, r2);
+							toVisit.add(new Pair<Integer, Integer>(r1, r2));
+						}
+					}
+		}
+
+		HashSet<Integer> finals = new HashSet<>();
+		HashSet<Integer> nonFinals = new HashSet<>();
+		for (int st1 : aut1.states) {
+			int rep = ds.getRepr(st1);
+			if (aut1.finalStates.contains(st1)){
+				if(nonFinals.contains(rep))
+					return false;
+				finals.add(rep);
+			}
+			else{
+				if(finals.contains(rep))
+					return false;
+				nonFinals.add(rep);
+			}
+		}
+
+		for (int st2 : aut2.states) {
+			int rep = ds.getRepr(st2+offset);
+			if (aut2.finalStates.contains(st2)){
+				if(nonFinals.contains(rep))
+					return false;
+				finals.add(rep);
+			}
+			else{
+				if(finals.contains(rep))
+					return false;
+				nonFinals.add(rep);
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -567,8 +620,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 * concatenates aut1 with aut2
 	 */
 	@SuppressWarnings("unchecked")
-	public static <A, B> SFA<A, B> concatenate(SFA<A, B> aut1, SFA<A, B> aut2,
-			BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> concatenate(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
 
 		if (aut1.isEmpty || aut2.isEmpty)
 			return getEmptySFA(ba);
@@ -590,8 +642,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 		}
 
 		for (Integer state1 : aut1.finalStates)
-			transitions.add(new SFAEpsilon<A, B>(state1, aut2.initialState
-					+ offSet));
+			transitions.add(new SFAEpsilon<A, B>(state1, aut2.initialState + offSet));
 
 		for (Integer state : aut2.finalStates)
 			finalStates.add(state + offSet);
@@ -637,8 +688,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * @return a deterministic SFA that is equivalent to <code>aut</code>
 	 */
-	public static <A, B> SFA<A, B> determinize(SFA<A, B> aut,
-			BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> determinize(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
 
 		if (aut.isDeterministic(ba))
 			return aut;
@@ -690,8 +740,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 			// build the minterms using the predicates and iterate over them:
 			// each minterm is a predicate together with the the corresponding
 			// set of transition IDs
-			for (Pair<A, ArrayList<Integer>> minterm : ba
-					.GetMinterms(predicatesOfMoves)) {
+			for (Pair<A, ArrayList<Integer>> minterm : ba.GetMinterms(predicatesOfMoves)) {
 
 				A guard = minterm.first;
 
@@ -707,16 +756,13 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 				// Add new move if target state is not the empty set
 				if (toState.size() > 0) {
-					int toStateId = getStateId(toState, reachedStates,
-							toVisitStates);
-					transitions.add(new SFAInputMove<A, B>(currentStateId,
-							toStateId, guard));
+					int toStateId = getStateId(toState, reachedStates, toVisitStates);
+					transitions.add(new SFAInputMove<A, B>(currentStateId, toStateId, guard));
 				}
 			}
 		}
 
-		SFA<A, B> determinized = MkSFA(transitions, initialState, finalStates,
-				ba, false);
+		SFA<A, B> determinized = MkSFA(transitions, initialState, finalStates, ba, false);
 		// set isDetermistic to true to avoid future redundancy
 		determinized.isDeterministic = true;
 		return determinized;
@@ -731,12 +777,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 	}
 
 	/**
-	 * Creates a normalized copy of
-	 * <code>aut<code> where all transitions between
-	 * states are collapsed taking their union
+	 * Creates a normalized copy of <code>aut<code> where all transitions
+	 * between states are collapsed taking their union
 	 */
-	public static <A, B> SFA<A, B> getNormalized(SFA<A, B> aut,
-			BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> getNormalized(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
 
 		if (aut.isEmpty)
 			return getEmptySFA(ba);
@@ -752,25 +796,21 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 		// Create disjunction of all rules between same state
 		for (SFAInputMove<A, B> move : aut.getInputMovesFrom(aut.states)) {
-			Pair<Integer, Integer> fromTo = new Pair<Integer, Integer>(
-					move.from, move.to);
+			Pair<Integer, Integer> fromTo = new Pair<Integer, Integer>(move.from, move.to);
 			if (inputMoves.containsKey(fromTo))
-				inputMoves.put(fromTo,
-						ba.MkOr(move.guard, inputMoves.get(fromTo)));
+				inputMoves.put(fromTo, ba.MkOr(move.guard, inputMoves.get(fromTo)));
 			else
 				inputMoves.put(fromTo, move.guard);
 		}
 		// Keep at most one epsilon move between every two state
 		for (SFAEpsilon<A, B> move : aut.getEpsilonFrom(aut.states)) {
-			Pair<Integer, Integer> fromTo = new Pair<Integer, Integer>(
-					move.from, move.to);
+			Pair<Integer, Integer> fromTo = new Pair<Integer, Integer>(move.from, move.to);
 			epsMoves.add(fromTo);
 		}
 
 		// Create the new transition function
 		for (Pair<Integer, Integer> p : inputMoves.keySet())
-			transitions.add(new SFAInputMove<A, B>(p.first, p.second,
-					inputMoves.get(p)));
+			transitions.add(new SFAInputMove<A, B>(p.first, p.second, inputMoves.get(p)));
 		for (Pair<Integer, Integer> p : epsMoves)
 			transitions.add(new SFAEpsilon<A, B>(p.first, p.second));
 
@@ -787,8 +827,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * @return a minimized copy of <code>aut<code>
 	 */
-	public static <A, B> SFA<A, B> getMinimalOf(SFA<A, B> aut,
-			BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> getMinimalOf(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
 
 		if (aut.isEmpty)
 			return getEmptySFA(ba);
@@ -832,19 +871,16 @@ public class SFA<P, S> extends Automaton<P, S> {
 			// stateToPredIntoCurrentBlock(s) contains the predicate for which
 			// a move of s goes into a state in currentBlock
 			Map<Integer, A> stateToPredIntoCurrentBlock = new HashMap<Integer, A>();
-			for (SFAInputMove<A, B> move : totalAut
-					.getInputMovesTo(currentBlock.set)) {
+			for (SFAInputMove<A, B> move : totalAut.getInputMovesTo(currentBlock.set)) {
 				if (stateToPredIntoCurrentBlock.containsKey(move.from))
-					stateToPredIntoCurrentBlock.put(move.from, ba.MkOr(
-							stateToPredIntoCurrentBlock.get(move.from),
-							move.guard));
+					stateToPredIntoCurrentBlock.put(move.from,
+							ba.MkOr(stateToPredIntoCurrentBlock.get(move.from), move.guard));
 				else
 					stateToPredIntoCurrentBlock.put(move.from, move.guard);
 			}
 
 			// Set of states going into currentBlock with some transition
-			Block preOfCurrentBlock = new Block(
-					stateToPredIntoCurrentBlock.keySet());
+			Block preOfCurrentBlock = new Block(stateToPredIntoCurrentBlock.keySet());
 
 			// Blocks intersecting with preOfCurrentBlock
 			HashSet<Block> relevantBlocks = new HashSet<Block>();
@@ -854,8 +890,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 			// split relevant blocks
 			for (Block relevantBlock : relevantBlocks) {
-				Block splitBlock = relevantBlock
-						.intersectWith(preOfCurrentBlock);
+				Block splitBlock = relevantBlock.intersectWith(preOfCurrentBlock);
 				// Change only if the intersection made the block smaller
 				if (splitBlock.size() < relevantBlock.size()) {
 					for (int p : splitBlock.set) {
@@ -961,8 +996,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 		for (Block b : blockToIndex.keySet()) {
 			int st = blockToIndex.get(b);
 			for (SFAInputMove<A, B> t : totalAut.getInputMovesFrom(b.set))
-				transitions.add(new SFAInputMove<A, B>(st, stateToClass
-						.get(t.to), t.guard));
+				transitions.add(new SFAInputMove<A, B>(st, stateToClass.get(t.to), t.guard));
 
 		}
 
@@ -990,8 +1024,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 *         <code>null</code> otherwise
 	 */
 	@SuppressWarnings("unchecked")
-	public static <A, B> List<B> getAmbiguousInput(SFA<A, B> aut,
-			BooleanAlgebra<A, B> ba) {
+	public static <A, B> List<B> getAmbiguousInput(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
 
 		SFA<A, B> aut1 = (SFA<A, B>) aut.clone();
 		SFA<A, B> aut2 = (SFA<A, B>) aut.clone();
@@ -1007,8 +1040,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 		// The initial state is the pair consisting of the initial
 		// states of aut1 and aut2
-		Pair<Integer, Integer> initStatePair = new Pair<Integer, Integer>(
-				aut1.initialState, aut2.initialState);
+		Pair<Integer, Integer> initStatePair = new Pair<Integer, Integer>(aut1.initialState, aut2.initialState);
 		product.initialState = 0;
 		product.states.add(0);
 
@@ -1024,23 +1056,18 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 			// get the set of states reachable from currentState via epsilon
 			// moves
-			Collection<Integer> epsilonClosure1 = aut1.getEpsClosure(
-					currState.first, ba);
-			Collection<Integer> epsilonClosure2 = aut2.getEpsClosure(
-					currState.second, ba);
+			Collection<Integer> epsilonClosure1 = aut1.getEpsClosure(currState.first, ba);
+			Collection<Integer> epsilonClosure2 = aut2.getEpsClosure(currState.second, ba);
 
 			// Set final states
 			// if both the epsilon closures contain a final state currentStateID
 			// is final
-			if (aut1.isFinalConfiguration(epsilonClosure1)
-					&& aut2.isFinalConfiguration(epsilonClosure2))
+			if (aut1.isFinalConfiguration(epsilonClosure1) && aut2.isFinalConfiguration(epsilonClosure2))
 				product.finalStates.add(currStateId);
 
 			// Try to pair transitions out of both automata
-			for (SFAInputMove<A, B> t1 : aut1
-					.getInputMovesFrom(epsilonClosure1))
-				for (SFAInputMove<A, B> t2 : aut2
-						.getInputMovesFrom(epsilonClosure2)) {
+			for (SFAInputMove<A, B> t1 : aut1.getInputMovesFrom(epsilonClosure1))
+				for (SFAInputMove<A, B> t2 : aut2.getInputMovesFrom(epsilonClosure2)) {
 
 					// create conjunction of the two guards and create
 					// transition only if the conjunction is satisfiable
@@ -1049,13 +1076,11 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 						// Create new product transition and add it to
 						// transitions
-						Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(
-								t1.to, t2.to);
+						Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(t1.to, t2.to);
 						int nextStateId = 0;
 
 						if (!reached.containsKey(nextState)) {
-							product.inputMovesTo.put(totStates,
-									new HashSet<SFAInputMove<A, B>>());
+							product.inputMovesTo.put(totStates, new HashSet<SFAInputMove<A, B>>());
 
 							reached.put(nextState, totStates);
 							reachedRev.put(totStates, nextState);
@@ -1067,8 +1092,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 						} else
 							nextStateId = reached.get(nextState);
 
-						SFAInputMove<A, B> newTrans = new SFAInputMove<A, B>(
-								currStateId, nextStateId, intersGuard);
+						SFAInputMove<A, B> newTrans = new SFAInputMove<A, B>(currStateId, nextStateId, intersGuard);
 
 						product.addTransition(newTrans, ba, true);
 					}
@@ -1115,8 +1139,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 		// Check transitions out of a state are mutually exclusive
 		for (Integer state : states) {
-			List<SFAMove<P, S>> movesFromState = new ArrayList<SFAMove<P, S>>(
-					getTransitionsFrom(state));
+			List<SFAMove<P, S>> movesFromState = new ArrayList<SFAMove<P, S>>(getTransitionsFrom(state));
 
 			for (int i = 0; i < movesFromState.size(); i++) {
 				SFAMove<P, S> t1 = movesFromState.get(i);
@@ -1139,8 +1162,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	// ------------------------------------------------------
 
 	// creates a new SFA where all unreachable or dead states have been removed
-	private static <A, B> SFA<A, B> removeDeadOrUnreachableStates(
-			SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
+	private static <A, B> SFA<A, B> removeDeadOrUnreachableStates(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
 
 		// components of new SFA
 		Collection<SFAMove<A, B>> transitions = new ArrayList<SFAMove<A, B>>();
@@ -1149,10 +1171,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 		HashSet<Integer> initStates = new HashSet<Integer>();
 		initStates.add(aut.initialState);
-		Collection<Integer> reachableFromInit = aut
-				.getReachableStatesFrom(initStates);
-		Collection<Integer> reachingFinal = aut
-				.getReachingStates(aut.finalStates);
+		Collection<Integer> reachableFromInit = aut.getReachableStatesFrom(initStates);
+		Collection<Integer> reachingFinal = aut.getReachingStates(aut.finalStates);
 
 		Collection<Integer> aliveStates = new HashSet<Integer>();
 
@@ -1181,8 +1201,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	}
 
 	// Computes states that reachable from states
-	private Collection<Integer> getReachableStatesFrom(
-			Collection<Integer> states) {
+	private Collection<Integer> getReachableStatesFrom(Collection<Integer> states) {
 		HashSet<Integer> result = new HashSet<Integer>();
 		for (Integer state : states)
 			visitForward(state, result);
@@ -1246,8 +1265,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<SFAMove<P, S>> getTransitionsFrom(
-			Collection<Integer> stateSet) {
+	public Collection<SFAMove<P, S>> getTransitionsFrom(Collection<Integer> stateSet) {
 		Collection<SFAMove<P, S>> transitions = new LinkedList<SFAMove<P, S>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getTransitionsFrom(state));
@@ -1257,8 +1275,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions to a set of states
 	 */
-	public Collection<SFAMove<P, S>> getTransitionsTo(
-			Collection<Integer> stateSet) {
+	public Collection<SFAMove<P, S>> getTransitionsTo(Collection<Integer> stateSet) {
 		Collection<SFAMove<P, S>> transitions = new LinkedList<SFAMove<P, S>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getTransitionsTo(state));
@@ -1327,8 +1344,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<SFAInputMove<P, S>> getInputMovesTo(
-			Collection<Integer> stateSet) {
+	public Collection<SFAInputMove<P, S>> getInputMovesTo(Collection<Integer> stateSet) {
 		Collection<SFAInputMove<P, S>> transitions = new LinkedList<SFAInputMove<P, S>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getInputMovesTo(state));
@@ -1351,8 +1367,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<SFAInputMove<P, S>> getInputMovesFrom(
-			Collection<Integer> stateSet) {
+	public Collection<SFAInputMove<P, S>> getInputMovesFrom(Collection<Integer> stateSet) {
 		Collection<SFAInputMove<P, S>> transitions = new LinkedList<SFAInputMove<P, S>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getInputMovesFrom(state));
@@ -1424,15 +1439,11 @@ public class SFA<P, S> extends Automaton<P, S> {
 		cl.initialState = initialState;
 		cl.finalStates = new HashSet<Integer>(finalStates);
 
-		cl.inputMovesFrom = new HashMap<Integer, Collection<SFAInputMove<P, S>>>(
-				inputMovesFrom);
-		cl.inputMovesTo = new HashMap<Integer, Collection<SFAInputMove<P, S>>>(
-				inputMovesTo);
+		cl.inputMovesFrom = new HashMap<Integer, Collection<SFAInputMove<P, S>>>(inputMovesFrom);
+		cl.inputMovesTo = new HashMap<Integer, Collection<SFAInputMove<P, S>>>(inputMovesTo);
 
-		cl.epsilonFrom = new HashMap<Integer, Collection<SFAEpsilon<P, S>>>(
-				epsilonFrom);
-		cl.epsilonTo = new HashMap<Integer, Collection<SFAEpsilon<P, S>>>(
-				epsilonTo);
+		cl.epsilonFrom = new HashMap<Integer, Collection<SFAEpsilon<P, S>>>(epsilonFrom);
+		cl.epsilonTo = new HashMap<Integer, Collection<SFAEpsilon<P, S>>>(epsilonTo);
 
 		return cl;
 	}

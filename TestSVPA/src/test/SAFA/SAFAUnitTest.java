@@ -60,6 +60,25 @@ public class SAFAUnitTest {
 		assertTrue(union.accepts(lab, ba));
 		assertFalse(union.accepts(lnot, ba));
 	}
+	
+	@Test
+	public void testEquivalence() {
+		SAFA<CharPred, Character> intersection1 = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
+		SAFA<CharPred, Character> intersection2 = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba);
+
+		assertFalse(SAFA.isReverseEquivalent(atLeastOneAlpha, atLeastOneNum, ba));
+		assertFalse(SAFA.isReverseEquivalent(atLeastOneNum, atLeastOneAlpha, ba));
+		assertFalse(SAFA.isReverseEquivalent(atLeastOneAlpha, intersection1, ba));
+		assertFalse(SAFA.isReverseEquivalent(intersection1, atLeastOneAlpha, ba));
+		assertFalse(SAFA.isReverseEquivalent(atLeastOneAlpha, intersection2, ba));
+		assertFalse(SAFA.isReverseEquivalent(intersection2, atLeastOneAlpha, ba));
+		assertFalse(SAFA.isReverseEquivalent(atLeastOneNum, intersection1, ba));
+		assertFalse(SAFA.isReverseEquivalent(intersection1, atLeastOneNum, ba));
+		assertFalse(SAFA.isReverseEquivalent(atLeastOneNum, intersection2, ba));
+		assertFalse(SAFA.isReverseEquivalent(intersection2, atLeastOneNum, ba));
+		assertTrue(SAFA.isReverseEquivalent(intersection2, intersection1, ba));
+		assertTrue(SAFA.isReverseEquivalent(intersection1, intersection2, ba));
+	}
 
 	// ---------------------------------------
 	// Predicates
