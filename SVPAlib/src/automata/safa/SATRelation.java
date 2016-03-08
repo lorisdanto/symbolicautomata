@@ -7,6 +7,7 @@ import org.sat4j.specs.TimeoutException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
@@ -78,6 +79,13 @@ public class SATRelation extends SAFARelation {
 		}
 	}
 
+	private int mkAnd(int left, int right) {
+		List<Integer> conjuncts = new LinkedList<>();
+		conjuncts.add(left);
+		conjuncts.add(right);
+		return mkAnd(conjuncts);
+	}
+
 	private int mkOr(List<Integer> clause) {
 		if (clause.isEmpty()) {
 			throw new IllegalArgumentException("mkOr requires at least one literal");
@@ -106,51 +114,58 @@ public class SATRelation extends SAFARelation {
 		}
 	}
 
+	private int mkOr(int left, int right) {
+		List<Integer> disjuncts = new LinkedList<>();
+		disjuncts.add(left);
+		disjuncts.add(right);
+		return mkOr(disjuncts);
+	}
+
 	/**
 	 * Return a literal l and assert into the current context that l is equivalent to the state
 	 * 	formula p
 	 * @param p
-	 * @param offset Either 2 or 4.  Each state in p is represented by an even literal, which is
-	 * 	either 2 or 0 mod 4, depending on offset.  LHS state formulas should pass 2, RHS state formulas
-	 * 	should pass 4.
+	 * @param stateToLiteral
+	 * 	Function used to convert states into literals.  The range of stateToLiteral should be even
+	 * 	(to avoid conflict with intermediate literals) and non-zero (zero is not a valid literal).
 	 * @return
+	 * 	Literal representing the state formula p
 	 */
-	private int mkStateFormula(BooleanExpression p, int offset) {
+	private int mkStateFormula(BooleanExpression p, Function<Integer,Integer> stateToLiteral) {
 		if (p instanceof SumOfProducts) {
 			SumOfProducts sop = (SumOfProducts) p;
 			List<Integer> disjuncts = new LinkedList<>();
 			for (List<Integer> cube : sop.getCubes()) {
 				List<Integer> litCube = new LinkedList<>();
 				for (Integer state : cube) {
-					litCube.add(4 * state + offset);
+					litCube.add(stateToLiteral.apply(state));
 				}
 				disjuncts.add(mkAnd(litCube));
 			}
 			return mkOr(disjuncts);
+		} else if (p instanceof PositiveId) {
+			PositiveId id = (PositiveId) p;
+			return stateToLiteral.apply(id.state);
+		} else if (p instanceof PositiveAnd) {
+			PositiveAnd and = (PositiveAnd) p;
+			return mkAnd(mkStateFormula(and.left, stateToLiteral),
+					mkStateFormula(and.right, stateToLiteral));
+		} else if (p instanceof PositiveOr) {
+			PositiveOr or = (PositiveOr) p;
+			return mkOr(mkStateFormula(or.left, stateToLiteral),
+					mkStateFormula(or.right, stateToLiteral));
 		} else {
-			throw new IllegalArgumentException("can only compute state formula for SumOfProducts");
+			throw new IllegalArgumentException("mkStateFormula: unknown class");
 		}
 	}
 	
 	private int mkIff(BooleanExpression p, BooleanExpression q) {
-		int pname = mkStateFormula(p, 2);
-		int qname = mkStateFormula(q, 4);
+		// p and q are drawn from different vocabularies (0 in p is not the same as 0 in q), so
+		// rename them apart.
+		int pname = mkStateFormula(p, ((s) -> 4 * s + 2));
+		int qname = mkStateFormula(q, ((s) -> 4 * s + 4));
 		
-		List<Integer> positive = new LinkedList<>();
-		positive.add(pname);
-		positive.add(qname);
-		int positiveName = mkAnd(positive);
-
-		List<Integer> negative = new LinkedList<>();
-		negative.add(-pname);
-		negative.add(-qname);
-		int negativeName = mkAnd(negative);
-
-		
-		List<Integer> posneg = new LinkedList<>();
-		posneg.add(positiveName);
-		posneg.add(negativeName);
-		return mkOr(posneg);
+		return mkOr(mkAnd(pname, qname), mkAnd(-pname, -qname));
 	}
 	
 	public boolean isMember(BooleanExpression p, BooleanExpression q) throws TimeoutException {
