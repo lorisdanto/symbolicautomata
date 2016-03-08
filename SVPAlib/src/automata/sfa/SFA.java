@@ -34,7 +34,6 @@ import automata.Move;
  *            domain of the automaton alphabet
  */
 public class SFA<P, S> extends Automaton<P, S> {
-
 	// ------------------------------------------------------
 	// Constant automata
 	// ------------------------------------------------------

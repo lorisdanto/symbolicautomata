@@ -10,9 +10,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Test;
+import org.sat4j.specs.TimeoutException;
 
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
+import automata.safa.SATRelation;
 import automata.safa.booleanexpression.SumOfProducts;
 import theory.CharPred;
 import theory.CharSolver;
@@ -123,4 +125,43 @@ public class SAFAUnitTest {
 		return l;
 	}
 
+
+    @Test
+    public void testSATRelation() throws TimeoutException {
+    	SATRelation rel = new SATRelation();
+    	SumOfProducts sp0 = new SumOfProducts(0);
+        SumOfProducts sp1 = new SumOfProducts(1);
+        assertFalse(rel.isMember(sp0, sp0));
+        rel.add(sp0, sp0);
+        assertTrue(rel.isMember(sp0, sp0));
+        assertFalse(rel.isMember(sp1, sp1));
+        rel.add(sp1, sp1);
+
+        assertFalse(rel.isMember(sp0, sp1));
+
+        assertTrue(rel.isMember(sp0.and(sp1), sp1.and(sp0)));
+        assertTrue(rel.isMember(sp0.or(sp1), sp1.or(sp0)));
+        assertFalse(rel.isMember(sp0.or(sp1), sp1.and(sp0)));
+        assertFalse(rel.isMember(sp0.or(sp1), sp1));
+        rel.add(sp0, sp1);
+        assertTrue(rel.isMember(sp0.or(sp1), sp1));
+    }
+
+	@Test
+	public void testForwardEquivalence() throws TimeoutException {
+		SAFA<CharPred, Character> intersection1 = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
+		SAFA<CharPred, Character> intersection2 = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba);
+		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, atLeastOneNum, ba));
+		assertFalse(SAFA.isEquivalent(atLeastOneNum, atLeastOneAlpha, ba));
+		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, intersection1, ba));
+		assertFalse(SAFA.isEquivalent(intersection1, atLeastOneAlpha, ba));
+		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, intersection2, ba));
+		assertFalse(SAFA.isEquivalent(intersection2, atLeastOneAlpha, ba));
+		assertFalse(SAFA.isEquivalent(atLeastOneNum, intersection1, ba));
+		assertFalse(SAFA.isEquivalent(intersection1, atLeastOneNum, ba));
+		assertFalse(SAFA.isEquivalent(atLeastOneNum, intersection2, ba));
+		assertFalse(SAFA.isEquivalent(intersection2, atLeastOneNum, ba));
+		assertTrue(SAFA.isEquivalent(intersection2, intersection1, ba));
+		assertTrue(SAFA.isEquivalent(intersection1, intersection2, ba));
+	}
 }

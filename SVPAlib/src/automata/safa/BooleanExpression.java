@@ -20,4 +20,5 @@ public abstract class BooleanExpression {
 	public abstract BooleanExpression and(BooleanExpression p1);
 	
 	public abstract BooleanExpression offset(int offset);
+
 }

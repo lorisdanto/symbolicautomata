@@ -199,7 +199,7 @@ public class SAFA<P, S> {
 	private LinkedList<Pair<P, BooleanExpression[]>> getTransitionTablesFrom(Collection<Integer> states,
 			BooleanAlgebra<P, S> ba, P guard) {
 		LinkedList<Pair<P, BooleanExpression[]>> moves = new LinkedList<>();
-		moves.add(new Pair<>(guard, new BooleanExpression[maxStateId]));
+		moves.add(new Pair<>(guard, new BooleanExpression[maxStateId + 1]));
 		for (Integer s : states) {
 			LinkedList<Pair<P, BooleanExpression[]>> moves2 = new LinkedList<>();
 			for (SAFAInputMove<P, S> t : getInputMovesFrom(s)) {
@@ -220,15 +220,14 @@ public class SAFA<P, S> {
 	public static <P, S> boolean isEquivalent(SAFA<P, S> laut, SAFA<P, S> raut, BooleanAlgebra<P, S> ba)
 			throws TimeoutException {
 		SAFARelation similar = new SATRelation();
-		List<Pair<BooleanExpression, BooleanExpression>> worklist = new LinkedList<>();
+		LinkedList<Pair<BooleanExpression, BooleanExpression>> worklist = new LinkedList<>();
 
 		BooleanExpression leftInitial = new SumOfProducts(laut.initialState);
 		BooleanExpression rightInitial = new SumOfProducts(raut.initialState);
 		similar.add(leftInitial, rightInitial);
 		worklist.add(new Pair<>(leftInitial, rightInitial));
 		while (!worklist.isEmpty()) {
-			Pair<BooleanExpression, BooleanExpression> next = worklist.get(0);
-			worklist.remove(0);
+			Pair<BooleanExpression, BooleanExpression> next = worklist.removeFirst();
 
 			BooleanExpression left = next.getFirst();
 			BooleanExpression right = next.getSecond();
@@ -243,7 +242,7 @@ public class SAFA<P, S> {
 						ba, leftMove.getFirst());
 				for (Pair<P, BooleanExpression[]> rightMove : rightMoves) {
 					BooleanExpression rightSucc = right.substitute((lit) -> rightMove.getSecond()[lit]);
-					if (leftSuccAccept == rightSucc.hasModel(raut.finalStates)) {
+					if (leftSuccAccept != rightSucc.hasModel(raut.finalStates)) {
 						// leftSucc is accepting and rightSucc is rejecting or
 						// vice versa
 						return false;
@@ -464,7 +463,7 @@ public class SAFA<P, S> {
 			transitions.addAll(getInputMovesFrom(state));
 		return transitions;
 	}
-
+	
 	/**
 	 * Returns the set of transitions starting set of states
 	 */

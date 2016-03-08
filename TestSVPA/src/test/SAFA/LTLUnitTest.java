@@ -75,7 +75,7 @@ public class LTLUnitTest {
 	
 	// eventually p
 	private LTLFormula<CharPred, Character> ev(CharSolver ba, CharPred p) {
-		return new Eventually<>(new Predicate<>(p));
+	    return new Eventually<CharPred, Character>(new Predicate<CharPred, Character>(p));
 	}
 
 	// -------------------------
