@@ -55,3 +55,5 @@ TestSVPA/bin/test/SFA/SFAUnitTest.class
 TestSVPA/bin/test/SST/DReXUnitTest.class
 TestSVPA/bin/test/SST/SSTUnitTest.class
 TestSVPA/bin/test/SVPA/SVPAUnitTest.class
+BooleanAlgebras/.settings/org.eclipse.core.resources.prefs
+TestSVPA/.settings/org.eclipse.core.resources.prefs

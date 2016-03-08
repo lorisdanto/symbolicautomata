@@ -22,14 +22,13 @@ import theory.StdCharPred;
 
 public class LTLUnitTest {
 
-	
 	@Test
 	public void testEventuallyAndOr() {
 		LTLFormula<CharPred, Character> conj = new And<>(eva, evn);
 		SAFA<CharPred, Character> sconj = conj.getSAFA(ba);
 		LTLFormula<CharPred, Character> union = new Or<>(eva, evn);
 		SAFA<CharPred, Character> sunion = union.getSAFA(ba);
-		
+
 		assertTrue(seva.accepts(la, ba));
 		assertFalse(seva.accepts(lb, ba));
 		assertTrue(seva.accepts(lab, ba));
@@ -44,33 +43,46 @@ public class LTLUnitTest {
 		assertFalse(sconj.accepts(lb, ba));
 		assertTrue(sconj.accepts(lab, ba));
 		assertFalse(sconj.accepts(lnot, ba));
-		
+
 		assertTrue(sunion.accepts(la, ba));
 		assertTrue(sunion.accepts(lb, ba));
 		assertTrue(sunion.accepts(lab, ba));
 		assertFalse(sunion.accepts(lnot, ba));
 	}
-	
+
 	@Test
 	public void testLargeEquiv() {
-		
-		
+
 		LTLFormula<CharPred, Character> tot = new True<>();
-		for(int i=100; i<110; i++){
-			CharPred ch = new CharPred((char)i);
-			LTLFormula<CharPred, Character> evch = ev(ba,ch);
+		for (int i = 100; i < 100 + 9; i++) {
+			CharPred ch = new CharPred((char) i);
+			LTLFormula<CharPred, Character> evch = ev(ba, ch);
 			tot = new And<>(evch, tot);
 		}
-		
-		try{
-			SAFA<CharPred,Character> safa = tot.getSAFA(ba);
+		SAFA<CharPred, Character> safa = tot.getSAFA(ba);
+
+		long startTime = System.currentTimeMillis();
+
+		try {
+
 			SAFA.isEquivalent(safa, safa, ba);
-		}catch(TimeoutException toe){
+		} catch (TimeoutException toe) {
 			System.out.println(toe);
 		}
-		
+
+		long stopTime = System.currentTimeMillis();
+		long elapsedTime = stopTime - startTime;
+		System.out.println(elapsedTime);
+
+		startTime = System.currentTimeMillis();
+
+		SAFA.isReverseEquivalent(safa, safa, ba);
+
+		stopTime = System.currentTimeMillis();
+		elapsedTime = stopTime - startTime;
+		System.out.println(elapsedTime);
+
 	}
-	
 
 	// ---------------------------------------
 	// Predicates
@@ -83,8 +95,8 @@ public class LTLUnitTest {
 	CharPred comma = new CharPred(',');
 	Integer onlyX = 1;
 
-	LTLFormula<CharPred, Character> eva = ev(ba,alpha);
-	LTLFormula<CharPred, Character> evn = ev(ba,num);
+	LTLFormula<CharPred, Character> eva = ev(ba, alpha);
+	LTLFormula<CharPred, Character> evn = ev(ba, num);
 	SAFA<CharPred, Character> seva = eva.getSAFA(ba);
 	SAFA<CharPred, Character> sevn = evn.getSAFA(ba);
 
@@ -94,10 +106,9 @@ public class LTLUnitTest {
 	List<Character> lab = lOfS("a3"); // accepted only by both autA and autB
 	List<Character> lnot = lOfS("##"); // accepted only by neither autA nor autB
 
-	
 	// eventually p
 	private LTLFormula<CharPred, Character> ev(CharSolver ba, CharPred p) {
-	    return new Eventually<CharPred, Character>(new Predicate<CharPred, Character>(p));
+		return new Eventually<CharPred, Character>(new Predicate<CharPred, Character>(p));
 	}
 
 	// -------------------------
