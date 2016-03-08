@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.sat4j.specs.TimeoutException;
 
 import automata.safa.SAFA;
 import logic.ltl.And;
@@ -14,6 +15,7 @@ import logic.ltl.Eventually;
 import logic.ltl.LTLFormula;
 import logic.ltl.Or;
 import logic.ltl.Predicate;
+import logic.ltl.True;
 import theory.CharPred;
 import theory.CharSolver;
 import theory.StdCharPred;
@@ -47,6 +49,26 @@ public class LTLUnitTest {
 		assertTrue(sunion.accepts(lb, ba));
 		assertTrue(sunion.accepts(lab, ba));
 		assertFalse(sunion.accepts(lnot, ba));
+	}
+	
+	@Test
+	public void testLargeEquiv() {
+		
+		
+		LTLFormula<CharPred, Character> tot = new True<>();
+		for(int i=100; i<110; i++){
+			CharPred ch = new CharPred((char)i);
+			LTLFormula<CharPred, Character> evch = ev(ba,ch);
+			tot = new And<>(evch, tot);
+		}
+		
+		try{
+			SAFA<CharPred,Character> safa = tot.getSAFA(ba);
+			SAFA.isEquivalent(safa, safa, ba);
+		}catch(TimeoutException toe){
+			System.out.println(toe);
+		}
+		
 	}
 	
 
