@@ -4,6 +4,7 @@ import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.ISolver;
 import org.sat4j.specs.TimeoutException;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -135,7 +136,7 @@ public class SATRelation extends SAFARelation {
 		if (p instanceof SumOfProducts) {
 			SumOfProducts sop = (SumOfProducts) p;
 			List<Integer> disjuncts = new LinkedList<>();
-			for (List<Integer> cube : sop.getCubes()) {
+			for (Collection<Integer> cube : sop.getCubes()) {
 				List<Integer> litCube = new LinkedList<>();
 				for (Integer state : cube) {
 					litCube.add(stateToLiteral.apply(state));
