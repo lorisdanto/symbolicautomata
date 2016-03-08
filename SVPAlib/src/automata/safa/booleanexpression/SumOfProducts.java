@@ -11,17 +11,17 @@ import automata.safa.BooleanExpression;
 
 public class SumOfProducts extends BooleanExpression {
 
-	protected List<List<Integer>> dnf;
+	protected Collection<Collection<Integer>> dnf;
 
-	public SumOfProducts(List<List<Integer>> dnf) {
+	public SumOfProducts(Collection<Collection<Integer>> dnf) {
 		super();
 		this.dnf = dnf;
 	}
 	
 	public SumOfProducts(Integer state) {
 		super();
-		this.dnf = new LinkedList<>();
-		List<Integer> l = new LinkedList<>();
+		this.dnf = new HashSet<>();
+		Collection<Integer> l = new HashSet<>();
 		l.add(state);
 		this.dnf.add(l);
 	}
@@ -34,7 +34,7 @@ public class SumOfProducts extends BooleanExpression {
 		}
 	}
 	
-	public List<List<Integer>> getCubes() {
+	public Collection<Collection<Integer>> getCubes() {
 		return this.dnf;
 	}
 
@@ -46,15 +46,15 @@ public class SumOfProducts extends BooleanExpression {
 	
 	@Override
 	public Object clone() {
-		List<List<Integer>> newDnf = new LinkedList<>();
-		for (List<Integer> l : dnf)
-			newDnf.add(new LinkedList<>(l));
+		Collection<Collection<Integer>> newDnf = new HashSet<>();
+		for (Collection<Integer> l : dnf)
+			newDnf.add(new HashSet<>(l));
 		return new SumOfProducts(newDnf);
 	}
 
 	@Override
 	public boolean hasModel(Collection<Integer> elements) {
-		for (List<Integer> l : dnf)
+		for (Collection<Integer> l : dnf)
 			if (elements.containsAll(l))
 				return true;
 
@@ -67,7 +67,7 @@ public class SumOfProducts extends BooleanExpression {
 			throw new IllegalArgumentException("can only interesect SumOfProducts with SumOfProducts");
 
 		SumOfProducts p1c = (SumOfProducts) p1;
-		List<List<Integer>> newDnf = new LinkedList<>(dnf);
+		Collection<Collection<Integer>> newDnf = new HashSet<>(dnf);
 		newDnf.addAll(p1c.dnf);
 
 		return new SumOfProducts(newDnf);
@@ -80,10 +80,10 @@ public class SumOfProducts extends BooleanExpression {
 
 		SumOfProducts p1c = (SumOfProducts) p1;
 
-		List<List<Integer>> newDnf = new LinkedList<>();
-		for (List<Integer> l1 : dnf)
-			for (List<Integer> l2 : p1c.dnf) {
-				List<Integer> l1concl2 = new LinkedList<>(l1);
+		Collection<Collection<Integer>> newDnf = new HashSet<>();
+		for (Collection<Integer> l1 : dnf)
+			for (Collection<Integer> l2 : p1c.dnf) {
+				Collection<Integer> l1concl2 = new HashSet<>(l1);
 				l1concl2.addAll(l2);
 				newDnf.add(l1concl2);
 			}
@@ -93,9 +93,9 @@ public class SumOfProducts extends BooleanExpression {
 
 	@Override
 	public BooleanExpression offset(int offset) {
-		List<List<Integer>> newDnf = new LinkedList<>();
-		for (List<Integer> l1 : dnf) {
-			List<Integer> newl1 = new LinkedList<>();
+		Collection<Collection<Integer>> newDnf = new HashSet<>();
+		for (Collection<Integer> l1 : dnf) {
+			Collection<Integer> newl1 = new HashSet<>();
 			for(Integer s: l1){
 				newl1.add(s+offset);
 			}
@@ -107,7 +107,7 @@ public class SumOfProducts extends BooleanExpression {
 	@Override
 	public BooleanExpression substitute(Function<Integer, BooleanExpression> sigma) {
 		BooleanExpression result = new SumOfProducts(false);
-		for (List<Integer> cube : dnf) {
+		for (Collection<Integer> cube : dnf) {
 			BooleanExpression sigmaCube = new SumOfProducts(true);
 			for(Integer literal : cube) {
 				sigmaCube = sigmaCube.and(sigma.apply(literal));
@@ -120,7 +120,7 @@ public class SumOfProducts extends BooleanExpression {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		boolean firstel = true;
-		for (List<Integer> l : dnf){
+		for (Collection<Integer> l : dnf){
 			if(!firstel)
 				sb.append("+");
 			firstel=false;
