@@ -54,18 +54,27 @@ public class LTLUnitTest {
 	public void testLargeEquiv() {
 
 		LTLFormula<CharPred, Character> tot = new True<>();
+		for (int i = 100; i < 100 + 10; i++) {
+			CharPred ch = new CharPred((char) i);
+			LTLFormula<CharPred, Character> evch = ev(ba, ch);
+			tot = new And<>(evch, tot);
+		}
+		SAFA<CharPred, Character> safa1 = tot.getSAFA(ba);
+
+		tot = new True<>();
 		for (int i = 100; i < 100 + 9; i++) {
 			CharPred ch = new CharPred((char) i);
 			LTLFormula<CharPred, Character> evch = ev(ba, ch);
 			tot = new And<>(evch, tot);
 		}
-		SAFA<CharPred, Character> safa = tot.getSAFA(ba);
-
+		SAFA<CharPred, Character> safa2 = tot.getSAFA(ba);
+		
 		long startTime = System.currentTimeMillis();
 
+		boolean b = true;
 		try {
 
-			SAFA.isEquivalent(safa, safa, ba);
+			b= SAFA.isEquivalent(safa1, safa2, ba);
 		} catch (TimeoutException toe) {
 			System.out.println(toe);
 		}
@@ -76,11 +85,13 @@ public class LTLUnitTest {
 
 		startTime = System.currentTimeMillis();
 
-		SAFA.isReverseEquivalent(safa, safa, ba);
-
+		boolean b1= SAFA.isReverseEquivalent(safa1, safa2, ba);		
+		
 		stopTime = System.currentTimeMillis();
 		elapsedTime = stopTime - startTime;
 		System.out.println(elapsedTime);
+		
+		assertTrue(b==b1);
 
 	}
 

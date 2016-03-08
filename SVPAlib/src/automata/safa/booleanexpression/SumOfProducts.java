@@ -3,7 +3,6 @@ package automata.safa.booleanexpression;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -15,9 +14,23 @@ public class SumOfProducts extends BooleanExpression {
 
 	public SumOfProducts(Collection<Collection<Integer>> dnf) {
 		super();
-		this.dnf = dnf;
+		Collection<Collection<Integer>> antichain = new HashSet<>();
+		for (Collection<Integer> cube1 : dnf) {
+			boolean subsumed = false;
+			for (Collection<Integer> cube2 : dnf) {
+				if (cube1.size() < cube2.size()) {
+					if (cube2.containsAll(cube1)) {
+						subsumed = true;
+						break;
+					}
+				}
+			}
+			if(!subsumed)
+				antichain.add(cube1);
+		}
+		this.dnf = antichain;
 	}
-	
+
 	public SumOfProducts(Integer state) {
 		super();
 		this.dnf = new HashSet<>();
@@ -25,7 +38,7 @@ public class SumOfProducts extends BooleanExpression {
 		l.add(state);
 		this.dnf.add(l);
 	}
-	
+
 	public SumOfProducts(boolean b) {
 		super();
 		this.dnf = new LinkedList<>();
@@ -33,7 +46,7 @@ public class SumOfProducts extends BooleanExpression {
 			this.dnf.add(new LinkedList<>());
 		}
 	}
-	
+
 	public Collection<Collection<Integer>> getCubes() {
 		return this.dnf;
 	}
@@ -43,7 +56,7 @@ public class SumOfProducts extends BooleanExpression {
 		dnf.stream().forEach(acc::addAll);
 		return acc;
 	}
-	
+
 	@Override
 	public Object clone() {
 		Collection<Collection<Integer>> newDnf = new HashSet<>();
@@ -96,8 +109,8 @@ public class SumOfProducts extends BooleanExpression {
 		Collection<Collection<Integer>> newDnf = new HashSet<>();
 		for (Collection<Integer> l1 : dnf) {
 			Collection<Integer> newl1 = new HashSet<>();
-			for(Integer s: l1){
-				newl1.add(s+offset);
+			for (Integer s : l1) {
+				newl1.add(s + offset);
 			}
 			newDnf.add(newl1);
 		}
@@ -109,7 +122,7 @@ public class SumOfProducts extends BooleanExpression {
 		BooleanExpression result = new SumOfProducts(false);
 		for (Collection<Integer> cube : dnf) {
 			BooleanExpression sigmaCube = new SumOfProducts(true);
-			for(Integer literal : cube) {
+			for (Integer literal : cube) {
 				sigmaCube = sigmaCube.and(sigma.apply(literal));
 			}
 			result = result.or(sigmaCube);
@@ -120,16 +133,16 @@ public class SumOfProducts extends BooleanExpression {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		boolean firstel = true;
-		for (Collection<Integer> l : dnf){
-			if(!firstel)
+		for (Collection<Integer> l : dnf) {
+			if (!firstel)
 				sb.append("+");
-			firstel=false;
+			firstel = false;
 			sb.append("(");
-			boolean first =true;
-			for (Integer i : l){
-				if(!first)
+			boolean first = true;
+			for (Integer i : l) {
+				if (!first)
 					sb.append(",");
-				sb.append(i);	
+				sb.append(i);
 				first = false;
 			}
 			sb.append(")");
