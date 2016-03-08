@@ -4,6 +4,7 @@ import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.ISolver;
 import org.sat4j.specs.TimeoutException;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,12 +16,18 @@ public class SATRelation extends SAFARelation {
 	private ISolver solver;
 	private int maxid = 1; // name of the next available literal.  Always odd.
 
+	// Hash consing
+	private HashMap<List<Integer>, Integer> andCache;
+	private HashMap<List<Integer>, Integer> orCache;
+
 	public SATRelation(ISolver s) {
 		solver = s;
+		andCache = new HashMap<>();
+		orCache = new HashMap<>();
 	}
 	
 	public SATRelation() {
-		solver = SolverFactory.newDefault();
+		this(SolverFactory.newDefault());
 	}
 	
 	private int fresh() {
@@ -47,6 +54,8 @@ public class SATRelation extends SAFARelation {
 			throw new IllegalArgumentException("mkAnd requires at least one literal");
 		} else if (cube.size() == 1) {
 			return cube.get(0);
+		} else if (andCache.containsKey(cube)) {
+			return andCache.get(cube);
 		} else {
 			int cubeName = fresh();
 			//System.out.println(cubeName + " = And " + cube.toString());
@@ -64,6 +73,7 @@ public class SATRelation extends SAFARelation {
 			}
 			// cube => cubeName
 			unsafeAddClause(cubeImpliesCubeName);
+			andCache.put(cube, cubeName);
 			return cubeName;
 		}
 	}
@@ -73,6 +83,8 @@ public class SATRelation extends SAFARelation {
 			throw new IllegalArgumentException("mkOr requires at least one literal");
 		} else if (clause.size() == 1) {
 			return clause.get(0);
+		} else if (orCache.containsKey(clause)) {
+			return orCache.get(clause);
 		} else {
 			int clauseName = fresh();
 			//System.out.println(clauseName + " = Or " + clause.toString());
@@ -89,6 +101,7 @@ public class SATRelation extends SAFARelation {
 				unsafeAddClause(litImpliesClauseName);
 			}
 			unsafeAddClause(clauseNameImpliesClause);
+			orCache.put(clause, clauseName);
 			return clauseName;
 		}
 	}
