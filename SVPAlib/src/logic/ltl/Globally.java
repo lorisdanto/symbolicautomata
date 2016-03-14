@@ -74,4 +74,12 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 	protected boolean isFinalState() {
 		return true;
 	}
+	
+	@Override
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
+		if(isPositive)
+			return new Globally<>(phi.pushNegations(isPositive,ba));
+		else
+			return new Eventually<>(phi.pushNegations(isPositive,ba));
+	}
 }

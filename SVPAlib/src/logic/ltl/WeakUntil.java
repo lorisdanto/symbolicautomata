@@ -89,4 +89,15 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 	protected boolean isFinalState() {
 		return true;
 	}
+	
+	@Override
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
+		if(isPositive)
+			return new WeakUntil<>(left.pushNegations(isPositive,ba), right.pushNegations(isPositive,ba));
+		else{
+			LTLFormula<P, S> rightNeg =right.pushNegations(isPositive,ba); 
+			return new Until<>(rightNeg, 
+					new And<>(left.pushNegations(isPositive,ba), rightNeg));
+		}
+	}
 }

@@ -2,17 +2,15 @@ package logic.ltl;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 
 import automata.safa.SAFAInputMove;
-import automata.safa.booleanexpression.PositiveId;
 import theory.BooleanAlgebra;
 
-public class Next<P, S> extends LTLFormula<P, S> {
+public class Not<P, S> extends LTLFormula<P, S> {
 
 	protected LTLFormula<P, S> phi;
 
-	public Next(LTLFormula<P, S> phi) {
+	public Not(LTLFormula<P, S> phi) {
 		super();
 		this.phi = phi;
 	}
@@ -31,10 +29,10 @@ public class Next<P, S> extends LTLFormula<P, S> {
 			return true;
 		if (obj == null)
 			return false;
-		if (!(obj instanceof Next))
+		if (!(obj instanceof Not))
 			return false;
 		@SuppressWarnings("unchecked")
-		Next<P, S> other = (Next<P, S>) obj;
+		Not<P, S> other = (Not<P, S>) obj;
 		if (phi == null) {
 			if (other.phi != null)
 				return false;
@@ -48,32 +46,16 @@ public class Next<P, S> extends LTLFormula<P, S> {
 			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
 			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
 
-		// If I already visited avoid recomputing
-		if (formulaToStateId.containsKey(this))
-			return;
-
-		// Update hash tables
-		int id = formulaToStateId.size();
-		formulaToStateId.put(this, id);
-
-		// Compute transitions for children
-		phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
-
-		// delta(X phi, true) = phi
-		int phiId = formulaToStateId.get(phi);
-		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
-		newMoves.add(new SAFAInputMove<P, S>(id, new PositiveId(phiId), ba.True()));
-
-		moves.put(id, newMoves);
+		throw new UnsupportedOperationException("At this point the formula should be in negation normal form.");
 	}
 
 	@Override
 	protected boolean isFinalState() {
-		return false;
+		throw new UnsupportedOperationException("At this point the formula should be in negation normal form.");
 	}
 	
 	@Override
 	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
-		return new Next<>(phi.pushNegations(isPositive,ba));	
+		return phi.pushNegations(!isPositive,ba);	
 	}
 }

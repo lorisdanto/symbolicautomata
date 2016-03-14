@@ -87,4 +87,12 @@ public class Or<P, S> extends LTLFormula<P, S> {
 	protected boolean isFinalState() {
 		return left.isFinalState() && right.isFinalState();
 	}
+	
+	@Override
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
+		if(isPositive)
+			return new Or<>(left.pushNegations(isPositive,ba), right.pushNegations(isPositive,ba));
+		else
+			return new And<>(left.pushNegations(isPositive,ba), right.pushNegations(isPositive,ba));
+	}
 }

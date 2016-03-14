@@ -5,24 +5,17 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import automata.safa.SAFAInputMove;
-import automata.safa.booleanexpression.SumOfProducts;
 import theory.BooleanAlgebra;
 
-public class Predicate<P, S> extends LTLFormula<P, S> {
+public class False<P, S> extends LTLFormula<P, S> {
 
-	protected P predicate;
-
-	public Predicate(P predicate) {
+	public False() {
 		super();
-		this.predicate = predicate;
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((predicate == null) ? 0 : predicate.hashCode());
-		return result;
+		return 11;
 	}
 
 	@Override
@@ -31,18 +24,11 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 			return true;
 		if (obj == null)
 			return false;
-		if (!(obj instanceof Predicate))
-			return false;
-		@SuppressWarnings("unchecked")
-		Predicate<P,S> other = (Predicate<P,S>) obj;
-		if (predicate == null) {
-			if (other.predicate != null)
-				return false;
-		} else if (predicate != other.predicate)
+		if (!(obj instanceof False))
 			return false;
 		return true;
-	}
-
+	}		
+	
 	@Override
 	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
 			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
@@ -56,15 +42,9 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 		int id = formulaToStateId.size();
 		formulaToStateId.put(this, id);
 		
-		// Create true state
-		True<P,S> t = new True<>();
-		t.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
+		// delta(False, _) = nothing		
+		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();	
 		
-		// delta([p], p) = true
-		int trueId = formulaToStateId.get(t);		
-		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
-		newMoves.add(new SAFAInputMove<P, S>(id, new SumOfProducts(trueId), predicate));		
-
 		moves.put(id, newMoves);
 	}
 
@@ -72,13 +52,12 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 	protected boolean isFinalState() {
 		return false;
 	}
-
+	
 	@Override
 	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
 		if(isPositive)
 			return this;
-		else
-			return new Predicate<>(ba.MkNot(this.predicate));
+		else 
+			return new True<>();
 	}
-	
 }

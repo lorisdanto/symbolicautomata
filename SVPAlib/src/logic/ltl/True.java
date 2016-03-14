@@ -57,4 +57,12 @@ public class True<P, S> extends LTLFormula<P, S> {
 	protected boolean isFinalState() {
 		return true;
 	}
+
+	@Override
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
+		if(isPositive)
+			return this;
+		else 
+			return new False<>();
+	}
 }

@@ -88,4 +88,14 @@ public class Until<P, S> extends LTLFormula<P, S> {
 		return false;
 	}
 
+	@Override
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
+		if(isPositive)
+			return new Until<>(left.pushNegations(isPositive,ba), right.pushNegations(isPositive,ba));
+		else{
+			LTLFormula<P, S> rightNeg =right.pushNegations(isPositive,ba); 
+			return new WeakUntil<>(rightNeg, 
+					new And<>(left.pushNegations(isPositive,ba), rightNeg));
+		}
+	}
 }

@@ -28,6 +28,14 @@ public abstract class LTLFormula<P,S> {
 		return SAFA.MkSAFA(transitions, initialState, finalStates, ba);
 	}
 	
+	// Checks whether a formula should be a final state in the automaton
+	public LTLFormula<P,S> pushNegations(BooleanAlgebra<P, S> ba){
+		return pushNegations(true,ba);
+	}
+	
+	// Checks whether a formula should be a final state in the automaton
+	protected abstract LTLFormula<P,S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba);	
+	
 	// returns set of disjoint predicates that are the triggers of transitions out of this state
 	protected abstract void accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
@@ -37,7 +45,7 @@ public abstract class LTLFormula<P,S> {
 			);
 	
 	// Checks whether a formula should be a final state in the automaton
-	protected abstract boolean isFinalState();
+	protected abstract boolean isFinalState();	
 	
 	@Override
 	public abstract int hashCode();
