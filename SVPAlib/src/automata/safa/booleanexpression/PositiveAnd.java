@@ -5,6 +5,8 @@ import java.util.Set;
 import java.util.function.Function;
 
 import automata.safa.BooleanExpression;
+import automata.safa.BooleanExpressionFactory;
+import automata.safa.LatticeMorphism;
 
 public class PositiveAnd extends PositiveBooleanExpression {
 
@@ -22,11 +24,6 @@ public class PositiveAnd extends PositiveBooleanExpression {
 	}
 
 	@Override
-	public BooleanExpression offset(int offset) {
-		return new PositiveAnd((PositiveBooleanExpression)left.offset(offset), (PositiveBooleanExpression)right.offset(offset));
-	}
-
-	@Override
 	public Set<Integer> getStates() {
 		Set<Integer> states = left.getStates();
 		states.addAll(right.getStates());
@@ -40,7 +37,13 @@ public class PositiveAnd extends PositiveBooleanExpression {
 		return new PositiveAnd(cl, cr);
 	}
 
-	public BooleanExpression substitute(Function<Integer, BooleanExpression> sigma) {
-		return left.substitute(sigma).and(right.substitute(sigma));
+	public String toString() {
+		return "(" + left.toString() + "," + right.toString() + ")";
 	}
+
+	@Override
+	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) {
+		return f.MkAnd(f.apply(left), f.apply(right));
+	}
+
 }

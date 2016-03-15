@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import automata.safa.BooleanExpression;
+import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFAInputMove;
 import theory.BooleanAlgebra;
 
@@ -30,9 +32,10 @@ public class False<P, S> extends LTLFormula<P, S> {
 	}		
 	
 	@Override
-	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+	protected <E extends BooleanExpression> void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
+			HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr) {
 
 		// If I already visited avoid recomputing
 		if (formulaToStateId.containsKey(this))
@@ -43,7 +46,7 @@ public class False<P, S> extends LTLFormula<P, S> {
 		formulaToStateId.put(this, id);
 		
 		// delta(False, _) = nothing		
-		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();	
+		Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();
 		
 		moves.put(id, newMoves);
 	}

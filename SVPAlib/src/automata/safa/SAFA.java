@@ -18,6 +18,7 @@ import org.sat4j.specs.TimeoutException;
 
 import com.google.common.collect.Lists;
 
+import automata.safa.booleanexpression.PositiveId;
 import automata.safa.booleanexpression.SumOfProducts;
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
@@ -34,7 +35,7 @@ import utilities.Pair;
  * @param <S>
  *            domain of the automaton alphabet
  */
-public class SAFA<P, S> {
+public class SAFA<P, S, E extends BooleanExpression> {
 
 	// ------------------------------------------------------
 	// Automata properties
@@ -44,7 +45,7 @@ public class SAFA<P, S> {
 	private Collection<Integer> states;
 	private Collection<Integer> finalStates;
 
-	protected Map<Integer, Collection<SAFAInputMove<P, S>>> inputMovesFrom;
+	protected Map<Integer, Collection<SAFAInputMove<P, S, E>>> inputMovesFrom;
 
 	private Integer maxStateId;
 	private Integer transitionCount;
@@ -79,7 +80,7 @@ public class SAFA<P, S> {
 		super();
 		finalStates = new HashSet<>();
 		states = new HashSet<Integer>();
-		inputMovesFrom = new HashMap<Integer, Collection<SAFAInputMove<P, S>>>();
+		inputMovesFrom = new HashMap<Integer, Collection<SAFAInputMove<P, S, E>>>();
 		transitionCount = 0;
 		maxStateId = 0;
 	}
@@ -89,9 +90,9 @@ public class SAFA<P, S> {
 	 * unreachable states if remUnreachableStates is true and normalizes the
 	 * automaton if normalize is true
 	 */
-	public static <A, B> SAFA<A, B> MkSAFA(Collection<SAFAInputMove<A, B>> transitions, Integer initialState,
-			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba) {
-		return MkSAFA(transitions, initialState, finalStates, ba, true);
+	public static <A, B, E extends BooleanExpression> SAFA<A, B, E> MkSAFA(Collection<SAFAInputMove<A, B, E>> transitions, Integer initialState,
+			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba, BooleanExpressionFactory<E> boolexpr) {
+		return MkSAFA(transitions, initialState, finalStates, ba, boolexpr, true);
 	}
 
 	/*
@@ -99,10 +100,10 @@ public class SAFA<P, S> {
 	 * unreachable states if remUnreachableStates is true and normalizes the
 	 * automaton if normalize is true
 	 */
-	public static <A, B> SAFA<A, B> MkSAFA(Collection<SAFAInputMove<A, B>> transitions, Integer initialState,
-			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba, boolean normalize) {
+	public static <A, B, E extends BooleanExpression> SAFA<A, B, E> MkSAFA(Collection<SAFAInputMove<A, B, E>> transitions, Integer initialState,
+			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba, BooleanExpressionFactory<E> boolexpr, boolean normalize) {
 
-		SAFA<A, B> aut = new SAFA<A, B>();
+		SAFA<A, B, E> aut = new SAFA<A, B, E>();
 
 		aut.states = new HashSet<Integer>();
 		aut.states.add(initialState);
@@ -111,17 +112,17 @@ public class SAFA<P, S> {
 		aut.initialState = initialState;
 		aut.finalStates = new HashSet<>(finalStates);
 
-		for (SAFAInputMove<A, B> t : transitions)
+		for (SAFAInputMove<A, B, E> t : transitions)
 			aut.addTransition(t, ba, false);
 
 		if (normalize)
-			return aut.normalize(ba);
+			return aut.normalize(ba, boolexpr);
 		else
 			return aut;
 	}
 
 	// Adds a transition to the SFA
-	private void addTransition(SAFAInputMove<P, S> transition, BooleanAlgebra<P, S> ba, boolean skipSatCheck) {
+	private void addTransition(SAFAInputMove<P, S, E> transition, BooleanAlgebra<P, S> ba, boolean skipSatCheck) {
 
 		if (skipSatCheck || transition.isSatisfiable(ba)) {
 
@@ -135,7 +136,7 @@ public class SAFA<P, S> {
 			states.add(transition.from);
 			states.addAll(transition.toStates);
 
-			getInputMovesFrom(transition.from).add((SAFAInputMove<P, S>) transition);
+			getInputMovesFrom(transition.from).add((SAFAInputMove<P, S, E>) transition);
 		}
 	}
 
@@ -146,8 +147,8 @@ public class SAFA<P, S> {
 	/**
 	 * Returns the empty SFA for the Boolean algebra <code>ba</code>
 	 */
-	public static <A, B> SAFA<A, B> getEmptySFA(BooleanAlgebra<A, B> ba) {
-		SAFA<A, B> aut = new SAFA<A, B>();
+	public static <A, B, E extends BooleanExpression> SAFA<A, B, E> getEmptySFA(BooleanAlgebra<A, B> ba, BooleanExpressionFactory<E> bexpr) {
+		SAFA<A, B, E> aut = new SAFA<A, B, E>();
 		aut.states = new HashSet<Integer>();
 		aut.states.add(0);
 		aut.finalStates = new HashSet<>();
@@ -196,18 +197,20 @@ public class SAFA<P, S> {
 	 *            All transitions in the list must comply with guard
 	 * @return
 	 */
-	private LinkedList<Pair<P, BooleanExpression[]>> getTransitionTablesFrom(Collection<Integer> states,
-			BooleanAlgebra<P, S> ba, P guard) {
-		LinkedList<Pair<P, BooleanExpression[]>> moves = new LinkedList<>();
-		moves.add(new Pair<>(guard, new BooleanExpression[maxStateId + 1]));
+	private <F extends BooleanExpression> LinkedList<Pair<P, Map<Integer,F>>> getTransitionTablesFrom(Collection<Integer> states,
+			BooleanAlgebra<P, S> ba, P guard, BooleanExpressionFactory<F> tgt) {
+		LinkedList<Pair<P, Map<Integer,F>>> moves = new LinkedList<>();
+
+		BooleanExpressionMorphism<F> coerce = new BooleanExpressionMorphism<>((x) -> tgt.MkState(x), tgt);
+		moves.add(new Pair<P, Map<Integer, F>>(guard, new HashMap<>()));
 		for (Integer s : states) {
-			LinkedList<Pair<P, BooleanExpression[]>> moves2 = new LinkedList<>();
-			for (SAFAInputMove<P, S> t : getInputMovesFrom(s)) {
-				for (Pair<P, BooleanExpression[]> move : moves) {
+			LinkedList<Pair<P, Map<Integer, F>>> moves2 = new LinkedList<>();
+			for (SAFAInputMove<P, S, E> t : getInputMovesFrom(s)) {
+				for (Pair<P, Map<Integer, F>> move : moves) {
 					P newGuard = ba.MkAnd(t.guard, move.getFirst());
 					if (ba.IsSatisfiable(newGuard)) {
-						BooleanExpression[] map = move.getSecond().clone();
-						map[s] = t.to;
+						Map<Integer,F> map = new HashMap<Integer,F>(move.getSecond());
+						map.put(s, coerce.apply(t.to));
 						moves2.add(new Pair<>(newGuard, map));
 					}
 				}
@@ -217,31 +220,33 @@ public class SAFA<P, S> {
 		return moves;
 	}
 
-	public static <P, S> boolean isEquivalent(SAFA<P, S> laut, SAFA<P, S> raut, BooleanAlgebra<P, S> ba)
+	public static <P, S, E extends BooleanExpression, F extends BooleanExpression> boolean isEquivalent(SAFA<P, S, F> laut,
+			SAFA<P, S, F> raut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr)
 			throws TimeoutException {
 		SAFARelation similar = new SATRelation();
-		LinkedList<Pair<BooleanExpression, BooleanExpression>> worklist = new LinkedList<>();
+		LinkedList<Pair<E, E>> worklist = new LinkedList<>();
 
-		BooleanExpression leftInitial = new SumOfProducts(laut.initialState);
-		BooleanExpression rightInitial = new SumOfProducts(raut.initialState);
+		E leftInitial = boolexpr.MkState(laut.initialState);
+		E rightInitial = boolexpr.MkState(raut.initialState);
+
 		similar.add(leftInitial, rightInitial);
 		worklist.add(new Pair<>(leftInitial, rightInitial));
 		while (!worklist.isEmpty()) {
-			Pair<BooleanExpression, BooleanExpression> next = worklist.removeFirst();
+			Pair<E, E> next = worklist.removeFirst();
 
-			BooleanExpression left = next.getFirst();
-			BooleanExpression right = next.getSecond();
+			E left = next.getFirst();
+			E right = next.getSecond();
 
-			LinkedList<Pair<P, BooleanExpression[]>> leftMoves = laut.getTransitionTablesFrom(left.getStates(), ba,
-					ba.True());
-			for (Pair<P, BooleanExpression[]> leftMove : leftMoves) {
-				BooleanExpression leftSucc = left.substitute((lit) -> leftMove.getSecond()[lit]);
+			LinkedList<Pair<P, Map<Integer,E>>> leftMoves = laut.getTransitionTablesFrom(left.getStates(), ba, ba.True(), boolexpr);
+			for (Pair<P, Map<Integer, E>> leftMove : leftMoves) {
+				E leftSucc = boolexpr.substitute((lit) -> leftMove.getSecond().get(lit)).apply(left);
+
 				boolean leftSuccAccept = leftSucc.hasModel(laut.finalStates);
 
-				LinkedList<Pair<P, BooleanExpression[]>> rightMoves = raut.getTransitionTablesFrom(right.getStates(),
-						ba, leftMove.getFirst());
-				for (Pair<P, BooleanExpression[]> rightMove : rightMoves) {
-					BooleanExpression rightSucc = right.substitute((lit) -> rightMove.getSecond()[lit]);
+				LinkedList<Pair<P, Map<Integer,E>>> rightMoves = raut.getTransitionTablesFrom(right.getStates(),
+						ba, leftMove.getFirst(), boolexpr);
+				for (Pair<P, Map<Integer,E>> rightMove : rightMoves) {
+					E rightSucc = boolexpr.substitute((lit) -> rightMove.getSecond().get(lit)).apply(right);
 					if (leftSuccAccept != rightSucc.hasModel(raut.finalStates)) {
 						// leftSucc is accepting and rightSucc is rejecting or
 						// vice versa
@@ -258,7 +263,7 @@ public class SAFA<P, S> {
 
 	protected Collection<Integer> getPrevState(Collection<Integer> currState, S inputElement, BooleanAlgebra<P, S> ba) {
 		Collection<Integer> prevState = new HashSet<Integer>();
-		for (SAFAInputMove<P, S> t : getInputMoves()) {
+		for (SAFAInputMove<P, S, E> t : getInputMoves()) {
 			BooleanExpression b = t.to;
 			if (b.hasModel(currState) && ba.HasModel(t.guard, inputElement))
 				prevState.add(t.from);
@@ -267,7 +272,7 @@ public class SAFA<P, S> {
 		return prevState;
 	}
 
-	public static <P, S> boolean isReverseEquivalent(SAFA<P, S> laut, SAFA<P, S> raut, BooleanAlgebra<P, S> ba) {
+	public static <P, S, E extends BooleanExpression> boolean isReverseEquivalent(SAFA<P, S, E> laut, SAFA<P, S, E> raut, BooleanAlgebra<P, S> ba) {
 		return getReverseSFA(laut,ba).isHopcroftKarpEquivalentTo(getReverseSFA(raut, ba), ba);
 	}
 	
@@ -278,7 +283,7 @@ public class SAFA<P, S> {
 	 * @param ba
 	 * @return true if accepted false otherwise
 	 */
-	public static <P,S> SFA<P, S> getReverseSFA(SAFA<P,S> aut, BooleanAlgebra<P, S> ba) {
+	public static <P,S,E extends BooleanExpression> SFA<P, S> getReverseSFA(SAFA<P,S,E> aut, BooleanAlgebra<P, S> ba) {
 
 		// components of new SFA
 		Collection<SFAMove<P, S>> transitions = new ArrayList<SFAMove<P, S>>();
@@ -296,13 +301,13 @@ public class SAFA<P, S> {
 		while (!toVisit.isEmpty()) {
 			HashSet<Integer> currentState = toVisit.removeFirst();
 			int currentStateID = reached.get(currentState);
-			ArrayList<SAFAInputMove<P, S>> movesToCurr = new ArrayList<>();
+			ArrayList<SAFAInputMove<P, S, E>> movesToCurr = new ArrayList<>();
 			ArrayList<P> predicatesToCurr = new ArrayList<>();
 
 			if(currentState.contains(aut.initialState))
 				finalStates.add(currentStateID);
 			
-			for (SAFAInputMove<P, S> t : aut.getInputMoves())
+			for (SAFAInputMove<P, S, E> t : aut.getInputMoves())
 				if (t.to.hasModel(currentState)) {
 					movesToCurr.add(t);
 					predicatesToCurr.add(t.guard);
@@ -338,15 +343,15 @@ public class SAFA<P, S> {
 	/**
 	 * Computes the intersection with <code>aut</code> as a new SFA
 	 */
-	public SAFA<P, S> intersectionWith(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) {
-		return binaryOp(this, aut, ba, BoolOp.Intersection);
+	public SAFA<P, S, E> intersectionWith(SAFA<P, S, E> aut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) {
+		return binaryOp(this, aut, ba, boolexpr, BoolOp.Intersection);
 	}
 
 	/**
 	 * Computes the intersection with <code>aut</code> as a new SFA
 	 */
-	public SAFA<P, S> unionWith(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) {
-		return binaryOp(this, aut, ba, BoolOp.Union);
+	public SAFA<P, S, E> unionWith(SAFA<P, S, E> aut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) {
+		return binaryOp(this, aut, ba, boolexpr, BoolOp.Union);
 	}
 
 	public enum BoolOp {
@@ -357,7 +362,7 @@ public class SAFA<P, S> {
 	 * Computes the intersection with <code>aut1</code> and <code>aut2</code> as
 	 * a new SFA
 	 */
-	public static <A, B> SAFA<A, B> binaryOp(SAFA<A, B> aut1, SAFA<A, B> aut2, BooleanAlgebra<A, B> ba, BoolOp op) {
+	public static <A, B, E extends BooleanExpression> SAFA<A, B, E> binaryOp(SAFA<A, B, E> aut1, SAFA<A, B, E> aut2, BooleanAlgebra<A, B> ba, BooleanExpressionFactory<E> boolexpr, BoolOp op) {
 
 		int offset = aut1.maxStateId + 1;
 
@@ -368,31 +373,31 @@ public class SAFA<P, S> {
 			finalStates.add(state + offset);
 
 		// Copy all transitions (with proper renaming for aut2)
-		Collection<SAFAInputMove<A, B>> transitions = new ArrayList<SAFAInputMove<A, B>>(aut1.getInputMoves());
-		for (SAFAInputMove<A, B> t : aut2.getInputMoves())
-			transitions.add(new SAFAInputMove<A, B>(t.from + offset, t.to.offset(offset), t.guard));
+		Collection<SAFAInputMove<A, B, E>> transitions = new ArrayList<SAFAInputMove<A, B, E>>(aut1.getInputMoves());
+		for (SAFAInputMove<A, B, E> t : aut2.getInputMoves())
+			transitions.add(new SAFAInputMove<>(t.from + offset, boolexpr.offset(offset).apply(t.to), t.guard));
 
 		switch (op) {
 		case Union:
 			// Add extra moves from new initial state
-			for (SAFAInputMove<A, B> t : aut1.getInputMovesFrom(aut1.initialState))
-				transitions.add(new SAFAInputMove<A, B>(initialState, t.to, t.guard));
+			for (SAFAInputMove<A, B, E> t : aut1.getInputMovesFrom(aut1.initialState))
+				transitions.add(new SAFAInputMove<>(initialState, t.to, t.guard));
 
-			for (SAFAInputMove<A, B> t : aut2.getInputMovesFrom(aut2.initialState))
-				transitions.add(new SAFAInputMove<A, B>(initialState, t.to.offset(offset), t.guard));
+			for (SAFAInputMove<A, B, E> t : aut2.getInputMovesFrom(aut2.initialState))
+				transitions.add(new SAFAInputMove<>(initialState, boolexpr.offset(offset).apply(t.to), t.guard));
 			break;
 
 		case Intersection:
 			// Add extra moves from new initial state
-			for (SAFAInputMove<A, B> t1 : aut1.getInputMovesFrom(aut1.initialState))
-				for (SAFAInputMove<A, B> t2 : aut2.getInputMovesFrom(aut2.initialState)) {
+			for (SAFAInputMove<A, B, E> t1 : aut1.getInputMovesFrom(aut1.initialState))
+				for (SAFAInputMove<A, B, E> t2 : aut2.getInputMovesFrom(aut2.initialState)) {
 					A newGuard = ba.MkAnd(t1.guard, t2.guard);
 					if (ba.IsSatisfiable(newGuard)) {
 						// Compute intersected output state
-						BooleanExpression liftedt2 = t2.to.offset(offset);
-						BooleanExpression newTo = t1.to.and(liftedt2);
+						E liftedt2 = boolexpr.offset(offset).apply(t2.to);
+						E newTo = boolexpr.MkAnd(t1.to, liftedt2);
 
-						transitions.add(new SAFAInputMove<A, B>(initialState, newTo, newGuard));
+						transitions.add(new SAFAInputMove<>(initialState, newTo, newGuard));
 					}
 				}
 			break;
@@ -401,40 +406,40 @@ public class SAFA<P, S> {
 			break;
 		}
 
-		return MkSAFA(transitions, initialState, finalStates, ba, true);
+		return MkSAFA(transitions, initialState, finalStates, ba, boolexpr, true);
 	}
 
 	/**
 	 * Normalizes the SAFA by having at most one transition for each symbol out
 	 * of each state
 	 */
-	public SAFA<P, S> normalize(BooleanAlgebra<P, S> ba) {
+	public SAFA<P, S, E> normalize(BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) {
 
 		// Copy all transitions (with proper renaming for aut2)
-		Collection<SAFAInputMove<P, S>> transitions = new ArrayList<SAFAInputMove<P, S>>();
+		Collection<SAFAInputMove<P, S, E>> transitions = new ArrayList<SAFAInputMove<P, S, E>>();
 
 		for (int state : states) {
-			ArrayList<SAFAInputMove<P, S>> trFromState = new ArrayList<>(getInputMovesFrom(state));
+			ArrayList<SAFAInputMove<P, S, E>> trFromState = new ArrayList<>(getInputMovesFrom(state));
 			ArrayList<P> predicates = new ArrayList<>();
-			for (SAFAInputMove<P, S> t : trFromState)
+			for (SAFAInputMove<P, S, E> t : trFromState)
 				predicates.add(t.guard);
 
 			Collection<Pair<P, ArrayList<Integer>>> minterms = ba.GetMinterms(predicates);
 			for (Pair<P, ArrayList<Integer>> minterm : minterms) {
-				BooleanExpression newTo = null;
+				E newTo = null;
 				for (int i = 0; i < minterm.second.size(); i++)
 					if (minterm.second.get(i) == 1)
 						if (newTo == null)
 							newTo = trFromState.get(i).to;
 						else
-							newTo = newTo.or(trFromState.get(i).to);
+							newTo = boolexpr.MkOr(newTo, trFromState.get(i).to);
 
 				if (newTo != null)
-					transitions.add(new SAFAInputMove<P, S>(state, newTo, minterm.first));
+					transitions.add(new SAFAInputMove<>(state, newTo, minterm.first));
 			}
 		}
 
-		return MkSAFA(transitions, initialState, finalStates, ba, false);
+		return MkSAFA(transitions, initialState, finalStates, ba, boolexpr, false);
 	}
 
 	// ------------------------------------------------------
@@ -444,10 +449,10 @@ public class SAFA<P, S> {
 	/**
 	 * Returns the set of transitions to state <code>s</code>
 	 */
-	public Collection<SAFAInputMove<P, S>> getInputMovesFrom(Integer state) {
-		Collection<SAFAInputMove<P, S>> trset = inputMovesFrom.get(state);
+	public Collection<SAFAInputMove<P, S, E>> getInputMovesFrom(Integer state) {
+		Collection<SAFAInputMove<P, S, E>> trset = inputMovesFrom.get(state);
 		if (trset == null) {
-			trset = new HashSet<SAFAInputMove<P, S>>();
+			trset = new HashSet<SAFAInputMove<P, S ,E>>();
 			inputMovesFrom.put(state, trset);
 			return trset;
 		}
@@ -457,8 +462,8 @@ public class SAFA<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<SAFAInputMove<P, S>> getInputMovesFrom(Collection<Integer> stateSet) {
-		Collection<SAFAInputMove<P, S>> transitions = new LinkedList<SAFAInputMove<P, S>>();
+	public Collection<SAFAInputMove<P, S, E>> getInputMovesFrom(Collection<Integer> stateSet) {
+		Collection<SAFAInputMove<P, S, E>> transitions = new LinkedList<SAFAInputMove<P, S, E>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getInputMovesFrom(state));
 		return transitions;
@@ -467,13 +472,13 @@ public class SAFA<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<SAFAInputMove<P, S>> getInputMoves() {
+	public Collection<SAFAInputMove<P, S, E>> getInputMoves() {
 		return getInputMovesFrom(states);
 	}
 
 	@Override
 	public Object clone() {
-		SAFA<P, S> cl = new SAFA<P, S>();
+		SAFA<P, S, E> cl = new SAFA<P, S, E>();
 
 		cl.maxStateId = maxStateId;
 		cl.transitionCount = transitionCount;
@@ -482,7 +487,7 @@ public class SAFA<P, S> {
 		cl.initialState = initialState;
 		cl.finalStates = new HashSet<>(finalStates);
 
-		cl.inputMovesFrom = new HashMap<Integer, Collection<SAFAInputMove<P, S>>>(inputMovesFrom);
+		cl.inputMovesFrom = new HashMap<Integer, Collection<SAFAInputMove<P, S, E>>>(inputMovesFrom);
 
 		return cl;
 	}
@@ -496,7 +501,7 @@ public class SAFA<P, S> {
 		String s = "";
 		s = "Automaton: " + getTransitionCount() + " transitions, " + stateCount() + " states" + "\n";
 		s += "Transitions \n";
-		for (SAFAInputMove<P, S> t : getInputMoves())
+		for (SAFAInputMove<P, S, E> t : getInputMoves())
 			s = s + t + "\n";
 
 		s += "Initial State \n";

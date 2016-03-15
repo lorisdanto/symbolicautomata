@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import automata.safa.BooleanExpression;
+import automata.safa.LatticeMorphism;
 
 public class PositiveId extends PositiveBooleanExpression {
 
@@ -22,11 +23,6 @@ public class PositiveId extends PositiveBooleanExpression {
 	}
 
 	@Override
-	public BooleanExpression offset(int offset) {
-		return new PositiveId(state+offset);
-	}
-
-	@Override
 	public Set<Integer> getStates() {
 		Set<Integer> states = new HashSet<>();
 		states.add(state);
@@ -39,7 +35,11 @@ public class PositiveId extends PositiveBooleanExpression {
 	}
 
 	@Override
-	public BooleanExpression substitute(Function<Integer, BooleanExpression> sigma) {
-		return sigma.apply(state);
+	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) {
+		return f.apply(state);
+	}
+
+	public String toString() {
+		return state.toString();
 	}
 }

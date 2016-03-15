@@ -9,7 +9,11 @@ import java.util.List;
 import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
 
+import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
+import automata.safa.booleanexpression.PositiveBooleanExpressionFactory;
+import automata.safa.booleanexpression.SumOfProducts;
+import automata.safa.booleanexpression.SumOfProductsFactory;
 import logic.ltl.And;
 import logic.ltl.Eventually;
 import logic.ltl.LTLFormula;
@@ -25,9 +29,9 @@ public class LTLUnitTest {
 	@Test
 	public void testEventuallyAndOr() {
 		LTLFormula<CharPred, Character> conj = new And<>(eva, evn);
-		SAFA<CharPred, Character> sconj = conj.getSAFA(ba);
+		SAFA<CharPred, Character, SumOfProducts> sconj = conj.getSAFA(ba, sop);
 		LTLFormula<CharPred, Character> union = new Or<>(eva, evn);
-		SAFA<CharPred, Character> sunion = union.getSAFA(ba);
+		SAFA<CharPred, Character, SumOfProducts> sunion = union.getSAFA(ba, sop);
 
 		assertTrue(seva.accepts(la, ba));
 		assertFalse(seva.accepts(lb, ba));
@@ -52,14 +56,13 @@ public class LTLUnitTest {
 
 	@Test
 	public void testLargeEquiv() {
-
 		LTLFormula<CharPred, Character> tot = new True<>();
 		for (int i = 100; i < 100 + 10; i++) {
 			CharPred ch = new CharPred((char) i);
 			LTLFormula<CharPred, Character> evch = ev(ba, ch);
 			tot = new And<>(evch, tot);
 		}
-		SAFA<CharPred, Character> safa1 = tot.getSAFA(ba);
+		SAFA<CharPred, Character, SumOfProducts> safa1 = tot.getSAFA(ba, sop);
 
 		tot = new True<>();
 		for (int i = 100; i < 100 + 9; i++) {
@@ -67,14 +70,13 @@ public class LTLUnitTest {
 			LTLFormula<CharPred, Character> evch = ev(ba, ch);
 			tot = new And<>(evch, tot);
 		}
-		SAFA<CharPred, Character> safa2 = tot.getSAFA(ba);
+		SAFA<CharPred, Character, SumOfProducts> safa2 = tot.getSAFA(ba, sop);
 		
 		long startTime = System.currentTimeMillis();
 
 		boolean b = true;
 		try {
-
-			b= SAFA.isEquivalent(safa1, safa2, ba);
+			b= SAFA.isEquivalent(safa1, safa2, ba, sop);
 		} catch (TimeoutException toe) {
 			System.out.println(toe);
 		}
@@ -108,8 +110,9 @@ public class LTLUnitTest {
 
 	LTLFormula<CharPred, Character> eva = ev(ba, alpha);
 	LTLFormula<CharPred, Character> evn = ev(ba, num);
-	SAFA<CharPred, Character> seva = eva.getSAFA(ba);
-	SAFA<CharPred, Character> sevn = evn.getSAFA(ba);
+	SumOfProductsFactory sop = SumOfProductsFactory.getInstance();
+	SAFA<CharPred, Character, SumOfProducts> seva = eva.getSAFA(ba, sop);
+	SAFA<CharPred, Character, SumOfProducts> sevn = evn.getSAFA(ba, sop);
 
 	// Test strings
 	List<Character> la = lOfS("a#a"); // accepted only by autA

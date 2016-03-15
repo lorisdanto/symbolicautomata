@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import automata.safa.BooleanExpression;
+import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFAInputMove;
 import theory.BooleanAlgebra;
 
@@ -50,9 +52,10 @@ public class And<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+	protected <E extends BooleanExpression> void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
+			HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr) {
 
 		// If I already visited avoid recomputing
 		if (formulaToStateId.containsKey(this))
@@ -63,21 +66,21 @@ public class And<P, S> extends LTLFormula<P, S> {
 		formulaToStateId.put(this, id);
 
 		// Compute transitions for children
-		left.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
-		right.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
+		left.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
+		right.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
 
 		// delta(l and r, p) = delta(l, p) and delta(r, p)
 		int leftId = formulaToStateId.get(left);
 		int rightId = formulaToStateId.get(right);
-		Collection<SAFAInputMove<P, S>> leftMoves = moves.get(leftId);
-		Collection<SAFAInputMove<P, S>> rightMoves = moves.get(rightId);
-		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
+		Collection<SAFAInputMove<P, S, E>> leftMoves = moves.get(leftId);
+		Collection<SAFAInputMove<P, S, E>> rightMoves = moves.get(rightId);
+		Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();
 		
-		for (SAFAInputMove<P, S> leftMove : leftMoves)
-			for (SAFAInputMove<P, S> rightMove : rightMoves) {
+		for (SAFAInputMove<P, S, E> leftMove : leftMoves)
+			for (SAFAInputMove<P, S, E> rightMove : rightMoves) {
 				P newPred = ba.MkAnd(leftMove.guard, rightMove.guard);
 				if (ba.IsSatisfiable(newPred))
-					newMoves.add(new SAFAInputMove<P, S>(id, leftMove.to.and(rightMove.to), newPred));
+					newMoves.add(new SAFAInputMove<P, S, E>(id, boolexpr.MkAnd(leftMove.to, rightMove.to), newPred));
 			}
 		
 		moves.put(id, newMoves);

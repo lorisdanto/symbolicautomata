@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import automata.safa.BooleanExpression;
+import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFAInputMove;
 import automata.safa.booleanexpression.SumOfProducts;
 import theory.BooleanAlgebra;
@@ -44,9 +46,10 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+	protected <E extends BooleanExpression>void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
+			HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr) {
 
 		// If I already visited avoid recomputing
 		if (formulaToStateId.containsKey(this))
@@ -57,13 +60,13 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 		formulaToStateId.put(this, id);
 
 		// Compute transitions for children
-		phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
+		phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
 
 		// delta(G phi, p) = delta(phi, p) /\ G phi
-		Collection<SAFAInputMove<P, S>> phiMoves = moves.get(formulaToStateId.get(phi));
-		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
-		for (SAFAInputMove<P, S> move : phiMoves)
-			newMoves.add(new SAFAInputMove<P, S>(id, move.to.and(new SumOfProducts(id)), move.guard));
+		Collection<SAFAInputMove<P, S, E>> phiMoves = moves.get(formulaToStateId.get(phi));
+		Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();
+		for (SAFAInputMove<P, S, E> move : phiMoves)
+			newMoves.add(new SAFAInputMove<>(id, boolexpr.MkAnd(move.to, boolexpr.MkState(id)), move.guard));
 
 		finalStates.add(id);
 		

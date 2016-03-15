@@ -2,11 +2,14 @@ package automata.safa.booleanexpression;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.function.Function;
 
 import automata.safa.BooleanExpression;
+import automata.safa.BooleanExpressionFactory;
+import automata.safa.LatticeMorphism;
 
 public class SumOfProducts extends BooleanExpression {
 
@@ -18,8 +21,8 @@ public class SumOfProducts extends BooleanExpression {
 		for (Collection<Integer> cube1 : dnf) {
 			boolean subsumed = false;
 			for (Collection<Integer> cube2 : dnf) {
-				if (cube1.size() < cube2.size()) {
-					if (cube2.containsAll(cube1)) {
+				if (cube1.size() > cube2.size()) {
+					if (cube1.containsAll(cube2)) {
 						subsumed = true;
 						break;
 					}
@@ -74,62 +77,6 @@ public class SumOfProducts extends BooleanExpression {
 		return false;
 	}
 
-	@Override
-	public BooleanExpression or(BooleanExpression p1) {
-		if (!(p1 instanceof SumOfProducts))
-			throw new IllegalArgumentException("can only interesect SumOfProducts with SumOfProducts");
-
-		SumOfProducts p1c = (SumOfProducts) p1;
-		Collection<Collection<Integer>> newDnf = new HashSet<>(dnf);
-		newDnf.addAll(p1c.dnf);
-
-		return new SumOfProducts(newDnf);
-	}
-
-	@Override
-	public BooleanExpression and(BooleanExpression p1) {
-		if (!(p1 instanceof SumOfProducts))
-			throw new IllegalArgumentException("can only interesect SumOfProducts with SumOfProducts");
-
-		SumOfProducts p1c = (SumOfProducts) p1;
-
-		Collection<Collection<Integer>> newDnf = new HashSet<>();
-		for (Collection<Integer> l1 : dnf)
-			for (Collection<Integer> l2 : p1c.dnf) {
-				Collection<Integer> l1concl2 = new HashSet<>(l1);
-				l1concl2.addAll(l2);
-				newDnf.add(l1concl2);
-			}
-
-		return new SumOfProducts(newDnf);
-	}
-
-	@Override
-	public BooleanExpression offset(int offset) {
-		Collection<Collection<Integer>> newDnf = new HashSet<>();
-		for (Collection<Integer> l1 : dnf) {
-			Collection<Integer> newl1 = new HashSet<>();
-			for (Integer s : l1) {
-				newl1.add(s + offset);
-			}
-			newDnf.add(newl1);
-		}
-		return new SumOfProducts(newDnf);
-	}
-
-	@Override
-	public BooleanExpression substitute(Function<Integer, BooleanExpression> sigma) {
-		BooleanExpression result = new SumOfProducts(false);
-		for (Collection<Integer> cube : dnf) {
-			BooleanExpression sigmaCube = new SumOfProducts(true);
-			for (Integer literal : cube) {
-				sigmaCube = sigmaCube.and(sigma.apply(literal));
-			}
-			result = result.or(sigmaCube);
-		}
-		return result;
-	}
-
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		boolean firstel = true;
@@ -150,4 +97,17 @@ public class SumOfProducts extends BooleanExpression {
 		return sb.toString();
 	}
 	// TODO equals clone...
+
+	@Override
+	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) {
+		R result = f.False();
+		for (Collection<Integer> cube : dnf) {
+			R cubeImage = f.True();
+			for (Integer state : cube) {
+				cubeImage = f.MkAnd(cubeImage, f.apply(state));
+			}
+			result = f.MkOr(result, cubeImage);
+		}
+		return result;
+	}
 }

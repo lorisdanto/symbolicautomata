@@ -16,16 +16,16 @@ import theory.BooleanAlgebra;
  * @param <P> set of predicates over the domain S
  * @param <S> domain of the automaton alphabet
  */
-public class SAFAInputMove<P,S> {
+public class SAFAInputMove<P,S,E extends BooleanExpression> {
 
 	public Integer from;
-	public BooleanExpression to;
+	public E to;
 	public Set<Integer> toStates;
 	public int maxState;
 	
 	public P guard;
 		
-	public SAFAInputMove(Integer from, BooleanExpression to, P guard) {
+	public SAFAInputMove(Integer from, E to, P guard) {
 		super();
 		this.from = from;
 		this.to = to;
@@ -53,8 +53,8 @@ public class SAFAInputMove<P,S> {
 
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof SAFAInputMove<?, ?>) {
-			SAFAInputMove<?, ?> otherCasted = (SAFAInputMove<?, ?>) other;
+		if (other instanceof SAFAInputMove<?, ?, ?>) {
+			SAFAInputMove<?, ?, ?> otherCasted = (SAFAInputMove<?, ?, ?>) other;
 			return otherCasted.from==from && otherCasted.to.equals(to) && otherCasted.guard==guard;
 		}
 
@@ -63,7 +63,7 @@ public class SAFAInputMove<P,S> {
 
 	@Override
 	public Object clone(){
-		  return new SAFAInputMove<P, S>(from,to, guard);
+		  return new SAFAInputMove<P, S, E>(from,to, guard);
 	}
 
 	

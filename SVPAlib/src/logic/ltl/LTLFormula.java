@@ -5,27 +5,30 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import automata.safa.BooleanExpression;
+import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
 import theory.BooleanAlgebra;
 
 public abstract class LTLFormula<P,S> {
 
-	public SAFA<P,S> getSAFA(BooleanAlgebra<P, S> ba){
+	public <E extends BooleanExpression> SAFA<P,S,E> getSAFA(BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr){
 		
 		Integer initialState = 0;
 		HashMap<LTLFormula<P, S>, Integer> formulaToStateId = new HashMap<>();
 		
 		Collection<Integer> finalStates = new HashSet<>();
-		HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves = new HashMap<>();
+		HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves = new HashMap<>();
 		
-		this.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
+		this.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
 
-		Collection<SAFAInputMove<P, S>> transitions = new LinkedList<>();
-		for(Collection<SAFAInputMove<P, S>> c: moves.values())
+		Collection<SAFAInputMove<P, S, E>> transitions = new LinkedList<>();
+		for(Collection<SAFAInputMove<P, S, E>> c: moves.values())
 			transitions.addAll(c);		
 		
-		return SAFA.MkSAFA(transitions, initialState, finalStates, ba);
+		return SAFA.MkSAFA(transitions, initialState, finalStates, ba, boolexpr);
 	}
 	
 	// Checks whether a formula should be a final state in the automaton
@@ -37,11 +40,12 @@ public abstract class LTLFormula<P,S> {
 	protected abstract LTLFormula<P,S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba);	
 	
 	// returns set of disjoint predicates that are the triggers of transitions out of this state
-	protected abstract void accumulateSAFAStatesTransitions(
+	protected abstract <E extends BooleanExpression> void accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, 
+			HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves,
 			Collection<Integer> finalStates,
-			BooleanAlgebra<P, S> ba
+			BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr
 			);
 	
 	// Checks whether a formula should be a final state in the automaton

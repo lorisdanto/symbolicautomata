@@ -3,6 +3,8 @@ package logic.ltl;
 import java.util.Collection;
 import java.util.HashMap;
 
+import automata.safa.BooleanExpression;
+import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFAInputMove;
 import theory.BooleanAlgebra;
 
@@ -42,9 +44,10 @@ public class Not<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+	protected <E extends BooleanExpression> void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
+			HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr) {
 
 		throw new UnsupportedOperationException("At this point the formula should be in negation normal form.");
 	}
