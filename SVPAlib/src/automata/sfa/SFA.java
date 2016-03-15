@@ -552,7 +552,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 		int offset = aut1.stateCount();
 
 		ds.add(aut1.initialState);
-		ds.add(aut1.initialState+offset);
+		ds.add(aut2.initialState+offset);
 		ds.mergeSets(aut1.initialState, aut2.initialState + offset);
 
 		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<>();
