@@ -18,12 +18,11 @@ import org.sat4j.specs.TimeoutException;
 
 import com.google.common.collect.Lists;
 
-import automata.safa.booleanexpression.PositiveId;
-import automata.safa.booleanexpression.SumOfProducts;
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
 import theory.BooleanAlgebra;
+import utilities.DisjointSet;
 import utilities.Pair;
 
 /**
@@ -297,7 +296,6 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		reached.put(init, 0);
 		toVisit.add(init);
 
-		// Explore the product automaton until no new states can be reached
 		while (!toVisit.isEmpty()) {
 			HashSet<Integer> currentState = toVisit.removeFirst();
 			int currentStateID = reached.get(currentState);
@@ -336,6 +334,153 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		return rev;
 	}
 
+	/**
+	 * Returns true if the SAFA accepts the input list
+	 * 
+	 * @param input
+	 * @param ba
+	 * @return true if accepted false otherwise
+	 */
+	public static <P,S,E extends BooleanExpression> boolean areReverseEquivalent(SAFA<P,S,E> aut1, SAFA<P,S,E> aut2, BooleanAlgebra<P, S> ba) {
+
+		DisjointSet ds = new DisjointSet();
+		int offset = aut1.stateCount();		
+
+		HashMap<HashSet<Integer>, Integer> reached1 = new HashMap<HashSet<Integer>, Integer>();
+		HashMap<HashSet<Integer>, Integer> reached2 = new HashMap<HashSet<Integer>, Integer>();
+		
+		LinkedList<Pair<HashSet<Integer>, HashSet<Integer>>> toVisit = new LinkedList<>();				
+		
+		HashSet<Integer> in1 =new HashSet<Integer>(aut1.finalStates);
+		HashSet<Integer> in2 =new HashSet<Integer>(aut2.finalStates);
+				
+		reached1.put(in1, 0);
+		reached2.put(in2, 1);
+		toVisit.add(new Pair<HashSet<Integer>, HashSet<Integer>>(in1, in2));
+		
+		ds.add(0);
+		ds.add(1);
+		ds.mergeSets(0,1);
+		
+		while (!toVisit.isEmpty()) {
+			Pair<HashSet<Integer>, HashSet<Integer>> curr = toVisit.removeFirst();
+			HashSet<Integer> curr1 =curr.first;
+			HashSet<Integer> curr2 =curr.second;
+			
+			boolean isFinal1=curr1.contains(aut1.initialState); 
+			boolean isFinal2=curr2.contains(aut2.initialState);
+			
+			ArrayList<SAFAInputMove<P, S, E>> movesToCurr1 = new ArrayList<>();
+			P predicateToCurr1 = ba.False();
+			ArrayList<SAFAInputMove<P, S, E>> movesToCurr2 = new ArrayList<>();
+			P predicateToCurr2 = ba.False();
+									
+			for (SAFAInputMove<P, S, E> t : aut1.getInputMoves())
+				if (t.to.hasModel(curr1)) {
+					movesToCurr1.add(t);
+					predicateToCurr1=ba.MkOr(predicateToCurr1,t.guard);
+				}
+			for (SAFAInputMove<P, S, E> t : aut2.getInputMoves())
+				if (t.to.hasModel(curr2)) {
+					movesToCurr2.add(t);
+					predicateToCurr2=ba.MkOr(predicateToCurr2,t.guard);
+				}
+				
+			P only1 = ba.MkAnd(predicateToCurr1, ba.MkNot(predicateToCurr2));
+			P only2 = ba.MkAnd(predicateToCurr2, ba.MkNot(predicateToCurr1));			
+			
+			//Case for which one has transition but other one doesn't
+			HashSet<Integer> emptyState = new HashSet<>();
+			HashSet<Integer> t1 = new HashSet<>();
+			for (SAFAInputMove<P, S, E> move1 : movesToCurr1){
+				
+				if (ba.IsSatisfiable(ba.MkAnd(move1.guard, only1))) {					
+					t1.add(move1.from);															
+				}
+			}
+			if(!t1.isEmpty()){
+				int r1;
+				int numEl=ds.getNumberOfElements();
+				if(!reached1.containsKey(emptyState)){
+					reached1.put(t1,numEl);							
+				}
+				r1 = reached1.get(emptyState);
+				if(!ds.contains(r1))
+					ds.add(r1);
+				
+				int r2;
+				numEl=ds.getNumberOfElements();
+				if(!reached2.containsKey(emptyState)){
+					reached2.put(emptyState,numEl);							
+				}
+				r2 = reached2.get(emptyState);
+				if(!ds.contains(r2))
+					ds.add(r2);
+				
+				if (!ds.areInSameSet(r1, r2)) {
+					ds.mergeSets(r1, r2);
+					toVisit.add(new Pair<HashSet<Integer>, HashSet<Integer>>(t1, emptyState));
+				}
+			}
+			HashSet<Integer> t2 = new HashSet<>();
+			for (SAFAInputMove<P, S, E> move2 : movesToCurr2){
+				
+				if (ba.IsSatisfiable(ba.MkAnd(move2.guard, only2))) {					
+					t2.add(move2.from);															
+				}
+			}
+			if(!t2.isEmpty()){
+				int r1;
+				int numEl=ds.getNumberOfElements();
+				if(!reached1.containsKey(emptyState)){
+					reached1.put(emptyState,numEl);							
+				}
+				r1 = reached1.get(emptyState);
+				if(!ds.contains(r1))
+					ds.add(r1);
+				
+				int r2;
+				numEl=ds.getNumberOfElements();
+				if(!reached2.containsKey(emptyState)){
+					reached2.put(t2,numEl);							
+				}
+				r2 = reached2.get(emptyState);
+				if(!ds.contains(r2))
+					ds.add(r2);								
+				
+				if (!ds.areInSameSet(r1, r2)) {
+					ds.mergeSets(r1, r2);
+					toVisit.add(new Pair<HashSet<Integer>, HashSet<Integer>>(emptyState,t2));
+				}
+			}
+			
+			//TODO Minterm
+//			for (SAFAInputMove<P, S, E> move1 : movesToCurr1)
+//				for (SAFAInputMove<P, S, E> move2 : movesToCurr2)
+//					if (ba.IsSatisfiable(ba.MkAnd(move1.guard, move2.guard))) {
+//						int r1 = move1.from; 
+//						int r2 = move2.f;
+//						boolean isFinal1 = aut1.isFinalState(move1.to);
+//						boolean isFinal2 = aut2.isFinalState(move2.to);
+//						if (isFinal1 && !isFinal2)
+//							return false;
+//						if (isFinal2 && !isFinal1)
+//							return false;
+//
+//						if(!ds.contains(r1))
+//							ds.add(r1);
+//						if(!ds.contains(r2))
+//							ds.add(r2);
+//						
+//						if (!ds.areInSameSet(r1, r2)) {
+//							ds.mergeSets(r1, r2);
+//							toVisit.add(new Pair<Integer, Integer>(move1.to,move2.to));
+//						}
+//					}
+		}
+		return true;
+	}
+	
 	// ------------------------------------------------------
 	// Boolean automata operations
 	// ------------------------------------------------------
