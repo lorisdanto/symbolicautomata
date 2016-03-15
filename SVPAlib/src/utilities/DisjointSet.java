@@ -1,5 +1,9 @@
 package utilities;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+
 /* 
  * Disjoint-set data structure - Library (Java)
  * 
@@ -38,11 +42,18 @@ public final class DisjointSet {
 	private int numSets;
 	
 	// Per-node properties. This representation is more space-efficient than creating one node object per element.
-	private int[] parents;  // The index of the parent element. An element is a representative iff its parent is itself.
-	private byte[] ranks;   // Always in the range [0, floor(log2(numElems))]. Thus has a maximum value of 30.
-	private int[] sizes;    // Positive number if the element is a representative, otherwise zero.
+//	private int[] parents;  // The index of the parent element. An element is a representative iff its parent is itself.
+//	private byte[] ranks;   // Always in the range [0, floor(log2(numElems))]. Thus has a maximum value of 30.
+//	private int[] sizes;    // Positive number if the element is a representative, otherwise zero.
+	
+	private Map<Integer,Integer> parents;  // The index of the parent element. An element is a representative iff its parent is itself.
+	private Map<Integer,Integer> ranks;   // Always in the range [0, floor(log2(numElems))]. Thus has a maximum value of 30.
+	private Map<Integer,Integer> sizes;    // Positive number if the element is a representative, otherwise zero.
 	
 	
+	public boolean contains(int elem){
+		return parents.containsKey(elem);
+	}
 	
 	/*---- Constructors ----*/
 	
@@ -51,15 +62,35 @@ public final class DisjointSet {
 	public DisjointSet(int numElems) {
 		if (numElems <= 0)
 			throw new IllegalArgumentException("Number of elements must be positive");
-		parents = new int[numElems];
-		ranks = new byte[numElems];
-		sizes = new int[numElems];
+		parents = new HashMap<>(); 				
+		ranks = new HashMap<>();
+		sizes = new HashMap<>();
 		for (int i = 0; i < numElems; i++) {
-			parents[i] = i;
-			ranks[i] = 0;
-			sizes[i] = 1;
+			parents.put(i,i);
+			ranks.put(i,0);
+			sizes.put(i,1);
 		}
 		numSets = numElems;
+	}
+	
+	// Constructs a new set containing the given number of singleton sets.
+	// For example, new DisjointSet(3) --> {{0}, {1}, {2}}.
+	public DisjointSet() {
+		parents = new HashMap<>(); 				
+		ranks = new HashMap<>();
+		sizes = new HashMap<>();
+		numSets = 0;
+	}
+	
+	// Constructs a new set containing the given number of singleton sets.
+	// For example, new DisjointSet(3) --> {{0}, {1}, {2}}.
+	public void add(int elem) {
+		if (parents.containsKey(elem))
+			throw new IllegalArgumentException("Element should not be in the set already");
+		parents.put(elem,elem);
+		ranks.put(elem,0);
+		sizes.put(elem,1);
+		numSets++;
 	}
 	
 	
@@ -70,7 +101,7 @@ public final class DisjointSet {
 	// into the constructor and is constant for the lifetime of the object. All the other methods
 	// require the argument elemIndex to satisfy 0 <= elemIndex < getNumberOfElements().
 	public int getNumberOfElements() {
-		return parents.length;
+		return parents.size();
 	}
 	
 	
@@ -85,17 +116,17 @@ public final class DisjointSet {
 	// known as "find" in the literature. Also performs path compression, which alters the internal state to
 	// improve the speed of future queries, but has no externally visible effect on the values returned.
 	public int getRepr(int elemIndex) {
-		if (elemIndex < 0 || elemIndex >= parents.length)
-			throw new IndexOutOfBoundsException();
+		/*if (elemIndex < 0 || elemIndex >= parents.size())
+			throw new IndexOutOfBoundsException();*/
 		// Follow parent pointers until we reach a representative
-		int parent = parents[elemIndex];
+		int parent = parents.get(elemIndex);
 		if (parent == elemIndex)
 			return elemIndex;
 		while (true) {
-			int grandparent = parents[parent];
+			int grandparent = parents.get(parent);
 			if (grandparent == parent)
 				return parent;
-			parents[elemIndex] = grandparent;  // Partial path compression
+			parents.put(elemIndex, grandparent); // Partial path compression
 			elemIndex = parent;
 			parent = grandparent;
 		}
@@ -104,7 +135,7 @@ public final class DisjointSet {
 	
 	// Returns the size of the set that the given element is a member of. 1 <= result <= getNumberOfElements().
 	public int getSizeOfSet(int elemIndex) {
-		return sizes[getRepr(elemIndex)];
+		return sizes.get(getRepr(elemIndex));
 	}
 	
 	
@@ -125,9 +156,12 @@ public final class DisjointSet {
 			return false;
 		
 		// Compare ranks
-		int cmp = ranks[repr0] - ranks[repr1];
-		if (cmp == 0)  // Increment repr0's rank if both nodes have same rank
-			ranks[repr0]++;
+		int cmp = ranks.get(repr0) - ranks.get(repr1);
+		if (cmp == 0){
+			// Increment repr0's rank if both nodes have same rank
+			int r = ranks.get(repr0);
+			ranks.put(repr0, r+1);
+		}
 		else if (cmp < 0) {  // Swap to ensure that repr0's rank >= repr1's rank
 			int temp = repr0;
 			repr0 = repr1;
@@ -135,9 +169,10 @@ public final class DisjointSet {
 		}
 		
 		// Graft repr1's subtree onto node repr0
-		parents[repr1] = repr0;
-		sizes[repr0] += sizes[repr1];
-		sizes[repr1] = 0;
+		parents.put(repr1, repr0);
+		int sizer1 = sizes.get(repr1);
+		sizes.put(repr0,sizer1);
+		sizes.put(repr1, 0);
 		numSets--;
 		return true;
 	}
@@ -147,23 +182,45 @@ public final class DisjointSet {
 	// if a structural invariant is known to be violated. This always returns silently on a valid object.
 	void checkStructure() {
 		int numRepr = 0;
-		for (int i = 0; i < parents.length; i++) {
-			int parent = parents[i];
-			int rank = ranks[i];
-			int size = sizes[i];
+		for (int i = 0; i < parents.size(); i++) {
+			int parent = parents.get(i);
+			int rank = ranks.get(i);
+			int size = sizes.get(i);
 			boolean isRepr = parent == i;
 			if (isRepr)
 				numRepr++;
 			
 			boolean ok = true;
-			ok &= 0 <= parent && parent < parents.length;
-			ok &= 0 <= rank && (isRepr || rank < ranks[parent]);
+			ok &= 0 <= parent && parent < parents.size();
+			ok &= 0 <= rank && (isRepr || rank < ranks.get(parent));
 			ok &= !isRepr && size == 0 || isRepr && size >= (1 << rank);
 			if (!ok)
 				throw new AssertionError();
 		}
-		if (!(1 <= numSets && numSets == numRepr && numSets <= parents.length))
+		if (!(1 <= numSets && numSets == numRepr && numSets <= parents.size()))
 			throw new AssertionError();
 	}
+
+	@Override
+	public String toString() {
+		HashMap<Integer, HashSet<Integer>> sets = new HashMap<>();
+		for(int i:parents.keySet())
+			sets.put(i, new HashSet<>());
+		for(int i:parents.keySet()){
+			int p = parents.get(i);
+			HashSet<Integer> set = sets.get(p);
+			set.add(i);
+			sets.put(p, set);
+		}
+		String s="";
+		for(HashSet<Integer> set: sets.values()){
+			if(!set.isEmpty())
+				s+=set+" ";
+		}
+		
+		return s;
+	}
+	
+	
 	
 }

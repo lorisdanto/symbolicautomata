@@ -56,8 +56,10 @@ public class LTLUnitTest {
 
 	@Test
 	public void testLargeEquiv() {
+		int size = 11;
+		
 		LTLFormula<CharPred, Character> tot = new True<>();
-		for (int i = 100; i < 100 + 10; i++) {
+		for (int i = 100; i < 100 + size; i++) {
 			CharPred ch = new CharPred((char) i);
 			LTLFormula<CharPred, Character> evch = ev(ba, ch);
 			tot = new And<>(evch, tot);
@@ -65,7 +67,7 @@ public class LTLUnitTest {
 		SAFA<CharPred, Character, SumOfProducts> safa1 = tot.getSAFA(ba, sop);
 
 		tot = new True<>();
-		for (int i = 100; i < 100 + 9; i++) {
+		for (int i = 100; i < 100 + size-1; i++) {
 			CharPred ch = new CharPred((char) i);
 			LTLFormula<CharPred, Character> evch = ev(ba, ch);
 			tot = new And<>(evch, tot);

@@ -548,9 +548,11 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 */
 	public static <A, B> boolean areHopcroftKarpEquivalent(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
 
-		DisjointSet ds = new DisjointSet(aut1.stateCount() + aut2.stateCount());
+		DisjointSet ds = new DisjointSet();
 		int offset = aut1.stateCount();
 
+		ds.add(aut1.initialState);
+		ds.add(aut1.initialState+offset);
 		ds.mergeSets(aut1.initialState, aut2.initialState + offset);
 
 		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<>();
@@ -560,7 +562,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 			for (SFAInputMove<A, B> move1 : aut1.getInputMovesFrom(curr.first))
 				for (SFAInputMove<A, B> move2 : aut2.getInputMovesFrom(curr.second))
 					if (ba.IsSatisfiable(ba.MkAnd(move1.guard, move2.guard))) {
-						int r1 = move1.to, r2 = move2.to + offset;
+						int r1 = move1.to; 
+						int r2 = move2.to + offset;
 						boolean isFinal1 = aut1.isFinalState(move1.to);
 						boolean isFinal2 = aut2.isFinalState(move2.to);
 						if (isFinal1 && !isFinal2)
@@ -568,9 +571,14 @@ public class SFA<P, S> extends Automaton<P, S> {
 						if (isFinal2 && !isFinal1)
 							return false;
 
+						if(!ds.contains(r1))
+							ds.add(r1);
+						if(!ds.contains(r2))
+							ds.add(r2);
+						
 						if (!ds.areInSameSet(r1, r2)) {
 							ds.mergeSets(r1, r2);
-							toVisit.add(new Pair<Integer, Integer>(r1, r2));
+							toVisit.add(new Pair<Integer, Integer>(move1.to,move2.to));
 						}
 					}
 		}
