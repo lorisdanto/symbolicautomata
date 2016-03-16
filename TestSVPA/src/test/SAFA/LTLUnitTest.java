@@ -9,9 +9,7 @@ import java.util.List;
 import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
 
-import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
-import automata.safa.booleanexpression.PositiveBooleanExpressionFactory;
 import automata.safa.booleanexpression.SumOfProducts;
 import automata.safa.booleanexpression.SumOfProductsFactory;
 import logic.ltl.And;
@@ -23,6 +21,7 @@ import logic.ltl.True;
 import theory.CharPred;
 import theory.CharSolver;
 import theory.StdCharPred;
+import utilities.Pair;
 
 public class LTLUnitTest {
 
@@ -56,7 +55,7 @@ public class LTLUnitTest {
 
 	@Test
 	public void testLargeEquiv() {
-		int size = 11;
+		int size = 10;
 		
 		LTLFormula<CharPred, Character> tot = new True<>();
 		for (int i = 100; i < 100 + size; i++) {
@@ -89,13 +88,14 @@ public class LTLUnitTest {
 
 		startTime = System.currentTimeMillis();
 
-		boolean b1= SAFA.isReverseEquivalent(safa1, safa2, ba);		
+		Pair<Boolean, List<Character>> b1= SAFA.isReverseEquivalent(safa1, safa2, ba);		
+		System.out.println(b1);
 		
 		stopTime = System.currentTimeMillis();
 		elapsedTime = stopTime - startTime;
 		System.out.println(elapsedTime);
 		
-		assertTrue(b==b1);
+		assertTrue(b==b1.first);
 
 	}
 

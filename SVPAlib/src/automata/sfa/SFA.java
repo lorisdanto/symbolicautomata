@@ -19,7 +19,7 @@ import java.util.Stack;
 
 import theory.BooleanAlgebra;
 import utilities.Block;
-import utilities.DisjointSet;
+import utilities.UnionFindHopKarp;
 import utilities.Pair;
 import automata.Automaton;
 import automata.Move;
@@ -538,7 +538,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * checks whether the aut accepts the same language
 	 */
-	public boolean isHopcroftKarpEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+	public Pair<Boolean,List<S>> isHopcroftKarpEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba) {
 		return areHopcroftKarpEquivalent(this.determinize(ba).mkTotal(ba).normalize(ba),
 				aut.determinize(ba).mkTotal(ba).normalize(ba), ba);
 	}
@@ -546,13 +546,13 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * checks whether aut1 is equivalent to aut2 using Hopcroft Karp's algorithm
 	 */
-	public static <A, B> boolean areHopcroftKarpEquivalent(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
+	public static <A, B> Pair<Boolean,List<B>> areHopcroftKarpEquivalent(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
 
-		DisjointSet ds = new DisjointSet();
+		UnionFindHopKarp<B> ds = new UnionFindHopKarp<>();
 		int offset = aut1.stateCount();
 
-		ds.add(aut1.initialState);
-		ds.add(aut2.initialState+offset);
+		ds.add(aut1.initialState, aut1.isFinalState(aut1.initialState), new LinkedList<>());
+		ds.add(aut2.initialState+offset,aut2.isFinalState(aut2.initialState), new LinkedList<>());
 		ds.mergeSets(aut1.initialState, aut2.initialState + offset);
 
 		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<>();
@@ -560,60 +560,31 @@ public class SFA<P, S> extends Automaton<P, S> {
 		while (!toVisit.isEmpty()) {
 			Pair<Integer, Integer> curr = toVisit.removeFirst();
 			for (SFAInputMove<A, B> move1 : aut1.getInputMovesFrom(curr.first))
-				for (SFAInputMove<A, B> move2 : aut2.getInputMovesFrom(curr.second))
-					if (ba.IsSatisfiable(ba.MkAnd(move1.guard, move2.guard))) {
+				for (SFAInputMove<A, B> move2 : aut2.getInputMovesFrom(curr.second)){
+					A conj = ba.MkAnd(move1.guard, move2.guard);
+					if (ba.IsSatisfiable(conj)) {
 						int r1 = move1.to; 
 						int r2 = move2.to + offset;
-						boolean isFinal1 = aut1.isFinalState(move1.to);
-						boolean isFinal2 = aut2.isFinalState(move2.to);
-						if (isFinal1 && !isFinal2)
-							return false;
-						if (isFinal2 && !isFinal1)
-							return false;
 
+						List<B> pref = new LinkedList<B>(ds.getWitness(curr.first));
+						pref.add(ba.generateWitness(conj));
+						
 						if(!ds.contains(r1))
-							ds.add(r1);
-						if(!ds.contains(r2))
-							ds.add(r2);
+							ds.add(r1, aut1.isFinalState(move1.to), pref);
+						if(!ds.contains(r2))							
+							ds.add(r2, aut2.isFinalState(move2.to), pref);
+
 						
 						if (!ds.areInSameSet(r1, r2)) {
-							ds.mergeSets(r1, r2);
+							if(!ds.mergeSets(r1, r2))
+								return new Pair<Boolean, List<B>>(false, pref);
 							toVisit.add(new Pair<Integer, Integer>(move1.to,move2.to));
 						}
 					}
-		}
+				}
+		}		
 
-		HashSet<Integer> finals = new HashSet<>();
-		HashSet<Integer> nonFinals = new HashSet<>();
-		for (int st1 : aut1.states) {
-			int rep = ds.getRepr(st1);
-			if (aut1.finalStates.contains(st1)){
-				if(nonFinals.contains(rep))
-					return false;
-				finals.add(rep);
-			}
-			else{
-				if(finals.contains(rep))
-					return false;
-				nonFinals.add(rep);
-			}
-		}
-
-		for (int st2 : aut2.states) {
-			int rep = ds.getRepr(st2+offset);
-			if (aut2.finalStates.contains(st2)){
-				if(nonFinals.contains(rep))
-					return false;
-				finals.add(rep);
-			}
-			else{
-				if(finals.contains(rep))
-					return false;
-				nonFinals.add(rep);
-			}
-		}
-
-		return true;
+		return new Pair<Boolean, List<B>>(true, null);
 	}
 
 	/**
