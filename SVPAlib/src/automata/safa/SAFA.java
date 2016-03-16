@@ -252,7 +252,7 @@ public class SAFA<P, S, E extends BooleanExpression> {
 						return false;
 					} else if (!similar.isMember(leftSucc, rightSucc)) {
 						similar.add(leftSucc, rightSucc);
-						worklist.add(new Pair<>(leftSucc, rightSucc));
+						worklist.addFirst(new Pair<>(leftSucc, rightSucc));
 					}
 				}
 			}
