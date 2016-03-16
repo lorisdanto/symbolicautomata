@@ -272,7 +272,8 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	}
 
 	public static <P, S, E extends BooleanExpression> boolean isReverseEquivalent(SAFA<P, S, E> laut, SAFA<P, S, E> raut, BooleanAlgebra<P, S> ba) {
-		return getReverseSFA(laut,ba).isHopcroftKarpEquivalentTo(getReverseSFA(raut, ba), ba);
+//		return getReverseSFA(laut,ba).isHopcroftKarpEquivalentTo(getReverseSFA(raut, ba), ba);
+		return areReverseEquivalent(laut, raut, ba);
 	}
 	
 	/**
@@ -344,7 +345,6 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	public static <P,S,E extends BooleanExpression> boolean areReverseEquivalent(SAFA<P,S,E> aut1, SAFA<P,S,E> aut2, BooleanAlgebra<P, S> ba) {
 
 		DisjointSet ds = new DisjointSet();
-		int offset = aut1.stateCount();		
 
 		HashMap<HashSet<Integer>, Integer> reached1 = new HashMap<HashSet<Integer>, Integer>();
 		HashMap<HashSet<Integer>, Integer> reached2 = new HashMap<HashSet<Integer>, Integer>();
@@ -367,116 +367,67 @@ public class SAFA<P, S, E extends BooleanExpression> {
 			HashSet<Integer> curr1 =curr.first;
 			HashSet<Integer> curr2 =curr.second;
 			
+			//TODO modify union find to take care of this
 			boolean isFinal1=curr1.contains(aut1.initialState); 
 			boolean isFinal2=curr2.contains(aut2.initialState);
+			if ((isFinal1 && !isFinal2)||(isFinal2 && !isFinal1))
+				return false;
 			
 			ArrayList<SAFAInputMove<P, S, E>> movesToCurr1 = new ArrayList<>();
-			P predicateToCurr1 = ba.False();
+			ArrayList<P> predicatesToCurr1 = new ArrayList<>();
 			ArrayList<SAFAInputMove<P, S, E>> movesToCurr2 = new ArrayList<>();
-			P predicateToCurr2 = ba.False();
-									
+			ArrayList<P> predicatesToCurr2 = new ArrayList<>();								
+			
 			for (SAFAInputMove<P, S, E> t : aut1.getInputMoves())
 				if (t.to.hasModel(curr1)) {
 					movesToCurr1.add(t);
-					predicateToCurr1=ba.MkOr(predicateToCurr1,t.guard);
+					predicatesToCurr1.add(t.guard);
 				}
 			for (SAFAInputMove<P, S, E> t : aut2.getInputMoves())
 				if (t.to.hasModel(curr2)) {
 					movesToCurr2.add(t);
-					predicateToCurr2=ba.MkOr(predicateToCurr2,t.guard);
+					predicatesToCurr2.add(t.guard);
 				}
-				
-			P only1 = ba.MkAnd(predicateToCurr1, ba.MkNot(predicateToCurr2));
-			P only2 = ba.MkAnd(predicateToCurr2, ba.MkNot(predicateToCurr1));			
+
+			//Double check 0 case
+			Collection<Pair<P, ArrayList<Integer>>> minterms1 = ba.GetMinterms(predicatesToCurr1);
+			Collection<Pair<P, ArrayList<Integer>>> minterms2 = ba.GetMinterms(predicatesToCurr2);
 			
-			//Case for which one has transition but other one doesn't
-			HashSet<Integer> emptyState = new HashSet<>();
-			HashSet<Integer> t1 = new HashSet<>();
-			for (SAFAInputMove<P, S, E> move1 : movesToCurr1){
-				
-				if (ba.IsSatisfiable(ba.MkAnd(move1.guard, only1))) {					
-					t1.add(move1.from);															
+			for (Pair<P, ArrayList<Integer>> minterm1 : minterms1) {
+				for (Pair<P, ArrayList<Integer>> minterm2 : minterms2) {
+					P conj = ba.MkAnd(minterm1.first, minterm2.first);
+					if (ba.IsSatisfiable(conj)) {
+						HashSet<Integer> from1 = new HashSet<>();
+						HashSet<Integer> from2 = new HashSet<>();
+						for(int i:minterm1.second)
+							from1.add(movesToCurr1.get(i).from);
+						for(int i:minterm2.second)
+							from2.add(movesToCurr2.get(i).from);
+						
+						Integer r1=null,r2=null;						
+						if(!reached1.containsKey(from1)){
+							r1= ds.getNumberOfElements();
+							reached1.put(from1, r1);
+							ds.add(r1);
+						}
+						if(r1==null)
+							r1 = reached1.get(from1);
+						
+						if(!reached2.containsKey(from2)){
+							r2= ds.getNumberOfElements();
+							reached2.put(from2, r2);
+							ds.add(r2);
+						}
+						if(r2==null)
+							r2 = reached2.get(from2);
+							
+						if (!ds.areInSameSet(r1, r2)) {
+							ds.mergeSets(r1, r2);
+							toVisit.add(new Pair<HashSet<Integer>, HashSet<Integer>>(from1,from2));
+						}
+					}
 				}
 			}
-			if(!t1.isEmpty()){
-				int r1;
-				int numEl=ds.getNumberOfElements();
-				if(!reached1.containsKey(emptyState)){
-					reached1.put(t1,numEl);							
-				}
-				r1 = reached1.get(emptyState);
-				if(!ds.contains(r1))
-					ds.add(r1);
-				
-				int r2;
-				numEl=ds.getNumberOfElements();
-				if(!reached2.containsKey(emptyState)){
-					reached2.put(emptyState,numEl);							
-				}
-				r2 = reached2.get(emptyState);
-				if(!ds.contains(r2))
-					ds.add(r2);
-				
-				if (!ds.areInSameSet(r1, r2)) {
-					ds.mergeSets(r1, r2);
-					toVisit.add(new Pair<HashSet<Integer>, HashSet<Integer>>(t1, emptyState));
-				}
-			}
-			HashSet<Integer> t2 = new HashSet<>();
-			for (SAFAInputMove<P, S, E> move2 : movesToCurr2){
-				
-				if (ba.IsSatisfiable(ba.MkAnd(move2.guard, only2))) {					
-					t2.add(move2.from);															
-				}
-			}
-			if(!t2.isEmpty()){
-				int r1;
-				int numEl=ds.getNumberOfElements();
-				if(!reached1.containsKey(emptyState)){
-					reached1.put(emptyState,numEl);							
-				}
-				r1 = reached1.get(emptyState);
-				if(!ds.contains(r1))
-					ds.add(r1);
-				
-				int r2;
-				numEl=ds.getNumberOfElements();
-				if(!reached2.containsKey(emptyState)){
-					reached2.put(t2,numEl);							
-				}
-				r2 = reached2.get(emptyState);
-				if(!ds.contains(r2))
-					ds.add(r2);								
-				
-				if (!ds.areInSameSet(r1, r2)) {
-					ds.mergeSets(r1, r2);
-					toVisit.add(new Pair<HashSet<Integer>, HashSet<Integer>>(emptyState,t2));
-				}
-			}
-			
-			//TODO Minterm
-//			for (SAFAInputMove<P, S, E> move1 : movesToCurr1)
-//				for (SAFAInputMove<P, S, E> move2 : movesToCurr2)
-//					if (ba.IsSatisfiable(ba.MkAnd(move1.guard, move2.guard))) {
-//						int r1 = move1.from; 
-//						int r2 = move2.f;
-//						boolean isFinal1 = aut1.isFinalState(move1.to);
-//						boolean isFinal2 = aut2.isFinalState(move2.to);
-//						if (isFinal1 && !isFinal2)
-//							return false;
-//						if (isFinal2 && !isFinal1)
-//							return false;
-//
-//						if(!ds.contains(r1))
-//							ds.add(r1);
-//						if(!ds.contains(r2))
-//							ds.add(r2);
-//						
-//						if (!ds.areInSameSet(r1, r2)) {
-//							ds.mergeSets(r1, r2);
-//							toVisit.add(new Pair<Integer, Integer>(move1.to,move2.to));
-//						}
-//					}
 		}
 		return true;
 	}
