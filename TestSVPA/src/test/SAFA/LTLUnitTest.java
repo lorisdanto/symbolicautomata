@@ -55,8 +55,8 @@ public class LTLUnitTest {
 
 	@Test
 	public void testLargeEquiv() {
-		int size = 10;
-		
+		int size = 11;
+
 		LTLFormula<CharPred, Character> tot = new True<>();
 		for (int i = 100; i < 100 + size; i++) {
 			CharPred ch = new CharPred((char) i);
@@ -66,18 +66,18 @@ public class LTLUnitTest {
 		SAFA<CharPred, Character, SumOfProducts> safa1 = tot.getSAFA(ba, sop);
 
 		tot = new True<>();
-		for (int i = 100; i < 100 + size-1; i++) {
+		for (int i = 100; i < 100 + size - 1; i++) {
 			CharPred ch = new CharPred((char) i);
 			LTLFormula<CharPred, Character> evch = ev(ba, ch);
 			tot = new And<>(evch, tot);
 		}
 		SAFA<CharPred, Character, SumOfProducts> safa2 = tot.getSAFA(ba, sop);
-		
+
 		long startTime = System.currentTimeMillis();
 
 		boolean b = true;
 		try {
-			b= SAFA.isEquivalent(safa1, safa2, ba, sop);
+			b = SAFA.isEquivalent(safa1, safa2, ba, sop);
 		} catch (TimeoutException toe) {
 			System.out.println(toe);
 		}
@@ -88,15 +88,44 @@ public class LTLUnitTest {
 
 		startTime = System.currentTimeMillis();
 
-		Pair<Boolean, List<Character>> b1= SAFA.isReverseEquivalent(safa1, safa2, ba);		
+		Pair<Boolean, List<Character>> b1 = SAFA.areReverseEquivalent(safa1, safa2, ba);
 		System.out.println(b1);
-		
+
 		stopTime = System.currentTimeMillis();
 		elapsedTime = stopTime - startTime;
 		System.out.println(elapsedTime);
-		
-		assertTrue(b==b1.first);
 
+		assertTrue(b == b1.first);
+
+	}
+
+	@Test
+	public void testLargeEmptiness() {
+		int sizeTot = 100;
+
+		for (int size = 2; size < sizeTot; size++) {
+
+			LTLFormula<CharPred, Character> tot = new True<>();
+			for (int i = 100; i < 100 + size; i++) {
+				CharPred ch = new CharPred((char) i);
+				LTLFormula<CharPred, Character> evch = ev(ba, ch);
+				tot = new And<>(evch, tot);
+			}
+			SAFA<CharPred, Character, SumOfProducts> safa1 = tot.getSAFA(ba, sop);
+			long startTime = System.currentTimeMillis();
+
+			boolean b = true;
+			try {
+				b = SAFA.isEmpty(safa1, ba, sop);
+				assertFalse(b);
+			} catch (TimeoutException toe) {
+				System.out.println(toe);
+			}
+
+			long stopTime = System.currentTimeMillis();
+			long elapsedTime = stopTime - startTime;
+			System.out.println(size+" "+elapsedTime);
+		}
 	}
 
 	// ---------------------------------------

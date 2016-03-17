@@ -61,4 +61,10 @@ public class Not<P, S> extends LTLFormula<P, S> {
 	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
 		return phi.pushNegations(!isPositive,ba);	
 	}
+	
+	@Override
+	public void toString(StringBuilder sb) {
+		sb.append("!");
+		phi.toString(sb);	
+	}
 }

@@ -22,8 +22,8 @@ import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
 import theory.BooleanAlgebra;
-import utilities.UnionFindHopKarp;
 import utilities.Pair;
+import utilities.UnionFindHopKarp;
 
 /**
  * Symbolic finite automaton
@@ -146,13 +146,14 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	/**
 	 * Returns the empty SFA for the Boolean algebra <code>ba</code>
 	 */
-	public static <A, B, E extends BooleanExpression> SAFA<A, B, E> getEmptySFA(BooleanAlgebra<A, B> ba, BooleanExpressionFactory<E> bexpr) {
+	public static <A, B, E extends BooleanExpression> SAFA<A, B, E> getEmptySAFA(BooleanAlgebra<A, B> ba, BooleanExpressionFactory<E> bexpr) {
 		SAFA<A, B, E> aut = new SAFA<A, B, E>();
 		aut.states = new HashSet<Integer>();
 		aut.states.add(0);
 		aut.finalStates = new HashSet<>();
 		aut.initialState = 0;
 		aut.maxStateId = 1;
+		aut.addTransition(new SAFAInputMove<A, B, E>(0, bexpr.MkState(0), ba.True()), ba, true);
 		return aut;
 	}
 
@@ -219,6 +220,17 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		return moves;
 	}
 
+	/**
+	 * Checks whether the SAFA aut is empty
+	 * @throws TimeoutException 
+	 */
+	public static <P,S,E extends BooleanExpression> boolean isEmpty(SAFA<P,S,E> aut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) throws TimeoutException {
+		return isEquivalent(aut,getEmptySAFA(ba, boolexpr),  ba, boolexpr);
+	}
+	
+	/**
+	 * Checks whether laut and raut are equivalent using bisimulation up to congruence.
+	 */
 	public static <P, S, E extends BooleanExpression, F extends BooleanExpression> boolean isEquivalent(SAFA<P, S, F> laut,
 			SAFA<P, S, F> raut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr)
 			throws TimeoutException {
@@ -269,20 +281,11 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		}
 
 		return prevState;
-	}
-
-	public static <P, S, E extends BooleanExpression> Pair<Boolean, List<S>> isReverseEquivalent(SAFA<P, S, E> laut, SAFA<P, S, E> raut, BooleanAlgebra<P, S> ba) {
-//		return getReverseSFA(laut,ba).isHopcroftKarpEquivalentTo(getReverseSFA(raut, ba), ba);
-		return areReverseEquivalent(laut, raut, ba);
-	}
+	}	
 	
 
 	/**
-	 * Returns true if the SAFA accepts the input list
-	 * 
-	 * @param input
-	 * @param ba
-	 * @return true if accepted false otherwise
+	 * Checks whether laut and raut are equivalent using HopcroftKarp on the SFA accepting the reverse language
 	 */
 	public static <P,S,E extends BooleanExpression> Pair<Boolean, List<S>> areReverseEquivalent(SAFA<P,S,E> aut1, SAFA<P,S,E> aut2, BooleanAlgebra<P, S> ba) {
 
@@ -367,7 +370,8 @@ public class SAFA<P, S, E extends BooleanExpression> {
 						//Check whether are in simulation relation
 						if (!ds.areInSameSet(r1, r2)) {
 							if(!ds.mergeSets(r1, r2))
-								return new Pair<Boolean, List<S>>(false, pref);
+								return new Pair<Boolean, List<S>>(false, Lists.reverse(pref));
+							
 							toVisit.add(new Pair<HashSet<Integer>, HashSet<Integer>>(from1,from2));
 						}
 					}
@@ -519,11 +523,22 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		// Copy all transitions (with proper renaming for aut2)
 		Collection<SAFAInputMove<P, S, E>> transitions = new ArrayList<SAFAInputMove<P, S, E>>();
 
+		boolean addedSink = false;
+		int sink=maxStateId+1;
 		for (int state : states) {
 			ArrayList<SAFAInputMove<P, S, E>> trFromState = new ArrayList<>(getInputMovesFrom(state));
+			P leftoverPredicate = ba.True();
 			ArrayList<P> predicates = new ArrayList<>();
-			for (SAFAInputMove<P, S, E> t : trFromState)
+			for (SAFAInputMove<P, S, E> t : trFromState){
 				predicates.add(t.guard);
+				ba.MkAnd(leftoverPredicate, ba.MkNot(t.guard));
+			}
+			
+			//Make sure the automaton is complete
+			if(ba.IsSatisfiable(leftoverPredicate)){
+				transitions.add(new SAFAInputMove<>(state, boolexpr.MkState(sink), leftoverPredicate));
+				addedSink = true;
+			}
 
 			Collection<Pair<P, ArrayList<Integer>>> minterms = ba.GetMinterms(predicates);
 			for (Pair<P, ArrayList<Integer>> minterm : minterms) {
@@ -539,6 +554,8 @@ public class SAFA<P, S, E extends BooleanExpression> {
 					transitions.add(new SAFAInputMove<>(state, newTo, minterm.first));
 			}
 		}
+		if(addedSink)
+			transitions.add(new SAFAInputMove<>(sink, boolexpr.MkState(sink), ba.True()));
 
 		return MkSAFA(transitions, initialState, finalStates, ba, boolexpr, false);
 	}

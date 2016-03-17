@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFAInputMove;
-import automata.safa.booleanexpression.SumOfProducts;
 import theory.BooleanAlgebra;
 
 public class True<P, S> extends LTLFormula<P, S> {
@@ -67,5 +66,10 @@ public class True<P, S> extends LTLFormula<P, S> {
 			return this;
 		else 
 			return new False<>();
+	}
+	
+	@Override
+	public void toString(StringBuilder sb) {
+		sb.append("true");
 	}
 }

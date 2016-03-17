@@ -98,4 +98,14 @@ public class And<P, S> extends LTLFormula<P, S> {
 		else
 			return new Or<>(left.pushNegations(isPositive,ba), right.pushNegations(isPositive,ba));
 	}
+
+	@Override
+	public void toString(StringBuilder sb) {
+		sb.append("(");
+		left.toString(sb);
+		sb.append(" && ");
+		right.toString(sb);
+		sb.append(")");
+	}
+
 }

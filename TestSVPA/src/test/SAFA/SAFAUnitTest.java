@@ -12,12 +12,10 @@ import java.util.List;
 import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
 
-import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
 import automata.safa.SATRelation;
-import automata.safa.booleanexpression.PositiveBooleanExpressionFactory;
 import automata.safa.booleanexpression.SumOfProducts;
 import automata.safa.booleanexpression.SumOfProductsFactory;
 import theory.CharPred;
@@ -72,18 +70,18 @@ public class SAFAUnitTest {
 		SAFA<CharPred, Character, SumOfProducts> intersection1 = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba, boolexpr);
 		SAFA<CharPred, Character, SumOfProducts> intersection2 = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba, boolexpr);
 
-		assertFalse(SAFA.isReverseEquivalent(atLeastOneAlpha, atLeastOneNum, ba).first);
-		assertFalse(SAFA.isReverseEquivalent(atLeastOneNum, atLeastOneAlpha, ba).first);
-		assertFalse(SAFA.isReverseEquivalent(atLeastOneAlpha, intersection1, ba).first);
-		assertFalse(SAFA.isReverseEquivalent(intersection1, atLeastOneAlpha, ba).first);
-		assertFalse(SAFA.isReverseEquivalent(atLeastOneAlpha, intersection2, ba).first);
-		assertFalse(SAFA.isReverseEquivalent(intersection2, atLeastOneAlpha, ba).first);
-		assertFalse(SAFA.isReverseEquivalent(atLeastOneNum, intersection1, ba).first);
-		assertFalse(SAFA.isReverseEquivalent(intersection1, atLeastOneNum, ba).first);
-		assertFalse(SAFA.isReverseEquivalent(atLeastOneNum, intersection2, ba).first);
-		assertFalse(SAFA.isReverseEquivalent(intersection2, atLeastOneNum, ba).first);
-		assertTrue(SAFA.isReverseEquivalent(intersection2, intersection1, ba).first);
-		assertTrue(SAFA.isReverseEquivalent(intersection1, intersection2, ba).first);
+		assertFalse(SAFA.areReverseEquivalent(atLeastOneAlpha, atLeastOneNum, ba).first);
+		assertFalse(SAFA.areReverseEquivalent(atLeastOneNum, atLeastOneAlpha, ba).first);
+		assertFalse(SAFA.areReverseEquivalent(atLeastOneAlpha, intersection1, ba).first);
+		assertFalse(SAFA.areReverseEquivalent(intersection1, atLeastOneAlpha, ba).first);
+		assertFalse(SAFA.areReverseEquivalent(atLeastOneAlpha, intersection2, ba).first);
+		assertFalse(SAFA.areReverseEquivalent(intersection2, atLeastOneAlpha, ba).first);
+		assertFalse(SAFA.areReverseEquivalent(atLeastOneNum, intersection1, ba).first);
+		assertFalse(SAFA.areReverseEquivalent(intersection1, atLeastOneNum, ba).first);
+		assertFalse(SAFA.areReverseEquivalent(atLeastOneNum, intersection2, ba).first);
+		assertFalse(SAFA.areReverseEquivalent(intersection2, atLeastOneNum, ba).first);
+		assertTrue(SAFA.areReverseEquivalent(intersection2, intersection1, ba).first);
+		assertTrue(SAFA.areReverseEquivalent(intersection1, intersection2, ba).first);
 	}
 
 	// ---------------------------------------

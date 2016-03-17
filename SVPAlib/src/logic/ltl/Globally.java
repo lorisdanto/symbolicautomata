@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFAInputMove;
-import automata.safa.booleanexpression.SumOfProducts;
 import theory.BooleanAlgebra;
 
 public class Globally<P, S> extends LTLFormula<P, S> {
@@ -84,5 +83,12 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 			return new Globally<>(phi.pushNegations(isPositive,ba));
 		else
 			return new Eventually<>(phi.pushNegations(isPositive,ba));
+	}
+	
+	@Override
+	public void toString(StringBuilder sb) {
+		sb.append("(G ");
+		phi.toString(sb);	
+		sb.append(")");
 	}
 }

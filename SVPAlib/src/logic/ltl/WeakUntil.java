@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFAInputMove;
-import automata.safa.booleanexpression.SumOfProducts;
 import theory.BooleanAlgebra;
 
 public class WeakUntil<P, S> extends LTLFormula<P, S> {
@@ -102,5 +101,14 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 			return new Until<>(rightNeg, 
 					new And<>(left.pushNegations(isPositive,ba), rightNeg));
 		}
+	}
+	
+	@Override
+	public void toString(StringBuilder sb) {
+		sb.append("(");
+		left.toString(sb);
+		sb.append(" W ");
+		right.toString(sb);
+		sb.append(")");
 	}
 }

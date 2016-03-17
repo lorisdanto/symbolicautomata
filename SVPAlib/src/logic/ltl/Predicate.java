@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFAInputMove;
-import automata.safa.booleanexpression.SumOfProducts;
 import theory.BooleanAlgebra;
 
 public class Predicate<P, S> extends LTLFormula<P, S> {
@@ -83,5 +82,9 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 		else
 			return new Predicate<>(ba.MkNot(this.predicate));
 	}
-	
+
+	@Override
+	public void toString(StringBuilder sb) {
+		sb.append(predicate.toString());	
+	}
 }

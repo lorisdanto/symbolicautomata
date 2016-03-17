@@ -63,4 +63,9 @@ public class False<P, S> extends LTLFormula<P, S> {
 		else 
 			return new True<>();
 	}
+	
+	@Override
+	public void toString(StringBuilder sb) {
+		sb.append("false");
+	}
 }
