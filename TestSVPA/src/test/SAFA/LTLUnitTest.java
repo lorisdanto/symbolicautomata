@@ -23,6 +23,7 @@ import logic.ltl.True;
 import theory.CharPred;
 import theory.CharSolver;
 import theory.StdCharPred;
+import theory.SATBooleanAlgebra;
 
 public class LTLUnitTest {
 
@@ -97,6 +98,27 @@ public class LTLUnitTest {
 		
 		assertTrue(b==b1);
 
+	}
+
+	@Test
+	public void testLargeEquivSAT() throws TimeoutException {
+		int size = 3;
+		SATBooleanAlgebra ba = new SATBooleanAlgebra(size + 1);
+		LTLFormula<Integer, boolean[]> tot = new True<>();
+		for (int i = 1; i < size; i++) {
+			LTLFormula<Integer, boolean[]> evch = new Eventually<>(new Predicate<Integer, boolean[]>(i));
+			tot = new And<>(evch, tot);
+		}
+		SAFA<Integer, boolean[], SumOfProducts> safa1 = tot.getSAFA(ba, sop);
+
+		tot = new True<>();
+		for (int i = size - 1; i >= 1; i--) {
+		LTLFormula<Integer, boolean[]> evch = new Eventually<>(new Predicate<Integer, boolean[]>(i));
+			tot = new And<>(evch, tot);
+		}
+		SAFA<Integer, boolean[], SumOfProducts> safa2 = tot.getSAFA(ba, sop);
+		assertTrue(SAFA.isEquivalent(safa1, safa2, ba, sop));
+		assertTrue(SAFA.isReverseEquivalent(safa1, safa2, ba));
 	}
 
 	// ---------------------------------------
