@@ -3,14 +3,6 @@
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
 package net.sf.javabdd;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -21,6 +13,14 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigInteger;
 import java.security.AccessControlException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * <p>Interface for the creation and manipulation of BDDs.</p>
@@ -50,7 +50,7 @@ public abstract class BDDFactory {
      * @return BDD factory object
      */
     public static BDDFactory init(int nodenum, int cachesize) {
-        String bddpackage = getProperty("bdd", "buddy");
+        String bddpackage = getProperty("bdd", "jdd");
         return init(bddpackage, nodenum, cachesize);
     }
 
@@ -68,12 +68,6 @@ public abstract class BDDFactory {
      */
     public static BDDFactory init(String bddpackage, int nodenum, int cachesize) {
         try {
-            if (bddpackage.equals("buddy"))
-                return BuDDyFactory.init(nodenum, cachesize);
-            if (bddpackage.equals("cudd"))
-                return CUDDFactory.init(nodenum, cachesize);
-            if (bddpackage.equals("cal"))
-                return CALFactory.init(nodenum, cachesize);
             if (bddpackage.equals("j") || bddpackage.equals("java"))
                 return JFactory.init(nodenum, cachesize);
             if (bddpackage.equals("u") || bddpackage.equals("micro"))
@@ -82,8 +76,6 @@ public abstract class BDDFactory {
                 return JDDFactory.init(nodenum, cachesize);
             if (bddpackage.equals("test"))
                 return TestBDDFactory.init(nodenum, cachesize);
-            if (bddpackage.equals("typed"))
-                return TypedBDDFactory.init(nodenum, cachesize);
         } catch (LinkageError e) {
             System.out.println("Could not load BDD package "+bddpackage+": "+e.getLocalizedMessage());
         }

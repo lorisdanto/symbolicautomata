@@ -13,16 +13,19 @@ import org.sat4j.specs.TimeoutException;
 import automata.safa.SAFA;
 import automata.safa.booleanexpression.SumOfProducts;
 import automata.safa.booleanexpression.SumOfProductsFactory;
+import bddalgebra.BDDSolver;
 import logic.ltl.And;
 import logic.ltl.Eventually;
 import logic.ltl.LTLFormula;
 import logic.ltl.Or;
 import logic.ltl.Predicate;
 import logic.ltl.True;
+import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import theory.CharPred;
 import theory.CharSolver;
-import theory.StdCharPred;
 import theory.SATBooleanAlgebra;
+import theory.StdCharPred;
 import utilities.Pair;
 
 public class LTLUnitTest {
@@ -120,6 +123,40 @@ public class LTLUnitTest {
 			boolean b = true;
 			try {
 				b = SAFA.isEmpty(safa1, ba, sop);
+				assertFalse(b);
+			} catch (TimeoutException toe) {
+				System.out.println(toe);
+			}
+
+			long stopTime = System.currentTimeMillis();
+			long elapsedTime = stopTime - startTime;
+			System.out.println(size+" "+elapsedTime);
+		}
+	}
+	
+	@Test
+	public void testLargeEmptinessBDD() {
+		int sizeTot = 10;
+
+		for (int size = 2; size < sizeTot; size++) {
+
+			BDDSolver bs = new BDDSolver(size);
+			LTLFormula<BDD, BDD> tot = new True<>();
+			List<LTLFormula<BDD, BDD>> conjuncts = new LinkedList<>();
+			for (int i = 0; i <  size; i++) {
+				conjuncts.add(new Eventually<>(new Predicate<BDD, BDD>(
+							bs.factory.ithVar(i)
+						)));
+//				LTLFormula<Integer, boolean[]> evch = new Eventually<>(new Predicate<Integer, boolean[]>(i));
+//				tot = new And<>(evch, tot);
+			}
+			tot = new And<>(conjuncts);
+			SAFA<BDD, BDD, SumOfProducts> safa1 = tot.getSAFA(bs, sop);
+			long startTime = System.currentTimeMillis();
+
+			boolean b = true;
+			try {
+				b = SAFA.isEmpty(safa1, bs, sop);
 				assertFalse(b);
 			} catch (TimeoutException toe) {
 				System.out.println(toe);
