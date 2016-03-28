@@ -18,13 +18,12 @@ import org.sat4j.specs.TimeoutException;
 
 import com.google.common.collect.Lists;
 
-import automata.safa.booleanexpression.PositiveId;
-import automata.safa.booleanexpression.SumOfProducts;
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
 import theory.BooleanAlgebra;
 import utilities.Pair;
+import utilities.UnionFindHopKarp;
 
 /**
  * Symbolic finite automaton
@@ -147,13 +146,14 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	/**
 	 * Returns the empty SFA for the Boolean algebra <code>ba</code>
 	 */
-	public static <A, B, E extends BooleanExpression> SAFA<A, B, E> getEmptySFA(BooleanAlgebra<A, B> ba, BooleanExpressionFactory<E> bexpr) {
+	public static <A, B, E extends BooleanExpression> SAFA<A, B, E> getEmptySAFA(BooleanAlgebra<A, B> ba, BooleanExpressionFactory<E> bexpr) {
 		SAFA<A, B, E> aut = new SAFA<A, B, E>();
 		aut.states = new HashSet<Integer>();
 		aut.states.add(0);
 		aut.finalStates = new HashSet<>();
 		aut.initialState = 0;
 		aut.maxStateId = 1;
+		aut.addTransition(new SAFAInputMove<A, B, E>(0, bexpr.MkState(0), ba.True()), ba, true);
 		return aut;
 	}
 
@@ -220,6 +220,17 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		return moves;
 	}
 
+	/**
+	 * Checks whether the SAFA aut is empty
+	 * @throws TimeoutException 
+	 */
+	public static <P,S,E extends BooleanExpression> boolean isEmpty(SAFA<P,S,E> aut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) throws TimeoutException {
+		return isEquivalent(aut,getEmptySAFA(ba, boolexpr),  ba, boolexpr);
+	}
+	
+	/**
+	 * Checks whether laut and raut are equivalent using bisimulation up to congruence.
+	 */
 	public static <P, S, E extends BooleanExpression, F extends BooleanExpression> boolean isEquivalent(SAFA<P, S, F> laut,
 			SAFA<P, S, F> raut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr)
 			throws TimeoutException {
@@ -270,10 +281,104 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		}
 
 		return prevState;
-	}
+	}	
+	
 
-	public static <P, S, E extends BooleanExpression> boolean isReverseEquivalent(SAFA<P, S, E> laut, SAFA<P, S, E> raut, BooleanAlgebra<P, S> ba) {
-		return getReverseSFA(laut,ba).isHopcroftKarpEquivalentTo(getReverseSFA(raut, ba), ba);
+	/**
+	 * Checks whether laut and raut are equivalent using HopcroftKarp on the SFA accepting the reverse language
+	 */
+	public static <P,S,E extends BooleanExpression> Pair<Boolean, List<S>> areReverseEquivalent(SAFA<P,S,E> aut1, SAFA<P,S,E> aut2, BooleanAlgebra<P, S> ba) {
+
+		UnionFindHopKarp<S> ds = new UnionFindHopKarp<>();
+
+		HashMap<HashSet<Integer>, Integer> reached1 = new HashMap<HashSet<Integer>, Integer>();
+		HashMap<HashSet<Integer>, Integer> reached2 = new HashMap<HashSet<Integer>, Integer>();
+		
+		LinkedList<Pair<HashSet<Integer>, HashSet<Integer>>> toVisit = new LinkedList<>();				
+		
+		HashSet<Integer> in1 =new HashSet<Integer>(aut1.finalStates);
+		HashSet<Integer> in2 =new HashSet<Integer>(aut2.finalStates);
+				
+		reached1.put(in1, 0);
+		reached2.put(in2, 1);
+		toVisit.add(new Pair<HashSet<Integer>, HashSet<Integer>>(in1, in2));
+		
+		ds.add(0,in1.contains(aut1.initialState), new LinkedList<>());
+		ds.add(1,in2.contains(aut2.initialState), new LinkedList<>());
+		ds.mergeSets(0,1);
+		
+		while (!toVisit.isEmpty()) {
+			Pair<HashSet<Integer>, HashSet<Integer>> curr = toVisit.removeFirst();
+			HashSet<Integer> curr1 =curr.first;
+			HashSet<Integer> curr2 =curr.second;			
+			
+			ArrayList<SAFAInputMove<P, S, E>> movesToCurr1 = new ArrayList<>();
+			ArrayList<P> predicatesToCurr1 = new ArrayList<>();
+			ArrayList<SAFAInputMove<P, S, E>> movesToCurr2 = new ArrayList<>();
+			ArrayList<P> predicatesToCurr2 = new ArrayList<>();								
+			
+			for (SAFAInputMove<P, S, E> t : aut1.getInputMoves())
+				if (t.to.hasModel(curr1)) {
+					movesToCurr1.add(t);
+					predicatesToCurr1.add(t.guard);
+				}
+			for (SAFAInputMove<P, S, E> t : aut2.getInputMoves())
+				if (t.to.hasModel(curr2)) {
+					movesToCurr2.add(t);
+					predicatesToCurr2.add(t.guard);
+				}
+
+			Collection<Pair<P, ArrayList<Integer>>> minterms1 = ba.GetMinterms(predicatesToCurr1);
+			Collection<Pair<P, ArrayList<Integer>>> minterms2 = ba.GetMinterms(predicatesToCurr2);
+			
+			for (Pair<P, ArrayList<Integer>> minterm1 : minterms1) {
+				for (Pair<P, ArrayList<Integer>> minterm2 : minterms2) {
+					P conj = ba.MkAnd(minterm1.first, minterm2.first);
+					if (ba.IsSatisfiable(conj)) {
+						//Take from states						
+						HashSet<Integer> from1 = new HashSet<>();
+						HashSet<Integer> from2 = new HashSet<>();
+						for(int i=0;i<minterm1.second.size();i++)
+							if(minterm1.second.get(i)==1)
+								from1.add(movesToCurr1.get(i).from);
+						
+						for(int i=0;i<minterm2.second.size();i++)
+							if(minterm2.second.get(i)==1)
+								from2.add(movesToCurr2.get(i).from);
+						
+						List<S> pref = new LinkedList<S>(ds.getWitness(reached1.get(curr1)));
+						pref.add(ba.generateWitness(conj));
+												
+						// If not in union find add them
+						Integer r1=null,r2=null;						
+						if(!reached1.containsKey(from1)){
+							r1= ds.getNumberOfElements();
+							reached1.put(from1, r1);
+							ds.add(r1,from1.contains(aut1.initialState),pref);
+						}
+						if(r1==null)
+							r1 = reached1.get(from1);
+						
+						if(!reached2.containsKey(from2)){
+							r2= ds.getNumberOfElements();
+							reached2.put(from2, r2);
+							ds.add(r2,from2.contains(aut2.initialState),pref);
+						}
+						if(r2==null)
+							r2 = reached2.get(from2);
+							
+						//Check whether are in simulation relation
+						if (!ds.areInSameSet(r1, r2)) {
+							if(!ds.mergeSets(r1, r2))
+								return new Pair<Boolean, List<S>>(false, Lists.reverse(pref));
+							
+							toVisit.add(new Pair<HashSet<Integer>, HashSet<Integer>>(from1,from2));
+						}
+					}
+				}
+			}
+		}
+		return new Pair<Boolean, List<S>>(true, null);
 	}
 	
 	/**
@@ -297,7 +402,6 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		reached.put(init, 0);
 		toVisit.add(init);
 
-		// Explore the product automaton until no new states can be reached
 		while (!toVisit.isEmpty()) {
 			HashSet<Integer> currentState = toVisit.removeFirst();
 			int currentStateID = reached.get(currentState);
@@ -336,6 +440,7 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		return rev;
 	}
 
+	
 	// ------------------------------------------------------
 	// Boolean automata operations
 	// ------------------------------------------------------
@@ -418,11 +523,22 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		// Copy all transitions (with proper renaming for aut2)
 		Collection<SAFAInputMove<P, S, E>> transitions = new ArrayList<SAFAInputMove<P, S, E>>();
 
+		boolean addedSink = false;
+		int sink=maxStateId+1;
 		for (int state : states) {
 			ArrayList<SAFAInputMove<P, S, E>> trFromState = new ArrayList<>(getInputMovesFrom(state));
+			P leftoverPredicate = ba.True();
 			ArrayList<P> predicates = new ArrayList<>();
-			for (SAFAInputMove<P, S, E> t : trFromState)
+			for (SAFAInputMove<P, S, E> t : trFromState){
 				predicates.add(t.guard);
+				ba.MkAnd(leftoverPredicate, ba.MkNot(t.guard));
+			}
+			
+			//Make sure the automaton is complete
+			if(ba.IsSatisfiable(leftoverPredicate)){
+				transitions.add(new SAFAInputMove<>(state, boolexpr.MkState(sink), leftoverPredicate));
+				addedSink = true;
+			}
 
 			Collection<Pair<P, ArrayList<Integer>>> minterms = ba.GetMinterms(predicates);
 			for (Pair<P, ArrayList<Integer>> minterm : minterms) {
@@ -438,6 +554,8 @@ public class SAFA<P, S, E extends BooleanExpression> {
 					transitions.add(new SAFAInputMove<>(state, newTo, minterm.first));
 			}
 		}
+		if(addedSink)
+			transitions.add(new SAFAInputMove<>(sink, boolexpr.MkState(sink), ba.True()));
 
 		return MkSAFA(transitions, initialState, finalStates, ba, boolexpr, false);
 	}

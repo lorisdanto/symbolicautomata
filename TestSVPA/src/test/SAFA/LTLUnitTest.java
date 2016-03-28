@@ -9,9 +9,7 @@ import java.util.List;
 import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
 
-import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
-import automata.safa.booleanexpression.PositiveBooleanExpressionFactory;
 import automata.safa.booleanexpression.SumOfProducts;
 import automata.safa.booleanexpression.SumOfProductsFactory;
 import logic.ltl.And;
@@ -24,6 +22,7 @@ import theory.CharPred;
 import theory.CharSolver;
 import theory.StdCharPred;
 import theory.SATBooleanAlgebra;
+import utilities.Pair;
 
 public class LTLUnitTest {
 
@@ -58,7 +57,7 @@ public class LTLUnitTest {
 	@Test
 	public void testLargeEquiv() {
 		int size = 11;
-		
+
 		LTLFormula<CharPred, Character> tot = new True<>();
 		for (int i = 100; i < 100 + size; i++) {
 			CharPred ch = new CharPred((char) i);
@@ -68,18 +67,18 @@ public class LTLUnitTest {
 		SAFA<CharPred, Character, SumOfProducts> safa1 = tot.getSAFA(ba, sop);
 
 		tot = new True<>();
-		for (int i = 100; i < 100 + size-1; i++) {
+		for (int i = 100; i < 100 + size - 1; i++) {
 			CharPred ch = new CharPred((char) i);
 			LTLFormula<CharPred, Character> evch = ev(ba, ch);
 			tot = new And<>(evch, tot);
 		}
 		SAFA<CharPred, Character, SumOfProducts> safa2 = tot.getSAFA(ba, sop);
-		
+
 		long startTime = System.currentTimeMillis();
 
 		boolean b = true;
 		try {
-			b= SAFA.isEquivalent(safa1, safa2, ba, sop);
+			b = SAFA.isEquivalent(safa1, safa2, ba, sop);
 		} catch (TimeoutException toe) {
 			System.out.println(toe);
 		}
@@ -90,14 +89,44 @@ public class LTLUnitTest {
 
 		startTime = System.currentTimeMillis();
 
-		boolean b1= SAFA.isReverseEquivalent(safa1, safa2, ba);		
-		
+		Pair<Boolean, List<Character>> b1 = SAFA.areReverseEquivalent(safa1, safa2, ba);
+		System.out.println(b1);
+
 		stopTime = System.currentTimeMillis();
 		elapsedTime = stopTime - startTime;
 		System.out.println(elapsedTime);
-		
-		assertTrue(b==b1);
 
+		assertTrue(b == b1.first);
+
+	}
+
+	@Test
+	public void testLargeEmptiness() {
+		int sizeTot = 100;
+
+		for (int size = 2; size < sizeTot; size++) {
+
+			LTLFormula<CharPred, Character> tot = new True<>();
+			for (int i = 100; i < 100 + size; i++) {
+				CharPred ch = new CharPred((char) i);
+				LTLFormula<CharPred, Character> evch = ev(ba, ch);
+				tot = new And<>(evch, tot);
+			}
+			SAFA<CharPred, Character, SumOfProducts> safa1 = tot.getSAFA(ba, sop);
+			long startTime = System.currentTimeMillis();
+
+			boolean b = true;
+			try {
+				b = SAFA.isEmpty(safa1, ba, sop);
+				assertFalse(b);
+			} catch (TimeoutException toe) {
+				System.out.println(toe);
+			}
+
+			long stopTime = System.currentTimeMillis();
+			long elapsedTime = stopTime - startTime;
+			System.out.println(size+" "+elapsedTime);
+		}
 	}
 
 	@Test
@@ -118,7 +147,7 @@ public class LTLUnitTest {
 		}
 		SAFA<Integer, boolean[], SumOfProducts> safa2 = tot.getSAFA(ba, sop);
 		assertTrue(SAFA.isEquivalent(safa1, safa2, ba, sop));
-		assertTrue(SAFA.isReverseEquivalent(safa1, safa2, ba));
+		assertTrue(SAFA.areReverseEquivalent(safa1, safa2, ba).getFirst());
 	}
 
 	// ---------------------------------------

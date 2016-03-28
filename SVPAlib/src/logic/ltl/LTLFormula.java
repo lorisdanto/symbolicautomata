@@ -56,4 +56,14 @@ public abstract class LTLFormula<P,S> {
 
 	@Override
 	public abstract boolean equals(Object obj);
+	
+	@Override
+	public String toString(){
+		StringBuilder sb = new StringBuilder();
+		this.toString(sb);
+		return sb.toString();
+	}
+	
+	public abstract void toString(StringBuilder sb);
+	
 }

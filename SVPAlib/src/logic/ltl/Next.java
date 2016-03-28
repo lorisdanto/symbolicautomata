@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFAInputMove;
-import automata.safa.booleanexpression.PositiveId;
 import theory.BooleanAlgebra;
 
 public class Next<P, S> extends LTLFormula<P, S> {
@@ -78,5 +77,11 @@ public class Next<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
 		return new Next<>(phi.pushNegations(isPositive,ba));	
+	}
+	
+	@Override
+	public void toString(StringBuilder sb) {
+		sb.append("X");
+		phi.toString(sb);	
 	}
 }
