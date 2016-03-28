@@ -99,6 +99,7 @@ public class LTLUnitTest {
 		assertTrue(b == b1.first);
 
 	}
+	
 
 	@Test
 	public void testLargeEmptiness() {
@@ -128,10 +129,43 @@ public class LTLUnitTest {
 			System.out.println(size+" "+elapsedTime);
 		}
 	}
+	
+	@Test
+	public void testLargeEmptinessSAT() {
+		int sizeTot = 100;
+
+		for (int size = 2; size < sizeTot; size++) {
+			System.out.println(size);
+			
+			SATBooleanAlgebra ba = new SATBooleanAlgebra(size + 1);
+			LTLFormula<Integer, boolean[]> tot = new True<>();
+			for (int i = 1; i <  size; i++) {
+				LTLFormula<Integer, boolean[]> evch = new Eventually<>(new Predicate<Integer, boolean[]>(i));
+				tot = new And<>(evch, tot);
+			}
+			long startTime = System.currentTimeMillis();
+			SAFA<Integer, boolean[], SumOfProducts> safa1 = tot.getSAFA(ba, sop);
+			long stopTime = System.currentTimeMillis();
+			System.out.println("BuildSAFA "+(stopTime - startTime));
+			
+			startTime = System.currentTimeMillis();
+			boolean b = true;
+			try {
+				b = SAFA.isEmpty(safa1, ba, sop);
+				assertFalse(b);
+			} catch (TimeoutException toe) {
+				System.out.println(toe);
+			}
+
+			stopTime = System.currentTimeMillis();
+			long elapsedTime = stopTime - startTime;
+			System.out.println("Emptiness "+elapsedTime);
+		}
+	}
 
 	@Test
 	public void testLargeEquivSAT() throws TimeoutException {
-		int size = 3;
+		int size = 10;
 		SATBooleanAlgebra ba = new SATBooleanAlgebra(size + 1);
 		LTLFormula<Integer, boolean[]> tot = new True<>();
 		for (int i = 1; i < size; i++) {

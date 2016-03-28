@@ -96,21 +96,31 @@ public abstract class BooleanAlgebra<P, S> {
 		return GetMinterms(predicates, True());
 	}
 
+	long buildTime=0;
+	long solveTime=0; 
+	
 	private Collection<Pair<P, ArrayList<Integer>>> GetMinterms(
 			ArrayList<P> predicates, P startPred) {
+		solveTime=0;
+		buildTime=0;
 		HashSet<Pair<P, ArrayList<Integer>>> minterms = new HashSet<Pair<P, ArrayList<Integer>>>();
 		GetMintermsRec(predicates, 0, startPred, new ArrayList<Integer>(),
 				minterms);
+		System.out.println("Sat "+solveTime);
 		return minterms;
 	}
 
 	private void GetMintermsRec(ArrayList<P> predicates, int n, P currPred,
 			ArrayList<Integer> setBits,
 			HashSet<Pair<P, ArrayList<Integer>>> minterms) {
+		
+		long startTime = System.currentTimeMillis();
 		if (!IsSatisfiable(currPred))
 			return;
-
+		long endTime = System.currentTimeMillis();
+		solveTime+=endTime-startTime;
 		// Keep exploring the tree, if leaf done
+		
 		if (n == predicates.size())
 			minterms.add(new Pair<P, ArrayList<Integer>>(currPred, setBits));
 		else {
