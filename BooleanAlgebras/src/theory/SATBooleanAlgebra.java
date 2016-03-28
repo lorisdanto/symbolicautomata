@@ -3,6 +3,7 @@ package theory;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -23,8 +24,9 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 	private int universe; // size of the universe
 	
 	// Hash consing
-	private HashMap<Collection<Integer>, Integer> andCache;
-	private HashMap<Collection<Integer>, Integer> orCache;
+	private HashMap<Set<Integer>, Integer> andCache;
+	private HashMap<Set<Integer>, Integer> orCache;
+	private HashMap<Integer, Pair<Boolean, TreeSet<Integer>>> reverseCache;
 
 	public SATBooleanAlgebra(ISolver s, int universeSize) {
 		if (universeSize < 0) {
@@ -34,9 +36,11 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 		universe = universeSize;
 		andCache = new HashMap<>();
 		orCache = new HashMap<>();
+		reverseCache = new HashMap<>();
 		maxid = universeSize + 2;
 		VecInt trueClause = new VecInt();
 		trueClause.push(universe + 1);
+		reverseCache.put(universe + 1, new Pair<>(true, new TreeSet<Integer>()));
 		unsafeAddClause(trueClause);
 	}
 
@@ -49,6 +53,58 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 		maxid++;
 		solver.registerLiteral(fresh);
 		return fresh;
+	}
+
+	private Set<Integer> promoteAnd(Integer p) {
+		TreeSet<Integer> singleton = new TreeSet<>();
+		singleton.add(p);
+		if (reverseCache.containsKey(p)) {
+			Pair<Boolean, TreeSet<Integer>> cached = reverseCache.get(p);
+			if (cached.getFirst()) {
+				return cached.getSecond();
+			} else {
+				return singleton;
+			}
+		} else if (reverseCache.containsKey(-p)){
+			Pair<Boolean, TreeSet<Integer>> cached = reverseCache.get(-p);
+			if (!cached.getFirst()) {
+				TreeSet<Integer> result = new TreeSet<>();
+				for (Integer q : cached.getSecond()) {
+					result.add(-q);
+				}
+				return result;
+			} else {
+				return singleton;
+			}
+		} else {
+			return singleton;
+		}
+	}
+
+	private Set<Integer> promoteOr(Integer p) {
+		TreeSet<Integer> singleton = new TreeSet<>();
+		singleton.add(p);
+		if (reverseCache.containsKey(p)) {
+			Pair<Boolean, TreeSet<Integer>> cached = reverseCache.get(p);
+			if (!cached.getFirst()) {
+				return cached.getSecond();
+			} else {
+				return singleton;
+			}
+		} else if (reverseCache.containsKey(-p)){
+			Pair<Boolean, TreeSet<Integer>> cached = reverseCache.get(-p);
+			if (cached.getFirst()) {
+				TreeSet<Integer> result = new TreeSet<>();
+				for (Integer q : cached.getSecond()) {
+					result.add(-q);
+				}
+				return result;
+			} else {
+				return singleton;
+			}
+		} else {
+			return singleton;
+		}
 	}
 
 	private void unsafeAddClause(VecInt clause) {
@@ -73,9 +129,20 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 		}
 	}
 
-	public Integer MkAnd(Collection<Integer> cube) {
+	public Integer MkAnd(Collection<Integer> subnormalCube) {
+		TreeSet<Integer> cube = new TreeSet<>();
+		for (Integer p : subnormalCube) {
+			cube.addAll(promoteAnd(p));
+		}
+
+		for (Integer p : cube) {
+			if (cube.contains(-p)) {
+				return False();
+			}
+		}
+
 		if (cube.isEmpty()) {
-			throw new IllegalArgumentException("mkAnd requires at least one literal");
+			return True();
 		} else if (cube.size() == 1) {
 			return cube.iterator().next();
 		} else if (andCache.containsKey(cube)) {
@@ -98,20 +165,32 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 			// cube => cubeName
 			unsafeAddClause(cubeImpliesCubeName);
 			andCache.put(cube, cubeName);
+			reverseCache.put(cubeName, new Pair<>(true, cube));
 			return cubeName;
 		}
 	}
 
 	public Integer MkAnd(Integer left, Integer right) {
-		Set<Integer> conjuncts = new TreeSet<>();
+		List<Integer> conjuncts = new LinkedList<>();
 		conjuncts.add(left);
 		conjuncts.add(right);
 		return MkAnd(conjuncts);
 	}
 
-	public Integer MkOr(Collection<Integer> clause) {
+	public Integer MkOr(Collection<Integer> subnormalClause) {
+		TreeSet<Integer> clause = new TreeSet<>();
+		for (Integer p : subnormalClause) {
+			clause.addAll(promoteOr(p));
+		}
+
+		for (Integer p : clause) {
+			if (clause.contains(-p)) {
+				return True();
+			}
+		}
+
 		if (clause.isEmpty()) {
-			throw new IllegalArgumentException("mkOr requires at least one literal");
+			return False();
 		} else if (clause.size() == 1) {
 			return clause.iterator().next();
 		} else if (orCache.containsKey(clause)) {
@@ -133,12 +212,13 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 			}
 			unsafeAddClause(clauseNameImpliesClause);
 			orCache.put(clause, clauseName);
+			reverseCache.put(clauseName, new Pair<>(false, clause));
 			return clauseName;
 		}
 	}
 
 	public Integer MkOr(Integer left, Integer right) {
-		List<Integer> disjuncts = new LinkedList<>();
+		Set<Integer> disjuncts = new TreeSet<>();
 		disjuncts.add(left);
 		disjuncts.add(right);
 		return MkOr(disjuncts);
