@@ -1,8 +1,10 @@
 package logic.ltl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
@@ -11,20 +13,25 @@ import theory.BooleanAlgebra;
 
 public class Or<P, S> extends LTLFormula<P, S> {
 
-	protected LTLFormula<P, S> left, right;
+	protected List<LTLFormula<P, S>> disjuncts;
 
 	public Or(LTLFormula<P, S> left, LTLFormula<P, S> right) {
 		super();
-		this.left = left;
-		this.right = right;
+		disjuncts = new ArrayList<>();
+		disjuncts.add(left);
+		disjuncts.add(right);
+	}
+
+	public Or(List<LTLFormula<P, S>> c) {
+		super();
+		disjuncts = c;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((left == null) ? 0 : left.hashCode());
-		result = prime * result + ((right == null) ? 0 : right.hashCode());
+		result = prime * result + ((disjuncts == null) ? 0 : disjuncts.hashCode());
 		return result;
 	}
 
@@ -36,17 +43,11 @@ public class Or<P, S> extends LTLFormula<P, S> {
 			return false;
 		if (!(obj instanceof Or))
 			return false;
-		@SuppressWarnings("unchecked")
-		Or<P, S> other = (Or<P, S>) obj;
-		if (left == null) {
-			if (other.left != null)
+		Or<?, ?> other = (Or<?, ?>) obj;
+		if (disjuncts == null) {
+			if (other.disjuncts != null)
 				return false;
-		} else if (!left.equals(other.left))
-			return false;
-		if (right == null) {
-			if (other.right != null)
-				return false;
-		} else if (!right.equals(other.right))
+		} else if (!disjuncts.equals(other.disjuncts))
 			return false;
 		return true;
 	}
@@ -66,45 +67,58 @@ public class Or<P, S> extends LTLFormula<P, S> {
 		formulaToStateId.put(this, id);
 
 		// Compute transitions for children
-		left.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
-		right.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
+		ArrayList<Integer> ids = new ArrayList<>();
+		ArrayList<Collection<SAFAInputMove<P, S, E>>> disjMoves = new ArrayList<>();
+		// Compute transitions for children
+		for (LTLFormula<P, S> phi : disjuncts) {
+			phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
+			int phiId=formulaToStateId.get(phi);
+			ids.add(phiId);
+			disjMoves.add(moves.get(phiId));
+		}
 
 		// delta(l or r, p) = delta(l, p) 
 		// delta(l or r, p) = delta(r, p) 
-		int leftId = formulaToStateId.get(left);
-		int rightId = formulaToStateId.get(right);
-		Collection<SAFAInputMove<P, S, E>> leftMoves = moves.get(leftId);
-		Collection<SAFAInputMove<P, S, E>> rightMoves = moves.get(rightId);
 		Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();
 		
-		for (SAFAInputMove<P, S, E> leftMove : leftMoves)
-			newMoves.add(new SAFAInputMove<>(id, leftMove.to, leftMove.guard));
-		
-		for (SAFAInputMove<P, S, E> rightMove : rightMoves)
-			newMoves.add(new SAFAInputMove<>(id, rightMove.to, rightMove.guard));
+		for(Collection<SAFAInputMove<P, S, E>> phiMoves : disjMoves)
+			for (SAFAInputMove<P, S, E> phiMove : phiMoves)
+				newMoves.add(new SAFAInputMove<>(id, phiMove.to, phiMove.guard));
 
 		moves.put(id, newMoves);
 	}
 
 	@Override
 	protected boolean isFinalState() {
-		return left.isFinalState() && right.isFinalState();
+		boolean isF = true;
+		for (LTLFormula<P, S> phi : disjuncts)
+			isF = isF || phi.isFinalState();
+		return isF;
 	}
 	
 	@Override
 	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
+		List<LTLFormula<P, S>> newPhis =new ArrayList<>();
+		for(LTLFormula<P, S> phi:disjuncts)
+			newPhis.add(phi.pushNegations(isPositive,ba));
+		
 		if(isPositive)
-			return new Or<>(left.pushNegations(isPositive,ba), right.pushNegations(isPositive,ba));
+			return new Or<>(newPhis);
 		else
-			return new And<>(left.pushNegations(isPositive,ba), right.pushNegations(isPositive,ba));
+			return new And<>(newPhis);
 	}
 	
 	@Override
 	public void toString(StringBuilder sb) {
-		sb.append('(');
-		left.toString(sb);	
-		sb.append(" | ");
-		right.toString(sb);
-		sb.append(')');
+		sb.append("(");
+		boolean isFirst = true;
+		for (LTLFormula<P, S> phi : disjuncts){
+			if(!isFirst)
+				sb.append(" | ");
+				
+			phi.toString(sb);							
+			isFirst=false;
+		}
+		sb.append(")");
 	}
 }

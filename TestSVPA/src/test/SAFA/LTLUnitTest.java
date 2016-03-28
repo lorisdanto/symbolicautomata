@@ -4,6 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Test;
@@ -103,7 +104,7 @@ public class LTLUnitTest {
 
 	@Test
 	public void testLargeEmptiness() {
-		int sizeTot = 100;
+		int sizeTot = 10;
 
 		for (int size = 2; size < sizeTot; size++) {
 
@@ -132,17 +133,20 @@ public class LTLUnitTest {
 	
 	@Test
 	public void testLargeEmptinessSAT() {
-		int sizeTot = 100;
+		int sizeTot = 10;
 
 		for (int size = 2; size < sizeTot; size++) {
 			System.out.println(size);
 			
 			SATBooleanAlgebra ba = new SATBooleanAlgebra(size + 1);
 			LTLFormula<Integer, boolean[]> tot = new True<>();
+			List<LTLFormula<Integer, boolean[]>> conjuncts = new LinkedList<>();
 			for (int i = 1; i <  size; i++) {
-				LTLFormula<Integer, boolean[]> evch = new Eventually<>(new Predicate<Integer, boolean[]>(i));
-				tot = new And<>(evch, tot);
+				conjuncts.add(new Eventually<>(new Predicate<Integer, boolean[]>(i)));
+//				LTLFormula<Integer, boolean[]> evch = new Eventually<>(new Predicate<Integer, boolean[]>(i));
+//				tot = new And<>(evch, tot);
 			}
+			tot = new And<>(conjuncts);
 			long startTime = System.currentTimeMillis();
 			SAFA<Integer, boolean[], SumOfProducts> safa1 = tot.getSAFA(ba, sop);
 			long stopTime = System.currentTimeMillis();
