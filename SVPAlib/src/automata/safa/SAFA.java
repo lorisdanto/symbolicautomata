@@ -527,22 +527,15 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		int sink=maxStateId+1;
 		for (int state : states) {
 			ArrayList<SAFAInputMove<P, S, E>> trFromState = new ArrayList<>(getInputMovesFrom(state));
-			P leftoverPredicate = ba.True();
 			ArrayList<P> predicates = new ArrayList<>();
 			for (SAFAInputMove<P, S, E> t : trFromState){
 				predicates.add(t.guard);
-				ba.MkAnd(leftoverPredicate, ba.MkNot(t.guard));
-			}
-			
-			//Make sure the automaton is complete
-			if(ba.IsSatisfiable(leftoverPredicate)){
-				transitions.add(new SAFAInputMove<>(state, boolexpr.MkState(sink), leftoverPredicate));
-				addedSink = true;
 			}
 
 			Collection<Pair<P, ArrayList<Integer>>> minterms = ba.GetMinterms(predicates);
 			for (Pair<P, ArrayList<Integer>> minterm : minterms) {
 				E newTo = null;
+
 				for (int i = 0; i < minterm.second.size(); i++)
 					if (minterm.second.get(i) == 1)
 						if (newTo == null)
@@ -550,8 +543,12 @@ public class SAFA<P, S, E extends BooleanExpression> {
 						else
 							newTo = boolexpr.MkOr(newTo, trFromState.get(i).to);
 
-				if (newTo != null)
+				if (newTo != null) {
 					transitions.add(new SAFAInputMove<>(state, newTo, minterm.first));
+				} else {
+					transitions.add(new SAFAInputMove<>(state, boolexpr.MkState(sink), minterm.first));
+					addedSink = true;
+				}
 			}
 		}
 		if(addedSink)

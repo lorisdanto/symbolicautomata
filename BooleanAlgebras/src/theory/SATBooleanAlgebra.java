@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
@@ -101,7 +103,7 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 	}
 
 	public Integer MkAnd(Integer left, Integer right) {
-		List<Integer> conjuncts = new LinkedList<>();
+		Set<Integer> conjuncts = new TreeSet<>();
 		conjuncts.add(left);
 		conjuncts.add(right);
 		return MkAnd(conjuncts);
