@@ -57,7 +57,7 @@ public class LTLUnitTest {
 
 	@Test
 	public void testLargeEquiv() {
-		int size = 11;
+		int size = 7;
 
 		LTLFormula<CharPred, Character> tot = new True<>();
 		for (int i = 100; i < 100 + size; i++) {
@@ -104,7 +104,7 @@ public class LTLUnitTest {
 
 	@Test
 	public void testLargeEmptiness() {
-		int sizeTot = 10;
+		int sizeTot = 7;
 
 		for (int size = 2; size < sizeTot; size++) {
 
@@ -133,7 +133,7 @@ public class LTLUnitTest {
 	
 	@Test
 	public void testLargeEmptinessSAT() {
-		int sizeTot = 10;
+		int sizeTot = 7;
 
 		for (int size = 2; size < sizeTot; size++) {
 			System.out.println(size);
@@ -169,13 +169,16 @@ public class LTLUnitTest {
 
 	@Test
 	public void testLargeEquivSAT() throws TimeoutException {
-		int size = 10;
+		int size = 2;
 		SATBooleanAlgebra ba = new SATBooleanAlgebra(size + 1);
 		LTLFormula<Integer, boolean[]> tot = new True<>();
-		for (int i = 1; i < size; i++) {
-			LTLFormula<Integer, boolean[]> evch = new Eventually<>(new Predicate<Integer, boolean[]>(i));
-			tot = new And<>(evch, tot);
+		List<LTLFormula<Integer, boolean[]>> conjuncts = new LinkedList<>();
+		for (int i = 1; i <  size; i++) {
+			conjuncts.add(new Eventually<>(new Predicate<Integer, boolean[]>(i)));
+//			LTLFormula<Integer, boolean[]> evch = new Eventually<>(new Predicate<Integer, boolean[]>(i));
+//			tot = new And<>(evch, tot);
 		}
+		tot = new And<>(conjuncts);
 		SAFA<Integer, boolean[], SumOfProducts> safa1 = tot.getSAFA(ba, sop);
 
 		tot = new True<>();
@@ -184,8 +187,30 @@ public class LTLUnitTest {
 			tot = new And<>(evch, tot);
 		}
 		SAFA<Integer, boolean[], SumOfProducts> safa2 = tot.getSAFA(ba, sop);
-		assertTrue(SAFA.isEquivalent(safa1, safa2, ba, sop));
-		assertTrue(SAFA.areReverseEquivalent(safa1, safa2, ba).getFirst());
+		
+		long startTime = System.currentTimeMillis();
+
+		boolean b = true;
+		try {
+			b = SAFA.isEquivalent(safa1, safa2, ba, sop);
+		} catch (TimeoutException toe) {
+			System.out.println(toe);
+		}
+
+		long stopTime = System.currentTimeMillis();
+		long elapsedTime = stopTime - startTime;
+		System.out.println(elapsedTime);
+
+		startTime = System.currentTimeMillis();
+
+		Pair<Boolean, List<boolean[]>> b1 = SAFA.areReverseEquivalent(safa1, safa2, ba);
+		System.out.println(b1);
+
+		stopTime = System.currentTimeMillis();
+		elapsedTime = stopTime - startTime;
+		System.out.println(elapsedTime);
+
+		assertTrue(b == b1.first);
 	}
 
 	// ---------------------------------------
