@@ -23,13 +23,13 @@ public class BDDSolver extends BooleanAlgebra<BDD, BDD> {
 	
 	public BDDSolver(int numVars) {
 		super();		
-		factory = BDDFactory.init(1000, 1000);
+		factory = BDDFactory.init(500000 , 125000);
 		factory.setVarNum(numVars);
 	}
 	
-	public BDDSolver(int numVars, int chaceSize) {
+	public BDDSolver(int numVars, int numNodes, int chaceSize) {
 		super();
-		factory = BDDFactory.init(numVars, chaceSize);
+		factory = BDDFactory.init(numNodes, chaceSize);
 		factory.setVarNum(numVars);
 	}
 

@@ -136,9 +136,9 @@ public class LTLUnitTest {
 	
 	@Test
 	public void testLargeEmptinessBDD() {
-		int sizeTot = 10;
+		int sizeTot = 15;
 
-		for (int size = 2; size < sizeTot; size++) {
+		for (int size = 12; size < sizeTot; size++) {
 
 			BDDSolver bs = new BDDSolver(size);
 			LTLFormula<BDD, BDD> tot = new True<>();
@@ -151,8 +151,10 @@ public class LTLUnitTest {
 //				tot = new And<>(evch, tot);
 			}
 			tot = new And<>(conjuncts);
-			SAFA<BDD, BDD, SumOfProducts> safa1 = tot.getSAFA(bs, sop);
+			
 			long startTime = System.currentTimeMillis();
+			SAFA<BDD, BDD, SumOfProducts> safa1 = tot.getSAFA(bs, sop);
+			
 
 			boolean b = true;
 			try {

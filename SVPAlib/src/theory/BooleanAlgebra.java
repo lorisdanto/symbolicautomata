@@ -106,7 +106,7 @@ public abstract class BooleanAlgebra<P, S> {
 		HashSet<Pair<P, ArrayList<Integer>>> minterms = new HashSet<Pair<P, ArrayList<Integer>>>();
 		GetMintermsRec(predicates, 0, startPred, new ArrayList<Integer>(),
 				minterms);
-		System.out.println("Sat "+solveTime);
+		//System.out.println("Sat "+solveTime);
 		return minterms;
 	}
 
