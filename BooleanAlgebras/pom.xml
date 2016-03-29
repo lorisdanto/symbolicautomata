@@ -5,6 +5,12 @@
     <artifactId>BooleanAlgebras</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
+    <repositories>
+      <repository>
+	<id>Internal repository</id>
+	<url>file://${basedir}/mvn</url>
+      </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -30,8 +36,6 @@
             <groupId>jdd</groupId>
             <artifactId>jdd</artifactId>
             <version>1.0</version>
-	    <scope>system</scope>
-	    <systemPath>${basedir}/lib/jdd.jar</systemPath>
         </dependency>
     </dependencies>
     <properties>
