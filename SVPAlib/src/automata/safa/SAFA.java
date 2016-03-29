@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.sat4j.specs.TimeoutException;
 
@@ -483,6 +484,41 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	 */
 	public SAFA<P, S, E> unionWith(SAFA<P, S, E> aut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) {
 		return binaryOp(this, aut, ba, boolexpr, BoolOp.Union);
+	}
+
+	public SAFA<P, S, E> negate(BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) {
+		// DeMorganize all transitions
+		class DeMorgan extends BooleanExpressionFactory<E> {
+			public DeMorgan() { }
+			public E MkAnd(E p, E q) {
+				return boolexpr.MkOr(p, q);
+			}
+			public E MkOr(E p, E q) {
+				return boolexpr.MkAnd(p, q);
+			}
+			public E True() { return boolexpr.False(); }
+			public E False() { return boolexpr.True(); }
+			public E MkState(int i) { return boolexpr.MkState(i); }
+		}
+		Collection<SAFAInputMove<P, S, E>> transitions = new ArrayList<SAFAInputMove<P, S, E>>();
+		BooleanExpressionMorphism<E> demorganize = new BooleanExpressionMorphism<E>((x) -> boolexpr.MkState(x), new DeMorgan());
+		for (int state = 0; state < maxStateId; state++) {
+			if (!inputMovesFrom.containsKey(state)) {
+				continue;
+			}
+			for (SAFAInputMove<P, S, E> transition : inputMovesFrom.get(state)) {
+				transitions.add(new SAFAInputMove<>(state, demorganize.apply(transition.to), transition.guard));
+			}
+		}
+
+		// Negate the set of final states
+		Set<Integer> nonFinal = new HashSet<>();
+		for (int state = 0; state < maxStateId; state++) {
+			if (!finalStates.contains(state)) {
+				nonFinal.add(state);
+			}
+		}
+		return MkSAFA(transitions, initialState, nonFinal, ba, boolexpr, true);
 	}
 
 	public enum BoolOp {

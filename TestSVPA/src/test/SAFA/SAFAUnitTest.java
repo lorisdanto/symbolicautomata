@@ -171,4 +171,17 @@ public class SAFAUnitTest {
 		assertTrue(SAFA.isEquivalent(intersection2, intersection1, ba, pos));
 		assertTrue(SAFA.isEquivalent(intersection1, intersection2, ba, pos));
 	}
+
+	@Test
+	public void testNegate() throws TimeoutException {
+		SAFA<CharPred, Character, SumOfProducts> intersection1 = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba, boolexpr);
+		SAFA<CharPred, Character, SumOfProducts> intersection2 = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba, boolexpr);
+		SAFA<CharPred, Character, SumOfProducts> notIntersection1 = intersection1.negate(ba, boolexpr);
+		SAFA<CharPred, Character, SumOfProducts> notIntersection2 = intersection2.negate(ba, boolexpr);
+
+		assertTrue(SAFA.isEmpty(intersection1.intersectionWith(notIntersection1, ba, boolexpr), ba, boolexpr));
+		assertTrue(SAFA.isEmpty(intersection2.intersectionWith(notIntersection2, ba, boolexpr), ba, boolexpr));
+		assertTrue(SAFA.isEquivalent(intersection1, notIntersection1.negate(ba, boolexpr), ba, boolexpr));
+		assertTrue(SAFA.isEquivalent(intersection2, notIntersection2.negate(ba, boolexpr), ba, boolexpr));
+	}
 }
