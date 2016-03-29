@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
+import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
 import theory.BooleanAlgebra;
 
@@ -66,5 +67,11 @@ public class Not<P, S> extends LTLFormula<P, S> {
 	public void toString(StringBuilder sb) {
 		sb.append("!");
 		phi.toString(sb);	
+	}
+	
+	@Override
+	public <E extends BooleanExpression> SAFA<P,S,E> getSAFANew(BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr) {
+		throw new UnsupportedOperationException();
 	}
 }

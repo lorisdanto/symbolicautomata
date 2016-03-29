@@ -6,6 +6,7 @@ import java.util.LinkedList;
 
 import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
+import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
 import theory.BooleanAlgebra;
 
@@ -67,5 +68,11 @@ public class False<P, S> extends LTLFormula<P, S> {
 	@Override
 	public void toString(StringBuilder sb) {
 		sb.append("false");
+	}
+	
+	@Override
+	public <E extends BooleanExpression> SAFA<P,S,E> getSAFANew(BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr) {
+		return SAFA.getEmptySAFA(ba, boolexpr);
 	}
 }

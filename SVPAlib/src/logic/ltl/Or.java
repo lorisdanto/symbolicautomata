@@ -8,6 +8,7 @@ import java.util.List;
 
 import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
+import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
 import theory.BooleanAlgebra;
 
@@ -120,5 +121,16 @@ public class Or<P, S> extends LTLFormula<P, S> {
 			isFirst=false;
 		}
 		sb.append(")");
+	}
+	
+	@Override
+	public <E extends BooleanExpression> SAFA<P,S,E> getSAFANew(BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr) {
+		ArrayList<LTLFormula<P, S>> c = new ArrayList<>(disjuncts);
+		SAFA<P,S,E> safa = c.get(0).getSAFANew(ba, boolexpr);
+		for(int i = 1; i<c.size();i++)
+			safa = safa.unionWith(c.get(i).getSAFANew(ba, boolexpr),ba,boolexpr);
+
+		return safa;
 	}
 }

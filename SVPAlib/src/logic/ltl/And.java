@@ -8,6 +8,7 @@ import java.util.List;
 
 import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
+import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
 import theory.BooleanAlgebra;
 
@@ -129,6 +130,17 @@ public class And<P, S> extends LTLFormula<P, S> {
 			isFirst=false;
 		}
 		sb.append(")");
+	}
+
+	@Override
+	public <E extends BooleanExpression> SAFA<P,S,E> getSAFANew(BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr) {
+		ArrayList<LTLFormula<P, S>> c = new ArrayList<>(conjuncts);
+		SAFA<P,S,E> safa = c.get(0).getSAFANew(ba, boolexpr);
+		for(int i = 1; i<c.size();i++)
+			safa = safa.intersectionWith(c.get(i).getSAFANew(ba, boolexpr),ba,boolexpr);
+
+		return safa;
 	}
 
 }

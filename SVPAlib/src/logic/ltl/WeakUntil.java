@@ -6,6 +6,7 @@ import java.util.LinkedList;
 
 import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
+import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
 import theory.BooleanAlgebra;
 
@@ -110,5 +111,12 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 		sb.append(" W ");
 		right.toString(sb);
 		sb.append(")");
+	}
+	
+	@Override
+	public <E extends BooleanExpression> SAFA<P, S, E> getSAFANew(BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

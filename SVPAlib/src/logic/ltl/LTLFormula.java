@@ -16,7 +16,8 @@ public abstract class LTLFormula<P,S> {
 	public <E extends BooleanExpression> SAFA<P,S,E> getSAFA(BooleanAlgebra<P, S> ba,
 			BooleanExpressionFactory<E> boolexpr){
 		
-		Integer initialState = 0;
+		//TODO
+		E initialState = boolexpr.MkState(0);
 		HashMap<LTLFormula<P, S>, Integer> formulaToStateId = new HashMap<>();
 		
 		Collection<Integer> finalStates = new HashSet<>();
@@ -44,6 +45,12 @@ public abstract class LTLFormula<P,S> {
 			HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
 			HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves,
 			Collection<Integer> finalStates,
+			BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr
+			);
+	
+	// returns set of disjoint predicates that are the triggers of transitions out of this state
+	public abstract <E extends BooleanExpression> SAFA<P,S,E> getSAFANew(
 			BooleanAlgebra<P, S> ba,
 			BooleanExpressionFactory<E> boolexpr
 			);

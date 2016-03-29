@@ -116,7 +116,7 @@ public class SAFAUnitTest {
 		transitionsA.add(new SAFAInputMove<CharPred, Character, SumOfProducts>(0, sp0, ba.True()));
 		transitionsA.add(new SAFAInputMove<CharPred, Character, SumOfProducts>(0, sp1, p));
 		transitionsA.add(new SAFAInputMove<CharPred, Character, SumOfProducts>(1, sp1, ba.True()));
-		return SAFA.MkSAFA(transitionsA, 0, Arrays.asList(1), ba, boolexpr);
+		return SAFA.MkSAFA(transitionsA, boolexpr.MkState(0), Arrays.asList(1), ba, boolexpr);
 	}	
 
 	// -------------------------

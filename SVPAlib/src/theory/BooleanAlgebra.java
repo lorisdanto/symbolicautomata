@@ -126,13 +126,14 @@ public abstract class BooleanAlgebra<P, S> {
 		else {
 			ArrayList<Integer> posList = new ArrayList<Integer>(setBits);
 			posList.add(1);
+			P pn =predicates.get(n);
 			GetMintermsRec(predicates, n + 1,
-					MkAnd(currPred, predicates.get(n)), posList, minterms);
+					MkAnd(currPred, pn), posList, minterms);
 
 			ArrayList<Integer> negList = new ArrayList<Integer>(setBits);
 			negList.add(0);
 			GetMintermsRec(predicates, n + 1,
-					MkAnd(currPred, MkNot(predicates.get(n))), negList,
+					MkAnd(currPred, MkNot(pn)), negList,
 					minterms);
 		}
 	}

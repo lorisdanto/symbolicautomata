@@ -1,11 +1,14 @@
 package logic.ltl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
+import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
 import theory.BooleanAlgebra;
 
@@ -90,5 +93,23 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 		sb.append("(G ");
 		phi.toString(sb);	
 		sb.append(")");
+	}
+	
+	@Override
+	public <E extends BooleanExpression> SAFA<P,S,E> getSAFANew(BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr) {
+		
+		SAFA<P,S,E> phiSafa = phi.getSAFANew(ba, boolexpr);
+		int formulaId = phiSafa.getMaxStateId()+1;
+						
+		E initialState = boolexpr.MkAnd(boolexpr.MkState(formulaId), phiSafa.getInitialState());		
+		Collection<Integer> finalStates = new HashSet<>(phiSafa.getFinalStates());
+		finalStates.add(formulaId);
+		
+		// Copy all transitions (with proper renaming for aut2)
+		Collection<SAFAInputMove<P, S, E>> transitions = new ArrayList<SAFAInputMove<P, S, E>>(phiSafa.getInputMoves());
+		transitions.add(new SAFAInputMove<>(formulaId, initialState, ba.True()));
+		
+		return SAFA.MkSAFA(transitions, initialState, finalStates, ba, boolexpr);
 	}
 }

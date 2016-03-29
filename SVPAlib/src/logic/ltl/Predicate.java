@@ -1,11 +1,14 @@
 package logic.ltl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
+import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
 import theory.BooleanAlgebra;
 
@@ -86,5 +89,22 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 	@Override
 	public void toString(StringBuilder sb) {
 		sb.append(predicate.toString());	
+	}
+	
+	@Override
+	public <E extends BooleanExpression> SAFA<P,S,E> getSAFANew(BooleanAlgebra<P, S> ba,
+			BooleanExpressionFactory<E> boolexpr) {
+		
+
+		int formulaId = 1;
+						
+		E initialState = boolexpr.MkState(1);		
+		Collection<Integer> finalStates = new HashSet<>();
+		finalStates.add(2);
+		
+		Collection<SAFAInputMove<P, S, E>> transitions = new ArrayList<SAFAInputMove<P, S, E>>();
+		transitions.add(new SAFAInputMove<>(formulaId, boolexpr.MkState(2), this.predicate));
+		
+		return SAFA.MkSAFA(transitions, initialState, finalStates, ba, boolexpr);
 	}
 }
