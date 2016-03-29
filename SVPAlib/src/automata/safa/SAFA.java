@@ -206,7 +206,7 @@ public class SAFA<P, S, E extends BooleanExpression> {
 				return false;
 		}
 
-		return currConf.contains(initialState);
+		return initialState.hasModel(currConf);
 	}
 
 	/**
@@ -381,7 +381,7 @@ public class SAFA<P, S, E extends BooleanExpression> {
 						if(!reached1.containsKey(from1)){
 							r1= ds.getNumberOfElements();
 							reached1.put(from1, r1);
-							ds.add(r1,from1.contains(aut1.initialState),pref);
+							ds.add(r1, aut1.initialState.hasModel(from1),pref);
 						}
 						if(r1==null)
 							r1 = reached1.get(from1);
@@ -389,7 +389,7 @@ public class SAFA<P, S, E extends BooleanExpression> {
 						if(!reached2.containsKey(from2)){
 							r2= ds.getNumberOfElements();
 							reached2.put(from2, r2);
-							ds.add(r2,from2.contains(aut2.initialState),pref);
+							ds.add(r2, aut2.initialState.hasModel(from2),pref);
 						}
 						if(r2==null)
 							r2 = reached2.get(from2);
