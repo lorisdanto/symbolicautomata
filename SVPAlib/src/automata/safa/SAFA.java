@@ -272,9 +272,9 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		SAFARelation similar = new SATRelation();
 		LinkedList<Pair<E, E>> worklist = new LinkedList<>();
 
-		// TODO is it necessary to have 2 different representations
-		E leftInitial = (E) laut.initialState;
-		E rightInitial = (E) raut.initialState;
+		BooleanExpressionMorphism<E> coerce = new BooleanExpressionMorphism<>((x) -> boolexpr.MkState(x), boolexpr);
+		E leftInitial = coerce.apply(laut.initialState);
+		E rightInitial = coerce.apply(raut.initialState);
 
 		similar.add(leftInitial, rightInitial);
 		worklist.add(new Pair<>(leftInitial, rightInitial));
@@ -497,9 +497,13 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		return binaryOp(this, aut, ba, boolexpr, BoolOp.Union);
 	}
 
+	/**
+	 * Computes the complement of the automaton as a new SAFA.  The input automaton need not be normal.
+	 */
 	public SAFA<P, S, E> negate(BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) {
 		// DeMorganize all transitions
 		class DeMorgan extends BooleanExpressionFactory<E> {
+
 			public DeMorgan() {
 			}
 
@@ -524,25 +528,38 @@ public class SAFA<P, S, E extends BooleanExpression> {
 			}
 		}
 		Collection<SAFAInputMove<P, S, E>> transitions = new ArrayList<SAFAInputMove<P, S, E>>();
-		BooleanExpressionMorphism<E> demorganize = new BooleanExpressionMorphism<E>((x) -> boolexpr.MkState(x),
-				new DeMorgan());
-		for (int state = 0; state < maxStateId; state++) {
-			if (!inputMovesFrom.containsKey(state)) {
-				continue;
+
+		BooleanExpressionMorphism<E> demorganize = new BooleanExpressionMorphism<E>((x) -> boolexpr.MkState(x), new DeMorgan());
+		boolean addAccept = false; // do we need to create an accept state?
+		for (int state = 0; state <= maxStateId; state++) {
+			P residual = ba.True();
+			if (inputMovesFrom.containsKey(state)) {
+				for (SAFAInputMove<P, S, E> transition : inputMovesFrom.get(state)) {
+					transitions.add(new SAFAInputMove<>(state, demorganize.apply(transition.to), transition.guard));
+					residual = ba.MkAnd(ba.MkNot(transition.guard), residual);
+				}
 			}
-			for (SAFAInputMove<P, S, E> transition : inputMovesFrom.get(state)) {
-				transitions.add(new SAFAInputMove<>(state, demorganize.apply(transition.to), transition.guard));
+			if (ba.IsSatisfiable(residual)) {
+				transitions.add(new SAFAInputMove<>(state, boolexpr.MkState(maxStateId + 1), residual));
+				addAccept = true;
 			}
 		}
 
 		// Negate the set of final states
 		Set<Integer> nonFinal = new HashSet<>();
-		for (int state = 0; state < maxStateId; state++) {
+		for (int state = 0; state <= maxStateId; state++) {
 			if (!finalStates.contains(state)) {
 				nonFinal.add(state);
 			}
 		}
-		return MkSAFA(transitions, initialState, nonFinal, ba, boolexpr, true, false);
+
+		if (addAccept) {
+			nonFinal.add(maxStateId + 1);
+			transitions.add(new SAFAInputMove<>(maxStateId + 1, boolexpr.MkState(maxStateId + 1), ba.True()));
+		}
+
+		E notInitial = demorganize.apply(initialState);
+		return MkSAFA(transitions, notInitial, nonFinal, ba, boolexpr, false, false);
 	}
 
 	public enum BoolOp {
