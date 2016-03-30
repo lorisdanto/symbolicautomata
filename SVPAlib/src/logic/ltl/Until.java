@@ -70,6 +70,7 @@ public class Until<P, S> extends LTLFormula<P, S> {
 		left.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
 		right.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
 
+		
 		// delta(l U r, p) = delta(l, p) and lUr
 		// delta(l U r, p) = delta(r, p)
 		int leftId = formulaToStateId.get(left);
@@ -84,6 +85,7 @@ public class Until<P, S> extends LTLFormula<P, S> {
 			newMoves.add(new SAFAInputMove<>(id, rightMove.to, rightMove.guard));
 
 		moves.put(id, newMoves);
+		throw new IllegalArgumentException("Not finished this yet");
 	}
 
 	@Override

@@ -16,7 +16,6 @@ public abstract class LTLFormula<P,S> {
 	public <E extends BooleanExpression> SAFA<P,S,E> getSAFA(BooleanAlgebra<P, S> ba,
 			BooleanExpressionFactory<E> boolexpr){
 		
-		//TODO
 		E initialState = boolexpr.MkState(0);
 		HashMap<LTLFormula<P, S>, Integer> formulaToStateId = new HashMap<>();
 		
@@ -29,7 +28,7 @@ public abstract class LTLFormula<P,S> {
 		for(Collection<SAFAInputMove<P, S, E>> c: moves.values())
 			transitions.addAll(c);		
 		
-		return SAFA.MkSAFA(transitions, initialState, finalStates, ba, boolexpr);
+		return SAFA.MkSAFA(transitions, initialState, finalStates, ba, boolexpr, false, true);
 	}
 	
 	// Checks whether a formula should be a final state in the automaton

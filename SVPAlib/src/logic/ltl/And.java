@@ -97,7 +97,7 @@ public class And<P, S> extends LTLFormula<P, S> {
 							n + 1);
 			}
 	}
-
+	
 	@Override
 	protected boolean isFinalState() {
 		boolean isF = true;

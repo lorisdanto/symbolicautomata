@@ -86,6 +86,7 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 		finalStates.add(id);
 
 		moves.put(id, newMoves);
+		throw new IllegalArgumentException("Not finished this yet");
 	}
 
 	@Override

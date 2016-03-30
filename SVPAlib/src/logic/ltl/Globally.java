@@ -67,10 +67,14 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 		// delta(G phi, p) = delta(phi, p) /\ G phi
 		Collection<SAFAInputMove<P, S, E>> phiMoves = moves.get(formulaToStateId.get(phi));
 		Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();
-		for (SAFAInputMove<P, S, E> move : phiMoves)
-			newMoves.add(new SAFAInputMove<>(id, boolexpr.MkAnd(move.to, boolexpr.MkState(id)), move.guard));
+		P not =ba.True();
+		for (SAFAInputMove<P, S, E> move : phiMoves){
+			newMoves.add(new SAFAInputMove<P, S, E>(id, boolexpr.MkAnd(move.to, boolexpr.MkState(id)), move.guard));
+			not = ba.MkAnd(not, ba.MkNot(move.guard));
+		}
 
-		finalStates.add(id);
+		if (ba.IsSatisfiable(not))
+			newMoves.add(new SAFAInputMove<P, S, E>(id, boolexpr.MkState(id), not));		
 		
 		moves.put(id, newMoves);
 	}

@@ -47,7 +47,7 @@ public class False<P, S> extends LTLFormula<P, S> {
 		formulaToStateId.put(this, id);
 		
 		// delta(False, _) = nothing		
-		Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();
+		Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();		
 		
 		moves.put(id, newMoves);
 	}

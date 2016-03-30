@@ -67,10 +67,14 @@ public class Eventually<P, S> extends LTLFormula<P, S> {
 		// delta(F phi, true) = F phi
 		Collection<SAFAInputMove<P, S, E>> phiMoves = moves.get(formulaToStateId.get(phi));
 		Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();
-		for (SAFAInputMove<P, S, E> move : phiMoves)
-			newMoves.add(new SAFAInputMove<P, S, E>(id, move.to, move.guard));
-		
-		newMoves.add(new SAFAInputMove<P, S, E>(id, boolexpr.MkState(id), ba.True()));
+		P not =ba.True();
+		for (SAFAInputMove<P, S, E> move : phiMoves){
+			newMoves.add(new SAFAInputMove<P, S, E>(id, boolexpr.MkOr(move.to, boolexpr.MkState(id)), move.guard));
+			not = ba.MkAnd(not, ba.MkNot(move.guard));
+		}
+
+		if (ba.IsSatisfiable(not))
+			newMoves.add(new SAFAInputMove<P, S, E>(id, boolexpr.MkState(id), not));		
 		
 		moves.put(id, newMoves);
 	}

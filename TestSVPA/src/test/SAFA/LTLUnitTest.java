@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
 
 import automata.safa.SAFA;
+import automata.safa.booleanexpression.PositiveBooleanExpressionFactory;
 import automata.safa.booleanexpression.SumOfProducts;
 import automata.safa.booleanexpression.SumOfProductsFactory;
 import bddalgebra.BDDSolver;
@@ -153,7 +154,7 @@ public class LTLUnitTest {
 			tot = new And<>(conjuncts);
 			
 			long startTime = System.currentTimeMillis();
-			SAFA<BDD, BDD, SumOfProducts> safa1 = tot.getSAFANew(bs, sop);
+			SAFA<BDD, BDD, SumOfProducts> safa1 = tot.getSAFA(bs, sop);
 			
 
 			boolean b = true;
