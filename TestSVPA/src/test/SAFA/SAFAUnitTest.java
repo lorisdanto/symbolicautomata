@@ -16,6 +16,7 @@ import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
 import automata.safa.SATRelation;
+import automata.safa.booleanexpression.PositiveBooleanExpression;
 import automata.safa.booleanexpression.SumOfProducts;
 import automata.safa.booleanexpression.SumOfProductsFactory;
 import theory.CharPred;
@@ -26,7 +27,7 @@ public class SAFAUnitTest {
 
 	@Test
 	public void testIntersection() {
-		SAFA<CharPred, Character, SumOfProducts> intersection = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba, boolexpr);
+		SAFA<CharPred, Character> intersection = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
 
 		assertTrue(atLeastOneAlpha.accepts(la, ba));
 		assertFalse(atLeastOneAlpha.accepts(lb, ba));
@@ -47,7 +48,7 @@ public class SAFAUnitTest {
 	
 	@Test
 	public void testUnion() {
-		SAFA<CharPred, Character, SumOfProducts> union = atLeastOneAlpha.unionWith(atLeastOneNum, ba, boolexpr);
+		SAFA<CharPred, Character> union = atLeastOneAlpha.unionWith(atLeastOneNum, ba);
 
 		assertTrue(atLeastOneAlpha.accepts(la, ba));
 		assertFalse(atLeastOneAlpha.accepts(lb, ba));
@@ -67,8 +68,8 @@ public class SAFAUnitTest {
 	
 	@Test
 	public void testEquivalence() {
-		SAFA<CharPred, Character, SumOfProducts> intersection1 = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba, boolexpr);
-		SAFA<CharPred, Character, SumOfProducts> intersection2 = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba, boolexpr);
+		SAFA<CharPred, Character> intersection1 = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
+		SAFA<CharPred, Character> intersection2 = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba);
 
 		assertFalse(SAFA.areReverseEquivalent(atLeastOneAlpha, atLeastOneNum, ba).first);
 		assertFalse(SAFA.areReverseEquivalent(atLeastOneNum, atLeastOneAlpha, ba).first);
@@ -96,10 +97,10 @@ public class SAFAUnitTest {
 	Integer onlyX = 1;
 
 	// Boolean expression factory
-	BooleanExpressionFactory<SumOfProducts> boolexpr = SumOfProductsFactory.getInstance();
+	BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
-	SAFA<CharPred, Character, SumOfProducts> atLeastOneAlpha = getSAFAatLeastOne(ba,alpha);
-	SAFA<CharPred, Character, SumOfProducts> atLeastOneNum = getSAFAatLeastOne(ba,num);
+	SAFA<CharPred, Character> atLeastOneAlpha = getSAFAatLeastOne(ba,alpha);
+	SAFA<CharPred, Character> atLeastOneNum = getSAFAatLeastOne(ba,num);
 
 	// Test strings
 	List<Character> la = lOfS("a#a"); // accepted only by autA
@@ -108,15 +109,15 @@ public class SAFAUnitTest {
 	List<Character> lnot = lOfS("##"); // accepted only by neither autA nor autB
 
 	// at least one 
-	private SAFA<CharPred, Character, SumOfProducts> getSAFAatLeastOne(CharSolver ba, CharPred p) {
+	private SAFA<CharPred, Character> getSAFAatLeastOne(CharSolver ba, CharPred p) {
 
-		Collection<SAFAInputMove<CharPred, Character, SumOfProducts>> transitionsA = new LinkedList<>();
-		SumOfProducts sp0 = boolexpr.MkState(0);
-		SumOfProducts sp1 = boolexpr.MkState(1);
-		transitionsA.add(new SAFAInputMove<CharPred, Character, SumOfProducts>(0, sp0, ba.True()));
-		transitionsA.add(new SAFAInputMove<CharPred, Character, SumOfProducts>(0, sp1, p));
-		transitionsA.add(new SAFAInputMove<CharPred, Character, SumOfProducts>(1, sp1, ba.True()));
-		return SAFA.MkSAFA(transitionsA, boolexpr.MkState(0), Arrays.asList(1), ba, boolexpr);
+		Collection<SAFAInputMove<CharPred, Character>> transitionsA = new LinkedList<>();
+		PositiveBooleanExpression sp0 = boolexpr.MkState(0);
+		PositiveBooleanExpression sp1 = boolexpr.MkState(1);
+		transitionsA.add(new SAFAInputMove<CharPred, Character>(0, sp0, ba.True()));
+		transitionsA.add(new SAFAInputMove<CharPred, Character>(0, sp1, p));
+		transitionsA.add(new SAFAInputMove<CharPred, Character>(1, sp1, ba.True()));
+		return SAFA.MkSAFA(transitionsA, boolexpr.MkState(0), Arrays.asList(1), ba);
 	}	
 
 	// -------------------------
@@ -134,8 +135,8 @@ public class SAFAUnitTest {
     @Test
     public void testSATRelation() throws TimeoutException {
     	SATRelation rel = new SATRelation();
-    	SumOfProducts sp0 = boolexpr.MkState(0);
-    	SumOfProducts sp1 = boolexpr.MkState(1);
+    	PositiveBooleanExpression sp0 = boolexpr.MkState(0);
+    	PositiveBooleanExpression sp1 = boolexpr.MkState(1);
         assertFalse(rel.isMember(sp0, sp0));
         rel.add(sp0, sp0);
         assertTrue(rel.isMember(sp0, sp0));
@@ -154,10 +155,9 @@ public class SAFAUnitTest {
 
 	@Test
 	public void testForwardEquivalence() throws TimeoutException {
-	//	PositiveBooleanExpressionFactory pos = new PositiveBooleanExpressionFactory();
-		BooleanExpressionFactory<SumOfProducts> pos = boolexpr;
-		SAFA<CharPred, Character, SumOfProducts> intersection1 = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba, boolexpr);
-		SAFA<CharPred, Character, SumOfProducts> intersection2 = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba, boolexpr);
+		BooleanExpressionFactory<SumOfProducts> pos = SumOfProductsFactory.getInstance();
+		SAFA<CharPred, Character> intersection1 = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
+		SAFA<CharPred, Character> intersection2 = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba);
 		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, atLeastOneNum, ba, pos));
 		assertFalse(SAFA.isEquivalent(atLeastOneNum, atLeastOneAlpha, ba, pos));
 		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, intersection1, ba, pos));
@@ -174,14 +174,15 @@ public class SAFAUnitTest {
 
 	@Test
 	public void testNegate() throws TimeoutException {
-		SAFA<CharPred, Character, SumOfProducts> a = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba, boolexpr);
-		SAFA<CharPred, Character, SumOfProducts> b = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba, boolexpr);
-		SAFA<CharPred, Character, SumOfProducts> notA = a.negate(ba, boolexpr);
-		SAFA<CharPred, Character, SumOfProducts> notB = b.negate(ba, boolexpr);
+		SAFA<CharPred, Character> a = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
+		SAFA<CharPred, Character> b = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba);
+		SAFA<CharPred, Character> notA = a.negate(ba);
+		SAFA<CharPred, Character> notB = b.negate(ba);
+		BooleanExpressionFactory<SumOfProducts> boolexpr = SumOfProductsFactory.getInstance();
 
-		assertTrue(SAFA.isEmpty(a.intersectionWith(notA, ba, boolexpr), ba, boolexpr));
-		assertTrue(SAFA.isEmpty(b.intersectionWith(notB, ba, boolexpr), ba, boolexpr));
-		assertTrue(SAFA.isEquivalent(a, notA.negate(ba, boolexpr), ba, boolexpr));
-		assertTrue(SAFA.isEquivalent(a, notB.negate(ba, boolexpr), ba, boolexpr));
+		assertTrue(SAFA.isEmpty(a.intersectionWith(notA, ba), ba));
+		assertTrue(SAFA.isEmpty(b.intersectionWith(notB, ba), ba));
+		assertTrue(SAFA.isEquivalent(a, notA.negate(ba), ba, boolexpr));
+		assertTrue(SAFA.isEquivalent(a, notB.negate(ba), ba, boolexpr));
 	}
 }

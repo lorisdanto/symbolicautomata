@@ -33,10 +33,9 @@ public class False<P, S> extends LTLFormula<P, S> {
 	}		
 	
 	@Override
-	protected <E extends BooleanExpression> void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr) {
+	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
+			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
 
 		// If I already visited avoid recomputing
 		if (formulaToStateId.containsKey(this))
@@ -47,7 +46,7 @@ public class False<P, S> extends LTLFormula<P, S> {
 		formulaToStateId.put(this, id);
 		
 		// delta(False, _) = nothing		
-		Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();		
+		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
 		
 		moves.put(id, newMoves);
 	}
@@ -71,8 +70,7 @@ public class False<P, S> extends LTLFormula<P, S> {
 	}
 	
 	@Override
-	public <E extends BooleanExpression> SAFA<P,S,E> getSAFANew(BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr) {
-		return SAFA.getEmptySAFA(ba, boolexpr);
+	public SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba) {
+		return SAFA.getEmptySAFA(ba);
 	}
 }

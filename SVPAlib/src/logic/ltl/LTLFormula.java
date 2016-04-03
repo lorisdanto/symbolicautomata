@@ -9,26 +9,27 @@ import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
+import automata.safa.booleanexpression.PositiveBooleanExpression;
 import theory.BooleanAlgebra;
 
 public abstract class LTLFormula<P,S> {
 
-	public <E extends BooleanExpression> SAFA<P,S,E> getSAFA(BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr){
-		
-		E initialState = boolexpr.MkState(0);
+	public <E extends BooleanExpression> SAFA<P,S> getSAFA(BooleanAlgebra<P, S> ba){
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
+
+		PositiveBooleanExpression initialState = boolexpr.MkState(0);
 		HashMap<LTLFormula<P, S>, Integer> formulaToStateId = new HashMap<>();
 		
 		Collection<Integer> finalStates = new HashSet<>();
-		HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves = new HashMap<>();
+		HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves = new HashMap<>();
 		
-		this.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
+		this.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
 
-		Collection<SAFAInputMove<P, S, E>> transitions = new LinkedList<>();
-		for(Collection<SAFAInputMove<P, S, E>> c: moves.values())
+		Collection<SAFAInputMove<P, S>> transitions = new LinkedList<>();
+		for(Collection<SAFAInputMove<P, S>> c: moves.values())
 			transitions.addAll(c);		
 		
-		return SAFA.MkSAFA(transitions, initialState, finalStates, ba, boolexpr, false, true);
+		return SAFA.MkSAFA(transitions, initialState, finalStates, ba, false, true);
 	}
 	
 	// Checks whether a formula should be a final state in the automaton
@@ -40,19 +41,14 @@ public abstract class LTLFormula<P,S> {
 	protected abstract LTLFormula<P,S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba);	
 	
 	// returns set of disjoint predicates that are the triggers of transitions out of this state
-	protected abstract <E extends BooleanExpression> void accumulateSAFAStatesTransitions(
+	protected abstract void accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves,
+			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
 			Collection<Integer> finalStates,
-			BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr
-			);
+			BooleanAlgebra<P, S> ba);
 	
 	// returns set of disjoint predicates that are the triggers of transitions out of this state
-	public abstract <E extends BooleanExpression> SAFA<P,S,E> getSAFANew(
-			BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr
-			);
+	public abstract SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba);
 	
 	// Checks whether a formula should be a final state in the automaton
 	protected abstract boolean isFinalState();	

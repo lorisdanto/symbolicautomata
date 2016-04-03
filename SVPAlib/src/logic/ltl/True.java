@@ -8,6 +8,7 @@ import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
+import automata.safa.booleanexpression.PositiveBooleanExpression;
 import theory.BooleanAlgebra;
 
 public class True<P, S> extends LTLFormula<P, S> {
@@ -33,10 +34,10 @@ public class True<P, S> extends LTLFormula<P, S> {
 	}		
 	
 	@Override
-	protected <E extends BooleanExpression> void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr) {
+	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
+			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
 		if (formulaToStateId.containsKey(this))
@@ -47,7 +48,7 @@ public class True<P, S> extends LTLFormula<P, S> {
 		formulaToStateId.put(this, id);
 		
 		// delta(True, true) = True		
-		Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();
+		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
 		newMoves.add(new SAFAInputMove<>(id, boolexpr.MkState(id), ba.True()));
 
 		// True is a final state
@@ -75,8 +76,7 @@ public class True<P, S> extends LTLFormula<P, S> {
 	}
 	
 	@Override
-	public <E extends BooleanExpression> SAFA<P,S,E> getSAFANew(BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr) {
-		return SAFA.getFullSAFA(ba, boolexpr);
+	public SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba) {
+		return SAFA.getFullSAFA(ba);
 	}
 }

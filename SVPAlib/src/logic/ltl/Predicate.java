@@ -10,6 +10,7 @@ import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
+import automata.safa.booleanexpression.PositiveBooleanExpression;
 import theory.BooleanAlgebra;
 
 public class Predicate<P, S> extends LTLFormula<P, S> {
@@ -48,10 +49,10 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected <E extends BooleanExpression> void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr) {
+	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
+			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
 		if (formulaToStateId.containsKey(this))
@@ -63,11 +64,11 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 		
 		// Create true state
 		True<P,S> t = new True<>();
-		t.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
+		t.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
 		
 		// delta([p], p) = true
 		int trueId = formulaToStateId.get(t);		
-		Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();
+		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
 		newMoves.add(new SAFAInputMove<>(id, boolexpr.MkState(trueId), predicate));
 
 		moves.put(id, newMoves);
@@ -92,19 +93,18 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 	}
 	
 	@Override
-	public <E extends BooleanExpression> SAFA<P,S,E> getSAFANew(BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr) {
-		
+	public SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba) {
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		int formulaId = 1;
 						
-		E initialState = boolexpr.MkState(1);		
+		PositiveBooleanExpression initialState = boolexpr.MkState(1);
 		Collection<Integer> finalStates = new HashSet<>();
 		finalStates.add(2);
 		
-		Collection<SAFAInputMove<P, S, E>> transitions = new ArrayList<SAFAInputMove<P, S, E>>();
+		Collection<SAFAInputMove<P, S>> transitions = new ArrayList<SAFAInputMove<P, S>>();
 		transitions.add(new SAFAInputMove<>(formulaId, boolexpr.MkState(2), this.predicate));
 		
-		return SAFA.MkSAFA(transitions, initialState, finalStates, ba, boolexpr);
+		return SAFA.MkSAFA(transitions, initialState, finalStates, ba);
 	}
 }

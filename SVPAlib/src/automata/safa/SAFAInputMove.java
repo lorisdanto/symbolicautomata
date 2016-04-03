@@ -9,6 +9,7 @@ package automata.safa;
 import java.util.Collections;
 import java.util.Set;
 
+import automata.safa.booleanexpression.PositiveBooleanExpression;
 import theory.BooleanAlgebra;
 
 /**
@@ -16,16 +17,16 @@ import theory.BooleanAlgebra;
  * @param <P> set of predicates over the domain S
  * @param <S> domain of the automaton alphabet
  */
-public class SAFAInputMove<P,S,E extends BooleanExpression> {
+public class SAFAInputMove<P,S> {
 
 	public Integer from;
-	public E to;
+	public PositiveBooleanExpression to;
 	public Set<Integer> toStates;
 	public int maxState;
 	
 	public P guard;
 		
-	public SAFAInputMove(Integer from, E to, P guard) {
+	public SAFAInputMove(Integer from, PositiveBooleanExpression to, P guard) {
 		super();
 		this.from = from;
 		this.to = to;
@@ -53,8 +54,8 @@ public class SAFAInputMove<P,S,E extends BooleanExpression> {
 
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof SAFAInputMove<?, ?, ?>) {
-			SAFAInputMove<?, ?, ?> otherCasted = (SAFAInputMove<?, ?, ?>) other;
+		if (other instanceof SAFAInputMove<?, ?>) {
+			SAFAInputMove<?, ?> otherCasted = (SAFAInputMove<?, ?>) other;
 			return otherCasted.from==from && otherCasted.to.equals(to) && otherCasted.guard==guard;
 		}
 
@@ -63,7 +64,7 @@ public class SAFAInputMove<P,S,E extends BooleanExpression> {
 
 	@Override
 	public Object clone(){
-		  return new SAFAInputMove<P, S, E>(from,to, guard);
+		  return new SAFAInputMove<P, S>(from,to, guard);
 	}
 
 	

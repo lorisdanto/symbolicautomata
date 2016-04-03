@@ -8,6 +8,7 @@ import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
+import automata.safa.booleanexpression.PositiveBooleanExpression;
 import theory.BooleanAlgebra;
 
 public class Until<P, S> extends LTLFormula<P, S> {
@@ -53,10 +54,10 @@ public class Until<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected <E extends BooleanExpression> void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr) {
+	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
+			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
 		if (formulaToStateId.containsKey(this))
@@ -67,21 +68,21 @@ public class Until<P, S> extends LTLFormula<P, S> {
 		formulaToStateId.put(this, id);
 
 		// Compute transitions for children
-		left.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
-		right.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
+		left.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
+		right.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
 
 		
 		// delta(l U r, p) = delta(l, p) and lUr
 		// delta(l U r, p) = delta(r, p)
 		int leftId = formulaToStateId.get(left);
 		int rightId = formulaToStateId.get(right);
-		Collection<SAFAInputMove<P, S, E>> leftMoves = moves.get(leftId);
-		Collection<SAFAInputMove<P, S, E>> rightMoves = moves.get(rightId);
-		Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();
-		for (SAFAInputMove<P, S, E> leftMove : leftMoves)
+		Collection<SAFAInputMove<P, S>> leftMoves = moves.get(leftId);
+		Collection<SAFAInputMove<P, S>> rightMoves = moves.get(rightId);
+		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
+		for (SAFAInputMove<P, S> leftMove : leftMoves)
 			newMoves.add(new SAFAInputMove<>(id, boolexpr.MkAnd(leftMove.to, boolexpr.MkState(id)), leftMove.guard));
 
-		for (SAFAInputMove<P, S, E> rightMove : rightMoves)
+		for (SAFAInputMove<P, S> rightMove : rightMoves)
 			newMoves.add(new SAFAInputMove<>(id, rightMove.to, rightMove.guard));
 
 		moves.put(id, newMoves);
@@ -114,8 +115,7 @@ public class Until<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	public <E extends BooleanExpression> SAFA<P, S, E> getSAFANew(BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr) {
+	public  SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
 		// TODO Auto-generated method stub
 		return null;
 	}

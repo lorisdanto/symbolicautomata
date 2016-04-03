@@ -9,6 +9,7 @@ import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
+import automata.safa.booleanexpression.PositiveBooleanExpression;
 import theory.BooleanAlgebra;
 
 public class Next<P, S> extends LTLFormula<P, S> {
@@ -47,10 +48,10 @@ public class Next<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected <E extends BooleanExpression> void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr) {
+	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
+			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
 		if (formulaToStateId.containsKey(this))
@@ -61,12 +62,12 @@ public class Next<P, S> extends LTLFormula<P, S> {
 		formulaToStateId.put(this, id);
 
 		// Compute transitions for children
-		phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, boolexpr);
+		phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
 
 		// delta(X phi, true) = phi
 		int phiId = formulaToStateId.get(phi);
-		Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();
-		newMoves.add(new SAFAInputMove<P, S, E>(id, boolexpr.MkState(phiId), ba.True()));
+		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
+		newMoves.add(new SAFAInputMove<P, S>(id, boolexpr.MkState(phiId), ba.True()));
 
 		moves.put(id, newMoves);
 	}
@@ -88,18 +89,18 @@ public class Next<P, S> extends LTLFormula<P, S> {
 	}
 	
 	@Override
-	public <E extends BooleanExpression> SAFA<P,S,E> getSAFANew(BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr) {
-		
-		SAFA<P,S,E> phiSafa = phi.getSAFANew(ba, boolexpr);
+	public SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba) {
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
+
+		SAFA<P,S> phiSafa = phi.getSAFANew(ba);
 		int formulaId = phiSafa.getMaxStateId()+1;
 						
-		E initialState = boolexpr.MkState(formulaId);		
+		PositiveBooleanExpression initialState = boolexpr.MkState(formulaId);
 		Collection<Integer> finalStates = phiSafa.getFinalStates();
 		
-		Collection<SAFAInputMove<P, S, E>> transitions = new ArrayList<SAFAInputMove<P, S, E>>(phiSafa.getInputMoves());
+		Collection<SAFAInputMove<P, S>> transitions = new ArrayList<SAFAInputMove<P, S>>(phiSafa.getInputMoves());
 		transitions.add(new SAFAInputMove<>(formulaId, phiSafa.getInitialState(), ba.True()));
 		
-		return SAFA.MkSAFA(transitions, initialState, finalStates, ba, boolexpr);
+		return SAFA.MkSAFA(transitions, initialState, finalStates, ba);
 	}
 }

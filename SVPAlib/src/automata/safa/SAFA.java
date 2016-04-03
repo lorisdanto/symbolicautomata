@@ -19,6 +19,8 @@ import org.sat4j.specs.TimeoutException;
 
 import com.google.common.collect.Lists;
 
+import automata.safa.booleanexpression.PositiveBooleanExpression;
+import automata.safa.booleanexpression.PositiveBooleanExpressionFactory;
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
@@ -36,17 +38,19 @@ import utilities.UnionFindHopKarp;
  * @param <S>
  *            domain of the automaton alphabet
  */
-public class SAFA<P, S, E extends BooleanExpression> {
+public class SAFA<P, S> {
 
 	// ------------------------------------------------------
 	// Automata properties
 	// ------------------------------------------------------
 
-	private E initialState;
+	private static BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = null;
+
+	private PositiveBooleanExpression initialState;
 	private Collection<Integer> states;
 	private Collection<Integer> finalStates;
 
-	protected Map<Integer, Collection<SAFAInputMove<P, S, E>>> inputMovesFrom;
+	protected Map<Integer, Collection<SAFAInputMove<P, S>>> inputMovesFrom;
 
 	private Integer maxStateId;
 	private Integer transitionCount;
@@ -72,12 +76,19 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		return transitionCount;
 	}
 
-	public E getInitialState() {
+	public PositiveBooleanExpression getInitialState() {
 		return initialState;
 	}
 
 	public Collection<Integer> getFinalStates() {
 		return finalStates;
+	}
+
+	public static BooleanExpressionFactory<PositiveBooleanExpression> getBooleanExpressionFactory() {
+		if (boolexpr == null) {
+			boolexpr = new PositiveBooleanExpressionFactory();
+		}
+		return boolexpr;
 	}
 
 	// ------------------------------------------------------
@@ -89,7 +100,7 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		super();
 		finalStates = new HashSet<>();
 		states = new HashSet<Integer>();
-		inputMovesFrom = new HashMap<Integer, Collection<SAFAInputMove<P, S, E>>>();
+		inputMovesFrom = new HashMap<Integer, Collection<SAFAInputMove<P, S>>>();
 		transitionCount = 0;
 		maxStateId = 0;
 	}
@@ -99,10 +110,10 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	 * unreachable states if remUnreachableStates is true and normalizes the
 	 * automaton if normalize is true
 	 */
-	public static <A, B, E extends BooleanExpression> SAFA<A, B, E> MkSAFA(
-			Collection<SAFAInputMove<A, B, E>> transitions, E initialState, Collection<Integer> finalStates,
-			BooleanAlgebra<A, B> ba, BooleanExpressionFactory<E> boolexpr) {
-		return MkSAFA(transitions, initialState, finalStates, ba, boolexpr, true, true);
+	public static <A, B> SAFA<A, B> MkSAFA(
+			Collection<SAFAInputMove<A, B>> transitions, PositiveBooleanExpression initialState, Collection<Integer> finalStates,
+			BooleanAlgebra<A, B> ba) {
+		return MkSAFA(transitions, initialState, finalStates, ba, true, true);
 	}
 
 	/*
@@ -110,11 +121,11 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	 * unreachable states if remUnreachableStates is true and normalizes the
 	 * automaton if normalize is true
 	 */
-	public static <A, B, E extends BooleanExpression> SAFA<A, B, E> MkSAFA(
-			Collection<SAFAInputMove<A, B, E>> transitions, E initialState, Collection<Integer> finalStates,
-			BooleanAlgebra<A, B> ba, BooleanExpressionFactory<E> boolexpr, boolean normalize, boolean complete) {
+	public static <A, B> SAFA<A, B> MkSAFA(
+			Collection<SAFAInputMove<A, B>> transitions, PositiveBooleanExpression initialState, Collection<Integer> finalStates,
+			BooleanAlgebra<A, B> ba, boolean normalize, boolean complete) {
 
-		SAFA<A, B, E> aut = new SAFA<A, B, E>();
+		SAFA<A, B> aut = new SAFA<A, B>();
 
 		aut.states = new HashSet<Integer>();
 		aut.states.addAll(initialState.getStates());
@@ -123,20 +134,20 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		aut.initialState = initialState;
 		aut.finalStates = new HashSet<>(finalStates);
 
-		for (SAFAInputMove<A, B, E> t : transitions)
+		for (SAFAInputMove<A, B> t : transitions)
 			aut.addTransition(t, ba, false);
 
 		if (complete && !normalize)
-			aut = aut.complete(ba, boolexpr);
+			aut = aut.complete(ba);
 
 		if (normalize)
-			return aut.normalize(ba, boolexpr);
+			return aut.normalize(ba);
 		else
 			return aut;
 	}
 
 	// Adds a transition to the SFA
-	private void addTransition(SAFAInputMove<P, S, E> transition, BooleanAlgebra<P, S> ba, boolean skipSatCheck) {
+	private void addTransition(SAFAInputMove<P, S> transition, BooleanAlgebra<P, S> ba, boolean skipSatCheck) {
 
 		if (skipSatCheck || transition.isSatisfiable(ba)) {
 
@@ -150,7 +161,7 @@ public class SAFA<P, S, E extends BooleanExpression> {
 			states.add(transition.from);
 			states.addAll(transition.toStates);
 
-			getInputMovesFrom(transition.from).add((SAFAInputMove<P, S, E>) transition);
+			getInputMovesFrom(transition.from).add((SAFAInputMove<P, S>) transition);
 		}
 	}
 
@@ -161,31 +172,31 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	/**
 	 * Returns the empty SFA for the Boolean algebra <code>ba</code>
 	 */
-	public static <A, B, E extends BooleanExpression> SAFA<A, B, E> getEmptySAFA(BooleanAlgebra<A, B> ba,
-			BooleanExpressionFactory<E> bexpr) {
-		SAFA<A, B, E> aut = new SAFA<A, B, E>();
+	public static <A, B> SAFA<A, B> getEmptySAFA(BooleanAlgebra<A, B> ba) {
+		SAFA<A, B> aut = new SAFA<A, B>();
+		BooleanExpressionFactory<PositiveBooleanExpression> bexpr = getBooleanExpressionFactory();
 		aut.states = new HashSet<Integer>();
 		aut.states.add(0);
 		aut.finalStates = new HashSet<>();
 		aut.initialState = bexpr.MkState(0);
 		aut.maxStateId = 1;
-		aut.addTransition(new SAFAInputMove<A, B, E>(0, bexpr.MkState(0), ba.True()), ba, true);
+		aut.addTransition(new SAFAInputMove<A, B>(0, bexpr.MkState(0), ba.True()), ba, true);
 		return aut;
 	}
 
 	/**
 	 * Returns the true SFA for the Boolean algebra <code>ba</code>
 	 */
-	public static <A, B, E extends BooleanExpression> SAFA<A, B, E> getFullSAFA(BooleanAlgebra<A, B> ba,
-			BooleanExpressionFactory<E> bexpr) {
-		SAFA<A, B, E> aut = new SAFA<A, B, E>();
+	public static <A, B> SAFA<A, B> getFullSAFA(BooleanAlgebra<A, B> ba) {
+		SAFA<A, B> aut = new SAFA<A, B>();
+		BooleanExpressionFactory<PositiveBooleanExpression> bexpr = getBooleanExpressionFactory();
 		aut.states = new HashSet<Integer>();
 		aut.states.add(0);
 		aut.finalStates = new HashSet<>();
 		aut.finalStates.add(0);
 		aut.initialState = bexpr.MkState(0);
 		aut.maxStateId = 1;
-		aut.addTransition(new SAFAInputMove<A, B, E>(0, bexpr.MkState(0), ba.True()), ba, true);
+		aut.addTransition(new SAFAInputMove<A, B>(0, bexpr.MkState(0), ba.True()), ba, true);
 		return aut;
 	}
 
@@ -229,19 +240,19 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	 *            All transitions in the list must comply with guard
 	 * @return
 	 */
-	private <F extends BooleanExpression> LinkedList<Pair<P, Map<Integer, F>>> getTransitionTablesFrom(
-			Collection<Integer> states, BooleanAlgebra<P, S> ba, P guard, BooleanExpressionFactory<F> tgt) {
-		LinkedList<Pair<P, Map<Integer, F>>> moves = new LinkedList<>();
+	private <E extends BooleanExpression> LinkedList<Pair<P, Map<Integer, E>>> getTransitionTablesFrom(
+			Collection<Integer> states, BooleanAlgebra<P, S> ba, P guard, BooleanExpressionFactory<E> tgt) {
+		LinkedList<Pair<P, Map<Integer, E>>> moves = new LinkedList<>();
 
-		BooleanExpressionMorphism<F> coerce = new BooleanExpressionMorphism<>((x) -> tgt.MkState(x), tgt);
-		moves.add(new Pair<P, Map<Integer, F>>(guard, new HashMap<>()));
+		BooleanExpressionMorphism<E> coerce = new BooleanExpressionMorphism<>((x) -> tgt.MkState(x), tgt);
+		moves.add(new Pair<P, Map<Integer, E>>(guard, new HashMap<>()));
 		for (Integer s : states) {
-			LinkedList<Pair<P, Map<Integer, F>>> moves2 = new LinkedList<>();
-			for (SAFAInputMove<P, S, E> t : getInputMovesFrom(s)) {
-				for (Pair<P, Map<Integer, F>> move : moves) {
+			LinkedList<Pair<P, Map<Integer, E>>> moves2 = new LinkedList<>();
+			for (SAFAInputMove<P, S> t : getInputMovesFrom(s)) {
+				for (Pair<P, Map<Integer, E>> move : moves) {
 					P newGuard = ba.MkAnd(t.guard, move.getFirst());
 					if (ba.IsSatisfiable(newGuard)) {
-						Map<Integer, F> map = new HashMap<Integer, F>(move.getSecond());
+						Map<Integer, E> map = new HashMap<Integer, E>(move.getSecond());
 						map.put(s, coerce.apply(t.to));
 						moves2.add(new Pair<>(newGuard, map));
 					}
@@ -257,17 +268,18 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	 * 
 	 * @throws TimeoutException
 	 */
-	public static <P, S, E extends BooleanExpression> boolean isEmpty(SAFA<P, S, E> aut, BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr) throws TimeoutException {
-		return isEquivalent(aut, getEmptySAFA(ba, boolexpr), ba, boolexpr);
+	public static <P, S, E extends BooleanExpression> boolean isEmpty(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
+		// TODO: the default boolean expression factory should *not* be boolexpr.
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();
+		return isEquivalent(aut, getEmptySAFA(ba), ba, boolexpr);
 	}
 
 	/**
 	 * Checks whether laut and raut are equivalent using bisimulation up to
 	 * congruence.
 	 */
-	public static <P, S, E extends BooleanExpression, F extends BooleanExpression> boolean isEquivalent(
-			SAFA<P, S, F> laut, SAFA<P, S, F> raut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr)
+	public static <P, S, E extends BooleanExpression> boolean isEquivalent(
+			SAFA<P, S> laut, SAFA<P, S> raut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr)
 					throws TimeoutException {
 		SAFARelation similar = new SATRelation();
 		LinkedList<Pair<E, E>> worklist = new LinkedList<>();
@@ -311,7 +323,7 @@ public class SAFA<P, S, E extends BooleanExpression> {
 
 	protected Collection<Integer> getPrevState(Collection<Integer> currState, S inputElement, BooleanAlgebra<P, S> ba) {
 		Collection<Integer> prevState = new HashSet<Integer>();
-		for (SAFAInputMove<P, S, E> t : getInputMoves()) {
+		for (SAFAInputMove<P, S> t : getInputMoves()) {
 			BooleanExpression b = t.to;
 			if (b.hasModel(currState) && ba.HasModel(t.guard, inputElement))
 				prevState.add(t.from);
@@ -324,8 +336,8 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	 * Checks whether laut and raut are equivalent using HopcroftKarp on the SFA
 	 * accepting the reverse language
 	 */
-	public static <P, S, E extends BooleanExpression> Pair<Boolean, List<S>> areReverseEquivalent(SAFA<P, S, E> aut1,
-			SAFA<P, S, E> aut2, BooleanAlgebra<P, S> ba) {
+	public static <P, S> Pair<Boolean, List<S>> areReverseEquivalent(SAFA<P, S> aut1,
+			SAFA<P, S> aut2, BooleanAlgebra<P, S> ba) {
 
 		UnionFindHopKarp<S> ds = new UnionFindHopKarp<>();
 
@@ -350,17 +362,17 @@ public class SAFA<P, S, E extends BooleanExpression> {
 			HashSet<Integer> curr1 = curr.first;
 			HashSet<Integer> curr2 = curr.second;
 
-			ArrayList<SAFAInputMove<P, S, E>> movesToCurr1 = new ArrayList<>();
+			ArrayList<SAFAInputMove<P, S>> movesToCurr1 = new ArrayList<>();
 			ArrayList<P> predicatesToCurr1 = new ArrayList<>();
-			ArrayList<SAFAInputMove<P, S, E>> movesToCurr2 = new ArrayList<>();
+			ArrayList<SAFAInputMove<P, S>> movesToCurr2 = new ArrayList<>();
 			ArrayList<P> predicatesToCurr2 = new ArrayList<>();
 
-			for (SAFAInputMove<P, S, E> t : aut1.getInputMoves())
+			for (SAFAInputMove<P, S> t : aut1.getInputMoves())
 				if (t.to.hasModel(curr1)) {
 					movesToCurr1.add(t);
 					predicatesToCurr1.add(t.guard);
 				}
-			for (SAFAInputMove<P, S, E> t : aut2.getInputMoves())
+			for (SAFAInputMove<P, S> t : aut2.getInputMoves())
 				if (t.to.hasModel(curr2)) {
 					movesToCurr2.add(t);
 					predicatesToCurr2.add(t.guard);
@@ -426,7 +438,7 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	 * @param ba
 	 * @return true if accepted false otherwise
 	 */
-	public static <P, S, E extends BooleanExpression> SFA<P, S> getReverseSFA(SAFA<P, S, E> aut,
+	public static <P, S> SFA<P, S> getReverseSFA(SAFA<P, S> aut,
 			BooleanAlgebra<P, S> ba) {
 
 		// components of new SFA
@@ -444,13 +456,13 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		while (!toVisit.isEmpty()) {
 			HashSet<Integer> currentState = toVisit.removeFirst();
 			int currentStateID = reached.get(currentState);
-			ArrayList<SAFAInputMove<P, S, E>> movesToCurr = new ArrayList<>();
+			ArrayList<SAFAInputMove<P, S>> movesToCurr = new ArrayList<>();
 			ArrayList<P> predicatesToCurr = new ArrayList<>();
 
 			if (currentState.contains(aut.initialState))
 				finalStates.add(currentStateID);
 
-			for (SAFAInputMove<P, S, E> t : aut.getInputMoves())
+			for (SAFAInputMove<P, S> t : aut.getInputMoves())
 				if (t.to.hasModel(currentState)) {
 					movesToCurr.add(t);
 					predicatesToCurr.add(t.guard);
@@ -485,56 +497,59 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	/**
 	 * Computes the intersection with <code>aut</code> as a new SFA
 	 */
-	public SAFA<P, S, E> intersectionWith(SAFA<P, S, E> aut, BooleanAlgebra<P, S> ba,
-			BooleanExpressionFactory<E> boolexpr) {
-		return binaryOp(this, aut, ba, boolexpr, BoolOp.Intersection);
+	public SAFA<P, S> intersectionWith(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+		return binaryOp(this, aut, ba, BoolOp.Intersection);
 	}
 
 	/**
 	 * Computes the intersection with <code>aut</code> as a new SFA
 	 */
-	public SAFA<P, S, E> unionWith(SAFA<P, S, E> aut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) {
-		return binaryOp(this, aut, ba, boolexpr, BoolOp.Union);
+	public SAFA<P, S> unionWith(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+		return binaryOp(this, aut, ba, BoolOp.Union);
 	}
+
+	class DeMorgan extends BooleanExpressionFactory<PositiveBooleanExpression> {
+		private BooleanExpressionFactory<PositiveBooleanExpression> boolexpr;
+		public DeMorgan() {
+			boolexpr = getBooleanExpressionFactory();
+		}
+
+		public PositiveBooleanExpression MkAnd(PositiveBooleanExpression p, PositiveBooleanExpression q) {
+			return boolexpr.MkOr(p, q);
+		}
+
+		public PositiveBooleanExpression MkOr(PositiveBooleanExpression p, PositiveBooleanExpression q) {
+			return boolexpr.MkAnd(p, q);
+		}
+
+		public PositiveBooleanExpression True() {
+			return boolexpr.False();
+		}
+
+		public PositiveBooleanExpression False() {
+			return boolexpr.True();
+		}
+
+		public PositiveBooleanExpression MkState(int i) {
+			return boolexpr.MkState(i);
+		}
+	}	
 
 	/**
 	 * Computes the complement of the automaton as a new SAFA.  The input automaton need not be normal.
 	 */
-	public SAFA<P, S, E> negate(BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) {
+	public SAFA<P, S> negate(BooleanAlgebra<P, S> ba) {
 		// DeMorganize all transitions
-		class DeMorgan extends BooleanExpressionFactory<E> {
 
-			public DeMorgan() {
-			}
+		Collection<SAFAInputMove<P, S>> transitions = new ArrayList<SAFAInputMove<P, S>>();
 
-			public E MkAnd(E p, E q) {
-				return boolexpr.MkOr(p, q);
-			}
-
-			public E MkOr(E p, E q) {
-				return boolexpr.MkAnd(p, q);
-			}
-
-			public E True() {
-				return boolexpr.False();
-			}
-
-			public E False() {
-				return boolexpr.True();
-			}
-
-			public E MkState(int i) {
-				return boolexpr.MkState(i);
-			}
-		}
-		Collection<SAFAInputMove<P, S, E>> transitions = new ArrayList<SAFAInputMove<P, S, E>>();
-
-		BooleanExpressionMorphism<E> demorganize = new BooleanExpressionMorphism<E>((x) -> boolexpr.MkState(x), new DeMorgan());
+		BooleanExpressionMorphism<PositiveBooleanExpression> demorganize =
+				new BooleanExpressionMorphism<PositiveBooleanExpression>((x) -> boolexpr.MkState(x), new DeMorgan());
 		boolean addAccept = false; // do we need to create an accept state?
 		for (int state = 0; state <= maxStateId; state++) {
 			P residual = ba.True();
 			if (inputMovesFrom.containsKey(state)) {
-				for (SAFAInputMove<P, S, E> transition : inputMovesFrom.get(state)) {
+				for (SAFAInputMove<P, S> transition : inputMovesFrom.get(state)) {
 					transitions.add(new SAFAInputMove<>(state, demorganize.apply(transition.to), transition.guard));
 					residual = ba.MkAnd(ba.MkNot(transition.guard), residual);
 				}
@@ -558,8 +573,8 @@ public class SAFA<P, S, E extends BooleanExpression> {
 			transitions.add(new SAFAInputMove<>(maxStateId + 1, boolexpr.MkState(maxStateId + 1), ba.True()));
 		}
 
-		E notInitial = demorganize.apply(initialState);
-		return MkSAFA(transitions, notInitial, nonFinal, ba, boolexpr, false, false);
+		PositiveBooleanExpression notInitial = demorganize.apply(initialState);
+		return MkSAFA(transitions, notInitial, nonFinal, ba, false, false);
 	}
 
 	public enum BoolOp {
@@ -571,21 +586,22 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	 * a new SFA
 	 */
 	@SuppressWarnings("restriction")
-	public static <A, B, E extends BooleanExpression> SAFA<A, B, E> binaryOp(SAFA<A, B, E> aut1, SAFA<A, B, E> aut2,
-			BooleanAlgebra<A, B> ba, BooleanExpressionFactory<E> boolexpr, BoolOp op) {
+	public static <A, B> SAFA<A, B> binaryOp(SAFA<A, B> aut1, SAFA<A, B> aut2,
+			BooleanAlgebra<A, B> ba, BoolOp op) {
 
 		int offset = aut1.maxStateId + 1;
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();
 
 		// Integer initialState = aut1.maxStateId + aut2.maxStateId + 2;
-		E initialState = null;
+		PositiveBooleanExpression initialState = null;
 
 		Collection<Integer> finalStates = new ArrayList<Integer>(aut1.finalStates);
 		for (int state : aut2.finalStates)
 			finalStates.add(state + offset);
 
 		// Copy all transitions (with proper renaming for aut2)
-		Collection<SAFAInputMove<A, B, E>> transitions = new ArrayList<SAFAInputMove<A, B, E>>(aut1.getInputMoves());
-		for (SAFAInputMove<A, B, E> t : aut2.getInputMoves())
+		Collection<SAFAInputMove<A, B>> transitions = new ArrayList<SAFAInputMove<A, B>>(aut1.getInputMoves());
+		for (SAFAInputMove<A, B> t : aut2.getInputMoves())
 			transitions.add(new SAFAInputMove<>(t.from + offset, boolexpr.offset(offset).apply(t.to), t.guard));
 
 		switch (op) {
@@ -602,30 +618,31 @@ public class SAFA<P, S, E extends BooleanExpression> {
 			throw new NotImplementedException();
 		}
 
-		return MkSAFA(transitions, initialState, finalStates, ba, boolexpr, true, false);
+		return MkSAFA(transitions, initialState, finalStates, ba, true, false);
 	}
 
 	/**
 	 * Normalizes the SAFA by having at most one transition for each symbol out
 	 * of each state
 	 */
-	public SAFA<P, S, E> normalize(BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) {
+	public SAFA<P, S> normalize(BooleanAlgebra<P, S> ba) {
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();
 
 		// Copy all transitions (with proper renaming for aut2)
-		Collection<SAFAInputMove<P, S, E>> transitions = new ArrayList<SAFAInputMove<P, S, E>>();
+		Collection<SAFAInputMove<P, S>> transitions = new ArrayList<SAFAInputMove<P, S>>();
 
 		boolean addedSink = false;
 		int sink = maxStateId + 1;
 		for (int state : states) {
-			ArrayList<SAFAInputMove<P, S, E>> trFromState = new ArrayList<>(getInputMovesFrom(state));
+			ArrayList<SAFAInputMove<P, S>> trFromState = new ArrayList<>(getInputMovesFrom(state));
 			ArrayList<P> predicates = new ArrayList<>();
-			for (SAFAInputMove<P, S, E> t : trFromState) {
+			for (SAFAInputMove<P, S> t : trFromState) {
 				predicates.add(t.guard);
 			}
 
 			Collection<Pair<P, ArrayList<Integer>>> minterms = ba.GetMinterms(predicates);
 			for (Pair<P, ArrayList<Integer>> minterm : minterms) {
-				E newTo = null;
+				PositiveBooleanExpression newTo = null;
 
 				for (int i = 0; i < minterm.second.size(); i++)
 					if (minterm.second.get(i) == 1)
@@ -645,24 +662,25 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		if (addedSink)
 			transitions.add(new SAFAInputMove<>(sink, boolexpr.MkState(sink), ba.True()));
 
-		return MkSAFA(transitions, initialState, finalStates, ba, boolexpr, false, false);
+		return MkSAFA(transitions, initialState, finalStates, ba, false, false);
 	}
 
 	/**
 	 * Normalizes the SAFA by having at most one transition for each symbol out
 	 * of each state
 	 */
-	public SAFA<P, S, E> complete(BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) {
+	public SAFA<P, S> complete(BooleanAlgebra<P, S> ba) {
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();
 
 		// Copy all transitions (with proper renaming for aut2)
-		Collection<SAFAInputMove<P, S, E>> transitions = new ArrayList<SAFAInputMove<P, S, E>>(this.getInputMoves());
+		Collection<SAFAInputMove<P, S>> transitions = new ArrayList<SAFAInputMove<P, S>>(this.getInputMoves());
 
 		boolean addedSink = false;
 		int sink = maxStateId + 1;
 		for (int state : states) {
-			ArrayList<SAFAInputMove<P, S, E>> trFromState = new ArrayList<>(getInputMovesFrom(state));
+			ArrayList<SAFAInputMove<P, S>> trFromState = new ArrayList<>(getInputMovesFrom(state));
 			P not = ba.True();
-			for (SAFAInputMove<P, S, E> t : trFromState) {
+			for (SAFAInputMove<P, S> t : trFromState) {
 				not = ba.MkAnd(not, ba.MkNot(t.guard));
 			}
 
@@ -674,7 +692,7 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		if (addedSink)
 			transitions.add(new SAFAInputMove<>(sink, boolexpr.MkState(sink), ba.True()));
 
-		return MkSAFA(transitions, initialState, finalStates, ba, boolexpr, false, false);
+		return MkSAFA(transitions, initialState, finalStates, ba, false, false);
 	}
 
 	// ------------------------------------------------------
@@ -684,10 +702,10 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	/**
 	 * Returns the set of transitions to state <code>s</code>
 	 */
-	public Collection<SAFAInputMove<P, S, E>> getInputMovesFrom(Integer state) {
-		Collection<SAFAInputMove<P, S, E>> trset = inputMovesFrom.get(state);
+	public Collection<SAFAInputMove<P, S>> getInputMovesFrom(Integer state) {
+		Collection<SAFAInputMove<P, S>> trset = inputMovesFrom.get(state);
 		if (trset == null) {
-			trset = new HashSet<SAFAInputMove<P, S, E>>();
+			trset = new HashSet<SAFAInputMove<P, S>>();
 			inputMovesFrom.put(state, trset);
 			return trset;
 		}
@@ -697,8 +715,8 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<SAFAInputMove<P, S, E>> getInputMovesFrom(Collection<Integer> stateSet) {
-		Collection<SAFAInputMove<P, S, E>> transitions = new LinkedList<SAFAInputMove<P, S, E>>();
+	public Collection<SAFAInputMove<P, S>> getInputMovesFrom(Collection<Integer> stateSet) {
+		Collection<SAFAInputMove<P, S>> transitions = new LinkedList<SAFAInputMove<P, S>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getInputMovesFrom(state));
 		return transitions;
@@ -707,13 +725,13 @@ public class SAFA<P, S, E extends BooleanExpression> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<SAFAInputMove<P, S, E>> getInputMoves() {
+	public Collection<SAFAInputMove<P, S>> getInputMoves() {
 		return getInputMovesFrom(states);
 	}
 
 	@Override
 	public Object clone() {
-		SAFA<P, S, E> cl = new SAFA<P, S, E>();
+		SAFA<P, S> cl = new SAFA<P, S>();
 
 		cl.maxStateId = maxStateId;
 		cl.transitionCount = transitionCount;
@@ -722,7 +740,7 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		cl.initialState = initialState;
 		cl.finalStates = new HashSet<>(finalStates);
 
-		cl.inputMovesFrom = new HashMap<Integer, Collection<SAFAInputMove<P, S, E>>>(inputMovesFrom);
+		cl.inputMovesFrom = new HashMap<Integer, Collection<SAFAInputMove<P, S>>>(inputMovesFrom);
 
 		return cl;
 	}
@@ -736,7 +754,7 @@ public class SAFA<P, S, E extends BooleanExpression> {
 		String s = "";
 		s = "Automaton: " + getTransitionCount() + " transitions, " + stateCount() + " states" + "\n";
 		s += "Transitions \n";
-		for (SAFAInputMove<P, S, E> t : getInputMoves())
+		for (SAFAInputMove<P, S> t : getInputMoves())
 			s = s + t + "\n";
 
 		s += "Initial State \n";
