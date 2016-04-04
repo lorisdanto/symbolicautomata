@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
 
 import automata.safa.SAFA;
+import automata.safa.booleanexpression.BDDExpressionFactory;
 import automata.safa.booleanexpression.PositiveBooleanExpressionFactory;
 import automata.safa.booleanexpression.SumOfProducts;
 import automata.safa.booleanexpression.SumOfProductsFactory;
@@ -137,9 +138,12 @@ public class LTLUnitTest {
 	
 	@Test
 	public void testLargeEmptinessBDD() {
-		int sizeTot = 9;
+		int sizeTot = 10;
+		//BDDExpressionFactory bef = new BDDExpressionFactory(sizeTot);
+		PositiveBooleanExpressionFactory bef = new PositiveBooleanExpressionFactory();
+		//SumOfProductsFactory bef = SumOfProductsFactory.getInstance();
 
-		for (int size = 4; size < sizeTot; size++) {
+		for (int size = 7; size < sizeTot; size++) {
 
 			BDDSolver bs = new BDDSolver(size);
 			LTLFormula<BDD, BDD> tot = new True<>();
@@ -159,7 +163,7 @@ public class LTLUnitTest {
 
 			boolean b = true;
 			try {
-				b = SAFA.isEmpty(safa1, bs);
+				b = SAFA.isEquivalent(safa1, SAFA.getEmptySAFA(bs), bs, bef);
 				assertFalse(b);
 			} catch (TimeoutException toe) {
 				System.out.println(toe);
