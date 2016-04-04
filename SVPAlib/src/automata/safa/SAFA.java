@@ -296,6 +296,7 @@ public class SAFA<P, S> {
 			E left = next.getFirst();
 			E right = next.getSecond();
 
+			/*
 			LinkedList<Pair<P, Map<Integer, E>>> leftMoves = laut.getTransitionTablesFrom(left.getStates(), ba,
 					ba.True(), boolexpr);
 			for (Pair<P, Map<Integer, E>> leftMove : leftMoves) {
@@ -317,6 +318,49 @@ public class SAFA<P, S> {
 					}
 				}
 			}
+			*/
+			
+			P guard = ba.True();
+			do {
+				S model = ba.generateWitness(guard);
+				P implicant = ba.True();
+				Map<Integer, E> leftMove = new HashMap<>();
+				Map<Integer, E> rightMove = new HashMap<>();
+
+				for (Integer s : left.getStates()) {
+					E succ = boolexpr.False();
+					for (SAFAInputMove<P,S> tr : laut.getInputMovesFrom(s)) {
+						if (ba.HasModel(tr.guard, model)) {
+							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
+							implicant = ba.MkAnd(implicant, tr.guard);
+						}
+					}
+					leftMove.put(s, succ);
+				}
+
+				for (Integer s : right.getStates()) {
+					E succ = boolexpr.False();
+					for (SAFAInputMove<P,S> tr : raut.getInputMovesFrom(s)) {
+						if (ba.HasModel(tr.guard, model)) {
+							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
+							implicant = ba.MkAnd(implicant, tr.guard);
+						}
+					}
+					rightMove.put(s, succ);
+				}
+
+				E leftSucc = boolexpr.substitute((lit) -> leftMove.get(lit)).apply(left);
+				E rightSucc = boolexpr.substitute((lit) -> rightMove.get(lit)).apply(right);
+				if (leftSucc.hasModel(laut.finalStates) != rightSucc.hasModel(raut.finalStates)) {
+					// leftSucc is accepting and rightSucc is rejecting or
+					// vice versa
+					return false;
+				} else if (!similar.isMember(leftSucc, rightSucc)) {
+					similar.add(leftSucc, rightSucc);
+					worklist.addFirst(new Pair<>(leftSucc, rightSucc));
+				}
+				guard = ba.MkAnd(guard, ba.MkNot(implicant));
+			} while (ba.IsSatisfiable(guard));
 		}
 		return true;
 	}

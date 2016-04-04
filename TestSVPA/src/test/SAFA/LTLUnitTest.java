@@ -138,12 +138,12 @@ public class LTLUnitTest {
 	
 	@Test
 	public void testLargeEmptinessBDD() {
-		int sizeTot = 10;
-		//BDDExpressionFactory bef = new BDDExpressionFactory(sizeTot);
-		PositiveBooleanExpressionFactory bef = new PositiveBooleanExpressionFactory();
+		int sizeTot = 14;
+		BDDExpressionFactory bef = new BDDExpressionFactory(sizeTot);
+		//PositiveBooleanExpressionFactory bef = new PositiveBooleanExpressionFactory();
 		//SumOfProductsFactory bef = SumOfProductsFactory.getInstance();
 
-		for (int size = 7; size < sizeTot; size++) {
+		for (int size = 10; size < sizeTot; size++) {
 
 			BDDSolver bs = new BDDSolver(size);
 			LTLFormula<BDD, BDD> tot = new True<>();
