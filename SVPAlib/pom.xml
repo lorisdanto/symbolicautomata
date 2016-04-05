@@ -6,7 +6,18 @@
     <groupId>edu.upenn.cis</groupId>
     <version>1.0</version>
     <packaging>jar</packaging>
+    <repositories>
+      <repository>
+	<id>Internal repository</id>
+	<url>file://${basedir}/mvn</url>
+      </repository>
+    </repositories>
     <dependencies>
+    <dependency>
+            <groupId>jdd</groupId>
+            <artifactId>jdd</artifactId>
+            <version>1.0</version>
+        </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
@@ -39,3 +50,4 @@
       </plugins>
     </build>
 </project>
+

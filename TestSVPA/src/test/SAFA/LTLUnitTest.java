@@ -6,14 +6,12 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
-import org.sat4j.specs.TimeoutException;
 
 import automata.safa.SAFA;
 import automata.safa.booleanexpression.BDDExpressionFactory;
-import automata.safa.booleanexpression.PositiveBooleanExpressionFactory;
-import automata.safa.booleanexpression.SumOfProducts;
 import automata.safa.booleanexpression.SumOfProductsFactory;
 import bddalgebra.BDDSolver;
 import logic.ltl.And;
@@ -23,12 +21,12 @@ import logic.ltl.Or;
 import logic.ltl.Predicate;
 import logic.ltl.True;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDFactory;
 import theory.CharPred;
 import theory.CharSolver;
 import theory.SATBooleanAlgebra;
 import theory.StdCharPred;
 import utilities.Pair;
+
 
 public class LTLUnitTest {
 
@@ -165,7 +163,7 @@ public class LTLUnitTest {
 			try {
 				b = SAFA.isEquivalent(safa1, SAFA.getEmptySAFA(bs), bs, bef);
 				assertFalse(b);
-			} catch (TimeoutException toe) {
+			} catch (Exception toe) {
 				System.out.println(toe);
 			}
 
