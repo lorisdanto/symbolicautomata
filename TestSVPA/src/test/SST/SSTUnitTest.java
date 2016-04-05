@@ -12,10 +12,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import theory.CharFunc;
-import theory.CharOffset;
-import theory.CharPred;
-import theory.CharSolver;
 import transducers.sst.CharConstant;
 import transducers.sst.CharFunction;
 import transducers.sst.ConstantToken;
@@ -33,6 +29,10 @@ import automata.AutomataException;
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
+import theory.characters.CharFunc;
+import theory.characters.CharOffset;
+import theory.characters.CharPred;
+import theory.intervals.CharIntervalSolver;
 
 public class SSTUnitTest {
 
@@ -40,7 +40,7 @@ public class SSTUnitTest {
 	public void testMkSST() {
 
 		try {
-			CharSolver ba = new CharSolver();
+			CharIntervalSolver ba = new CharIntervalSolver();
 
 			SST<CharPred, CharFunc, Character> sstA = getSSTa(ba);
 
@@ -60,7 +60,7 @@ public class SSTUnitTest {
 	public void testAccept() {
 
 		try {
-			CharSolver ba = new CharSolver();
+			CharIntervalSolver ba = new CharIntervalSolver();
 
 			SST<CharPred, CharFunc, Character> sstA = getSSTaNoEps(ba);
 
@@ -80,7 +80,7 @@ public class SSTUnitTest {
 	public void testOutput() {
 
 		try {
-			CharSolver ba = new CharSolver();
+			CharIntervalSolver ba = new CharIntervalSolver();
 
 			SST<CharPred, CharFunc, Character> sstA = getSSTaNoEps(ba);
 
@@ -103,7 +103,7 @@ public class SSTUnitTest {
 	public void testEpsilonRemoval() {
 
 		try {
-			CharSolver ba = new CharSolver();
+			CharIntervalSolver ba = new CharIntervalSolver();
 
 			SST<CharPred, CharFunc, Character> sstA = getSSTa(ba);
 
@@ -128,7 +128,7 @@ public class SSTUnitTest {
 	@Test
 	public void testEpsilonAndBaseSST() {
 
-		CharSolver ba = new CharSolver();
+		CharIntervalSolver ba = new CharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sstEps = getEpsToSemicolon(ba);
 		SST<CharPred, CharFunc, Character> sstBase = getAlphaToUpperCase(ba);
 
@@ -155,7 +155,7 @@ public class SSTUnitTest {
 
 	@Test
 	public void testShuffle() {
-		CharSolver ba = new CharSolver();
+		CharIntervalSolver ba = new CharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sstBase = getAlphaToUpperCase(ba);
 
 		Collection<Pair<SST<CharPred, CharFunc, Character>, SST<CharPred, CharFunc, Character>>> combinedSstPairsWitEps = new ArrayList<Pair<SST<CharPred, CharFunc, Character>, SST<CharPred, CharFunc, Character>>>();
@@ -187,7 +187,7 @@ public class SSTUnitTest {
 
 	@Test
 	public void testShuffleWithAut() {
-		CharSolver ba = new CharSolver();
+		CharIntervalSolver ba = new CharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sstBase = getAlphaToUpperCase(ba);
 		SST<CharPred, CharFunc, Character> sstsst = sstBase.concatenateWith(
 				sstBase, ba);
@@ -221,7 +221,7 @@ public class SSTUnitTest {
 
 	@Test
 	public void testPreImage() {
-		CharSolver ba = new CharSolver();
+		CharIntervalSolver ba = new CharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sstBase = getLetterCopy(ba);
 
 		SFA<CharPred, Character> atLeast2As = atLeastTwoAs(ba);
@@ -234,7 +234,7 @@ public class SSTUnitTest {
 	
 	@Test
 	public void testRestrict() {
-		CharSolver ba = new CharSolver();
+		CharIntervalSolver ba = new CharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sstBase = getLetterCopy(ba);
 
 		SFA<CharPred, Character> atLeast2As = atLeastTwoAs(ba);
@@ -247,7 +247,7 @@ public class SSTUnitTest {
 	public void testCombine() {
 
 		try {
-			CharSolver ba = new CharSolver();
+			CharIntervalSolver ba = new CharIntervalSolver();
 
 			SST<CharPred, CharFunc, Character> sst1 = delNumKeepLettOnlyEndLett(ba);
 			SST<CharPred, CharFunc, Character> sst2 = getSSTd(ba);
@@ -275,7 +275,7 @@ public class SSTUnitTest {
 	public void testConcatenation() {
 
 		try {
-			CharSolver ba = new CharSolver();
+			CharIntervalSolver ba = new CharIntervalSolver();
 
 			SST<CharPred, CharFunc, Character> sst1 = getLetterCopy(ba);
 			SST<CharPred, CharFunc, Character> sst2 = getNumberCopy(ba);
@@ -308,7 +308,7 @@ public class SSTUnitTest {
 	public void testUnion() {
 
 		try {
-			CharSolver ba = new CharSolver();
+			CharIntervalSolver ba = new CharIntervalSolver();
 
 			SST<CharPred, CharFunc, Character> sst1 = delNumKeepLettOnlyEndLett(ba);
 			SST<CharPred, CharFunc, Character> sst2 = getNumberCopy(ba);
@@ -340,7 +340,7 @@ public class SSTUnitTest {
 	public void testStar() {
 
 		try {
-			CharSolver ba = new CharSolver();
+			CharIntervalSolver ba = new CharIntervalSolver();
 
 			SST<CharPred, CharFunc, Character> sst1 = getCommaSepDelNumKeepAlph(ba);
 			SST<CharPred, CharFunc, Character> star = sst1.star(ba);
@@ -386,7 +386,7 @@ public class SSTUnitTest {
 	// S: 0 -[1-9]/x;-> 0
 	// Initial States: 0
 	// Output Function: F(0)=x;
-	private SST<CharPred, CharFunc, Character> getSSTa(CharSolver ba)
+	private SST<CharPred, CharFunc, Character> getSSTa(CharIntervalSolver ba)
 			throws AutomataException {
 
 		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();
@@ -412,7 +412,7 @@ public class SSTUnitTest {
 	// S: 0 -[1-9]/x;-> 0
 	// Initial States: 0
 	// Output Function: F(0)=x;
-	private SST<CharPred, CharFunc, Character> getSSTaNoEps(CharSolver ba)
+	private SST<CharPred, CharFunc, Character> getSSTaNoEps(CharIntervalSolver ba)
 			throws AutomataException {
 		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();
 
@@ -436,7 +436,7 @@ public class SSTUnitTest {
 	// Initial States: 0
 	// Output Function: F(1)=x;
 	private SST<CharPred, CharFunc, Character> delNumKeepLettOnlyEndLett(
-			CharSolver ba) throws AutomataException {
+			CharIntervalSolver ba) throws AutomataException {
 
 		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();
 
@@ -460,7 +460,7 @@ public class SSTUnitTest {
 	// S: 0 -[1-9]/x;-> 0
 	// Initial States: 0
 	// Output Function: F(0)=x;
-	private SST<CharPred, CharFunc, Character> getSSTd(CharSolver ba)
+	private SST<CharPred, CharFunc, Character> getSSTd(CharIntervalSolver ba)
 			throws AutomataException {
 
 		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();
@@ -481,7 +481,7 @@ public class SSTUnitTest {
 	// S: 0 -[a-z]/x{c+0};-> 0
 	// Initial States: 0
 	// Output Function: F(0)=x;
-	private SST<CharPred, CharFunc, Character> getLetterCopy(CharSolver ba) {
+	private SST<CharPred, CharFunc, Character> getLetterCopy(CharIntervalSolver ba) {
 
 		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();
 
@@ -496,7 +496,7 @@ public class SSTUnitTest {
 	}
 
 	// SFA that accepts strings contatining at least two as
-	private SFA<CharPred, Character> atLeastTwoAs(CharSolver ba) {
+	private SFA<CharPred, Character> atLeastTwoAs(CharIntervalSolver ba) {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new ArrayList<SFAMove<CharPred, Character>>();
 
@@ -515,7 +515,7 @@ public class SSTUnitTest {
 	// S: 0 -[1-9]/x{c+0};-> 0
 	// Initial States: 0
 	// Output Function: F(0)=x;
-	private SST<CharPred, CharFunc, Character> getNumberCopy(CharSolver ba)
+	private SST<CharPred, CharFunc, Character> getNumberCopy(CharIntervalSolver ba)
 			throws AutomataException {
 
 		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();
@@ -536,7 +536,7 @@ public class SSTUnitTest {
 	// Initial States: 0
 	// Output Function: F(1)=x;
 	private SST<CharPred, CharFunc, Character> getCommaSepDelNumKeepAlph(
-			CharSolver ba) throws AutomataException {
+			CharIntervalSolver ba) throws AutomataException {
 
 		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();
 
@@ -555,7 +555,7 @@ public class SSTUnitTest {
 	}
 
 	// S: F(0) = a
-	private SST<CharPred, CharFunc, Character> getEpsToSemicolon(CharSolver ba) {
+	private SST<CharPred, CharFunc, Character> getEpsToSemicolon(CharIntervalSolver ba) {
 
 		List<ConstantToken<CharPred, CharFunc, Character>> output = new ArrayList<ConstantToken<CharPred, CharFunc, Character>>();
 		output.add(new CharConstant<CharPred, CharFunc, Character>(';'));
@@ -563,7 +563,7 @@ public class SSTUnitTest {
 	}
 
 	// S: F(0) = a
-	private SST<CharPred, CharFunc, Character> getAlphaToUpperCase(CharSolver ba) {
+	private SST<CharPred, CharFunc, Character> getAlphaToUpperCase(CharIntervalSolver ba) {
 
 		List<Token<CharPred, CharFunc, Character>> output = new ArrayList<Token<CharPred, CharFunc, Character>>();
 		output.add(new CharFunction<CharPred, CharFunc, Character>(CharOffset.TO_UPPER_CASE));

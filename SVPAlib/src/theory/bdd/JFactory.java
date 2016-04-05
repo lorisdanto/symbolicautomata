@@ -1,7 +1,7 @@
 // JFactory.java, created Aug 1, 2003 7:06:47 PM by joewhaley
 // Copyright (C) 2003 John Whaley <jwhaley@alum.mit.edu>
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
-package net.sf.javabdd;
+package theory.bdd;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -406,7 +406,7 @@ public class JFactory extends BDDFactory {
         }
 
         /**
-         * @see net.sf.javabdd.BDD#free()
+         * @see theory.bdd.BDD#free()
          */
         public void free() {
             bdd_delref(_index);

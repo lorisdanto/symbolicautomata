@@ -1,9 +1,8 @@
-package theory;
+package thoery.sat;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -14,7 +13,7 @@ import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.ISolver;
 import org.sat4j.specs.TimeoutException;
 
-import automata.safa.BooleanExpressionMorphism;
+import theory.BooleanAlgebra;
 import utilities.Pair;
 
 public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {

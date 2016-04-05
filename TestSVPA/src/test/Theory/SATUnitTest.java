@@ -3,8 +3,9 @@ package test.Theory;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import theory.SATBooleanAlgebra;
 import org.junit.Test;
+
+import thoery.sat.SATBooleanAlgebra;
 
 public class SATUnitTest {
 	int universe = 3;

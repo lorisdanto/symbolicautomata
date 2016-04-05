@@ -20,11 +20,11 @@ import logic.ltl.LTLFormula;
 import logic.ltl.Or;
 import logic.ltl.Predicate;
 import logic.ltl.True;
-import net.sf.javabdd.BDD;
-import theory.CharPred;
-import theory.CharSolver;
-import theory.SATBooleanAlgebra;
-import theory.StdCharPred;
+import theory.bdd.BDD;
+import theory.characters.CharPred;
+import theory.characters.StdCharPred;
+import theory.intervals.CharIntervalSolver;
+import thoery.sat.SATBooleanAlgebra;
 import utilities.Pair;
 
 
@@ -136,7 +136,7 @@ public class LTLUnitTest {
 	
 	@Test
 	public void testLargeEmptinessBDD() {
-		int sizeTot = 14;
+		int sizeTot = 19;
 		BDDExpressionFactory bef = new BDDExpressionFactory(sizeTot);
 		//PositiveBooleanExpressionFactory bef = new PositiveBooleanExpressionFactory();
 		//SumOfProductsFactory bef = SumOfProductsFactory.getInstance();
@@ -258,7 +258,7 @@ public class LTLUnitTest {
 	// ---------------------------------------
 	// Predicates
 	// ---------------------------------------
-	CharSolver ba = new CharSolver();
+	CharIntervalSolver ba = new CharIntervalSolver();
 	CharPred alpha = StdCharPred.LOWER_ALPHA;
 	CharPred allAlpha = StdCharPred.ALPHA;
 	CharPred a = new CharPred('a');
@@ -278,7 +278,7 @@ public class LTLUnitTest {
 	List<Character> lnot = lOfS("##"); // accepted only by neither autA nor autB
 
 	// eventually p
-	private LTLFormula<CharPred, Character> ev(CharSolver ba, CharPred p) {
+	private LTLFormula<CharPred, Character> ev(CharIntervalSolver ba, CharPred p) {
 		return new Eventually<CharPred, Character>(new Predicate<CharPred, Character>(p));
 	}
 

@@ -5,7 +5,7 @@
  * @author Loris D'Antoni
  */
 
-package theory;
+package theory.characters;
 
 import com.google.common.collect.ImmutableList;
 

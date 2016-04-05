@@ -1,7 +1,7 @@
 // FindBestOrder.java, created Apr 2, 2004 10:43:21 PM 2004 by jwhaley
 // Copyright (C) 2004 John Whaley <jwhaley@alum.mit.edu>
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
-package net.sf.javabdd;
+package theory.bdd;
 
 import java.util.StringTokenizer;
 import java.io.BufferedReader;

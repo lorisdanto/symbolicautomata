@@ -1,7 +1,7 @@
 // TestBDDFactory.java, created Aug 2, 2003 10:02:48 PM by joewhaley
 // Copyright (C) 2003 John Whaley <jwhaley@alum.mit.edu>
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
-package net.sf.javabdd;
+package theory.bdd;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -15,7 +15,7 @@ import java.math.BigInteger;
  * two BDD factories, and all operations are performed on both factories.  It
  * throws an exception if the results from the two implementations do not match.</p>
  * 
- * @see net.sf.javabdd.BDDFactory
+ * @see theory.bdd.BDDFactory
  * 
  * @author John Whaley
  * @version $Id: TestBDDFactory.java,v 1.7 2005/04/29 02:25:28 joewhaley Exp $

@@ -19,9 +19,9 @@ import automata.safa.SATRelation;
 import automata.safa.booleanexpression.PositiveBooleanExpression;
 import automata.safa.booleanexpression.SumOfProducts;
 import automata.safa.booleanexpression.SumOfProductsFactory;
-import theory.CharPred;
-import theory.CharSolver;
-import theory.StdCharPred;
+import theory.characters.CharPred;
+import theory.characters.StdCharPred;
+import theory.intervals.CharIntervalSolver;
 
 public class SAFAUnitTest {
 
@@ -88,7 +88,7 @@ public class SAFAUnitTest {
 	// ---------------------------------------
 	// Predicates
 	// ---------------------------------------
-	CharSolver ba = new CharSolver();
+	CharIntervalSolver ba = new CharIntervalSolver();
 	CharPred alpha = StdCharPred.LOWER_ALPHA;
 	CharPred allAlpha = StdCharPred.ALPHA;
 	CharPred a = new CharPred('a');
@@ -109,7 +109,7 @@ public class SAFAUnitTest {
 	List<Character> lnot = lOfS("##"); // accepted only by neither autA nor autB
 
 	// at least one 
-	private SAFA<CharPred, Character> getSAFAatLeastOne(CharSolver ba, CharPred p) {
+	private SAFA<CharPred, Character> getSAFAatLeastOne(CharIntervalSolver ba, CharPred p) {
 
 		Collection<SAFAInputMove<CharPred, Character>> transitionsA = new LinkedList<>();
 		PositiveBooleanExpression sp0 = boolexpr.MkState(0);

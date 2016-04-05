@@ -1,7 +1,7 @@
 // BDDDomain.java, created Jan 29, 2003 9:50:57 PM by jwhaley
 // Copyright (C) 2003 John Whaley
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
-package net.sf.javabdd;
+package theory.bdd;
 
 import java.util.Iterator;
 import java.math.BigInteger;
@@ -19,7 +19,7 @@ import java.math.BigInteger;
  * 
  * @author John Whaley
  * @version $Id: BDDDomain.java,v 1.7 2005/04/17 10:21:46 joewhaley Exp $
- * @see net.sf.javabdd.BDDFactory#extDomain(int[])
+ * @see theory.bdd.BDDFactory#extDomain(int[])
  */
 public abstract class BDDDomain {
 

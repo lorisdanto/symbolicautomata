@@ -5,7 +5,7 @@
  * @author Loris D'Antoni
  */
 
-package theory;
+package theory.characters;
 
 import java.util.Objects;
 
@@ -15,6 +15,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableList;
+
+import theory.intervals.CharIntervalSolver;
 
 public class CharOffset implements CharFunc {
 
@@ -48,7 +50,7 @@ public class CharOffset implements CharFunc {
             }
         }
         
-	public CharPred substIn(CharPred p, CharSolver cs) {
+	public CharPred substIn(CharPred p, CharIntervalSolver cs) {
 		ImmutableList.Builder<ImmutablePair<Character,Character>> intervals = ImmutableList.builder();
                 for (ImmutablePair<Character, Character> interval : checkNotNull(p).intervals) {
                     long leftPrime = charSnap(interval.left - increment);

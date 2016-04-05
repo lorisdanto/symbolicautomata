@@ -5,7 +5,9 @@
  * @author Loris D'Antoni
  */
 
-package theory;
+package theory.characters;
+
+import theory.intervals.CharIntervalSolver;
 
 /**
  * CharFunc: a character function of the form x0+off where off is an offset
@@ -20,7 +22,7 @@ public interface CharFunc {
 	/**
 	 * @return the result of replacing p's argument with this
 	 */
-	CharPred substIn(CharPred p, CharSolver cs);
+	CharPred substIn(CharPred p, CharIntervalSolver cs);
 
 	/**
 	 * @return the result of replacing this's argument with c

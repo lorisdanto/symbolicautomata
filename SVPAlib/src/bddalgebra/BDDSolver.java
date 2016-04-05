@@ -8,10 +8,10 @@ package bddalgebra;
 
 import java.util.Collection;
 
-import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDFactory;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import theory.BooleanAlgebra;
+import theory.bdd.BDD;
+import theory.bdd.BDDFactory;
 import utilities.Pair;
 
 /**

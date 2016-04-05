@@ -1,7 +1,7 @@
 // MicroFactory.java, created Jan 29, 2005 8:24:17 PM by joewhaley
 // Copyright (C) 2005 John Whaley <jwhaley@alum.mit.edu>
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
-package net.sf.javabdd;
+package theory.bdd;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -645,7 +645,7 @@ public class MicroFactory extends BDDFactory {
         }
 
         /**
-         * @see net.sf.javabdd.BDD#free()
+         * @see theory.bdd.BDD#free()
          */
         public void free() {
             bdd_delref(_index);

@@ -6,7 +6,7 @@ import java.util.TreeSet;
 
 import automata.safa.BooleanExpression;
 import automata.safa.LatticeMorphism;
-import net.sf.javabdd.BDD;
+import theory.bdd.BDD;
 
 public class BDDExpression extends BooleanExpression {
 

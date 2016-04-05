@@ -4,7 +4,7 @@
  * Apr 21, 2015
  * @author Loris D'Antoni
  */
-package theory;
+package theory.intervals;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -18,10 +18,15 @@ import utilities.Pair;
 
 import com.google.common.collect.ImmutableList;
 
+import theory.BooleanAlgebraSubst;
+import theory.characters.CharFunc;
+import theory.characters.CharPred;
+import theory.characters.StdCharPred;
+
 /**
  * CharSolver: an interval based solver for the theory of characters
  */
-public class CharSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Character> {
+public class CharIntervalSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Character> {
     
     @Override
     public CharPred MkNot(CharPred u) {

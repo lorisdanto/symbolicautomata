@@ -5,13 +5,13 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import theory.CharPred;
-import theory.CharSolver;
-import theory.StdCharPred;
+import theory.characters.CharPred;
+import theory.characters.StdCharPred;
+import theory.intervals.CharIntervalSolver;
 
 public class TestCharTheory {
 
-	final CharSolver solver = new CharSolver();
+	final CharIntervalSolver solver = new CharIntervalSolver();
 
 	@Test
     public void solverTestBasic() {

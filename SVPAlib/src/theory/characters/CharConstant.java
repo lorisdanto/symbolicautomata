@@ -5,11 +5,13 @@
  * @author Loris D'Antoni
  */
 
-package theory;
+package theory.characters;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Objects;
+
+import theory.intervals.CharIntervalSolver;
 
 public class CharConstant implements CharFunc {
 
@@ -26,7 +28,7 @@ public class CharConstant implements CharFunc {
 		return new CharConstant(checkNotNull(f1).instantiateWith(c));
 	}
 
-	public CharPred substIn(CharPred p, CharSolver cs) {
+	public CharPred substIn(CharPred p, CharIntervalSolver cs) {
 		return checkNotNull(p).isSatisfiedBy(c) ? StdCharPred.TRUE : StdCharPred.FALSE;
 	}
 

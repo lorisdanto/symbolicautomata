@@ -1,4 +1,4 @@
-package theory;
+package theory.characters;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 

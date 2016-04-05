@@ -1,7 +1,7 @@
 // BDDFactory.java, created Jan 29, 2003 9:50:57 PM by jwhaley
 // Copyright (C) 2003 John Whaley
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
-package net.sf.javabdd;
+package theory.bdd;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,7 +25,7 @@ import java.util.StringTokenizer;
 /**
  * <p>Interface for the creation and manipulation of BDDs.</p>
  * 
- * @see net.sf.javabdd.BDD
+ * @see theory.bdd.BDD
  * 
  * @author John Whaley
  * @version $Id: BDDFactory.java,v 1.11 2005/05/04 22:31:35 joewhaley Exp $
@@ -1420,7 +1420,7 @@ public abstract class BDDFactory {
      * @param reverseLocal  whether to reverse the bits of each domain
      * @param ordering  string representation of ordering
      * @return  int[] of ordering
-     * @see net.sf.javabdd.BDDFactory#setVarOrder(int[])
+     * @see theory.bdd.BDDFactory#setVarOrder(int[])
      */
     public int[] makeVarOrdering(boolean reverseLocal, String ordering) {
         
