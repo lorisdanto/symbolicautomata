@@ -24,7 +24,7 @@ import theory.bdd.BDD;
 import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 import theory.intervals.CharIntervalSolver;
-import thoery.sat.SATBooleanAlgebra;
+import theory.sat.SATBooleanAlgebra;
 import utilities.Pair;
 
 

@@ -1,4 +1,4 @@
-package thoery.sat;
+package theory.sat;
 
 import java.util.Collection;
 import java.util.HashMap;

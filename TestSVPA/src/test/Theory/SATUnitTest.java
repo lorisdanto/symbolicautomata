@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import thoery.sat.SATBooleanAlgebra;
+import theory.sat.SATBooleanAlgebra;
 
 public class SATUnitTest {
 	int universe = 3;
