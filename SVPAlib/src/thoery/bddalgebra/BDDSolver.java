@@ -4,7 +4,7 @@
  * Apr 21, 2015
  * @author Loris D'Antoni
  */
-package bddalgebra;
+package thoery.bddalgebra;
 
 import java.util.Collection;
 

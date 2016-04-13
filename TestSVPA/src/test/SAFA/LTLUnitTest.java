@@ -13,7 +13,6 @@ import org.sat4j.specs.TimeoutException;
 import automata.safa.SAFA;
 import automata.safa.booleanexpression.BDDExpressionFactory;
 import automata.safa.booleanexpression.SumOfProductsFactory;
-import bddalgebra.BDDSolver;
 import logic.ltl.And;
 import logic.ltl.Eventually;
 import logic.ltl.LTLFormula;
@@ -25,6 +24,7 @@ import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 import theory.intervals.CharIntervalSolver;
 import theory.sat.SATBooleanAlgebra;
+import thoery.bddalgebra.BDDSolver;
 import utilities.Pair;
 
 
