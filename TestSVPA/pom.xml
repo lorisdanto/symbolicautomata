@@ -23,14 +23,9 @@
             <version>1.0</version>
         </dependency>
         <dependency>
-	    <groupId>org.ow2.sat4j</groupId>
-	    <artifactId>org.ow2.sat4j.core</artifactId>
-	    <version>2.3.4</version>
-	</dependency>
-        <dependency>
-            <groupId>edu.upenn.cis</groupId>
-            <artifactId>BooleanAlgebras</artifactId>
-            <version>1.0</version>
+            <groupId>org.ow2.sat4j</groupId>
+            <artifactId>org.ow2.sat4j.core</artifactId>
+            <version>2.3.4</version>
         </dependency>
     </dependencies>
     <properties>
