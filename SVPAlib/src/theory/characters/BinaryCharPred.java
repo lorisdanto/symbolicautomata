@@ -10,6 +10,7 @@ package theory.characters;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,10 +39,31 @@ public class BinaryCharPred implements ICharPred {
 			notEqual.add(new Pair<CharPred, CharPred>(StdCharPred.TRUE, p));
 	}
 	
+	public void normalize(BooleanAlgebra<CharPred, Character> ba){
+		ArrayList<Pair<CharPred,CharPred>> newNotEqual = new ArrayList<Pair<CharPred,CharPred>>();
+		
+		ArrayList<CharPred> firstProj = new ArrayList<>();
+		for(Pair<CharPred,CharPred> pair: notEqual)
+			firstProj.add(pair.first);
+		
+		Collection<Pair<CharPred,ArrayList<Integer>>> minterms = ba.GetMinterms(firstProj);		
+		for(Pair<CharPred,ArrayList<Integer>> minterm:minterms){
+			CharPred currA = minterm.first;
+			CharPred currB = ba.False();
+			for (int bit = 0; bit < notEqual.size(); bit++) 					
+				if (minterm.second.get(bit) == 1)
+					currB = ba.MkOr(notEqual.get(bit).second, notEqual.get(bit).second);
+				
+			newNotEqual.add(new Pair<>(currA, currB));
+		}
+		
+		notEqual = newNotEqual;
+	}
+	
 	public BinaryCharPred(CharPred eq, ArrayList<Pair<CharPred,CharPred>> notEqual) {
 		checkArgument(eq != null && notEqual!=null);
 		this.equals = eq;
-		this.notEqual = notEqual;
+		this.notEqual = notEqual;		
 	}
 	
 	/**

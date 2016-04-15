@@ -13,15 +13,12 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.tuple.Triple;
 
 import theory.BooleanAlgebra;
 import theory.characters.BinaryCharPred;
-import theory.characters.CharFunc;
 import theory.characters.CharPred;
 import theory.characters.ICharPred;
 import theory.characters.StdCharPred;
-import utilities.BitVecUtil;
 import utilities.Pair;
 
 /**
@@ -43,40 +40,21 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 		if (p instanceof CharPred) {
 			return usolver.MkNot((CharPred) p);
 		} else {
-			BinaryCharPred u = (BinaryCharPred) p;
-
+			BinaryCharPred u = (BinaryCharPred) p;				
 			CharPred newEq = usolver.MkNot(u.equals);
 			ArrayList<Pair<CharPred, CharPred>> newUneq = new ArrayList<>();
-			if (u.notEqual.isEmpty())
-				newUneq.add(new Pair<CharPred, CharPred>(usolver.True(), usolver.True()));
-			else {
-				for (int i = 0; i < Math.pow(2, u.notEqual.size()); i++) {
-					boolean fstIsSat = true;
-					boolean sndIsSat = true;
-
-					CharPred fst = usolver.True();
-					CharPred snd = usolver.True();
-
-					for (int bit = 0; bit < u.notEqual.size(); bit++) {
-						Pair<CharPred, CharPred> currTrip = u.notEqual.get(bit);
-
-						CharPred currA = currTrip.first;
-						CharPred currB = currTrip.second;
-
-						if (BitVecUtil.get_nth_bit(i, bit) == 1)
-							fst = usolver.MkAnd(fst, usolver.MkNot(currA));
-						else
-							snd = usolver.MkAnd(snd, usolver.MkNot(currB));
-
-						fstIsSat = usolver.IsSatisfiable(fst);
-						sndIsSat = usolver.IsSatisfiable(snd);
-						if (!fstIsSat || !sndIsSat)
-							break;
-					}
-					if (fstIsSat && sndIsSat)
-						newUneq.add(new Pair<>(fst, snd));
-				}
+															
+			CharPred leftover = usolver.True();
+			for (Pair<CharPred, CharPred> pair : u.notEqual) {
+				leftover = usolver.MkAnd(leftover, usolver.MkNot(pair.first));
+				
+				CharPred newRight = usolver.MkNot(pair.second);
+				if(usolver.IsSatisfiable(newRight))
+					newUneq.add(new Pair<CharPred, CharPred>(pair.first, newRight));
 			}
+			if(usolver.IsSatisfiable(leftover))
+				newUneq.add(new Pair<CharPred, CharPred>(leftover, usolver.True()));				
+			
 			return new BinaryCharPred(newEq, newUneq);
 		}
 	}
@@ -110,7 +88,9 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 
 				ArrayList<Pair<CharPred, CharPred>> newUneq = new ArrayList<>(u1c.notEqual);
 				newUneq.addAll(u2c.notEqual);
-				return new BinaryCharPred(newEq, newUneq);
+				BinaryCharPred pp= new BinaryCharPred(newEq, newUneq);
+				pp.normalize(usolver);
+				return pp;
 			}
 		}
 	}
