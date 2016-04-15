@@ -25,8 +25,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 /**
  * CharPred: a set of characters represented as contiguous intervals
  */
-public class CharPred {
-
+public class CharPred implements ICharPred{
+	
 	/**
 	 * The set containing only the character <code>c</code>
 	 */

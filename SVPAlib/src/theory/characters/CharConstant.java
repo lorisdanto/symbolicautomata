@@ -11,7 +11,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Objects;
 
-import theory.intervals.CharIntervalSolver;
+import theory.intervals.UnaryCharIntervalSolver;
 
 public class CharConstant implements CharFunc {
 
@@ -28,7 +28,7 @@ public class CharConstant implements CharFunc {
 		return new CharConstant(checkNotNull(f1).instantiateWith(c));
 	}
 
-	public CharPred substIn(CharPred p, CharIntervalSolver cs) {
+	public CharPred substIn(CharPred p, UnaryCharIntervalSolver cs) {
 		return checkNotNull(p).isSatisfiedBy(c) ? StdCharPred.TRUE : StdCharPred.FALSE;
 	}
 

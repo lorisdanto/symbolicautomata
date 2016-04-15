@@ -6,12 +6,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import theory.characters.CharPred;
+import theory.characters.ICharPred;
 import theory.characters.StdCharPred;
-import theory.intervals.CharIntervalSolver;
+import theory.intervals.EqualitySolver;
 
 public class TestCharTheory {
 
-	final CharIntervalSolver solver = new CharIntervalSolver();
+	final EqualitySolver solver = new EqualitySolver();
 
 	@Test
     public void solverTestBasic() {
@@ -21,14 +22,14 @@ public class TestCharTheory {
         assertTrue(solver.HasModel(isDigit, '9'));
         assertFalse(solver.HasModel(isDigit, 'a'));
 
-        final CharPred notIsDigit = solver.MkNot(isDigit);
+        final ICharPred notIsDigit = solver.MkNot(isDigit);
         assertFalse(solver.HasModel(notIsDigit, '5'));
         assertFalse(solver.HasModel(notIsDigit, '0'));
         assertFalse(solver.HasModel(notIsDigit, '9'));
         assertTrue(solver.HasModel(notIsDigit, 'a'));
 
-        final CharPred empty = solver.MkAnd(isDigit, notIsDigit);
-        final CharPred full = solver.MkOr(isDigit, notIsDigit);
+        final ICharPred empty = solver.MkAnd(isDigit, notIsDigit);
+        final ICharPred full = solver.MkOr(isDigit, notIsDigit);
 
         assertFalse(solver.IsSatisfiable(empty));
         assertTrue(solver.AreEquivalent(full, solver.True()));
@@ -42,7 +43,7 @@ public class TestCharTheory {
 	
 	@Test
     public void test1() {
-        final CharPred p = StdCharPred.FALSE;
+        final ICharPred p = StdCharPred.FALSE;
         assertFalse(solver.HasModel(p,'a'));
         assertFalse(solver.HasModel(p,'b'));
         assertFalse(solver.HasModel(p,'A'));
@@ -56,7 +57,7 @@ public class TestCharTheory {
 
     @Test
     public void test2() {
-        final CharPred p = new CharPred('a');
+        final ICharPred p = new CharPred('a');
         assertTrue(solver.HasModel(p,'a'));
         assertFalse(solver.HasModel(p,'b'));
         assertFalse(solver.HasModel(p,'A'));

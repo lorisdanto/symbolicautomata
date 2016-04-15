@@ -608,7 +608,7 @@ public class SVPAUnitTest {
 //	
 //	private SVPA<Predicate<IntExpr>, IntExpr> getSVPAa(Context c, BooleanAlgebra<Predicate<IntExpr>, IntExpr> ba) throws Z3Exception, AutomataException{
 //		
-//		Predicate<IntExpr> geq0 = new Predicate<IntExpr>("x", c.MkGe(
+//		CharPred geq0 = new Predicate<IntExpr>("x", c.MkGe(
 //				(IntExpr) c.MkConst(c.MkSymbol("x"), c.IntSort()),
 //				c.MkInt(0)), c.IntSort());
 //		Predicate<IntExpr> geq4 = new Predicate<IntExpr>("y", c.MkLe(
