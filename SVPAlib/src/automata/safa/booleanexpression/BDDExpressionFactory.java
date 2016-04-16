@@ -1,7 +1,7 @@
 package automata.safa.booleanexpression;
 
 import automata.safa.BooleanExpressionFactory;
-import thoery.bddalgebra.BDDSolver;
+import theory.bddalgebra.BDDSolver;
 
 public class BDDExpressionFactory extends BooleanExpressionFactory<BDDExpression> {
 

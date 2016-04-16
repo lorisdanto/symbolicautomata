@@ -90,7 +90,7 @@ public class BinaryCharPred implements ICharPred {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(", neq ");
+		sb.append("neq ");
 		sb.append(notEqual);
 		sb.append(", eq ");
 		sb.append(equals);

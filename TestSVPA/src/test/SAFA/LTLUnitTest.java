@@ -20,12 +20,12 @@ import logic.ltl.Or;
 import logic.ltl.Predicate;
 import logic.ltl.True;
 import theory.bdd.BDD;
+import theory.bddalgebra.BDDSolver;
 import theory.characters.CharPred;
 import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 import theory.intervals.UnaryCharIntervalSolver;
 import theory.sat.SATBooleanAlgebra;
-import thoery.bddalgebra.BDDSolver;
 import utilities.Pair;
 
 

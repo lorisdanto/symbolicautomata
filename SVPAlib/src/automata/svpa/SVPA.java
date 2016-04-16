@@ -683,6 +683,7 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 		}
 
 		total.isTotal = true;
+		total.stateCount = total.states.size();
 		return total;
 	}
 
@@ -1081,7 +1082,6 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 			if (aut.initialStates.contains(state))
 				clean.initialStates.add(state);
 
-			clean.stateCount++;
 		}
 
 		// add transitions
@@ -1090,6 +1090,7 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 				if (clean.states.contains(t.to))
 					clean.addTransition((SVPAMove<A, B>) t.clone(), ba, true);
 		
+		clean.stateCount = clean.states.size();
 		return clean;
 	}
 

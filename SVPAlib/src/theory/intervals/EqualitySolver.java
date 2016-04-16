@@ -180,7 +180,9 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 						return true;
 					CharPred right = usolver.MkAnd(pair.second,usolver.MkNot(pair.first));
 					if(usolver.IsSatisfiable(right))
-						return true;
+						return true;					
+					Character c1 = usolver.generateWitness(pair.first);
+					return usolver.IsSatisfiable(usolver.MkAnd(pair.second,usolver.MkNot(new CharPred(c1))));
 				}
 				return false;
 			}
@@ -198,7 +200,7 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 	@Override
 	public boolean HasModel(ICharPred p, Character s1, Character s2) {
 		if (p instanceof CharPred) 
-			throw new IllegalArgumentException("shouldn't ask for a unary witness on a binary predicate");
+			return usolver.HasModel((CharPred)p, s1);
 		else{ 
 			BinaryCharPred pc = (BinaryCharPred) p;
 			if(s1==s2){
@@ -214,20 +216,49 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 	}
 
 	@Override
-	public Character generateWitness(ICharPred u) {
-		throw new NotImplementedException("");
-		// if (checkNotNull(u).intervals.isEmpty()) {
-		// return null;
-		// } else {
-		// return u.intervals.get(0).left;
-		// }
+	public Character generateWitness(ICharPred p) {
+		if (p instanceof CharPred) 
+			return usolver.generateWitness((CharPred)p);
+		else{ 
+			throw new NotImplementedException("This shouldn't happen");
+		}
 	}
 
 	@Override
-	public Pair<Character, Character> generateWitnesses(ICharPred u) {
-		throw new NotImplementedException("");
-		// Character c = this.generateWitness(u);
-		// return new Pair<Character, Character>(c, c);
+	public Pair<Character, Character> generateWitnesses(ICharPred p) {
+		if (p instanceof CharPred) {
+			Character c =  usolver.generateWitness((CharPred)p);
+			return new Pair<Character, Character>(c, c);
+		} else {
+			BinaryCharPred u = (BinaryCharPred) p;
+			if(usolver.IsSatisfiable(u.equals)){
+				Character c =  usolver.generateWitness(u.equals);
+				return new Pair<Character, Character>(c, c);
+			}
+			else{
+				for(Pair<CharPred,CharPred> pair: u.notEqual){
+					CharPred left = usolver.MkAnd(pair.first,usolver.MkNot(pair.second));
+					if(usolver.IsSatisfiable(left)){
+						Character cl =  usolver.generateWitness(left);
+						Character cr =  usolver.generateWitness(pair.second);
+						return new Pair<Character, Character>(cl, cr);
+					}
+					CharPred right = usolver.MkAnd(pair.second,usolver.MkNot(pair.first));
+					if(usolver.IsSatisfiable(right)){
+						Character cl =  usolver.generateWitness(pair.first);
+						Character cr =  usolver.generateWitness(right);
+						return new Pair<Character, Character>(cl, cr);
+					}	
+					Character cl = usolver.generateWitness(pair.first);
+					CharPred leftover =usolver.MkAnd(pair.second,usolver.MkNot(new CharPred(cl)));
+					if(usolver.IsSatisfiable(leftover)){
+						Character cr =  usolver.generateWitness(leftover);
+						return new Pair<Character, Character>(cl, cr);
+					}
+				}				
+			}
+		}
+		return null;
 	}
 
 	/**
