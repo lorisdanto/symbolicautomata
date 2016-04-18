@@ -7,16 +7,16 @@
 
 package theory.characters;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.common.collect.ImmutableList;
 
-import theory.intervals.CharIntervalSolver;
+import theory.intervals.UnaryCharIntervalSolver;
 
 public class CharOffset implements CharFunc {
 
@@ -50,7 +50,7 @@ public class CharOffset implements CharFunc {
             }
         }
         
-	public CharPred substIn(CharPred p, CharIntervalSolver cs) {
+	public CharPred substIn(CharPred p, UnaryCharIntervalSolver cs) {
 		ImmutableList.Builder<ImmutablePair<Character,Character>> intervals = ImmutableList.builder();
                 for (ImmutablePair<Character, Character> interval : checkNotNull(p).intervals) {
                     long leftPrime = charSnap(interval.left - increment);

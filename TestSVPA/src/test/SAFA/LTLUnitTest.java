@@ -20,11 +20,12 @@ import logic.ltl.Or;
 import logic.ltl.Predicate;
 import logic.ltl.True;
 import theory.bdd.BDD;
+import theory.bddalgebra.BDDSolver;
+import theory.characters.CharPred;
 import theory.characters.CharPred;
 import theory.characters.StdCharPred;
-import theory.intervals.CharIntervalSolver;
+import theory.intervals.UnaryCharIntervalSolver;
 import theory.sat.SATBooleanAlgebra;
-import thoery.bddalgebra.BDDSolver;
 import utilities.Pair;
 
 
@@ -258,7 +259,7 @@ public class LTLUnitTest {
 	// ---------------------------------------
 	// Predicates
 	// ---------------------------------------
-	CharIntervalSolver ba = new CharIntervalSolver();
+	UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 	CharPred alpha = StdCharPred.LOWER_ALPHA;
 	CharPred allAlpha = StdCharPred.ALPHA;
 	CharPred a = new CharPred('a');
@@ -278,7 +279,7 @@ public class LTLUnitTest {
 	List<Character> lnot = lOfS("##"); // accepted only by neither autA nor autB
 
 	// eventually p
-	private LTLFormula<CharPred, Character> ev(CharIntervalSolver ba, CharPred p) {
+	private LTLFormula<CharPred, Character> ev(UnaryCharIntervalSolver ba, CharPred p) {
 		return new Eventually<CharPred, Character>(new Predicate<CharPred, Character>(p));
 	}
 
