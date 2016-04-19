@@ -13,6 +13,7 @@
     <modules>
         <module>SVPAlib</module>
         <module>TestSVPA</module>
+        <module>SVPABenchmark</module>
         <!-- Commented as tests take too long! -->
         <!-- <module>drex-sa</module>   -->
     </modules>
