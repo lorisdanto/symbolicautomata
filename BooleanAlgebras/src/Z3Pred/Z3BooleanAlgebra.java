@@ -127,21 +127,21 @@ public class Z3BooleanAlgebra extends BooleanAlgebraSubst<BoolExpr, Expr, Expr>{
 
 	@Override
 	public boolean HasModel(BoolExpr p1, Expr el1, Expr el2) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public Expr generateWitness(BoolExpr p1) {
+		//TODO 
 		Solver solver = ctx.mkSolver();
 		solver.add(p1);
 		Model m = solver.getModel();
-		return m.getConstInterp(p1);
+		return m.getConstInterp(m.getConstDecls()[0]);
 	}
+	
 
 	@Override
 	public Pair<Expr, Expr> generateWitnesses(BoolExpr p1) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
