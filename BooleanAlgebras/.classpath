@@ -16,5 +16,10 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/afs/cs.wisc.edu/u/q/h/qhu28/repositories/symbolicautomata/BooleanAlgebras/lib/com.microsoft.z3.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/u/q/h/qhu28/repositories/symbolicautomata/BooleanAlgebras/lib"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
