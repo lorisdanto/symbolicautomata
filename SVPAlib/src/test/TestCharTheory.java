@@ -126,5 +126,4 @@ public class TestCharTheory {
         assertFalse(solver.HasModel(p,'\n'));
     }
 	
-
 }

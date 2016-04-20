@@ -19,7 +19,6 @@ import automata.sfa.SFAMove;
 import theory.characters.CharFunc;
 import theory.characters.CharOffset;
 import theory.characters.CharPred;
-import theory.characters.CharPred;
 import theory.intervals.UnaryCharIntervalSolver;
 import transducers.sst.CharConstant;
 import transducers.sst.CharFunction;
