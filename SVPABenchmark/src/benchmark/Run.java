@@ -34,7 +34,7 @@ public class Run {
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
 				if (Files.isRegularFile(filePath)) {
 					try {
-						RunSelfEquivLTLFile(filePath);
+						RunEmptiness(filePath);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
