@@ -15,7 +15,6 @@ import automata.safa.SAFA;
 import automata.safa.booleanexpression.SumOfProductsFactory;
 import benchmark.ltlconverter.LTLConverter;
 import logic.ltl.LTLFormula;
-import logic.ltl.True;
 import theory.bdd.BDD;
 import theory.bddalgebra.BDDSolver;
 import utilities.Pair;
