@@ -49,7 +49,6 @@ public class LTLConverter {
 		return new Pair<BDDSolver, LTLFormula<BDD, BDD>>(bdds, getLTLBDD(phi, atomToInt, bdds));
 	}
 
-	@SuppressWarnings("restriction")
 	public static LTLFormula<BDD, BDD> getLTLBDD(FormulaNode phi, HashMap<String, Integer> atomToInt, BDDSolver bdds) {
 
 		if (phi instanceof AlwaysNode) {
