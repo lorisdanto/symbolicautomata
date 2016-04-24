@@ -108,7 +108,7 @@ public class LTLUnitTest {
 
 	@Test
 	public void testLargeEmptiness() {
-		int sizeTot = 7;
+		int sizeTot = 4;
 
 		for (int size = 2; size < sizeTot; size++) {
 
@@ -137,7 +137,7 @@ public class LTLUnitTest {
 	
 	@Test
 	public void testLargeEmptinessBDD() {
-		int sizeTot = 19;
+		int sizeTot = 14;
 		BDDExpressionFactory bef = new BDDExpressionFactory(sizeTot);
 		//PositiveBooleanExpressionFactory bef = new PositiveBooleanExpressionFactory();
 		//SumOfProductsFactory bef = SumOfProductsFactory.getInstance();
