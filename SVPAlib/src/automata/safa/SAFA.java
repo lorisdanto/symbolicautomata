@@ -175,12 +175,7 @@ public class SAFA<P, S> {
 	public static <A, B> SAFA<A, B> getEmptySAFA(BooleanAlgebra<A, B> ba) {
 		SAFA<A, B> aut = new SAFA<A, B>();
 		BooleanExpressionFactory<PositiveBooleanExpression> bexpr = getBooleanExpressionFactory();
-		aut.states = new HashSet<Integer>();
-		aut.states.add(0);
-		aut.finalStates = new HashSet<>();
-		aut.initialState = bexpr.MkState(0);
-		aut.maxStateId = 1;
-		aut.addTransition(new SAFAInputMove<A, B>(0, bexpr.MkState(0), ba.True()), ba, true);
+		aut.initialState = bexpr.False();
 		return aut;
 	}
 
@@ -190,13 +185,7 @@ public class SAFA<P, S> {
 	public static <A, B> SAFA<A, B> getFullSAFA(BooleanAlgebra<A, B> ba) {
 		SAFA<A, B> aut = new SAFA<A, B>();
 		BooleanExpressionFactory<PositiveBooleanExpression> bexpr = getBooleanExpressionFactory();
-		aut.states = new HashSet<Integer>();
-		aut.states.add(0);
-		aut.finalStates = new HashSet<>();
-		aut.finalStates.add(0);
-		aut.initialState = bexpr.MkState(0);
-		aut.maxStateId = 1;
-		aut.addTransition(new SAFAInputMove<A, B>(0, bexpr.MkState(0), ba.True()), ba, true);
+		aut.initialState = bexpr.True();
 		return aut;
 	}
 
