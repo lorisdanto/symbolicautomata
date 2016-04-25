@@ -20,20 +20,20 @@ import theory.bddalgebra.BDDSolver;
 import utilities.Pair;
 
 public class RunExperiments {
-	static long timeout = 1000;
+	static long timeout = 220000;
 
 	public static void main(String[] args) throws InterruptedException {
 
 		RunLTLEmptiness();
 		// RunSelfEquivLTL();
-		// 
+		//
 
 	}
 
 	public static void RunLTLEmptiness() {
 		try {
-			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {							
-				if (Files.isRegularFile(filePath)) {
+			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
+				if (Files.isRegularFile(filePath) && filePath.toString().endsWith("zp3.ltl")) {
 					try {
 						TestThread tt = new TestThread(filePath, true);
 						Thread thread = new Thread(tt);
@@ -72,30 +72,31 @@ public class RunExperiments {
 
 			boolean b = true;
 			long stopTime = System.currentTimeMillis();
-
-			System.out.println("Congruence");
-			try {
-				b = SAFA.isEmpty(safa, bdds);
-				stopTime = System.currentTimeMillis();
-			} catch (TimeoutException toe) {
-				stopTime = System.currentTimeMillis() + timeout;
-			}
-
-			long elapsedTime = stopTime - startTime;
 			if (tt.isRunning) {
-				System.out.println(elapsedTime);
+				System.out.println("Congruence");
+				try {
+					b = SAFA.isEmpty(safa, bdds);
+					stopTime = System.currentTimeMillis();
+				} catch (TimeoutException toe) {
+					stopTime = System.currentTimeMillis() + timeout;
+				}
 
-				startTime = System.currentTimeMillis();
-				System.out.println("Reverse");
-				Pair<Boolean, List<BDD>> b1 = SAFA.areReverseEquivalent(safa, SAFA.getEmptySAFA(bdds), bdds);
-
-				stopTime = System.currentTimeMillis();
-				elapsedTime = stopTime - startTime;
+				long elapsedTime = stopTime - startTime;
 				if (tt.isRunning) {
 					System.out.println(elapsedTime);
 
-					if (b != b1.first)
-						throw new IllegalArgumentException("b and b1 should be the same");
+					startTime = System.currentTimeMillis();
+					System.out.println("Reverse");
+					Pair<Boolean, List<BDD>> b1 = SAFA.areReverseEquivalent(safa, SAFA.getEmptySAFA(bdds), bdds);
+
+					stopTime = System.currentTimeMillis();
+					elapsedTime = stopTime - startTime;
+					if (tt.isRunning) {
+						System.out.println(elapsedTime);
+
+						if (b != b1.first)
+							throw new IllegalArgumentException("b and b1 should be the same");
+					}
 				}
 			}
 		}
@@ -142,32 +143,33 @@ public class RunExperiments {
 			BDDSolver bdds = pair.first;
 			LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
 			SAFA<BDD, BDD> safa = tot.getSAFA(bdds);
-
-			long startTime = System.currentTimeMillis();
-
-			boolean b = true;
-			long stopTime = System.currentTimeMillis();
-
-			try {
-				b = SAFA.isEquivalent(safa, safa, bdds, SumOfProductsFactory.getInstance());
-				stopTime = System.currentTimeMillis();
-			} catch (TimeoutException toe) {
-				stopTime = System.currentTimeMillis() + timeout;
-			}
 			if (tt.isRunning) {
-				long elapsedTime = stopTime - startTime;
-				System.out.println(elapsedTime);
+				long startTime = System.currentTimeMillis();
 
-				startTime = System.currentTimeMillis();
+				boolean b = true;
+				long stopTime = System.currentTimeMillis();
 
-				Pair<Boolean, List<BDD>> b1 = SAFA.areReverseEquivalent(safa, safa, bdds);
-				if (tt.isRunning) {
+				try {
+					b = SAFA.isEquivalent(safa, safa, bdds, SumOfProductsFactory.getInstance());
 					stopTime = System.currentTimeMillis();
-					elapsedTime = stopTime - startTime;
+				} catch (TimeoutException toe) {
+					stopTime = System.currentTimeMillis() + timeout;
+				}
+				if (tt.isRunning) {
+					long elapsedTime = stopTime - startTime;
 					System.out.println(elapsedTime);
 
-					if (b != b1.first)
-						throw new IllegalArgumentException("b and b1 should be the same");
+					startTime = System.currentTimeMillis();
+
+					Pair<Boolean, List<BDD>> b1 = SAFA.areReverseEquivalent(safa, safa, bdds);
+					if (tt.isRunning) {
+						stopTime = System.currentTimeMillis();
+						elapsedTime = stopTime - startTime;
+						System.out.println(elapsedTime);
+
+						if (b != b1.first)
+							throw new IllegalArgumentException("b and b1 should be the same");
+					}
 				}
 			}
 		}
