@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
@@ -80,11 +79,11 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba, HashMap<String, LTLFormula<P,S>> posHash, HashMap<String, LTLFormula<P,S>> negHash){
 		if(isPositive)
 			return this;
 		else
-			return new Predicate<>(ba.MkNot(this.predicate));
+			return new Predicate<>(ba.MkNot(this.predicate));		
 	}
 
 	@Override

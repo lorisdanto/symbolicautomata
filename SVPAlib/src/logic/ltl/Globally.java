@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
@@ -50,8 +49,8 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 
 	@Override
 	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, Collection<Integer> finalStates,
+			BooleanAlgebra<P, S> ba) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -68,15 +67,15 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 		// delta(G phi, p) = delta(phi, p) /\ G phi
 		Collection<SAFAInputMove<P, S>> phiMoves = moves.get(formulaToStateId.get(phi));
 		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
-		P not =ba.True();
-		for (SAFAInputMove<P, S> move : phiMoves){
+		P not = ba.True();
+		for (SAFAInputMove<P, S> move : phiMoves) {
 			newMoves.add(new SAFAInputMove<P, S>(id, boolexpr.MkAnd(move.to, boolexpr.MkState(id)), move.guard));
 			not = ba.MkAnd(not, ba.MkNot(move.guard));
 		}
 
 		if (ba.IsSatisfiable(not))
 			newMoves.add(new SAFAInputMove<P, S>(id, boolexpr.MkState(id), not));
-		
+
 		moves.put(id, newMoves);
 	}
 
@@ -84,37 +83,52 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 	protected boolean isFinalState() {
 		return true;
 	}
-	
+
 	@Override
-	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
-		if(isPositive)
-			return new Globally<>(phi.pushNegations(isPositive,ba));
-		else
-			return new Eventually<>(phi.pushNegations(isPositive,ba));
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba,
+			HashMap<String, LTLFormula<P, S>> posHash, HashMap<String, LTLFormula<P, S>> negHash) {
+		String key = this.toString();
+
+		LTLFormula<P, S> out = new False<>();
+
+		if (isPositive) {
+			if (posHash.containsKey(key)) {
+				return posHash.get(key);
+			}
+			out = new Globally<>(phi.pushNegations(isPositive, ba, posHash, negHash));
+			posHash.put(key, out);
+			return out;
+		} else {
+			if (negHash.containsKey(key))
+				return negHash.get(key);
+			out = new Eventually<>(phi.pushNegations(isPositive, ba, posHash, negHash));
+			negHash.put(key, out);
+			return out;
+		}
 	}
-	
+
 	@Override
 	public void toString(StringBuilder sb) {
 		sb.append("(G ");
-		phi.toString(sb);	
+		phi.toString(sb);
 		sb.append(")");
 	}
-	
+
 	@Override
-	public SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba) {
+	public SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
-		SAFA<P,S> phiSafa = phi.getSAFANew(ba);
-		int formulaId = phiSafa.getMaxStateId()+1;
-						
+		SAFA<P, S> phiSafa = phi.getSAFANew(ba);
+		int formulaId = phiSafa.getMaxStateId() + 1;
+
 		PositiveBooleanExpression initialState = boolexpr.MkAnd(boolexpr.MkState(formulaId), phiSafa.getInitialState());
 		Collection<Integer> finalStates = new HashSet<>(phiSafa.getFinalStates());
 		finalStates.add(formulaId);
-		
+
 		// Copy all transitions (with proper renaming for aut2)
 		Collection<SAFAInputMove<P, S>> transitions = new ArrayList<SAFAInputMove<P, S>>(phiSafa.getInputMoves());
 		transitions.add(new SAFAInputMove<>(formulaId, initialState, ba.True()));
-		
+
 		return SAFA.MkSAFA(transitions, initialState, finalStates, ba);
 	}
 }

@@ -3,8 +3,6 @@ package logic.ltl;
 import java.util.Collection;
 import java.util.HashMap;
 
-import automata.safa.BooleanExpression;
-import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
 import theory.BooleanAlgebra;
@@ -46,8 +44,8 @@ public class Not<P, S> extends LTLFormula<P, S> {
 
 	@Override
 	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, Collection<Integer> finalStates,
+			BooleanAlgebra<P, S> ba) {
 
 		throw new UnsupportedOperationException("At this point the formula should be in negation normal form.");
 	}
@@ -56,20 +54,21 @@ public class Not<P, S> extends LTLFormula<P, S> {
 	protected boolean isFinalState() {
 		throw new UnsupportedOperationException("At this point the formula should be in negation normal form.");
 	}
-	
+
 	@Override
-	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
-		return phi.pushNegations(!isPositive,ba);	
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba,
+			HashMap<String, LTLFormula<P, S>> posHash, HashMap<String, LTLFormula<P, S>> negHash) {
+		return phi.pushNegations(!isPositive, ba, posHash, negHash);
 	}
-	
+
 	@Override
 	public void toString(StringBuilder sb) {
 		sb.append("!");
-		phi.toString(sb);	
+		phi.toString(sb);
 	}
-	
+
 	@Override
-	public SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba) {
+	public SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
 		throw new UnsupportedOperationException();
 	}
 }
