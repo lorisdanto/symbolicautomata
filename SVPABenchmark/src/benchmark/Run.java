@@ -21,20 +21,49 @@ import utilities.Pair;
 
 public class Run {
 
-	static long timeout = 30000;
+	static long timeout = 5000;
 
-	public static void main(String[] args) {
+	public static void main(String[] args) 
+
+			throws InterruptedException {
+
 //		RunSelfEquivLTL();
 		RunLTLEmptiness();
+		        
+
+
 	}
 
 	public static void RunLTLEmptiness() {
 
 		try {
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
+				
+		        Thread thread = new Thread(new Runnable() {
+		            @Override
+		            public void run() {
+		                System.out.println("started");
+		                System.out.println(filePath);
+		                try {		                	
+							RunEmptiness(filePath);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+		                System.out.println("Ended");
+		            }
+		        });
+				
 				if (Files.isRegularFile(filePath)) {
 					try {
-						RunEmptiness(filePath);
+						thread.start();
+				        long endTimeMillis = System.currentTimeMillis() + timeout;
+				        while (thread.isAlive()) {
+				            if (System.currentTimeMillis() > endTimeMillis) {
+				            	System.out.println("TIMEOUT");
+				                break;
+				            }
+				        }
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

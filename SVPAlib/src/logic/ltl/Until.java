@@ -1,5 +1,6 @@
 package logic.ltl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -55,8 +56,8 @@ public class Until<P, S> extends LTLFormula<P, S> {
 
 	@Override
 	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, Collection<Integer> finalStates,
+			BooleanAlgebra<P, S> ba) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -71,22 +72,46 @@ public class Until<P, S> extends LTLFormula<P, S> {
 		left.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
 		right.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
 
-		
 		// delta(l U r, p) = delta(l, p) and lUr
 		// delta(l U r, p) = delta(r, p)
 		int leftId = formulaToStateId.get(left);
 		int rightId = formulaToStateId.get(right);
 		Collection<SAFAInputMove<P, S>> leftMoves = moves.get(leftId);
 		Collection<SAFAInputMove<P, S>> rightMoves = moves.get(rightId);
-		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
-		for (SAFAInputMove<P, S> leftMove : leftMoves)
-			newMoves.add(new SAFAInputMove<>(id, boolexpr.MkAnd(leftMove.to, boolexpr.MkState(id)), leftMove.guard));
 
-		for (SAFAInputMove<P, S> rightMove : rightMoves)
-			newMoves.add(new SAFAInputMove<>(id, rightMove.to, rightMove.guard));
+		Collection<SAFAInputMove<P, S>> untMovesL = new ArrayList<>();
+		Collection<SAFAInputMove<P, S>> untMovesR = new ArrayList<>();
+		P leftoverL = ba.True();
+		P leftoverR = ba.True();
 
-		moves.put(id, newMoves);
-		throw new IllegalArgumentException("Not finished this yet");
+		Collection<SAFAInputMove<P, S>> untMoves = new ArrayList<>();
+
+		for (SAFAInputMove<P, S> leftMove : leftMoves) {
+			untMovesL.add(new SAFAInputMove<>(id, boolexpr.MkAnd(leftMove.to, boolexpr.MkState(id)), leftMove.guard));
+			leftoverL = ba.MkAnd(leftoverL, ba.MkNot(leftMove.guard));
+		}
+
+		for (SAFAInputMove<P, S> rightMove : rightMoves) {
+			untMovesR.add(new SAFAInputMove<>(id, rightMove.to, rightMove.guard));
+			leftoverR = ba.MkAnd(leftoverR, ba.MkNot(rightMove.guard));
+			P conj = ba.MkAnd(leftoverL, rightMove.guard);
+			if (ba.IsSatisfiable(conj))
+				untMoves.add(new SAFAInputMove<P, S>(id, rightMove.to, conj));
+		}
+
+		for (SAFAInputMove<P, S> lMove : leftMoves){
+			for (SAFAInputMove<P, S> rMove : rightMoves) {
+				P conj = ba.MkAnd(lMove.guard, rMove.guard);
+				if (ba.IsSatisfiable(conj))
+					untMoves.add(new SAFAInputMove<P, S>(id, boolexpr.MkOr(lMove.to, rMove.to), conj));
+			}
+			P conj = ba.MkAnd(lMove.guard, leftoverR);
+			if (ba.IsSatisfiable(conj))
+				untMoves.add(new SAFAInputMove<P, S>(id, lMove.to, conj));
+		}
+		
+		moves.put(id, untMoves);
+		// throw new IllegalArgumentException("Not finished this yet");
 	}
 
 	@Override
@@ -96,15 +121,14 @@ public class Until<P, S> extends LTLFormula<P, S> {
 
 	@Override
 	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
-		if(isPositive)
-			return new Until<>(left.pushNegations(isPositive,ba), right.pushNegations(isPositive,ba));
-		else{
-			LTLFormula<P, S> rightNeg =right.pushNegations(isPositive,ba); 
-			return new WeakUntil<>(rightNeg, 
-					new And<>(left.pushNegations(isPositive,ba), rightNeg));
+		if (isPositive)
+			return new Until<>(left.pushNegations(isPositive, ba), right.pushNegations(isPositive, ba));
+		else {
+			LTLFormula<P, S> rightNeg = right.pushNegations(isPositive, ba);
+			return new WeakUntil<>(rightNeg, new And<>(left.pushNegations(isPositive, ba), rightNeg));
 		}
 	}
-	
+
 	@Override
 	public void toString(StringBuilder sb) {
 		sb.append("(");
@@ -115,7 +139,7 @@ public class Until<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	public  SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
+	public SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
 		// TODO Auto-generated method stub
 		return null;
 	}

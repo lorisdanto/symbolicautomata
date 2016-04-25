@@ -1,5 +1,6 @@
 package logic.ltl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -77,17 +78,44 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 		int rightId = formulaToStateId.get(right);
 		Collection<SAFAInputMove<P, S>> leftMoves = moves.get(leftId);
 		Collection<SAFAInputMove<P, S>> rightMoves = moves.get(rightId);
-		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
-		for (SAFAInputMove<P, S> leftMove : leftMoves)
-			newMoves.add(new SAFAInputMove<>(id, boolexpr.MkAnd(leftMove.to, boolexpr.MkState(id)), leftMove.guard));
+		
+		Collection<SAFAInputMove<P, S>> untMovesL = new ArrayList<>();
+		Collection<SAFAInputMove<P, S>> untMovesR = new ArrayList<>();
+		P leftoverL = ba.True();
+		P leftoverR = ba.True();
 
-		for (SAFAInputMove<P, S> rightMove : rightMoves)
-			newMoves.add(new SAFAInputMove<>(id, rightMove.to, rightMove.guard));
+		Collection<SAFAInputMove<P, S>> untMoves = new ArrayList<>();
+
+		for (SAFAInputMove<P, S> leftMove : leftMoves) {
+			untMovesL.add(new SAFAInputMove<>(id, boolexpr.MkAnd(leftMove.to, boolexpr.MkState(id)), leftMove.guard));
+			leftoverL = ba.MkAnd(leftoverL, ba.MkNot(leftMove.guard));
+		}
+
+		for (SAFAInputMove<P, S> rightMove : rightMoves) {
+			untMovesR.add(new SAFAInputMove<>(id, rightMove.to, rightMove.guard));
+			leftoverR = ba.MkAnd(leftoverR, ba.MkNot(rightMove.guard));
+			P conj = ba.MkAnd(leftoverL, rightMove.guard);
+			if (ba.IsSatisfiable(conj))
+				untMoves.add(new SAFAInputMove<P, S>(id, rightMove.to, conj));
+		}
+
+		for (SAFAInputMove<P, S> lMove : leftMoves){
+			for (SAFAInputMove<P, S> rMove : rightMoves) {
+				P conj = ba.MkAnd(lMove.guard, rMove.guard);
+				if (ba.IsSatisfiable(conj))
+					untMoves.add(new SAFAInputMove<P, S>(id, boolexpr.MkOr(lMove.to, rMove.to), conj));
+			}
+			P conj = ba.MkAnd(lMove.guard, leftoverR);
+			if (ba.IsSatisfiable(conj))
+				untMoves.add(new SAFAInputMove<P, S>(id, lMove.to, conj));
+		}
+		
+		moves.put(id, untMoves);
+				
 		// Weak until are final states (unlike regular until)
 		finalStates.add(id);
 
-		moves.put(id, newMoves);
-		throw new IllegalArgumentException("Not finished this yet");
+
 	}
 
 	@Override

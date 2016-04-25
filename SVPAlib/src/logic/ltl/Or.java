@@ -116,12 +116,12 @@ public class Or<P, S> extends LTLFormula<P, S> {
 		}
 
 		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
-		accumulateMoves(ba.True(), boolexpr.False(), newMoves, conjMoves, ba, id, 0);
+		accumulateMovesOr(ba.True(), boolexpr.False(), newMoves, conjMoves, ba, id, 0);
 
 		moves.put(id, newMoves);
 	}
 
-	private void accumulateMoves(P currPred, PositiveBooleanExpression currToExpr,
+	protected void accumulateMovesOr(P currPred, PositiveBooleanExpression currToExpr,
 			Collection<SAFAInputMove<P, S>> newMoves, ArrayList<Collection<SAFAInputMove<P, S>>> conjMoves,
 			BooleanAlgebra<P, S> ba, int idFrom, int n) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
@@ -132,7 +132,7 @@ public class Or<P, S> extends LTLFormula<P, S> {
 			for (SAFAInputMove<P, S> m : conjMoves.get(n)) {
 				P pred = ba.MkAnd(currPred, m.guard);
 				if (ba.IsSatisfiable(pred))
-					accumulateMoves(pred, boolexpr.MkOr(currToExpr, m.to), newMoves, conjMoves, ba, idFrom,
+					accumulateMovesOr(pred, boolexpr.MkOr(currToExpr, m.to), newMoves, conjMoves, ba, idFrom,
 							n + 1);
 			}
 	}
