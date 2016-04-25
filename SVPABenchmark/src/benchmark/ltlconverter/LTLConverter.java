@@ -1,5 +1,7 @@
 package benchmark.ltlconverter;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -46,132 +48,155 @@ public class LTLConverter {
 		for (String atom : atoms)
 			atomToInt.put(atom, atomToInt.size());
 		BDDSolver bdds = new BDDSolver(atomToInt.size());
-		return new Pair<BDDSolver, LTLFormula<BDD, BDD>>(bdds, getLTLBDD(phi, atomToInt, bdds));
+		return new Pair<BDDSolver, LTLFormula<BDD, BDD>>(bdds,
+				getLTLBDD(phi, atomToInt, bdds, new HashMap<String, LTLFormula<BDD, BDD>>()));
 	}
 
-	public static LTLFormula<BDD, BDD> getLTLBDD(FormulaNode phi, HashMap<String, Integer> atomToInt, BDDSolver bdds) {
+	public static LTLFormula<BDD, BDD> getLTLBDD(FormulaNode phi, HashMap<String, Integer> atomToInt, BDDSolver bdds,
+			HashMap<String, LTLFormula<BDD, BDD>> formulas) {
 
-		if (phi instanceof AlwaysNode) {
-			AlwaysNode cphi = (AlwaysNode) phi;
-			LTLFormula<BDD, BDD> subphi = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds);
-
-			return new Globally<BDD, BDD>(subphi);
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		phi.unparse(pw, 0);
+		String s = sw.toString();
+		if (formulas.containsKey(s)) {
+			return formulas.get(s);
 		} else {
-			if (phi instanceof AndNode) {
-				AndNode cphi = (AndNode) phi;
-				LTLFormula<BDD, BDD> left = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds);
-				LTLFormula<BDD, BDD> right = getLTLBDD(cphi.getMyLTL2(), atomToInt, bdds);
 
-				return new And<BDD, BDD>(left, right);
+			LTLFormula<BDD, BDD> outputLTL = null;
+			
+			if (phi instanceof AlwaysNode) {
+				AlwaysNode cphi = (AlwaysNode) phi;
+				LTLFormula<BDD, BDD> subphi = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds, formulas);
+
+				outputLTL= new Globally<BDD, BDD>(subphi);
 			} else {
-				if (phi instanceof DualNode) {
-					DualNode cphi = (DualNode) phi;
-					LTLFormula<BDD, BDD> left = getLTLBDD(cphi.getMyLTL1(),
-							atomToInt, bdds);
-					LTLFormula<BDD, BDD> right = getLTLBDD(cphi.getMyLTL2(),
-							atomToInt, bdds);
+				if (phi instanceof AndNode) {
+					AndNode cphi = (AndNode) phi;
+					LTLFormula<BDD, BDD> left = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds, formulas);
+					LTLFormula<BDD, BDD> right = getLTLBDD(cphi.getMyLTL2(), atomToInt, bdds, formulas);
 
-					return new Not<BDD, BDD>(
-							new Until<>(new Not<>(left), new Next<>(right)));
+					outputLTL= new And<BDD, BDD>(left, right);
 				} else {
-					if (phi instanceof EquivalenceNode) {
-						EquivalenceNode cphi = (EquivalenceNode) phi;
-						LTLFormula<BDD, BDD> left = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds);
-						LTLFormula<BDD, BDD> right = getLTLBDD(cphi.getMyLTL2(), atomToInt, bdds);
+					if (phi instanceof DualNode) {
+						DualNode cphi = (DualNode) phi;
+						LTLFormula<BDD, BDD> left = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds, formulas);
+						LTLFormula<BDD, BDD> right = getLTLBDD(cphi.getMyLTL2(), atomToInt, bdds, formulas);
 
-						return new And<BDD, BDD>(new Or<BDD, BDD>(new Not<BDD, BDD>(left), right),
-								new Or<BDD, BDD>(right, new Not<BDD, BDD>(left)));
+						outputLTL= new Not<BDD, BDD>(new Until<>(new Not<>(left), new Next<>(right)));
 					} else {
-						if (phi instanceof EventuallyNode) {
-							EventuallyNode cphi = (EventuallyNode) phi;
-							LTLFormula<BDD, BDD> subphi = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds);
+						if (phi instanceof EquivalenceNode) {
+							EquivalenceNode cphi = (EquivalenceNode) phi;
+							LTLFormula<BDD, BDD> left = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds, formulas);
+							LTLFormula<BDD, BDD> right = getLTLBDD(cphi.getMyLTL2(), atomToInt, bdds, formulas);
 
-							return new Eventually<BDD, BDD>(subphi);
+							outputLTL= new And<BDD, BDD>(new Or<BDD, BDD>(new Not<BDD, BDD>(left), right),
+									new Or<BDD, BDD>(right, new Not<BDD, BDD>(left)));
 						} else {
-							if (phi instanceof FalseNode) {
-								return new False<BDD, BDD>();
+							if (phi instanceof EventuallyNode) {
+								EventuallyNode cphi = (EventuallyNode) phi;
+								LTLFormula<BDD, BDD> subphi = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds, formulas);
+
+								outputLTL= new Eventually<BDD, BDD>(subphi);
 							} else {
-								if (phi instanceof IdNode) {
-									IdNode cphi = (IdNode) phi;
-									return new Predicate<BDD, BDD>(bdds.factory.ithVar(atomToInt.get(cphi.getName())));
+								if (phi instanceof FalseNode) {
+									return new False<BDD, BDD>();
 								} else {
-									if (phi instanceof ImplicationNode) {
-										ImplicationNode cphi = (ImplicationNode) phi;
-										LTLFormula<BDD, BDD> left = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds);
-										LTLFormula<BDD, BDD> right = getLTLBDD(cphi.getMyLTL2(), atomToInt, bdds);
-
-										return new Or<BDD, BDD>(new Not<>(left), right);
+									if (phi instanceof IdNode) {
+										IdNode cphi = (IdNode) phi;
+										outputLTL= new Predicate<BDD, BDD>(
+												bdds.factory.ithVar(atomToInt.get(cphi.getName())));
 									} else {
-										if (phi instanceof NegationNode) {
-											NegationNode cphi = (NegationNode) phi;
-											LTLFormula<BDD, BDD> subphi = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds);
-											return new Not<BDD, BDD>(subphi);
+										if (phi instanceof ImplicationNode) {
+											ImplicationNode cphi = (ImplicationNode) phi;
+											LTLFormula<BDD, BDD> left = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds,
+													formulas);
+											LTLFormula<BDD, BDD> right = getLTLBDD(cphi.getMyLTL2(), atomToInt, bdds,
+													formulas);
+
+											outputLTL= new Or<BDD, BDD>(new Not<>(left), right);
 										} else {
-											if (phi instanceof NextNode) {
-												NextNode cphi = (NextNode) phi;
+											if (phi instanceof NegationNode) {
+												NegationNode cphi = (NegationNode) phi;
 												LTLFormula<BDD, BDD> subphi = getLTLBDD(cphi.getMyLTL1(), atomToInt,
-														bdds);
-												return new Next<BDD, BDD>(subphi);
+														bdds, formulas);
+												outputLTL= new Not<BDD, BDD>(subphi);
 											} else {
-												if (phi instanceof OrNode) {
-													OrNode cphi = (OrNode) phi;
-													LTLFormula<BDD, BDD> left = getLTLBDD(cphi.getMyLTL1(), atomToInt,
-															bdds);
-													LTLFormula<BDD, BDD> right = getLTLBDD(cphi.getMyLTL2(), atomToInt,
-															bdds);
-
-													return new Or<BDD, BDD>(left, right);
+												if (phi instanceof NextNode) {
+													NextNode cphi = (NextNode) phi;
+													LTLFormula<BDD, BDD> subphi = getLTLBDD(cphi.getMyLTL1(), atomToInt,
+															bdds, formulas);
+													outputLTL= new Next<BDD, BDD>(subphi);
 												} else {
-													if (phi instanceof ReleaseNode) {
-														ReleaseNode cphi = (ReleaseNode) phi;
+													if (phi instanceof OrNode) {
+														OrNode cphi = (OrNode) phi;
 														LTLFormula<BDD, BDD> left = getLTLBDD(cphi.getMyLTL1(),
-																atomToInt, bdds);
+																atomToInt, bdds, formulas);
 														LTLFormula<BDD, BDD> right = getLTLBDD(cphi.getMyLTL2(),
-																atomToInt, bdds);
+																atomToInt, bdds, formulas);
 
-														return new Not<BDD, BDD>(
-																new Until<>(new Not<>(left), new Next<>(right)));
+														outputLTL= new Or<BDD, BDD>(left, right);
 													} else {
-														if (phi instanceof StrongReleaseNode) {
-															// StrongReleaseNode
-															// cphi =
-															// (StrongReleaseNode)
-															// phi;
-															throw new NotImplementedException();
+														if (phi instanceof ReleaseNode) {
+															ReleaseNode cphi = (ReleaseNode) phi;
+															LTLFormula<BDD, BDD> left = getLTLBDD(cphi.getMyLTL1(),
+																	atomToInt, bdds, formulas);
+															LTLFormula<BDD, BDD> right = getLTLBDD(cphi.getMyLTL2(),
+																	atomToInt, bdds, formulas);
+
+															outputLTL= new Not<BDD, BDD>(
+																	new Until<>(new Not<>(left), new Next<>(right)));
 														} else {
-															if (phi instanceof TrueNode) {
-																return new True<BDD, BDD>();
+															if (phi instanceof StrongReleaseNode) {
+																// StrongReleaseNode
+																// cphi =
+																// (StrongReleaseNode)
+																// phi;
+																throw new NotImplementedException();
 															} else {
-																if (phi instanceof UntilNode) {
-																	UntilNode cphi = (UntilNode) phi;
-																	LTLFormula<BDD, BDD> left = getLTLBDD(
-																			cphi.getMyLTL1(), atomToInt, bdds);
-																	LTLFormula<BDD, BDD> right = getLTLBDD(
-																			cphi.getMyLTL2(), atomToInt, bdds);
-
-																	return new Until<BDD, BDD>(left, right);
+																if (phi instanceof TrueNode) {
+																	outputLTL= new True<BDD, BDD>();
 																} else {
-																	if (phi instanceof WeakUntilNode) {
-																		WeakUntilNode cphi = (WeakUntilNode) phi;
+																	if (phi instanceof UntilNode) {
+																		UntilNode cphi = (UntilNode) phi;
 																		LTLFormula<BDD, BDD> left = getLTLBDD(
-																				cphi.getMyLTL1(), atomToInt, bdds);
+																				cphi.getMyLTL1(), atomToInt, bdds,
+																				formulas);
 																		LTLFormula<BDD, BDD> right = getLTLBDD(
-																				cphi.getMyLTL2(), atomToInt, bdds);
+																				cphi.getMyLTL2(), atomToInt, bdds,
+																				formulas);
 
-																		return new WeakUntil<BDD, BDD>(left, right);
+																		outputLTL= new Until<BDD, BDD>(left, right);
 																	} else {
-																		if (phi instanceof XorNode) {
-																			XorNode cphi = (XorNode) phi;
-
+																		if (phi instanceof WeakUntilNode) {
+																			WeakUntilNode cphi = (WeakUntilNode) phi;
 																			LTLFormula<BDD, BDD> left = getLTLBDD(
-																					cphi.getMyLTL1(), atomToInt, bdds);
+																					cphi.getMyLTL1(), atomToInt, bdds,
+																					formulas);
 																			LTLFormula<BDD, BDD> right = getLTLBDD(
-																					cphi.getMyLTL2(), atomToInt, bdds);
+																					cphi.getMyLTL2(), atomToInt, bdds,
+																					formulas);
 
-																			return new Or<BDD, BDD>(new And<BDD, BDD>(
-																					new Not<BDD, BDD>(left), right),
-																					new And<BDD, BDD>(right,
-																							new Not<BDD, BDD>(left)));
+																			outputLTL= new WeakUntil<BDD, BDD>(left, right);
+																		} else {
+																			if (phi instanceof XorNode) {
+																				XorNode cphi = (XorNode) phi;
+
+																				LTLFormula<BDD, BDD> left = getLTLBDD(
+																						cphi.getMyLTL1(), atomToInt,
+																						bdds, formulas);
+																				LTLFormula<BDD, BDD> right = getLTLBDD(
+																						cphi.getMyLTL2(), atomToInt,
+																						bdds, formulas);
+
+																				outputLTL= new Or<BDD, BDD>(
+																						new And<BDD, BDD>(
+																								new Not<BDD, BDD>(left),
+																								right),
+																						new And<BDD, BDD>(right,
+																								new Not<BDD, BDD>(
+																										left)));
+																			}
 																		}
 																	}
 																}
@@ -188,9 +213,9 @@ public class LTLConverter {
 					}
 				}
 			}
+			formulas.put(s, outputLTL);
+			return outputLTL;
 		}
-
-		throw new IllegalArgumentException("Unsupported formula");
 	}
 
 }
