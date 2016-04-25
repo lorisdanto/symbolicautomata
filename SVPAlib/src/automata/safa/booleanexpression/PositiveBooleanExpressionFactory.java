@@ -31,7 +31,7 @@ public class PositiveBooleanExpressionFactory extends BooleanExpressionFactory<P
 	@Override
 	public PositiveBooleanExpression MkOr(PositiveBooleanExpression phi, PositiveBooleanExpression psi) {
 		if (phi instanceof PositiveTrue || psi instanceof PositiveTrue) {
-			return False();
+			return True();
 		} else if (phi instanceof PositiveFalse) {
 			return psi;
 		} else if (psi instanceof PositiveFalse) {

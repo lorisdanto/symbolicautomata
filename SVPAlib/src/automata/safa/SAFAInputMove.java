@@ -31,7 +31,14 @@ public class SAFAInputMove<P,S> {
 		this.from = from;
 		this.to = to;
 		toStates = to.getStates();
-		maxState = Collections.max(toStates);
+		if (toStates.isEmpty()) {
+			maxState = -1;
+		} else {
+			maxState = Collections.max(toStates);
+		}
+		if (maxState < from) {
+			maxState = from;
+		}
 		this.guard = guard;
 	}
 

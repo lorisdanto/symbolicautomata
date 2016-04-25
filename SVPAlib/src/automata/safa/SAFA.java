@@ -161,7 +161,7 @@ public class SAFA<P, S> {
 			states.add(transition.from);
 			states.addAll(transition.toStates);
 
-			getInputMovesFrom(transition.from).add((SAFAInputMove<P, S>) transition);
+			getInputMovesFrom(transition.from).add(transition);
 		}
 	}
 
@@ -260,31 +260,32 @@ public class SAFA<P, S> {
 	public static <P, S, E extends BooleanExpression> boolean isEmpty(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		// TODO: the default boolean expression factory should *not* be boolexpr.
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();
-		return isEquivalent(aut, getEmptySAFA(ba), ba, boolexpr);
+		return isEquivalent(aut, getEmptySAFA(ba), ba, boolexpr).getFirst();
 	}
 
 	/**
 	 * Checks whether laut and raut are equivalent using bisimulation up to
 	 * congruence.
 	 */
-	public static <P, S, E extends BooleanExpression> boolean isEquivalent(
+	public static <P, S, E extends BooleanExpression> Pair<Boolean,List<S>> isEquivalent(
 			SAFA<P, S> laut, SAFA<P, S> raut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr)
 					throws TimeoutException {
+
 		SAFARelation similar = new SATRelation();
-		LinkedList<Pair<E, E>> worklist = new LinkedList<>();
+		LinkedList<Pair<Pair<E, E>, List<S>>> worklist = new LinkedList<>();
 
 		BooleanExpressionMorphism<E> coerce = new BooleanExpressionMorphism<>((x) -> boolexpr.MkState(x), boolexpr);
 		E leftInitial = coerce.apply(laut.initialState);
 		E rightInitial = coerce.apply(raut.initialState);
 
 		similar.add(leftInitial, rightInitial);
-		worklist.add(new Pair<>(leftInitial, rightInitial));
+		worklist.add(new Pair<>(new Pair<>(leftInitial, rightInitial), new LinkedList<>()));
 		while (!worklist.isEmpty()) {
-			Pair<E, E> next = worklist.removeFirst();
+			Pair<Pair<E, E>,List<S>> next = worklist.removeFirst();
 
-			E left = next.getFirst();
-			E right = next.getSecond();
-
+			E left = next.getFirst().getFirst();
+			E right = next.getFirst().getSecond();
+			List<S> witness = next.getSecond();
 			/*
 			LinkedList<Pair<P, Map<Integer, E>>> leftMoves = laut.getTransitionTablesFrom(left.getStates(), ba,
 					ba.True(), boolexpr);
@@ -322,6 +323,8 @@ public class SAFA<P, S> {
 						if (ba.HasModel(tr.guard, model)) {
 							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
 							implicant = ba.MkAnd(implicant, tr.guard);
+						} else {
+							implicant = ba.MkAnd(implicant, ba.MkNot(tr.guard));
 						}
 					}
 					leftMove.put(s, succ);
@@ -333,6 +336,8 @@ public class SAFA<P, S> {
 						if (ba.HasModel(tr.guard, model)) {
 							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
 							implicant = ba.MkAnd(implicant, tr.guard);
+						} else {
+							implicant = ba.MkAnd(implicant, ba.MkNot(tr.guard));
 						}
 					}
 					rightMove.put(s, succ);
@@ -340,18 +345,23 @@ public class SAFA<P, S> {
 
 				E leftSucc = boolexpr.substitute((lit) -> leftMove.get(lit)).apply(left);
 				E rightSucc = boolexpr.substitute((lit) -> rightMove.get(lit)).apply(right);
+				List<S> succWitness = new LinkedList<>();
+				succWitness.addAll(witness);
+				succWitness.add(model);
 				if (leftSucc.hasModel(laut.finalStates) != rightSucc.hasModel(raut.finalStates)) {
 					// leftSucc is accepting and rightSucc is rejecting or
 					// vice versa
-					return false;
+					return new Pair<>(false, succWitness);
 				} else if (!similar.isMember(leftSucc, rightSucc)) {
-					similar.add(leftSucc, rightSucc);
-					worklist.addFirst(new Pair<>(leftSucc, rightSucc));
+					if (!similar.add(leftSucc, rightSucc)) {
+						return new Pair<>(false, succWitness);
+					}
+					worklist.addFirst(new Pair<>(new Pair<>(leftSucc, rightSucc), succWitness));
 				}
 				guard = ba.MkAnd(guard, ba.MkNot(implicant));
 			} while (ba.IsSatisfiable(guard));
 		}
-		return true;
+		return new Pair<>(true, null);
 	}
 
 	protected Collection<Integer> getPrevState(Collection<Integer> currState, S inputElement, BooleanAlgebra<P, S> ba) {

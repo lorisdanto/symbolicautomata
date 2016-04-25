@@ -19,13 +19,13 @@ import automata.safa.SATRelation;
 import automata.safa.booleanexpression.PositiveBooleanExpression;
 import automata.safa.booleanexpression.SumOfProducts;
 import automata.safa.booleanexpression.SumOfProductsFactory;
+import theory.BooleanAlgebra;
 import theory.characters.CharPred;
 import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 import theory.intervals.UnaryCharIntervalSolver;
 
 public class SAFAUnitTest {
-
 	@Test
 	public void testIntersection() {
 		SAFA<CharPred, Character> intersection = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
@@ -159,18 +159,18 @@ public class SAFAUnitTest {
 		BooleanExpressionFactory<SumOfProducts> pos = SumOfProductsFactory.getInstance();
 		SAFA<CharPred, Character> intersection1 = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
 		SAFA<CharPred, Character> intersection2 = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba);
-		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, atLeastOneNum, ba, pos));
-		assertFalse(SAFA.isEquivalent(atLeastOneNum, atLeastOneAlpha, ba, pos));
-		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, intersection1, ba, pos));
-		assertFalse(SAFA.isEquivalent(intersection1, atLeastOneAlpha, ba, pos));
-		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, intersection2, ba, pos));
-		assertFalse(SAFA.isEquivalent(intersection2, atLeastOneAlpha, ba, pos));
-		assertFalse(SAFA.isEquivalent(atLeastOneNum, intersection1, ba, pos));
-		assertFalse(SAFA.isEquivalent(intersection1, atLeastOneNum, ba, pos));
-		assertFalse(SAFA.isEquivalent(atLeastOneNum, intersection2, ba, pos));
-		assertFalse(SAFA.isEquivalent(intersection2, atLeastOneNum, ba, pos));
-		assertTrue(SAFA.isEquivalent(intersection2, intersection1, ba, pos));
-		assertTrue(SAFA.isEquivalent(intersection1, intersection2, ba, pos));
+		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, atLeastOneNum, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(atLeastOneNum, atLeastOneAlpha, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, intersection1, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(intersection1, atLeastOneAlpha, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, intersection2, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(intersection2, atLeastOneAlpha, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(atLeastOneNum, intersection1, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(intersection1, atLeastOneNum, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(atLeastOneNum, intersection2, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(intersection2, atLeastOneNum, ba, pos).first);
+		assertTrue(SAFA.isEquivalent(intersection2, intersection1, ba, pos).first);
+		assertTrue(SAFA.isEquivalent(intersection1, intersection2, ba, pos).first);
 	}
 
 	@Test
@@ -183,7 +183,7 @@ public class SAFAUnitTest {
 
 		assertTrue(SAFA.isEmpty(a.intersectionWith(notA, ba), ba));
 		assertTrue(SAFA.isEmpty(b.intersectionWith(notB, ba), ba));
-		assertTrue(SAFA.isEquivalent(a, notA.negate(ba), ba, boolexpr));
-		assertTrue(SAFA.isEquivalent(a, notB.negate(ba), ba, boolexpr));
+		assertTrue(SAFA.isEquivalent(a, notA.negate(ba), ba, boolexpr).first);
+		assertTrue(SAFA.isEquivalent(a, notB.negate(ba), ba, boolexpr).first);
 	}
 }
