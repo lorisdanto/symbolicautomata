@@ -1,5 +1,6 @@
 package logic.ltl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,5 +68,9 @@ public abstract class LTLFormula<P,S> {
 	}
 	
 	public abstract void toString(StringBuilder sb);
+	
+	
+	
+
 	
 }
