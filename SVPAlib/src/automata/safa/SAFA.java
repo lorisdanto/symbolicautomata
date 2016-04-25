@@ -207,9 +207,6 @@ public class SAFA<P, S> {
 
 		for (S el : revInput) {
 			currConf = getPrevState(currConf, el, ba);
-
-			if (currConf.isEmpty())
-				return false;
 		}
 
 		return initialState.hasModel(currConf);
@@ -661,7 +658,7 @@ public class SAFA<P, S> {
 			throw new NotImplementedException();
 		}
 
-		return MkSAFA(transitions, initialState, finalStates, ba, true, false);
+		return MkSAFA(transitions, initialState, finalStates, ba, false, false);
 	}
 
 	/**

@@ -24,6 +24,7 @@ import theory.characters.CharPred;
 import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 import theory.intervals.UnaryCharIntervalSolver;
+import theory.safa.SAFABooleanAlgebra;
 
 public class SAFAUnitTest {
 	@Test
@@ -86,6 +87,18 @@ public class SAFAUnitTest {
 		assertTrue(SAFA.areReverseEquivalent(intersection1, intersection2, ba).first);
 	}
 
+	@Test
+	public void testListOfLists() throws TimeoutException {
+		System.out.println("lists of lists");
+		BooleanAlgebra<SAFA<CharPred,Character>,List<Character>> lol = new SAFABooleanAlgebra<>(ba, boolexpr);
+		CharPred a = new CharPred('a');
+		CharPred z = new CharPred('z');
+		SAFA<SAFA<CharPred,Character>,List<Character>> evAandZ = eventually(lol, eventually(ba, a).intersectionWith(eventually(ba, z), ba));
+		SAFA<SAFA<CharPred,Character>,List<Character>> evAandEvZ = eventually(lol, eventually(ba, a)).intersectionWith(eventually(lol, eventually(ba, z)), lol);
+		assertFalse(SAFA.isEquivalent(evAandZ, evAandEvZ, lol, boolexpr).first);
+		assertTrue(SAFA.isEquivalent(evAandZ.unionWith(evAandEvZ, lol), evAandEvZ, lol, boolexpr).first);
+	}
+
 	// ---------------------------------------
 	// Predicates
 	// ---------------------------------------
@@ -132,6 +145,14 @@ public class SAFAUnitTest {
 		return l;
 	}
 
+	private <P,S> SAFA<P,S> eventually(BooleanAlgebra<P,S> ba, P predicate) {
+		PositiveBooleanExpression initialState = boolexpr.MkState(0);
+		Collection<Integer> finalStates = new LinkedList<>();
+		Collection<SAFAInputMove<P,S>> transitions = new LinkedList<>();
+		transitions.add(new SAFAInputMove<P,S>(0, boolexpr.True(), predicate));
+		transitions.add(new SAFAInputMove<P,S>(0, boolexpr.MkState(0), ba.MkNot(predicate)));
+		return SAFA.MkSAFA(transitions, initialState, finalStates, ba, false, false);
+	}
 
     @Test
     public void testSATRelation() throws TimeoutException {
