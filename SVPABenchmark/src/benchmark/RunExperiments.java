@@ -20,7 +20,7 @@ import theory.bddalgebra.BDDSolver;
 import utilities.Pair;
 
 public class RunExperiments {
-	static long timeout = 220000;
+	static long timeout = 1000;
 
 	public static void main(String[] args) throws InterruptedException {
 
@@ -33,7 +33,7 @@ public class RunExperiments {
 	public static void RunLTLEmptiness() {
 		try {
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
-				if (Files.isRegularFile(filePath) && filePath.toString().endsWith("zp3.ltl")) {
+				if (Files.isRegularFile(filePath)){ //&& filePath.toString().endsWith("zp3.ltl")) {
 					try {
 						TestThread tt = new TestThread(filePath, true);
 						Thread thread = new Thread(tt);
