@@ -23,7 +23,7 @@ public class BDDSolver extends BooleanAlgebra<BDD, BDD> {
 	
 	public BDDSolver(int numVars) {
 		super();		
-		factory = BDDFactory.init(500000 , 125000);
+		factory = BDDFactory.init("java", 500000 , 125000);
 		factory.setVarNum(numVars);
 	}
 	
@@ -97,7 +97,7 @@ public class BDDSolver extends BooleanAlgebra<BDD, BDD> {
 
 	@Override
 	public BDD generateWitness(BDD p1) {
-		return p1.satOne();
+		return p1.fullSatOne();
 	}
 
 	@Override
