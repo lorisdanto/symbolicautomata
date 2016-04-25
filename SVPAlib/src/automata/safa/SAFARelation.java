@@ -20,5 +20,5 @@ public abstract class SAFARelation {
 	 * @param p
 	 * @param q
 	 */
-	public abstract void add(BooleanExpression p, BooleanExpression q);
+	public abstract boolean add(BooleanExpression p, BooleanExpression q);
 }

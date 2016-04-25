@@ -22,7 +22,6 @@ import logic.ltl.True;
 import theory.bdd.BDD;
 import theory.bddalgebra.BDDSolver;
 import theory.characters.CharPred;
-import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 import theory.intervals.UnaryCharIntervalSolver;
 import theory.sat.SATBooleanAlgebra;
@@ -30,7 +29,6 @@ import utilities.Pair;
 
 
 public class LTLUnitTest {
-
 	@Test
 	public void testEventuallyAndOr() {
 		LTLFormula<CharPred, Character> conj = new And<>(eva, evn);
@@ -83,7 +81,7 @@ public class LTLUnitTest {
 
 		boolean b = true;
 		try {
-			b = SAFA.isEquivalent(safa1, safa2, ba, SumOfProductsFactory.getInstance());
+			b = SAFA.isEquivalent(safa1, safa2, ba, SumOfProductsFactory.getInstance()).first;
 		} catch (TimeoutException toe) {
 			System.out.println(toe);
 		}
@@ -137,7 +135,7 @@ public class LTLUnitTest {
 	
 	@Test
 	public void testLargeEmptinessBDD() {
-		int sizeTot = 14;
+		int sizeTot = 12;
 		BDDExpressionFactory bef = new BDDExpressionFactory(sizeTot);
 		//PositiveBooleanExpressionFactory bef = new PositiveBooleanExpressionFactory();
 		//SumOfProductsFactory bef = SumOfProductsFactory.getInstance();
@@ -162,7 +160,7 @@ public class LTLUnitTest {
 
 			boolean b = true;
 			try {
-				b = SAFA.isEquivalent(safa1, SAFA.getEmptySAFA(bs), bs, bef);
+				b = SAFA.isEquivalent(safa1, SAFA.getEmptySAFA(bs), bs, bef).first;
 				assertFalse(b);
 			} catch (Exception toe) {
 				System.out.println(toe);
@@ -235,7 +233,7 @@ public class LTLUnitTest {
 
 		boolean b = true;
 		try {
-			b = SAFA.isEquivalent(safa1, safa2, ba, SumOfProductsFactory.getInstance());
+			b = SAFA.isEquivalent(safa1, safa2, ba, SumOfProductsFactory.getInstance()).first;
 		} catch (TimeoutException toe) {
 			System.out.println(toe);
 		}
@@ -293,5 +291,4 @@ public class LTLUnitTest {
 			l.add(ca[i]);
 		return l;
 	}
-
 }

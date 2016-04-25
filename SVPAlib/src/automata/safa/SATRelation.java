@@ -168,9 +168,14 @@ public class SATRelation extends SAFARelation {
 		return !factory.getSolver().isSatisfiable(mem, false);
 	}
 	
-	public void add(BooleanExpression p, BooleanExpression q) {
+	public boolean add(BooleanExpression p, BooleanExpression q) {
 		VecInt pair = new VecInt();
 		pair.push(mkIff(p, q));
-		factory.unsafeAddClause(pair);
+		try {
+			factory.solver.addClause(pair);
+			return true;
+		} catch (ContradictionException e) {
+			return false;
+		}
 	}
 }
