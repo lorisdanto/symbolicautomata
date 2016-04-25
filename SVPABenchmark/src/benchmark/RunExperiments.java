@@ -150,7 +150,7 @@ public class RunExperiments {
 				long stopTime = System.currentTimeMillis();
 
 				try {
-					b = SAFA.isEquivalent(safa, safa, bdds, SumOfProductsFactory.getInstance());
+					b = SAFA.isEquivalent(safa, safa, bdds, SumOfProductsFactory.getInstance()).getFirst();
 					stopTime = System.currentTimeMillis();
 				} catch (TimeoutException toe) {
 					stopTime = System.currentTimeMillis() + timeout;
