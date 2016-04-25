@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import automata.safa.BooleanExpression;
-import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
 import theory.BooleanAlgebra;
@@ -57,11 +55,20 @@ public class False<P, S> extends LTLFormula<P, S> {
 	}
 	
 	@Override
-	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
-		if(isPositive)
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba, HashMap<String, LTLFormula<P,S>> posHash, HashMap<String, LTLFormula<P,S>> negHash){
+		if(isPositive){
 			return this;
-		else 
-			return new True<>();
+		}
+		else{ 
+			String key = this.toString();
+			if (negHash.containsKey(key)) {
+				return negHash.get(key);
+			} else {
+				LTLFormula<P, S> out = new True<>();
+				negHash.put(key, out);
+				return out;
+			}			
+		}
 	}
 	
 	@Override

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
@@ -146,15 +145,31 @@ public class Or<P, S> extends LTLFormula<P, S> {
 	}
 	
 	@Override
-	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
-		List<LTLFormula<P, S>> newPhis =new ArrayList<>();
-		for(LTLFormula<P, S> phi:disjuncts)
-			newPhis.add(phi.pushNegations(isPositive,ba));
-		
-		if(isPositive)
-			return new Or<>(newPhis);
-		else
-			return new And<>(newPhis);
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba, HashMap<String, LTLFormula<P,S>> posHash, HashMap<String, LTLFormula<P,S>> negHash){
+		String key = this.toString();
+
+		LTLFormula<P, S> out = new False<>();
+
+		if (isPositive) {
+			if (posHash.containsKey(key)) {
+				return posHash.get(key);
+			}
+			List<LTLFormula<P, S>> newPhis = new ArrayList<>();
+			for (LTLFormula<P, S> phi : disjuncts)
+				newPhis.add(phi.pushNegations(isPositive, ba, posHash, negHash));
+			out = new Or<>(newPhis);
+			posHash.put(key, out);
+			return out;
+		} else {
+			if(negHash.containsKey(key))
+				return negHash.get(key);
+			List<LTLFormula<P, S>> newPhis = new ArrayList<>();
+			for (LTLFormula<P, S> phi : disjuncts)
+				newPhis.add(phi.pushNegations(isPositive, ba, posHash, negHash));
+			out = new And<>(newPhis);
+			negHash.put(key, out);
+			return out;
+		}
 	}
 	
 	@Override

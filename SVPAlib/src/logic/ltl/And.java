@@ -15,7 +15,6 @@ import theory.BooleanAlgebra;
 
 public class And<P, S> extends LTLFormula<P, S> {
 
-
 	protected List<LTLFormula<P, S>> conjuncts;
 
 	public And(LTLFormula<P, S> left, LTLFormula<P, S> right) {
@@ -56,8 +55,7 @@ public class And<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected void accumulateSAFAStatesTransitions(
-			HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
+	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
 			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, Collection<Integer> finalStates,
 			BooleanAlgebra<P, S> ba) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
@@ -75,7 +73,7 @@ public class And<P, S> extends LTLFormula<P, S> {
 		// Compute transitions for children
 		for (LTLFormula<P, S> phi : conjuncts) {
 			phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
-			int phiId=formulaToStateId.get(phi);
+			int phiId = formulaToStateId.get(phi);
 			ids.add(phiId);
 			conjMoves.add(moves.get(phiId));
 		}
@@ -85,7 +83,7 @@ public class And<P, S> extends LTLFormula<P, S> {
 
 		moves.put(id, newMoves);
 	}
-	
+
 	protected <E extends BooleanExpression> void accumulateMovesAnd(P currPred, PositiveBooleanExpression currToExpr,
 			Collection<SAFAInputMove<P, S>> newMoves, ArrayList<Collection<SAFAInputMove<P, S>>> conjMoves,
 			BooleanAlgebra<P, S> ba, int idFrom, int n) {
@@ -96,11 +94,10 @@ public class And<P, S> extends LTLFormula<P, S> {
 			for (SAFAInputMove<P, S> m : conjMoves.get(n)) {
 				P pred = ba.MkAnd(currPred, m.guard);
 				if (ba.IsSatisfiable(pred))
-					accumulateMovesAnd(pred, boolexpr.MkAnd(currToExpr, m.to), newMoves, conjMoves, ba, idFrom,
-							n + 1);
+					accumulateMovesAnd(pred, boolexpr.MkAnd(currToExpr, m.to), newMoves, conjMoves, ba, idFrom, n + 1);
 			}
 	}
-	
+
 	@Override
 	protected boolean isFinalState() {
 		boolean isF = true;
@@ -110,37 +107,54 @@ public class And<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
-		List<LTLFormula<P, S>> newPhis =new ArrayList<>();
-		for(LTLFormula<P, S> phi:conjuncts)
-			newPhis.add(phi.pushNegations(isPositive,ba));
-		
-		if(isPositive)
-			return new And<>(newPhis);
-		else
-			return new Or<>(newPhis);
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba,
+			HashMap<String, LTLFormula<P, S>> posHash, HashMap<String, LTLFormula<P, S>> negHash) {
+		String key = this.toString();
+
+		LTLFormula<P, S> out = new False<>();
+
+		if (isPositive) {
+			if (posHash.containsKey(key)) {
+				return posHash.get(key);
+			}
+			List<LTLFormula<P, S>> newPhis = new ArrayList<>();
+			for (LTLFormula<P, S> phi : conjuncts)
+				newPhis.add(phi.pushNegations(isPositive, ba, posHash, negHash));
+			out = new And<>(newPhis);
+			posHash.put(key, out);
+			return out;
+		} else {
+			if(negHash.containsKey(key))
+				return negHash.get(key);
+			List<LTLFormula<P, S>> newPhis = new ArrayList<>();
+			for (LTLFormula<P, S> phi : conjuncts)
+				newPhis.add(phi.pushNegations(isPositive, ba, posHash, negHash));
+			out = new Or<>(newPhis);
+			negHash.put(key, out);
+			return out;
+		}
 	}
 
 	@Override
 	public void toString(StringBuilder sb) {
 		sb.append("(");
 		boolean isFirst = true;
-		for (LTLFormula<P, S> phi : conjuncts){
-			if(!isFirst)
+		for (LTLFormula<P, S> phi : conjuncts) {
+			if (!isFirst)
 				sb.append(" && ");
-				
-			phi.toString(sb);							
-			isFirst=false;
+
+			phi.toString(sb);
+			isFirst = false;
 		}
 		sb.append(")");
 	}
 
 	@Override
-	public SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba) {
+	public SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
 		ArrayList<LTLFormula<P, S>> c = new ArrayList<>(conjuncts);
-		SAFA<P,S> safa = c.get(0).getSAFANew(ba);
-		for(int i = 1; i<c.size();i++)
-			safa = safa.intersectionWith(c.get(i).getSAFANew(ba),ba);
+		SAFA<P, S> safa = c.get(0).getSAFANew(ba);
+		for (int i = 1; i < c.size(); i++)
+			safa = safa.intersectionWith(c.get(i).getSAFANew(ba), ba);
 
 		return safa;
 	}
