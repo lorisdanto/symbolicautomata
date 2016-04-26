@@ -50,7 +50,7 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
 			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, Collection<Integer> finalStates,
-			BooleanAlgebra<P, S> ba) {
+			BooleanAlgebra<P, S> ba, boolean normalize) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -62,7 +62,7 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 		formulaToStateId.put(this, id);
 
 		// Compute transitions for children
-		phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
+		phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, normalize);
 
 		// delta(G phi, p) = delta(phi, p) /\ G phi
 		Collection<SAFAInputMove<P, S>> phiMoves = moves.get(formulaToStateId.get(phi));
@@ -73,10 +73,13 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 			not = ba.MkAnd(not, ba.MkNot(move.guard));
 		}
 
-		if (ba.IsSatisfiable(not))
-			newMoves.add(new SAFAInputMove<P, S>(id, boolexpr.MkState(id), not));
+		if (!normalize && ba.IsSatisfiable(not))
+			newMoves.add(new SAFAInputMove<P, S>(id, boolexpr.False(), not));
 
 		moves.put(id, newMoves);
+		
+		if(this.isFinalState())
+			finalStates.add(id);
 	}
 
 	@Override

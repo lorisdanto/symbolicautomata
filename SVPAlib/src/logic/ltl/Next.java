@@ -49,7 +49,7 @@ public class Next<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
 			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, boolean normalize) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -61,7 +61,7 @@ public class Next<P, S> extends LTLFormula<P, S> {
 		formulaToStateId.put(this, id);
 
 		// Compute transitions for children
-		phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
+		phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba,normalize);
 
 		// delta(X phi, true) = phi
 		int phiId = formulaToStateId.get(phi);
@@ -69,6 +69,9 @@ public class Next<P, S> extends LTLFormula<P, S> {
 		newMoves.add(new SAFAInputMove<P, S>(id, boolexpr.MkState(phiId), ba.True()));
 
 		moves.put(id, newMoves);
+		
+		if(this.isFinalState())
+			finalStates.add(id);
 	}
 
 	@Override

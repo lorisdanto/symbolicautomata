@@ -33,7 +33,7 @@ public class False<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
 			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, boolean normalize) {
 
 		// If I already visited avoid recomputing
 		if (formulaToStateId.containsKey(this))

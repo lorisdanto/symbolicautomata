@@ -45,7 +45,7 @@ public class Not<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
 			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, Collection<Integer> finalStates,
-			BooleanAlgebra<P, S> ba) {
+			BooleanAlgebra<P, S> ba, boolean normalize) {
 
 		throw new UnsupportedOperationException("At this point the formula should be in negation normal form.");
 	}

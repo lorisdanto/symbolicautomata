@@ -57,7 +57,7 @@ public class And<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
 			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, Collection<Integer> finalStates,
-			BooleanAlgebra<P, S> ba) {
+			BooleanAlgebra<P, S> ba, boolean normalize) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -72,7 +72,7 @@ public class And<P, S> extends LTLFormula<P, S> {
 		ArrayList<Collection<SAFAInputMove<P, S>>> conjMoves = new ArrayList<>();
 		// Compute transitions for children
 		for (LTLFormula<P, S> phi : conjuncts) {
-			phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
+			phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, normalize);
 			int phiId = formulaToStateId.get(phi);
 			ids.add(phiId);
 			conjMoves.add(moves.get(phiId));
@@ -82,6 +82,9 @@ public class And<P, S> extends LTLFormula<P, S> {
 		accumulateMovesAnd(ba.True(), boolexpr.True(), newMoves, conjMoves, ba, id, 0);
 
 		moves.put(id, newMoves);
+		
+		if(this.isFinalState())
+			finalStates.add(id);
 	}
 
 	protected <E extends BooleanExpression> void accumulateMovesAnd(P currPred, PositiveBooleanExpression currToExpr,

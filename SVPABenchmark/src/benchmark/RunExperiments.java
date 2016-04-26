@@ -20,7 +20,8 @@ import theory.bddalgebra.BDDSolver;
 import utilities.Pair;
 
 public class RunExperiments {
-	static long timeout = 1000;
+	static long timeout = 1200000;
+	static boolean normalize = true;
 
 	public static void main(String[] args) throws InterruptedException {
 
@@ -33,7 +34,7 @@ public class RunExperiments {
 	public static void RunLTLEmptiness() {
 		try {
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
-				if (Files.isRegularFile(filePath)){ //&& filePath.toString().endsWith("zp3.ltl")) {
+				if (Files.isRegularFile(filePath)){ //&& filePath.toString().contains("counter")) {
 					try {
 						TestThread tt = new TestThread(filePath, true);
 						Thread thread = new Thread(tt);
@@ -66,7 +67,7 @@ public class RunExperiments {
 			Pair<BDDSolver, LTLFormula<BDD, BDD>> pair = LTLConverter.getLTLBDD(ltl);
 			BDDSolver bdds = pair.first;
 			LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
-			SAFA<BDD, BDD> safa = tot.getSAFA(bdds);
+			SAFA<BDD, BDD> safa = tot.getSAFA(bdds, normalize);
 
 			long startTime = System.currentTimeMillis();
 
@@ -76,6 +77,7 @@ public class RunExperiments {
 				System.out.println("Congruence");
 				try {
 					b = SAFA.isEmpty(safa, bdds);
+					System.out.println(b);
 					stopTime = System.currentTimeMillis();
 				} catch (TimeoutException toe) {
 					stopTime = System.currentTimeMillis() + timeout;
@@ -84,18 +86,19 @@ public class RunExperiments {
 				long elapsedTime = stopTime - startTime;
 				if (tt.isRunning) {
 					System.out.println(elapsedTime);
+					if (false) {
+						startTime = System.currentTimeMillis();
+						System.out.println("Reverse");
+						Pair<Boolean, List<BDD>> b1 = SAFA.areReverseEquivalent(safa, SAFA.getEmptySAFA(bdds), bdds);
 
-					startTime = System.currentTimeMillis();
-					System.out.println("Reverse");
-					Pair<Boolean, List<BDD>> b1 = SAFA.areReverseEquivalent(safa, SAFA.getEmptySAFA(bdds), bdds);
+						stopTime = System.currentTimeMillis();
+						elapsedTime = stopTime - startTime;
+						if (tt.isRunning) {
+							System.out.println(elapsedTime);
 
-					stopTime = System.currentTimeMillis();
-					elapsedTime = stopTime - startTime;
-					if (tt.isRunning) {
-						System.out.println(elapsedTime);
-
-						if (b != b1.first)
-							throw new IllegalArgumentException("b and b1 should be the same");
+							if (b != b1.first)
+								throw new IllegalArgumentException("b and b1 should be the same");
+						}
 					}
 				}
 			}
@@ -142,7 +145,7 @@ public class RunExperiments {
 			Pair<BDDSolver, LTLFormula<BDD, BDD>> pair = LTLConverter.getLTLBDD(ltl);
 			BDDSolver bdds = pair.first;
 			LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
-			SAFA<BDD, BDD> safa = tot.getSAFA(bdds);
+			SAFA<BDD, BDD> safa = tot.getSAFA(bdds, normalize);
 			if (tt.isRunning) {
 				long startTime = System.currentTimeMillis();
 

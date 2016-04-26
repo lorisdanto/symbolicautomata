@@ -15,6 +15,10 @@ import theory.BooleanAlgebra;
 public abstract class LTLFormula<P,S> {
 
 	public <E extends BooleanExpression> SAFA<P,S> getSAFA(BooleanAlgebra<P, S> ba){
+		return getSAFA(ba, true);
+	}
+	
+	public <E extends BooleanExpression> SAFA<P,S> getSAFA(BooleanAlgebra<P, S> ba, boolean normalize){
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		PositiveBooleanExpression initialState = boolexpr.MkState(0);
@@ -23,7 +27,7 @@ public abstract class LTLFormula<P,S> {
 		Collection<Integer> finalStates = new HashSet<>();
 		HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves = new HashMap<>();
 		
-		this.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
+		this.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba,normalize);
 
 		Collection<SAFAInputMove<P, S>> transitions = new LinkedList<>();
 		for(Collection<SAFAInputMove<P, S>> c: moves.values())
@@ -45,7 +49,8 @@ public abstract class LTLFormula<P,S> {
 			HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
 			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
 			Collection<Integer> finalStates,
-			BooleanAlgebra<P, S> ba);
+			BooleanAlgebra<P, S> ba,
+			boolean normalize);
 	
 	// returns set of disjoint predicates that are the triggers of transitions out of this state
 	public abstract SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba);

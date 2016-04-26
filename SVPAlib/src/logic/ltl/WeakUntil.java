@@ -53,9 +53,9 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected  void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
+			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, Collection<Integer> finalStates,
+			BooleanAlgebra<P, S> ba, boolean normalize) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -65,10 +65,10 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 		// Update hash tables
 		int id = formulaToStateId.size();
 		formulaToStateId.put(this, id);
-		
+
 		// Compute transitions for children
-		left.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
-		right.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
+		left.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, normalize);
+		right.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, normalize);
 
 		// delta(l W r, p) = delta(l, p) and lWr
 		// delta(l W r, p) = delta(r, p)
@@ -76,7 +76,7 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 		int rightId = formulaToStateId.get(right);
 		Collection<SAFAInputMove<P, S>> leftMoves = moves.get(leftId);
 		Collection<SAFAInputMove<P, S>> rightMoves = moves.get(rightId);
-		
+
 		Collection<SAFAInputMove<P, S>> untMovesL = new ArrayList<>();
 		Collection<SAFAInputMove<P, S>> untMovesR = new ArrayList<>();
 		P leftoverL = ba.True();
@@ -96,23 +96,27 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 			if (ba.IsSatisfiable(conj))
 				untMoves.add(new SAFAInputMove<P, S>(id, rightMove.to, conj));
 		}
-
-		for (SAFAInputMove<P, S> lMove : leftMoves){
-			for (SAFAInputMove<P, S> rMove : rightMoves) {
-				P conj = ba.MkAnd(lMove.guard, rMove.guard);
+		if (!normalize) {
+			untMoves.addAll(untMovesL);
+			untMoves.addAll(untMovesR);
+		} else {
+			for (SAFAInputMove<P, S> lMove : leftMoves) {
+				for (SAFAInputMove<P, S> rMove : rightMoves) {
+					P conj = ba.MkAnd(lMove.guard, rMove.guard);
+					if (ba.IsSatisfiable(conj))
+						untMoves.add(new SAFAInputMove<P, S>(id, boolexpr.MkOr(lMove.to, rMove.to), conj));
+				}
+				P conj = ba.MkAnd(lMove.guard, leftoverR);
 				if (ba.IsSatisfiable(conj))
-					untMoves.add(new SAFAInputMove<P, S>(id, boolexpr.MkOr(lMove.to, rMove.to), conj));
+					untMoves.add(new SAFAInputMove<P, S>(id, lMove.to, conj));
 			}
-			P conj = ba.MkAnd(lMove.guard, leftoverR);
-			if (ba.IsSatisfiable(conj))
-				untMoves.add(new SAFAInputMove<P, S>(id, lMove.to, conj));
 		}
-		
-		moves.put(id, untMoves);
-				
-		// Weak until are final states (unlike regular until)
-		finalStates.add(id);
 
+		moves.put(id, untMoves);
+
+		// Weak until are final states (unlike regular until)
+		if(this.isFinalState())
+			finalStates.add(id);
 
 	}
 
@@ -120,9 +124,10 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 	protected boolean isFinalState() {
 		return true;
 	}
-	
+
 	@Override
-	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba, HashMap<String, LTLFormula<P,S>> posHash, HashMap<String, LTLFormula<P,S>> negHash){
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba,
+			HashMap<String, LTLFormula<P, S>> posHash, HashMap<String, LTLFormula<P, S>> negHash) {
 		String key = this.toString();
 
 		LTLFormula<P, S> out = new False<>();
@@ -131,19 +136,20 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 			if (posHash.containsKey(key)) {
 				return posHash.get(key);
 			}
-			out = new WeakUntil<>(left.pushNegations(isPositive, ba,posHash, negHash), right.pushNegations(isPositive, ba,posHash, negHash));
+			out = new WeakUntil<>(left.pushNegations(isPositive, ba, posHash, negHash),
+					right.pushNegations(isPositive, ba, posHash, negHash));
 			posHash.put(key, out);
 			return out;
 		} else {
-			if(negHash.containsKey(key))
+			if (negHash.containsKey(key))
 				return negHash.get(key);
-			LTLFormula<P, S> rightNeg = right.pushNegations(isPositive, ba, posHash,negHash);
-			out = new Until<>(rightNeg, new And<>(left.pushNegations(isPositive, ba, posHash,negHash), rightNeg));
+			LTLFormula<P, S> rightNeg = right.pushNegations(isPositive, ba, posHash, negHash);
+			out = new Until<>(rightNeg, new And<>(left.pushNegations(isPositive, ba, posHash, negHash), rightNeg));
 			negHash.put(key, out);
 			return out;
 		}
 	}
-	
+
 	@Override
 	public void toString(StringBuilder sb) {
 		sb.append("(");
@@ -152,7 +158,7 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 		right.toString(sb);
 		sb.append(")");
 	}
-	
+
 	@Override
 	public SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
 		// TODO Auto-generated method stub
