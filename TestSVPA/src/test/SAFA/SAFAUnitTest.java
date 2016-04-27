@@ -69,7 +69,7 @@ public class SAFAUnitTest {
 	}
 	
 	@Test
-	public void testEquivalence() {
+	public void testEquivalence() throws TimeoutException {
 		SAFA<CharPred, Character> intersection1 = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
 		SAFA<CharPred, Character> intersection2 = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba);
 

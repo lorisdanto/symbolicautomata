@@ -87,4 +87,9 @@ public class True<P, S> extends LTLFormula<P, S> {
 	public SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba) {
 		return SAFA.getFullSAFA(ba);
 	}
+	
+	@Override
+	public int getSize() {
+		return 1;
+	}
 }

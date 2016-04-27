@@ -1,9 +1,8 @@
 package benchmark;
 
 import java.io.FileReader;
-import java.io.IOException;
+import java.io.FileWriter;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -20,190 +19,158 @@ import theory.bddalgebra.BDDSolver;
 import utilities.Pair;
 
 public class RunExperiments {
-	static long timeout = 1200000;
+	static long timeout = 2000;
 	static boolean normalize = true;
+
+	static String emptinessOutputFile = "results/emptiness.csv";
+	static String equivalenceOutputFile = "results/selfEquivalence.csv";
+	static String suffix = "";
 
 	public static void main(String[] args) throws InterruptedException {
 
 		RunLTLEmptiness();
-		// RunSelfEquivLTL();
-		//
+		RunLTLSelfEquivalence();
 
 	}
 
 	public static void RunLTLEmptiness() {
 		try {
+			FileWriter fw = new FileWriter(emptinessOutputFile);
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
-				if (Files.isRegularFile(filePath)){ //&& filePath.toString().contains("counter")) {
+				if (Files.isRegularFile(filePath)) {// &&
+													// filePath.toString().endsWith("lift_7.ltl"))
+													// {
 					try {
-						TestThread tt = new TestThread(filePath, true);
-						Thread thread = new Thread(tt);
-						System.out.println(filePath.toString());
-						thread.start();
-						long endTimeMillis = System.currentTimeMillis() + timeout;
-						while (thread.isAlive()) {
-							if (System.currentTimeMillis() > endTimeMillis) {
-								System.out.println("TIMEOUT");
-								tt.kill();
-								break;
+						List<LTLNode> nodes = LTLParserProvider.parse(new FileReader(filePath.toFile()));
+
+						System.out.println(filePath);
+
+						int counter = 0;
+						for (LTLNode ltl : nodes) {
+							fw.append(filePath.getFileName().toString());
+							if (counter > 0)
+								fw.append(counter + "");
+							fw.append(", ");
+							counter++;
+
+							Pair<BDDSolver, LTLFormula<BDD, BDD>> pair = LTLConverter.getLTLBDD(ltl);
+							BDDSolver bdds = pair.first;
+							LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
+							SAFA<BDD, BDD> safa = tot.getSAFA(bdds, normalize);
+
+							fw.append(pair.second.getSize() + ", ");
+							
+							boolean result = true;
+							boolean to1 = false;
+							boolean to2 = false;
+
+							long startTime1 = System.currentTimeMillis();
+							try {
+								result = SAFA.isEmpty(safa, bdds, timeout);
+								fw.append(System.currentTimeMillis() - startTime1 + ", ");
+							} catch (TimeoutException toe) {
+								fw.append("TO,");
+								to1 = true;
 							}
+
+							long startTime2 = System.currentTimeMillis();
+							try {
+								result = SAFA.areReverseEquivalent(safa, SAFA.getEmptySAFA(bdds), bdds, timeout).first;
+								fw.append(System.currentTimeMillis() - startTime2 + ", ");
+							} catch (TimeoutException toe) {
+								fw.append("TO,");
+								to2 = true;
+							}
+
+							if (!(to1 && to2))
+								fw.append(result + "");
+							else
+								fw.append("TO");
+
+							fw.append("\n");
 						}
-					} catch (Exception e) {
+					} catch (Exception e1) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
+						e1.printStackTrace();
 					}
 				}
 			});
+			fw.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	public static void RunEmptiness(Path filePath, TestThread tt) throws IOException {
-		List<LTLNode> nodes = LTLParserProvider.parse(new FileReader(filePath.toFile()));
-
-		for (LTLNode ltl : nodes) {
-			Pair<BDDSolver, LTLFormula<BDD, BDD>> pair = LTLConverter.getLTLBDD(ltl);
-			BDDSolver bdds = pair.first;
-			LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
-			SAFA<BDD, BDD> safa = tot.getSAFA(bdds, normalize);
-
-			long startTime = System.currentTimeMillis();
-
-			boolean b = true;
-			long stopTime = System.currentTimeMillis();
-			if (tt.isRunning) {
-				System.out.println("Congruence");
-				try {
-					b = SAFA.isEmpty(safa, bdds);
-					System.out.println(b);
-					stopTime = System.currentTimeMillis();
-				} catch (TimeoutException toe) {
-					stopTime = System.currentTimeMillis() + timeout;
-				}
-
-				long elapsedTime = stopTime - startTime;
-				if (tt.isRunning) {
-					System.out.println(elapsedTime);
-					if (false) {
-						startTime = System.currentTimeMillis();
-						System.out.println("Reverse");
-						Pair<Boolean, List<BDD>> b1 = SAFA.areReverseEquivalent(safa, SAFA.getEmptySAFA(bdds), bdds);
-
-						stopTime = System.currentTimeMillis();
-						elapsedTime = stopTime - startTime;
-						if (tt.isRunning) {
-							System.out.println(elapsedTime);
-
-							if (b != b1.first)
-								throw new IllegalArgumentException("b and b1 should be the same");
-						}
-					}
-				}
-			}
-		}
-	}
-
-	public static void RunSelfEquivLTL() {
-
+	public static void RunLTLSelfEquivalence() {
 		try {
+			FileWriter fw = new FileWriter(equivalenceOutputFile);
+			fw.append("formula, size, congruence, reverse, result \n");
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
-				TestThread tt = new TestThread(filePath, false);
-				Thread thread = new Thread(tt);
-
-				if (Files.isRegularFile(filePath)) {
+				if (Files.isRegularFile(filePath) && filePath.toString().endsWith(suffix)
+						&& filePath.toString().endsWith(suffix)) {
 					try {
-						thread.start();
-						long endTimeMillis = System.currentTimeMillis() + timeout;
-						while (thread.isAlive()) {
-							if (System.currentTimeMillis() > endTimeMillis) {
-								System.out.println("TIMEOUT");
-								tt.kill();
-								break;
+						List<LTLNode> nodes = LTLParserProvider.parse(new FileReader(filePath.toFile()));
+						System.out.println(filePath);
+						int counter = 0;
+						for (LTLNode ltl : nodes) {
+							fw.append(filePath.getFileName().toString());
+							if (counter > 0)
+								fw.append(counter + "");
+							fw.append(", ");
+							counter++;
+
+							Pair<BDDSolver, LTLFormula<BDD, BDD>> pair = LTLConverter.getLTLBDD(ltl);
+							BDDSolver bdds = pair.first;
+							LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
+							SAFA<BDD, BDD> safa = tot.getSAFA(bdds, normalize);
+
+							fw.append(pair.second.getSize() + ", ");
+
+							boolean result = true;
+							boolean to1 = false;
+							boolean to2 = false;
+
+							long startTime1 = System.currentTimeMillis();
+							try {
+								result = SAFA.isEquivalent(safa, safa, bdds, SumOfProductsFactory.getInstance(), timeout)
+										.getFirst();
+								fw.append(System.currentTimeMillis() - startTime1 + ",");
+								if (!result)
+									System.out.println("Error in equiv algo, self equiv returns false");
+							} catch (TimeoutException toe) {
+								fw.append("TO,");
+								to1 = true;
 							}
+
+							long startTime2 = System.currentTimeMillis();
+							try {
+								result = SAFA.areReverseEquivalent(safa, safa, bdds, timeout).first;
+								fw.append(System.currentTimeMillis() - startTime2 + ",");
+								if (!result)
+									System.out.println("Error in equiv algo, self equiv returns false");
+							} catch (TimeoutException toe) {
+								fw.append("TO,");
+								to2 = true;
+							}
+
+							if (!(to1 && to2))
+								fw.append(result + "");
+							else
+								fw.append("TO");
+
+							fw.append("\n");
 						}
-					} catch (Exception e) {
+					} catch (Exception e1) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
+						e1.printStackTrace();
 					}
 				}
 			});
-		} catch (IOException e) {
+			fw.close();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-	}
-
-	public static void RunSelfEquivLTLFile(Path filePath, TestThread tt) throws IOException {
-		// parser p;
-		// p.
-		List<LTLNode> nodes = LTLParserProvider.parse(new FileReader(filePath.toFile()));
-
-		for (LTLNode ltl : nodes) {
-			Pair<BDDSolver, LTLFormula<BDD, BDD>> pair = LTLConverter.getLTLBDD(ltl);
-			BDDSolver bdds = pair.first;
-			LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
-			SAFA<BDD, BDD> safa = tot.getSAFA(bdds, normalize);
-			if (tt.isRunning) {
-				long startTime = System.currentTimeMillis();
-
-				boolean b = true;
-				long stopTime = System.currentTimeMillis();
-
-				try {
-					b = SAFA.isEquivalent(safa, safa, bdds, SumOfProductsFactory.getInstance()).getFirst();
-					stopTime = System.currentTimeMillis();
-				} catch (TimeoutException toe) {
-					stopTime = System.currentTimeMillis() + timeout;
-				}
-				if (tt.isRunning) {
-					long elapsedTime = stopTime - startTime;
-					System.out.println(elapsedTime);
-
-					startTime = System.currentTimeMillis();
-
-					Pair<Boolean, List<BDD>> b1 = SAFA.areReverseEquivalent(safa, safa, bdds);
-					if (tt.isRunning) {
-						stopTime = System.currentTimeMillis();
-						elapsedTime = stopTime - startTime;
-						System.out.println(elapsedTime);
-
-						if (b != b1.first)
-							throw new IllegalArgumentException("b and b1 should be the same");
-					}
-				}
-			}
-		}
-	}
-}
-
-class TestThread implements Runnable {
-
-	public volatile boolean isRunning = true;
-	public Path filePath;
-	public boolean isEmptiness;
-
-	public TestThread(Path filePath, boolean isEmptiness) {
-		this.filePath = filePath;
-		this.isEmptiness = isEmptiness;
-	}
-
-	@Override
-	public void run() {
-		try {
-			if (isEmptiness)
-				RunExperiments.RunEmptiness(filePath, this);
-			else
-				RunExperiments.RunSelfEquivLTLFile(filePath, this);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public void kill() {
-		isRunning = false;
 	}
 }

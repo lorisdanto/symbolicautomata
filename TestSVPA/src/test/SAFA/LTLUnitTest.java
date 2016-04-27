@@ -58,7 +58,7 @@ public class LTLUnitTest {
 	}
 
 	@Test
-	public void testLargeEquiv() {
+	public void testLargeEquiv() throws TimeoutException {
 		int size = 7;
 
 		LTLFormula<CharPred, Character> tot = new True<>();

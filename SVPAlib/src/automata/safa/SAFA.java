@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.sat4j.specs.TimeoutException;
 
 import com.google.common.collect.Lists;
@@ -24,7 +25,6 @@ import automata.safa.booleanexpression.PositiveBooleanExpressionFactory;
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import theory.BooleanAlgebra;
 import utilities.Pair;
 import utilities.UnionFindHopKarp;
@@ -112,7 +112,7 @@ public class SAFA<P, S> {
 	 */
 	public static <A, B> SAFA<A, B> MkSAFA(
 			Collection<SAFAInputMove<A, B>> transitions, PositiveBooleanExpression initialState, Collection<Integer> finalStates,
-			BooleanAlgebra<A, B> ba) {
+			BooleanAlgebra<A, B> ba){
 		return MkSAFA(transitions, initialState, finalStates, ba, true, true);
 	}
 
@@ -212,42 +212,42 @@ public class SAFA<P, S> {
 		return initialState.hasModel(currConf);
 	}
 
-	/**
-	 * Return a list [<g1, t1>, ..., <gn, tn>] of <guard, transition table>
-	 * pairs such that: - For each i and each state s, s transitions to ti[s] on
-	 * reading a letter satisfying gi - {g1, ..., gn} is the set of all
-	 * satisfiable conjunctions of guards on outgoing transitions leaving the
-	 * input set of states
-	 * 
-	 * @param states
-	 *            The states from which to compute the outgoing transitions
-	 * @param ba
-	 * @param guard
-	 *            All transitions in the list must comply with guard
-	 * @return
-	 */
-	private <E extends BooleanExpression> LinkedList<Pair<P, Map<Integer, E>>> getTransitionTablesFrom(
-			Collection<Integer> states, BooleanAlgebra<P, S> ba, P guard, BooleanExpressionFactory<E> tgt) {
-		LinkedList<Pair<P, Map<Integer, E>>> moves = new LinkedList<>();
-
-		BooleanExpressionMorphism<E> coerce = new BooleanExpressionMorphism<>((x) -> tgt.MkState(x), tgt);
-		moves.add(new Pair<P, Map<Integer, E>>(guard, new HashMap<>()));
-		for (Integer s : states) {
-			LinkedList<Pair<P, Map<Integer, E>>> moves2 = new LinkedList<>();
-			for (SAFAInputMove<P, S> t : getInputMovesFrom(s)) {
-				for (Pair<P, Map<Integer, E>> move : moves) {
-					P newGuard = ba.MkAnd(t.guard, move.getFirst());
-					if (ba.IsSatisfiable(newGuard)) {
-						Map<Integer, E> map = new HashMap<Integer, E>(move.getSecond());
-						map.put(s, coerce.apply(t.to));
-						moves2.add(new Pair<>(newGuard, map));
-					}
-				}
-			}
-			moves = moves2;
-		}
-		return moves;
-	}
+//	/**
+//	 * Return a list [<g1, t1>, ..., <gn, tn>] of <guard, transition table>
+//	 * pairs such that: - For each i and each state s, s transitions to ti[s] on
+//	 * reading a letter satisfying gi - {g1, ..., gn} is the set of all
+//	 * satisfiable conjunctions of guards on outgoing transitions leaving the
+//	 * input set of states
+//	 * 
+//	 * @param states
+//	 *            The states from which to compute the outgoing transitions
+//	 * @param ba
+//	 * @param guard
+//	 *            All transitions in the list must comply with guard
+//	 * @return
+//	 */
+//	private <E extends BooleanExpression> LinkedList<Pair<P, Map<Integer, E>>> getTransitionTablesFrom(
+//			Collection<Integer> states, BooleanAlgebra<P, S> ba, P guard, BooleanExpressionFactory<E> tgt) {
+//		LinkedList<Pair<P, Map<Integer, E>>> moves = new LinkedList<>();
+//
+//		BooleanExpressionMorphism<E> coerce = new BooleanExpressionMorphism<>((x) -> tgt.MkState(x), tgt);
+//		moves.add(new Pair<P, Map<Integer, E>>(guard, new HashMap<>()));
+//		for (Integer s : states) {
+//			LinkedList<Pair<P, Map<Integer, E>>> moves2 = new LinkedList<>();
+//			for (SAFAInputMove<P, S> t : getInputMovesFrom(s)) {
+//				for (Pair<P, Map<Integer, E>> move : moves) {
+//					P newGuard = ba.MkAnd(t.guard, move.getFirst());
+//					if (ba.IsSatisfiable(newGuard)) {
+//						Map<Integer, E> map = new HashMap<Integer, E>(move.getSecond());
+//						map.put(s, coerce.apply(t.to));
+//						moves2.add(new Pair<>(newGuard, map));
+//					}
+//				}
+//			}
+//			moves = moves2;
+//		}
+//		return moves;
+//	}
 
 	/**
 	 * Checks whether the SAFA aut is empty
@@ -259,15 +259,39 @@ public class SAFA<P, S> {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();
 		return isEquivalent(aut, getEmptySAFA(ba), ba, boolexpr).getFirst();
 	}
+	
+	/**
+	 * Checks whether the SAFA aut is empty
+	 * 
+	 * @throws TimeoutException
+	 */
+	public static <P, S, E extends BooleanExpression> boolean isEmpty(SAFA<P, S> aut, BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
+		// TODO: the default boolean expression factory should *not* be boolexpr.
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();
+		return isEquivalent(aut, getEmptySAFA(ba), ba, boolexpr, timeout).getFirst();
+	}
 
+	/**
+	 * Checks whether laut and raut are equivalent using bisimulation up to
+	 * congruence.
+	 * 
+	 * @throws TimeoutException
+	 */
+	public static <P, S, E extends BooleanExpression> Pair<Boolean,List<S>> isEquivalent(
+			SAFA<P, S> laut, SAFA<P, S> raut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) throws TimeoutException{
+			return isEquivalent(laut, raut, ba, boolexpr, Long.MAX_VALUE);
+	}
+	
 	/**
 	 * Checks whether laut and raut are equivalent using bisimulation up to
 	 * congruence.
 	 */
 	public static <P, S, E extends BooleanExpression> Pair<Boolean,List<S>> isEquivalent(
-			SAFA<P, S> laut, SAFA<P, S> raut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr)
+			SAFA<P, S> laut, SAFA<P, S> raut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr, long timeout)
 					throws TimeoutException {
 
+		long startTime = System.currentTimeMillis();
+		
 		SAFARelation similar = new SATRelation();
 		LinkedList<Pair<Pair<E, E>, List<S>>> worklist = new LinkedList<>();
 
@@ -278,6 +302,9 @@ public class SAFA<P, S> {
 		similar.add(leftInitial, rightInitial);
 		worklist.add(new Pair<>(new Pair<>(leftInitial, rightInitial), new LinkedList<>()));
 		while (!worklist.isEmpty()) {
+			if(System.currentTimeMillis() - startTime > timeout)
+				throw new TimeoutException("Timeout in the equivalence check");
+			
 			Pair<Pair<E, E>,List<S>> next = worklist.removeFirst();
 
 			E left = next.getFirst().getFirst();
@@ -309,14 +336,19 @@ public class SAFA<P, S> {
 			
 			P guard = ba.True();
 			do {
+				if(System.currentTimeMillis() - startTime > timeout)
+					throw new TimeoutException("Timeout in the equivalence check");
+				
 				S model = ba.generateWitness(guard);
 				P implicant = ba.True();
 				Map<Integer, E> leftMove = new HashMap<>();
 				Map<Integer, E> rightMove = new HashMap<>();
 
-				for (Integer s : left.getStates()) {
+				for (Integer s : left.getStates()) {					
 					E succ = boolexpr.False();
 					for (SAFAInputMove<P,S> tr : laut.getInputMovesFrom(s)) {
+						if(System.currentTimeMillis() - startTime > timeout)
+							throw new TimeoutException("Timeout in the equivalence check");
 						if (ba.HasModel(tr.guard, model)) {
 							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
 							implicant = ba.MkAnd(implicant, tr.guard);
@@ -327,9 +359,11 @@ public class SAFA<P, S> {
 					leftMove.put(s, succ);
 				}
 
-				for (Integer s : right.getStates()) {
+				for (Integer s : right.getStates()) {					
 					E succ = boolexpr.False();
 					for (SAFAInputMove<P,S> tr : raut.getInputMovesFrom(s)) {
+						if(System.currentTimeMillis() - startTime > timeout)
+							throw new TimeoutException("Timeout in the equivalence check");
 						if (ba.HasModel(tr.guard, model)) {
 							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
 							implicant = ba.MkAnd(implicant, tr.guard);
@@ -377,8 +411,19 @@ public class SAFA<P, S> {
 	 * accepting the reverse language
 	 */
 	public static <P, S> Pair<Boolean, List<S>> areReverseEquivalent(SAFA<P, S> aut1,
-			SAFA<P, S> aut2, BooleanAlgebra<P, S> ba) {
+			SAFA<P, S> aut2, BooleanAlgebra<P, S> ba) throws TimeoutException{
+		return areReverseEquivalent(aut1, aut2, ba, Long.MAX_VALUE);
+	}
+	
+	/**
+	 * Checks whether laut and raut are equivalent using HopcroftKarp on the SFA
+	 * accepting the reverse language
+	 */
+	public static <P, S> Pair<Boolean, List<S>> areReverseEquivalent(SAFA<P, S> aut1,
+			SAFA<P, S> aut2, BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException{
 
+		long startTime = System.currentTimeMillis();
+		
 		UnionFindHopKarp<S> ds = new UnionFindHopKarp<>();
 
 		HashMap<HashSet<Integer>, Integer> reached1 = new HashMap<HashSet<Integer>, Integer>();
@@ -398,6 +443,9 @@ public class SAFA<P, S> {
 		ds.mergeSets(0, 1);
 
 		while (!toVisit.isEmpty()) {
+			if(System.currentTimeMillis() - startTime > timeout)
+				throw new TimeoutException("Timeout in the equivalence check");
+			
 			Pair<HashSet<Integer>, HashSet<Integer>> curr = toVisit.removeFirst();
 			HashSet<Integer> curr1 = curr.first;
 			HashSet<Integer> curr2 = curr.second;
@@ -418,11 +466,14 @@ public class SAFA<P, S> {
 					predicatesToCurr2.add(t.guard);
 				}
 
-			Collection<Pair<P, ArrayList<Integer>>> minterms1 = ba.GetMinterms(predicatesToCurr1);
-			Collection<Pair<P, ArrayList<Integer>>> minterms2 = ba.GetMinterms(predicatesToCurr2);
+			Collection<Pair<P, ArrayList<Integer>>> minterms1 = ba.GetMinterms(predicatesToCurr1, timeout);
+			Collection<Pair<P, ArrayList<Integer>>> minterms2 = ba.GetMinterms(predicatesToCurr2, timeout);
 
 			for (Pair<P, ArrayList<Integer>> minterm1 : minterms1) {
 				for (Pair<P, ArrayList<Integer>> minterm2 : minterms2) {
+					if(System.currentTimeMillis() - startTime > timeout)
+						throw new TimeoutException("Timeout in the equivalence check");
+					
 					P conj = ba.MkAnd(minterm1.first, minterm2.first);
 					if (ba.IsSatisfiable(conj)) {
 						// Take from states
@@ -477,9 +528,10 @@ public class SAFA<P, S> {
 	 * @param input
 	 * @param ba
 	 * @return true if accepted false otherwise
+	 * @throws TimeoutException 
 	 */
 	public static <P, S> SFA<P, S> getReverseSFA(SAFA<P, S> aut,
-			BooleanAlgebra<P, S> ba) {
+			BooleanAlgebra<P, S> ba) throws TimeoutException {
 
 		// components of new SFA
 		Collection<SFAMove<P, S>> transitions = new ArrayList<SFAMove<P, S>>();
@@ -625,7 +677,6 @@ public class SAFA<P, S> {
 	 * Computes the intersection with <code>aut1</code> and <code>aut2</code> as
 	 * a new SFA
 	 */
-	@SuppressWarnings("restriction")
 	public static <A, B> SAFA<A, B> binaryOp(SAFA<A, B> aut1, SAFA<A, B> aut2,
 			BooleanAlgebra<A, B> ba, BoolOp op) {
 
@@ -655,7 +706,7 @@ public class SAFA<P, S> {
 			break;
 
 		default:
-			throw new NotImplementedException();
+			throw new NotImplementedException("Operation "+op+" not implemented");
 		}
 
 		return MkSAFA(transitions, initialState, finalStates, ba, false, false);
@@ -664,6 +715,7 @@ public class SAFA<P, S> {
 	/**
 	 * Normalizes the SAFA by having at most one transition for each symbol out
 	 * of each state
+	 * @throws TimeoutException 
 	 */
 	public SAFA<P, S> normalize(BooleanAlgebra<P, S> ba) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();

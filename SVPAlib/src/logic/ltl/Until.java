@@ -164,4 +164,9 @@ public class Until<P, S> extends LTLFormula<P, S> {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public int getSize() {
+		return 1 + left.getSize() + right.getSize();
+	}
 }

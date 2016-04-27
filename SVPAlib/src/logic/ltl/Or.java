@@ -130,8 +130,8 @@ public class Or<P, S> extends LTLFormula<P, S> {
 		}
 
 		moves.put(id, newMoves);
-		
-		if(this.isFinalState())
+
+		if (this.isFinalState())
 			finalStates.add(id);
 	}
 
@@ -209,5 +209,13 @@ public class Or<P, S> extends LTLFormula<P, S> {
 			safa = safa.unionWith(c.get(i).getSAFANew(ba), ba);
 
 		return safa;
+	}
+
+	@Override
+	public int getSize() {
+		int size = 1;
+		for (LTLFormula<P, S> c : disjuncts)
+			size += c.getSize();
+		return size;
 	}
 }

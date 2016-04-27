@@ -71,4 +71,9 @@ public class Not<P, S> extends LTLFormula<P, S> {
 	public SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
 		throw new UnsupportedOperationException();
 	}
+	
+	@Override
+	public int getSize() {
+		return 1+phi.getSize();
+	}
 }

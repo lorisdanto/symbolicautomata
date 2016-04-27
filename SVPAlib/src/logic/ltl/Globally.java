@@ -134,4 +134,9 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 
 		return SAFA.MkSAFA(transitions, initialState, finalStates, ba);
 	}
+	
+	@Override
+	public int getSize() {
+		return 1+phi.getSize();
+	}
 }

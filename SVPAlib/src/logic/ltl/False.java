@@ -80,4 +80,9 @@ public class False<P, S> extends LTLFormula<P, S> {
 	public SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba) {
 		return SAFA.getEmptySAFA(ba);
 	}
+	
+	@Override
+	public int getSize() {
+		return 1;
+	}
 }

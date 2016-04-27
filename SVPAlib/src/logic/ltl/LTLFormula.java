@@ -56,7 +56,9 @@ public abstract class LTLFormula<P,S> {
 	public abstract SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba);
 	
 	// Checks whether a formula should be a final state in the automaton
-	protected abstract boolean isFinalState();	
+	protected abstract boolean isFinalState();
+	
+	public abstract int getSize();	
 	
 	@Override
 	public abstract int hashCode();

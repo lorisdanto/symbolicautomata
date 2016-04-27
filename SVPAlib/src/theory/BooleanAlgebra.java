@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
+import org.sat4j.specs.TimeoutException;
+
 import utilities.Pair;
 
 /**
@@ -90,36 +92,49 @@ public abstract class BooleanAlgebra<P, S> {
 	 * 
 	 * @return a set of pairs (p,{i1,..,in}) where p is and ij is 0 or 1 base on
 	 *         whether pij is used positively or negatively
+	 * @throws TimeoutException 
 	 */
 	public Collection<Pair<P, ArrayList<Integer>>> GetMinterms(
 			ArrayList<P> predicates) {
-		return GetMinterms(predicates, True());
+		try {
+			return GetMinterms(predicates, True(), Long.MAX_VALUE);
+		} catch (TimeoutException e) {			
+			e.printStackTrace();
+			System.out.println("Minterm construction timeout");
+			return null;
+		}
 	}
-
-	long buildTime=0;
-	long solveTime=0; 
+	
+	/**
+	 * Given a set of <code>predicates</code>, returns all the satisfiable
+	 * Boolean combinations
+	 * 
+	 * @return a set of pairs (p,{i1,..,in}) where p is and ij is 0 or 1 base on
+	 *         whether pij is used positively or negatively
+	 * @throws TimeoutException 
+	 */
+	public Collection<Pair<P, ArrayList<Integer>>> GetMinterms(
+			ArrayList<P> predicates, long timeout) throws TimeoutException {
+		return GetMinterms(predicates, True(), timeout);
+	}
 	
 	private Collection<Pair<P, ArrayList<Integer>>> GetMinterms(
-			ArrayList<P> predicates, P startPred) {
-		solveTime=0;
-		buildTime=0;
+			ArrayList<P> predicates, P startPred, long timeout) throws TimeoutException {
 		HashSet<Pair<P, ArrayList<Integer>>> minterms = new HashSet<Pair<P, ArrayList<Integer>>>();
 		GetMintermsRec(predicates, 0, startPred, new ArrayList<Integer>(),
-				minterms);
-		//System.out.println("Sat "+solveTime);
+				minterms, System.currentTimeMillis(), timeout);
 		return minterms;
 	}
 
 	private void GetMintermsRec(ArrayList<P> predicates, int n, P currPred,
 			ArrayList<Integer> setBits,
-			HashSet<Pair<P, ArrayList<Integer>>> minterms) {
+			HashSet<Pair<P, ArrayList<Integer>>> minterms, long startime, long timeout) throws TimeoutException {
 		
-		long startTime = System.currentTimeMillis();
+		if(System.currentTimeMillis() - startime > timeout)
+			throw new TimeoutException("Minterm construction timeout");
+			
 		if (!IsSatisfiable(currPred))
 			return;
-		long endTime = System.currentTimeMillis();
-		solveTime+=endTime-startTime;
-		// Keep exploring the tree, if leaf done
 		
 		if (n == predicates.size())
 			minterms.add(new Pair<P, ArrayList<Integer>>(currPred, setBits));
@@ -128,13 +143,13 @@ public abstract class BooleanAlgebra<P, S> {
 			posList.add(1);
 			P pn =predicates.get(n);
 			GetMintermsRec(predicates, n + 1,
-					MkAnd(currPred, pn), posList, minterms);
+					MkAnd(currPred, pn), posList, minterms, startime, timeout);
 
 			ArrayList<Integer> negList = new ArrayList<Integer>(setBits);
 			negList.add(0);
 			GetMintermsRec(predicates, n + 1,
 					MkAnd(currPred, MkNot(pn)), negList,
-					minterms);
+					minterms, startime, timeout);
 		}
 	}
 

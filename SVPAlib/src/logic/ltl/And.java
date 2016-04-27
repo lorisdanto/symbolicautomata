@@ -162,4 +162,12 @@ public class And<P, S> extends LTLFormula<P, S> {
 		return safa;
 	}
 
+	@Override
+	public int getSize() {
+		int size = 1;
+		for(LTLFormula<P, S> c:conjuncts)
+			size+=c.getSize();
+		return size;
+	}
+
 }
