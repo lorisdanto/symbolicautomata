@@ -3,7 +3,6 @@ package logic.ltl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 import automata.safa.BooleanExpressionFactory;
@@ -53,101 +52,29 @@ public class Or<P, S> extends LTLFormula<P, S> {
 		return true;
 	}
 
-	// @Override
-	// protected <E extends BooleanExpression> void
-	// accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer>
-	// formulaToStateId,
-	// HashMap<Integer, Collection<SAFAInputMove<P, S, E>>> moves,
-	// Collection<Integer> finalStates, BooleanAlgebra<P, S> ba,
-	// BooleanExpressionFactory<E> boolexpr) {
-	//
-	// // If I already visited avoid recomputing
-	// if (formulaToStateId.containsKey(this))
-	// return;
-	//
-	// // Update hash tables
-	// int id = formulaToStateId.size();
-	// formulaToStateId.put(this, id);
-	//
-	// // Compute transitions for children
-	// ArrayList<Integer> ids = new ArrayList<>();
-	// ArrayList<Collection<SAFAInputMove<P, S, E>>> disjMoves = new
-	// ArrayList<>();
-	// // Compute transitions for children
-	// for (LTLFormula<P, S> phi : disjuncts) {
-	// phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates,
-	// ba, boolexpr);
-	// int phiId=formulaToStateId.get(phi);
-	// ids.add(phiId);
-	// disjMoves.add(moves.get(phiId));
-	// }
-	//
-	// // delta(l or r, p) = delta(l, p)
-	// // delta(l or r, p) = delta(r, p)
-	// Collection<SAFAInputMove<P, S, E>> newMoves = new LinkedList<>();
-	//
-	// for(Collection<SAFAInputMove<P, S, E>> phiMoves : disjMoves)
-	// for (SAFAInputMove<P, S, E> phiMove : phiMoves)
-	// newMoves.add(new SAFAInputMove<>(id, phiMove.to, phiMove.guard));
-	//
-	// moves.put(id, newMoves);
-	// }
-
 	@Override
-	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, Collection<Integer> finalStates,
-			BooleanAlgebra<P, S> ba, boolean normalize) {
+	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
+			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
-		if (formulaToStateId.containsKey(this))
-			return;
+		if (formulaToState.containsKey(this))
+			return formulaToState.get(this);
 
-		// Update hash tables
-		int id = formulaToStateId.size();
-		formulaToStateId.put(this, id);
+		PositiveBooleanExpression initialState = boolexpr.True();
 
-		ArrayList<Integer> ids = new ArrayList<>();
-		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
-		if (!normalize) {
-			for (LTLFormula<P, S> phi : disjuncts) {
-				phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, normalize);
-				int phiId = formulaToStateId.get(phi);
-				ids.add(phiId);
-				newMoves.addAll(moves.get(phiId));
-			}
-		} else {
-			ArrayList<Collection<SAFAInputMove<P, S>>> conjMoves = new ArrayList<>();
-			// Compute transitions for children
-			for (LTLFormula<P, S> phi : disjuncts) {
-				phi.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, normalize);
-				int phiId = formulaToStateId.get(phi);
-				ids.add(phiId);
-				conjMoves.add(moves.get(phiId));
-			}
-
-			accumulateMovesOr(ba.True(), boolexpr.False(), newMoves, conjMoves, ba, id, 0);
+		// Compute transitions for children
+		for (LTLFormula<P, S> phi : disjuncts) {
+			PositiveBooleanExpression conjInit = phi.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates,
+					ba);
+			initialState = boolexpr.MkOr(initialState, conjInit);
 		}
 
-		moves.put(id, newMoves);
+		// Update hash tables
+		formulaToState.put(this, initialState);
 
-		if (this.isFinalState())
-			finalStates.add(id);
-	}
-
-	protected void accumulateMovesOr(P currPred, PositiveBooleanExpression currToExpr,
-			Collection<SAFAInputMove<P, S>> newMoves, ArrayList<Collection<SAFAInputMove<P, S>>> conjMoves,
-			BooleanAlgebra<P, S> ba, int idFrom, int n) {
-		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
-
-		if (n == conjMoves.size())
-			newMoves.add(new SAFAInputMove<P, S>(idFrom, currToExpr, currPred));
-		else
-			for (SAFAInputMove<P, S> m : conjMoves.get(n)) {
-				P pred = ba.MkAnd(currPred, m.guard);
-				if (ba.IsSatisfiable(pred))
-					accumulateMovesOr(pred, boolexpr.MkOr(currToExpr, m.to), newMoves, conjMoves, ba, idFrom, n + 1);
-			}
+		return initialState;
 	}
 
 	@Override
@@ -199,16 +126,6 @@ public class Or<P, S> extends LTLFormula<P, S> {
 			isFirst = false;
 		}
 		sb.append(")");
-	}
-
-	@Override
-	public SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
-		ArrayList<LTLFormula<P, S>> c = new ArrayList<>(disjuncts);
-		SAFA<P, S> safa = c.get(0).getSAFANew(ba);
-		for (int i = 1; i < c.size(); i++)
-			safa = safa.unionWith(c.get(i).getSAFANew(ba), ba);
-
-		return safa;
 	}
 
 	@Override

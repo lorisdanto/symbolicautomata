@@ -3,8 +3,8 @@ package logic.ltl;
 import java.util.Collection;
 import java.util.HashMap;
 
-import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
+import automata.safa.booleanexpression.PositiveBooleanExpression;
 import theory.BooleanAlgebra;
 
 public class Not<P, S> extends LTLFormula<P, S> {
@@ -43,10 +43,14 @@ public class Not<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, Collection<Integer> finalStates,
-			BooleanAlgebra<P, S> ba, boolean normalize) {
+	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
+			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
 
+		// If I already visited avoid recomputing
+		if (formulaToState.containsKey(this))
+			return formulaToState.get(this);
+		
 		throw new UnsupportedOperationException("At this point the formula should be in negation normal form.");
 	}
 
@@ -65,11 +69,6 @@ public class Not<P, S> extends LTLFormula<P, S> {
 	public void toString(StringBuilder sb) {
 		sb.append("!");
 		phi.toString(sb);
-	}
-
-	@Override
-	public SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
-		throw new UnsupportedOperationException();
 	}
 	
 	@Override

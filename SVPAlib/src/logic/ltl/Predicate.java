@@ -1,10 +1,7 @@
 package logic.ltl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
@@ -48,32 +45,31 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, Collection<Integer> finalStates,
-			BooleanAlgebra<P, S> ba, boolean normalize) {
+	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
+			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
-		if (formulaToStateId.containsKey(this))
-			return;
+		if (formulaToState.containsKey(this))
+			return formulaToState.get(this);
 
 		// Update hash tables
-		int id = formulaToStateId.size();
-		formulaToStateId.put(this, id);
+		int id = formulaToState.size();
+		PositiveBooleanExpression initialState = boolexpr.MkState(id);
+		formulaToState.put(this, initialState);
 
 		// Create true state
 		True<P, S> t = new True<>();
-		t.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, normalize);
+		PositiveBooleanExpression trueState = t.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba);
 
 		// delta([p], p) = true
-		int trueId = formulaToStateId.get(t);
-		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
-		newMoves.add(new SAFAInputMove<>(id, boolexpr.MkState(trueId), predicate));
+		moves.add(new SAFAInputMove<>(id, trueState, predicate));
 
-		moves.put(id, newMoves);
-		
-		if(this.isFinalState())
+		if (this.isFinalState())
 			finalStates.add(id);
+
+		return initialState;
 	}
 
 	@Override
@@ -95,22 +91,6 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 		sb.append(predicate.toString());
 	}
 
-	@Override
-	public SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
-		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
-
-		int formulaId = 1;
-
-		PositiveBooleanExpression initialState = boolexpr.MkState(1);
-		Collection<Integer> finalStates = new HashSet<>();
-		finalStates.add(2);
-
-		Collection<SAFAInputMove<P, S>> transitions = new ArrayList<SAFAInputMove<P, S>>();
-		transitions.add(new SAFAInputMove<>(formulaId, boolexpr.MkState(2), this.predicate));
-
-		return SAFA.MkSAFA(transitions, initialState, finalStates, ba);
-	}
-	
 	@Override
 	public int getSize() {
 		return 1;

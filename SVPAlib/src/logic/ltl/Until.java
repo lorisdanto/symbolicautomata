@@ -1,6 +1,5 @@
 package logic.ltl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -53,71 +52,31 @@ public class Until<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves, Collection<Integer> finalStates,
-			BooleanAlgebra<P, S> ba, boolean normalize) {
+	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
+			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
-		if (formulaToStateId.containsKey(this))
-			return;
-
-		// Update hash tables
-		int id = formulaToStateId.size();
-		formulaToStateId.put(this, id);
+		if (formulaToState.containsKey(this))
+			return formulaToState.get(this);
 
 		// Compute transitions for children
-		left.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, normalize);
-		right.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, normalize);
+		PositiveBooleanExpression leftState = left.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba);
+		PositiveBooleanExpression rightState =right.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba);
 
-		// delta(l U r, p) = delta(l, p) and lUr
-		// delta(l U r, p) = delta(r, p)
-		int leftId = formulaToStateId.get(left);
-		int rightId = formulaToStateId.get(right);
-		Collection<SAFAInputMove<P, S>> leftMoves = moves.get(leftId);
-		Collection<SAFAInputMove<P, S>> rightMoves = moves.get(rightId);
+		// initialState (l /\ (l U r)) \/ r		
+		int id =formulaToState.size();
+		PositiveBooleanExpression initialState = boolexpr.MkOr(boolexpr.MkAnd(leftState, boolexpr.MkState(id)), rightState);
+		formulaToState.put(this, initialState);
 
-		Collection<SAFAInputMove<P, S>> untMovesL = new ArrayList<>();
-		Collection<SAFAInputMove<P, S>> untMovesR = new ArrayList<>();
-		P leftoverL = ba.True();
-		P leftoverR = ba.True();
+		// delta(l U r, true) = (l /\ (l U r)) \/ r	
+		moves.add(new SAFAInputMove<P, S>(id, initialState, ba.True()));
 
-		Collection<SAFAInputMove<P, S>> untMoves = new ArrayList<>();
-
-		for (SAFAInputMove<P, S> leftMove : leftMoves) {
-			untMovesL.add(new SAFAInputMove<>(id, boolexpr.MkAnd(leftMove.to, boolexpr.MkState(id)), leftMove.guard));
-			leftoverL = ba.MkAnd(leftoverL, ba.MkNot(leftMove.guard));
-		}
-
-		for (SAFAInputMove<P, S> rightMove : rightMoves) {
-			untMovesR.add(new SAFAInputMove<>(id, rightMove.to, rightMove.guard));
-			leftoverR = ba.MkAnd(leftoverR, ba.MkNot(rightMove.guard));
-			P conj = ba.MkAnd(leftoverL, rightMove.guard);
-			if (ba.IsSatisfiable(conj))
-				untMoves.add(new SAFAInputMove<P, S>(id, rightMove.to, conj));
-		}
-
-		if (!normalize) {
-			untMoves.addAll(untMovesL);
-			untMoves.addAll(untMovesR);
-		} else {
-			for (SAFAInputMove<P, S> lMove : leftMoves) {
-				for (SAFAInputMove<P, S> rMove : rightMoves) {
-					P conj = ba.MkAnd(lMove.guard, rMove.guard);
-					if (ba.IsSatisfiable(conj))
-						untMoves.add(new SAFAInputMove<P, S>(id, boolexpr.MkOr(lMove.to, rMove.to), conj));
-				}
-				P conj = ba.MkAnd(lMove.guard, leftoverR);
-				if (ba.IsSatisfiable(conj))
-					untMoves.add(new SAFAInputMove<P, S>(id, lMove.to, conj));
-			}
-		}
-
-		moves.put(id, untMoves);
-		// throw new IllegalArgumentException("Not finished this yet");
-		
-		if(this.isFinalState())
+		if (this.isFinalState())
 			finalStates.add(id);
+		
+		return initialState;
 	}
 
 	@Override
@@ -159,12 +118,6 @@ public class Until<P, S> extends LTLFormula<P, S> {
 		sb.append(")");
 	}
 
-	@Override
-	public SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
 	@Override
 	public int getSize() {
 		return 1 + left.getSize() + right.getSize();

@@ -130,7 +130,7 @@ public abstract class BooleanAlgebra<P, S> {
 			ArrayList<Integer> setBits,
 			HashSet<Pair<P, ArrayList<Integer>>> minterms, long startime, long timeout) throws TimeoutException {
 		
-		if(System.currentTimeMillis() - startime > timeout)
+		if(System.currentTimeMillis() - startime > timeout || n>2500)
 			throw new TimeoutException("Minterm construction timeout");
 			
 		if (!IsSatisfiable(currPred))
