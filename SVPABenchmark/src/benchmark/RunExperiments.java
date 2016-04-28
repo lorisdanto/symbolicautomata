@@ -140,7 +140,7 @@ public class RunExperiments {
 								long startTime1 = System.currentTimeMillis();
 								try {
 									result = SAFA
-											.isEquivalent(safa, safa, bdds, SumOfProductsFactory.getInstance(), timeout)
+											.isEquivalent(safa, safa, bdds, SAFA.getBooleanExpressionFactory(), timeout)
 											.getFirst();
 									fw.append(System.currentTimeMillis() - startTime1 + ", ");
 									if (!result)
