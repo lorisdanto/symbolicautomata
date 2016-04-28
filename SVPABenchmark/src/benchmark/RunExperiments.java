@@ -11,7 +11,6 @@ import org.sat4j.specs.TimeoutException;
 import LTLparser.LTLNode;
 import LTLparser.LTLParserProvider;
 import automata.safa.SAFA;
-import automata.safa.booleanexpression.SumOfProductsFactory;
 import benchmark.ltlconverter.LTLConverter;
 import logic.ltl.LTLFormula;
 import theory.bdd.BDD;
@@ -19,16 +18,16 @@ import theory.bddalgebra.BDDSolver;
 import utilities.Pair;
 
 public class RunExperiments {
-	static long timeout = 2000;
+	static long timeout = 10000;
 
 	static int fromCounter = 0;
 	static String emptinessOutputFile = "results/emptiness.csv";
 	static String equivalenceOutputFile = "results/selfEquivalence.csv";
-	static String containedString = "P0.5N2L100";
+	static String containedString = "";
 
 	public static void main(String[] args) throws InterruptedException {
 
-		//RunLTLEmptiness();
+		RunLTLEmptiness();
 		RunLTLSelfEquivalence();
 
 	}
@@ -46,6 +45,7 @@ public class RunExperiments {
 						int counter = 0;
 						for (LTLNode ltl : nodes) {
 							fw.append(filePath.getFileName().toString());
+							System.out.println(counter);
 							if (counter > 0)
 								fw.append(counter + "");
 							fw.append(", ");
@@ -67,8 +67,10 @@ public class RunExperiments {
 								try {
 									result = SAFA.isEmpty(safa, bdds, timeout);
 									fw.append(System.currentTimeMillis() - startTime1 + ", ");
+									System.out.print(System.currentTimeMillis() - startTime1 + ", ");
 								} catch (TimeoutException toe) {
 									fw.append("TO, ");
+									System.out.print("TO, ");
 									to1 = true;
 								}
 
@@ -77,8 +79,10 @@ public class RunExperiments {
 									result = SAFA.areReverseEquivalent(safa, SAFA.getEmptySAFA(bdds), bdds,
 											timeout).first;
 									fw.append(System.currentTimeMillis() - startTime2 + ", ");
+									System.out.print(System.currentTimeMillis() - startTime2 + ", ");
 								} catch (TimeoutException toe) {
 									fw.append("TO, ");
+									System.out.print("TO, ");
 									to2 = true;
 								}
 
@@ -88,6 +92,7 @@ public class RunExperiments {
 									fw.append("TO");
 
 								fw.append("\n");
+								System.out.println();
 							}
 							counter++;
 						}
