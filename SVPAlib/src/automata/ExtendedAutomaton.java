@@ -1,9 +1,3 @@
-/**
- * SVPAlib
- * automata
- * Apr 21, 2015
- * @author Loris D'Antoni
- */
 package automata;
 
 import java.io.FileWriter;
@@ -17,30 +11,22 @@ import java.util.List;
 import java.util.Map;
 
 import theory.BooleanAlgebra;
-
 /**
- * Automaton abstract class 
+ * ExtendedAutomaton abstract class 
  * @param <P> set of predicates over the domain S
  * @param <S> domain of the automaton alphabet
  */
-public abstract class Automaton<P, S> {
-
-	// ------------------------------------------------------
-	// Automata properties
-	// ------------------------------------------------------
-
+public abstract class ExtendedAutomaton<P, S> {
 	protected boolean isEmpty;
 	protected boolean isDeterministic;
 	protected boolean isEpsilonFree;
 	protected boolean isTotal;
-
-	public Automaton() {
+	public ExtendedAutomaton() {
 		isEmpty = false;
 		isDeterministic = false;
 		isEpsilonFree = true;
 		isTotal = false;
 	}
-
 	/**
 	 * Saves in the file <code>name</code> under the path <code>path</code> the
 	 * dot representation of the automaton. Adds .dot if necessary
@@ -65,7 +51,7 @@ public abstract class Automaton<P, S> {
 					+ "\n");
 
 			for (Integer state : getStates()) {
-				for (Move<P, S> t : getMovesFrom(state))
+				for (ExtendedMove<P, S> t : getMovesFrom(state))
 					fw.write(t.toDotString());
 			}
 
@@ -88,7 +74,7 @@ public abstract class Automaton<P, S> {
 		s = "Automaton: " + getMoves().size() + " transitions, "
 				+ getStates().size() + " states" + "\n";
 		s += "Transitions \n";
-		for (Move<P, S> t : getMoves())
+		for (ExtendedMove<P, S> t : getMoves())
 			s = s + t + "\n";
 
 		s += "Initial State \n";
@@ -106,7 +92,8 @@ public abstract class Automaton<P, S> {
 	 * @return a list in the domain language, null if empty
 	 */
 	public List<S> getWitness(BooleanAlgebra<P, S> ba) {
-		if (isEmpty)
+		//TODO
+		/*if (isEmpty)
 			return null;
 
 		Map<Integer, LinkedList<S>> witMap = new HashMap<Integer, LinkedList<S>>();
@@ -118,11 +105,11 @@ public abstract class Automaton<P, S> {
 
 		while (!barreer.isEmpty()) {
 
-			ArrayList<Move<P, S>> moves = new ArrayList<Move<P, S>>(
+			ArrayList<ExtendedMove<P, S>> moves = new ArrayList<ExtendedMove<P, S>>(
 					getMovesTo(barreer));
 
 			barreer = new HashSet<Integer>();
-			for (Move<P, S> move : moves) {
+			for (ExtendedMove<P, S> move : moves) {
 				if (!reachedStates.contains(move.from)) {
 					barreer.add(move.from);
 					reachedStates.add(move.from);
@@ -142,6 +129,8 @@ public abstract class Automaton<P, S> {
 
 		}
 		return witMap.get(getInitialState());
+		*/
+		return null;
 	}
 
 	/**
@@ -152,15 +141,15 @@ public abstract class Automaton<P, S> {
 	 * @return true if accepted false otherwise
 	 */
 	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba) {
-		Collection<Integer> currConf = getEpsClosure(getInitialState(), ba);
+	/*	Collection<Integer> currConf = getEpsClosure(getInitialState(), ba);
 		for (S el : input) {
 			currConf = getNextState(currConf, el, ba);
 			currConf = getEpsClosure(currConf, ba);
 			if (currConf.isEmpty())
 				return false;
 		}
-
-		return isFinalConfiguration(currConf);
+	*/
+		return false;
 	}
 
 	// ------------------------------------------------------
@@ -170,20 +159,20 @@ public abstract class Automaton<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<Move<P, S>> getMoves() {
+	public Collection<ExtendedMove<P, S>> getMoves() {
 		return getMovesFrom(getStates());
 	}
 
 	/**
 	 * Set of moves from state
 	 */
-	public abstract Collection<Move<P, S>> getMovesFrom(Integer state);
+	public abstract Collection<ExtendedMove<P, S>> getMovesFrom(Integer state);
 
 	/**
 	 * Set of moves from set of states
 	 */
-	public Collection<Move<P, S>> getMovesFrom(Collection<Integer> states) {
-		Collection<Move<P, S>> transitions = new LinkedList<Move<P, S>>();
+	public Collection<ExtendedMove<P, S>> getMovesFrom(Collection<Integer> states) {
+		Collection<ExtendedMove<P, S>> transitions = new LinkedList<ExtendedMove<P, S>>();
 		for (Integer state : states)
 			transitions.addAll(getMovesFrom(state));
 		return transitions;
@@ -192,13 +181,13 @@ public abstract class Automaton<P, S> {
 	/**
 	 * Set of moves to <code>state</code>
 	 */
-	public abstract Collection<Move<P, S>> getMovesTo(Integer state);
+	public abstract Collection<ExtendedMove<P, S>> getMovesTo(Integer state);
 
 	/**
 	 * Set of moves to a set of states <code>states</code>
 	 */
-	public Collection<Move<P, S>> getMovesTo(Collection<Integer> states) {
-		Collection<Move<P, S>> transitions = new LinkedList<Move<P, S>>();
+	public Collection<ExtendedMove<P, S>> getMovesTo(Collection<Integer> states) {
+		Collection<ExtendedMove<P, S>> transitions = new LinkedList<ExtendedMove<P, S>>();
 		for (Integer state : states)
 			transitions.addAll(getMovesTo(state));
 		return transitions;
@@ -253,6 +242,7 @@ public abstract class Automaton<P, S> {
 		return getFinalStates().contains(state);
 	}
 
+	
 	// ------------------------------------------------------
 	// Auxiliary protected functions
 	// ------------------------------------------------------
@@ -272,7 +262,7 @@ public abstract class Automaton<P, S> {
 		LinkedList<Integer> toVisit = new LinkedList<Integer>(fronteer);
 
 		while (toVisit.size() > 0) {
-			for (Move<P, S> t : getMovesFrom(toVisit.removeFirst())) {
+			for (ExtendedMove<P, S> t : getMovesFrom(toVisit.removeFirst())) {
 				if (t.isEpsilonTransition()) {
 					if (!reached.contains(t.to)) {
 						reached.add(t.to);
@@ -285,9 +275,9 @@ public abstract class Automaton<P, S> {
 	}
 
 	protected Collection<Integer> getNextState(Collection<Integer> currState,
-			S inputElement, BooleanAlgebra<P, S> ba) {
+			List<S> inputElement, BooleanAlgebra<P, S> ba) {
 		Collection<Integer> nextState = new HashSet<Integer>();
-		for (Move<P, S> t : getMovesFrom(currState)) {
+		for (ExtendedMove<P, S> t : getMovesFrom(currState)) {
 			if (!t.isEpsilonTransition()) {
 				if (t.hasModel(inputElement, ba))
 					nextState.add(t.to);
@@ -312,35 +302,36 @@ public abstract class Automaton<P, S> {
 			return reached.get(state);
 	}
 
+	
 	// ------------------------------------------------------
-	// Getters
-	// ------------------------------------------------------
+		// Getters
+		// ------------------------------------------------------
 
-	/**
-	 * @return the isEmpty
-	 */
-	public boolean isEmpty() {
-		return isEmpty;
-	}
+		/**
+		 * @return the isEmpty
+		 */
+		public boolean isEmpty() {
+			return isEmpty;
+		}
 
-	/**
-	 * @return the isDeterministic
-	 */
-	public boolean isDeterministic() {
-		return isDeterministic;
-	}
+		/**
+		 * @return the isDeterministic
+		 */
+		public boolean isDeterministic() {
+			return isDeterministic;
+		}
 
-	/**
-	 * @return the isEpsilonFree
-	 */
-	public boolean isEpsilonFree() {
-		return isEpsilonFree;
-	}
+		/**
+		 * @return the isEpsilonFree
+		 */
+		public boolean isEpsilonFree() {
+			return isEpsilonFree;
+		}
 
-	/**
-	 * @return the isTotal
-	 */
-	public boolean isTotal() {
-		return isTotal;
-	}
+		/**
+		 * @return the isTotal
+		 */
+		public boolean isTotal() {
+			return isTotal;
+		}
 }

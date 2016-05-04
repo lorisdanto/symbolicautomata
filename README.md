@@ -19,6 +19,15 @@ The library supports:
 - *Symbolic streaming string transducers*
 - The character theory of intervals
 
+Before installing
+----------------
+If you want to run the benchmarks from 
+*https://github.com/lorisdanto/automatark*
+you will need to run 
+"git submodule init"
+and then
+"git submodule update"
+
 Instructions with Eclipse
 ----------------
 *Requirements*: Java SE >= 1.8
