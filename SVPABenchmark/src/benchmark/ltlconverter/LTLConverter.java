@@ -7,7 +7,6 @@ import java.util.Set;
 
 import LTLparser.AlwaysNode;
 import LTLparser.AndNode;
-import LTLparser.DualNode;
 import LTLparser.EquivalenceNode;
 import LTLparser.EventuallyNode;
 import LTLparser.FalseNode;
@@ -78,14 +77,7 @@ public class LTLConverter {
 
 					outputLTL= new And<BDD, BDD>(left, right);
 				} else {
-					if (phi instanceof DualNode) {
-						DualNode cphi = (DualNode) phi;
-						LTLFormula<BDD, BDD> left = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds, formulas);
-						LTLFormula<BDD, BDD> right = getLTLBDD(cphi.getMyLTL2(), atomToInt, bdds, formulas);
-
-						outputLTL= new Not<BDD, BDD>(new Until<>(new Not<>(left), new Next<>(right)));
-					} else {
-						if (phi instanceof EquivalenceNode) {
+					if (phi instanceof EquivalenceNode) {
 							EquivalenceNode cphi = (EquivalenceNode) phi;
 							LTLFormula<BDD, BDD> left = getLTLBDD(cphi.getMyLTL1(), atomToInt, bdds, formulas);
 							LTLFormula<BDD, BDD> right = getLTLBDD(cphi.getMyLTL2(), atomToInt, bdds, formulas);
@@ -208,7 +200,7 @@ public class LTLConverter {
 										}
 									}
 								}
-							}
+							
 						}
 					}
 				}
