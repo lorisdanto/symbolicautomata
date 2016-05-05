@@ -15,7 +15,7 @@ public class BDDExpression extends BooleanExpression {
 	public BDDExpression(BDD me) {
 		bdd = me;
 	}
-	
+		
 	@Override
 	public Set<Integer> getStates() {
 		Set<Integer> states = new TreeSet<Integer>();
@@ -65,6 +65,11 @@ public class BDDExpression extends BooleanExpression {
 	@Override
 	public boolean hasModel(Collection<Integer> elements) {
 		return hasModel(elements, bdd);
+	}
+
+	@Override
+	public int getSize() {
+		return bdd.nodeCount();
 	}
 
 }

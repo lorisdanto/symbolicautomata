@@ -21,9 +21,10 @@ public class RunExperiments {
 	static long timeout = 10000;
 
 	static int fromCounter = 0;
-	static String emptinessOutputFile = "results/emptiness.csv";
-	static String equivalenceOutputFile = "results/selfEquivalence.csv";
+	static String emptinessOutputFile = "results/emptiness-pq.csv";
+	static String equivalenceOutputFile = "results/selfEquivalence-pq.csv";
 	static String containedString = "";
+	static boolean skipRev = true;
 
 	public static void main(String[] args) throws InterruptedException {
 
@@ -74,22 +75,26 @@ public class RunExperiments {
 									to1 = true;
 								}
 
-								long startTime2 = System.currentTimeMillis();
-								try {
-									result = SAFA.areReverseEquivalent(safa, SAFA.getEmptySAFA(bdds), bdds,
-											timeout).first;
-									fw.append(System.currentTimeMillis() - startTime2 + ", ");
-									System.out.print(System.currentTimeMillis() - startTime2 + ", ");
-								} catch (TimeoutException toe) {
-									fw.append("TO, ");
-									System.out.print("TO, ");
-									to2 = true;
-								}
+								if (!skipRev) {
+									long startTime2 = System.currentTimeMillis();
+									try {
+										boolean result2 = SAFA.areReverseEquivalent(safa, SAFA.getEmptySAFA(bdds), bdds,
+												timeout).first;
+										if(!to1 && result!=result2)
+											throw new IllegalArgumentException("bug");
+										fw.append(System.currentTimeMillis() - startTime2 + ", ");
+										System.out.print(System.currentTimeMillis() - startTime2 + ", ");
+									} catch (TimeoutException toe) {
+										fw.append("TO, ");
+										System.out.print("TO, ");
+										to2 = true;
+									}
 
-								if (!(to1 && to2))
-									fw.append(result + "");
-								else
-									fw.append("TO");
+									if (!(to1 && to2))
+										fw.append(result + "");
+									else
+										fw.append("TO");
+								}
 
 								fw.append("\n");
 								System.out.println();
@@ -149,27 +154,29 @@ public class RunExperiments {
 											.getFirst();
 									fw.append(System.currentTimeMillis() - startTime1 + ", ");
 									if (!result)
-										System.out.println("Error in equiv algo, self equiv returns false");
+										throw new IllegalArgumentException("bug");
 								} catch (TimeoutException toe) {
 									fw.append("TO, ");
 									to1 = true;
 								}
 
-								long startTime2 = System.currentTimeMillis();
-								try {
-									result = SAFA.areReverseEquivalent(safa, safa, bdds, timeout).first;
-									fw.append(System.currentTimeMillis() - startTime2 + ", ");
-									if (!result)
-										System.out.println("Error in equiv algo, self equiv returns false");
-								} catch (TimeoutException toe) {
-									fw.append("TO, ");
-									to2 = true;
-								}
+								if (!skipRev) {
+									long startTime2 = System.currentTimeMillis();
+									try {
+										result = SAFA.areReverseEquivalent(safa, safa, bdds, timeout).first;
+										fw.append(System.currentTimeMillis() - startTime2 + ", ");
+										if (!result)
+											throw new IllegalArgumentException("bug");
+									} catch (TimeoutException toe) {
+										fw.append("TO, ");
+										to2 = true;
+									}
 
-								if (!(to1 && to2))
-									fw.append(result + "");
-								else
-									fw.append("TO");
+									if (!(to1 && to2))
+										fw.append(result + "");
+									else
+										fw.append("TO");
+								}
 
 								fw.append("\n");
 							}

@@ -1,18 +1,14 @@
 package automata.safa;
 
-import org.sat4j.specs.ContradictionException;
-import org.sat4j.specs.ISolver;
-import org.sat4j.specs.TimeoutException;
-
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Function;
 
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
-import automata.safa.booleanexpression.*;
+import org.sat4j.specs.ContradictionException;
+import org.sat4j.specs.ISolver;
+import org.sat4j.specs.TimeoutException;
 
 public class SATRelation extends SAFARelation {
 	private class SATFactory extends BooleanExpressionFactory<Integer> {

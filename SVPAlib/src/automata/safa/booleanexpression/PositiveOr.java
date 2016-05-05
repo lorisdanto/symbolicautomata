@@ -2,7 +2,6 @@ package automata.safa.booleanexpression;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.function.Function;
 
 import automata.safa.BooleanExpression;
 import automata.safa.LatticeMorphism;
@@ -43,5 +42,10 @@ public class PositiveOr extends PositiveBooleanExpression {
 
 	public String toString() {
 		return left.toString() + " + " + right.toString();
+	}
+	
+	@Override
+	public int getSize() {
+		return 1+left.getSize()+right.getSize();
 	}
 }
