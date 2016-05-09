@@ -2345,7 +2345,7 @@ public class JFactory extends BDDFactory {
             return bddtrue;
 
         /* On-demand allocation of support set */
-        if (supportSize < bddvarnum) {
+        if (supportSet == null || supportSize < bddvarnum) {
             supportSet = new int[bddvarnum];
             //memset(supportSet, 0, bddvarnum*sizeof(int));
             supportSize = bddvarnum;
