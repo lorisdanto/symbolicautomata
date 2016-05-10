@@ -38,7 +38,10 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 	@Override
 	public ICharPred MkNot(ICharPred p) {
 		if (p instanceof CharPred) {
-			return usolver.MkNot((CharPred) p);
+			CharPred cp = usolver.MkNot((CharPred) p);
+			if(p.isReturn())
+				cp.setAsReturn();
+			return cp;
 		} else {
 			BinaryCharPred u = (BinaryCharPred) p;				
 			CharPred newEq = usolver.MkNot(u.equals);
@@ -73,16 +76,65 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 		if (u1 instanceof CharPred) {
 			CharPred u1c = (CharPred) u1;
 			if (u2 instanceof CharPred) {
-				CharPred u2c = (CharPred) u2;
-				return usolver.MkOr(u1c, u2c);
+				CharPred u2c = (CharPred) u2;				
+				if(u1c.isReturn()){
+					if(u2c.isReturn()){
+						// u1 is CharPred and return, u2 is CharPred and return
+						CharPred cp = usolver.MkOr(u1c, u2c);
+						cp.setAsReturn();
+						return cp;
+					}else{
+						// u1 is CharPred and return, u2 is CharPred and call
+						throw new NotImplementedException("This should not happen for SVPA");
+					}
+				}else{
+					if(u2c.isReturn()){
+						// u1 is CharPred and call, u2 is CharPred and return
+						ArrayList<Pair<CharPred, CharPred>> newUneq = new ArrayList<>();
+						newUneq.add(new Pair<CharPred, CharPred>(StdCharPred.TRUE,u2c));
+						newUneq.add(new Pair<CharPred, CharPred>(u1c,StdCharPred.TRUE));
+						return new BinaryCharPred(usolver.MkOr(u1c,u2c), newUneq);
+					}else{
+						// u1 is CharPred and call, u2 is CharPred and call
+						return usolver.MkOr(u1c, u2c);
+					}
+				}
 			} else {
-				throw new NotImplementedException("This should not happen for SVPA");
+				BinaryCharPred u2c = (BinaryCharPred) u2;
+				// u1 is CharPred, u2 is BinaryCharPred
+				if(u1c.isReturn()){
+					CharPred newEq = usolver.MkOr(u1c, u2c.equals);					
+					ArrayList<Pair<CharPred, CharPred>> newUneq = new ArrayList<>(u2c.notEqual);
+					newUneq.add(new Pair<CharPred, CharPred>(StdCharPred.TRUE, u1c));
+					
+					BinaryCharPred pp= new BinaryCharPred(newEq, newUneq);
+					pp.normalize(usolver);
+					return pp;
+				}else{
+					CharPred newEq = usolver.MkOr(u1c, u2c.equals);
+					
+					ArrayList<Pair<CharPred, CharPred>> newUneq = new ArrayList<>(u2c.notEqual);
+					newUneq.add(new Pair<CharPred, CharPred>(u1c, StdCharPred.TRUE));
+					
+					BinaryCharPred pp= new BinaryCharPred(newEq, newUneq);
+					pp.normalize(usolver);
+					return pp;
+				}						
 			}
 		} else {
+			//u1 is BinaryCharPred
 			BinaryCharPred u1c = (BinaryCharPred) u1;
 			if (u2 instanceof CharPred) {
-				return MkOr(u2, u1);
+				CharPred u2c = (CharPred) u2;
+				if(u2c.isReturn()){
+					// u1 is BinaryCharPred and return, u2 is CharPred and return										
+					return MkOr(u2, u1);
+				}else{
+					// u1 is BinaryCharPred and return, u2 is CharPred and call
+					throw new NotImplementedException("This should not happen for SVPA");
+				}				
 			} else {
+				//u1 is BinaryCharPred, u2 is a binaryCharPred
 				BinaryCharPred u2c = (BinaryCharPred) u2;
 				CharPred newEq = usolver.MkOr(u1c.equals, u2c.equals);
 
@@ -109,24 +161,68 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 		if (u1 instanceof CharPred) {
 			CharPred u1c = (CharPred) u1;
 			if (u2 instanceof CharPred) {
-				CharPred u2c = (CharPred) u2;
-				return usolver.MkAnd(u1c, u2c);
+				CharPred u2c = (CharPred) u2;				
+				if(u1c.isReturn()){
+					if(u2c.isReturn()){
+						// u1 is CharPred and return, u2 is CharPred and return
+						CharPred cp = usolver.MkAnd(u1c, u2c);
+						cp.setAsReturn();
+						return cp;
+					}else{
+						// u1 is CharPred and return, u2 is CharPred and call
+						throw new NotImplementedException("This should not happen for SVPA");
+					}
+				}else{
+					if(u2c.isReturn()){
+						// u1 is CharPred and call, u2 is CharPred and return
+						ArrayList<Pair<CharPred, CharPred>> newUneq = new ArrayList<>();
+						newUneq.add(new Pair<CharPred, CharPred>(u1c,u2c));
+						return new BinaryCharPred(usolver.MkAnd(u1c,u2c), newUneq);
+					}else{
+						// u1 is CharPred and call, u2 is CharPred and call
+						return usolver.MkAnd(u1c, u2c);
+					}
+				}
 			} else {
 				BinaryCharPred u2c = (BinaryCharPred) u2;
-				CharPred newEq = usolver.MkAnd(u2c.equals, u1c);
-				ArrayList<Pair<CharPred, CharPred>> newUneq = new ArrayList<>();
-				for (Pair<CharPred, CharPred> pair : u2c.notEqual) {
-					CharPred newFirst = usolver.MkAnd(pair.first, u1c);
-					if (usolver.IsSatisfiable(newFirst))
-						newUneq.add(new Pair<CharPred, CharPred>(newFirst, pair.second));
-				}
-				return new BinaryCharPred(newEq, newUneq);
+				// u1 is CharPred, u2 is BinaryCharPred
+				if(u1c.isReturn()){
+					CharPred newEq = usolver.MkAnd(u1c, u2c.equals);				
+					ArrayList<Pair<CharPred, CharPred>> newUneq = new ArrayList<>();
+					for(Pair<CharPred,CharPred> pair: u2c.notEqual){
+						CharPred conj = usolver.MkAnd(pair.second,u1c);
+						if(usolver.IsSatisfiable(conj))
+							newUneq.add(new Pair<CharPred, CharPred>(pair.first,conj));
+					}
+					
+					BinaryCharPred pp= new BinaryCharPred(newEq, newUneq);
+					return pp;
+				}else{
+					CharPred newEq = usolver.MkAnd(u1c, u2c.equals);				
+					ArrayList<Pair<CharPred, CharPred>> newUneq = new ArrayList<>();
+					for(Pair<CharPred,CharPred> pair: u2c.notEqual){
+						CharPred conj = usolver.MkAnd(pair.first,u1c);
+						if(usolver.IsSatisfiable(conj))
+							newUneq.add(new Pair<CharPred, CharPred>(conj,pair.second));
+					}
+					BinaryCharPred pp= new BinaryCharPred(newEq, newUneq);
+					return pp;
+				}						
 			}
 		} else {
+			//u1 is BinaryCharPred
 			BinaryCharPred u1c = (BinaryCharPred) u1;
 			if (u2 instanceof CharPred) {
-				return MkAnd(u2, u1);
+				CharPred u2c = (CharPred) u2;
+				if(u2c.isReturn()){
+					// u1 is BinaryCharPred and return, u2 is CharPred and return										
+					return MkAnd(u2, u1);
+				}else{
+					// u1 is BinaryCharPred and return, u2 is CharPred and call
+					throw new NotImplementedException("You are using a call predicate in a return transition");
+				}				
 			} else {
+				//u1 is BinaryCharPred, u2 is a binaryCharPred
 				BinaryCharPred u2c = (BinaryCharPred) u2;
 				CharPred newEq = usolver.MkAnd(u1c.equals, u2c.equals);
 

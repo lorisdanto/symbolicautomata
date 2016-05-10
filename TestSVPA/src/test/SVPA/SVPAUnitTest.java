@@ -74,7 +74,7 @@ public class SVPAUnitTest {
 		assertFalse(inters.accepts(notab, ba));
 		assertFalse(inters.accepts(notanotb, ba));
 	}
-	
+
 	@Test
 	public void testUnion() {
 
@@ -86,10 +86,10 @@ public class SVPAUnitTest {
 		assertTrue(inters.accepts(notab, ba));
 		assertFalse(inters.accepts(notanotb, ba));
 	}
-			
+
 	@Test
 	public void testMkTotal() {
-		
+
 		SVPA<ICharPred, Character> totA = autA.mkTotal(ba);
 
 		assertTrue(totA.accepts(ab, ba));
@@ -97,7 +97,7 @@ public class SVPAUnitTest {
 		assertFalse(totA.accepts(notab, ba));
 		assertFalse(totA.accepts(notanotb, ba));
 
-		assertTrue(totA.stateCount == autA.stateCount+1);
+		assertTrue(totA.stateCount == autA.stateCount + 1);
 		assertTrue(totA.transitionCount == 21);
 	}
 	//
@@ -478,6 +478,7 @@ public class SVPAUnitTest {
 	CharPred a = new CharPred('a');
 	CharPred num = StdCharPred.NUM;
 	CharPred trueChar = StdCharPred.TRUE;
+	CharPred trueRetChar = new CharPred(CharPred.MIN_CHAR, CharPred.MAX_CHAR, true);
 	CharPred comma = new CharPred(',');
 	Integer onlyX = 1;
 	BinaryCharPred equality = new BinaryCharPred(StdCharPred.TRUE, true);
@@ -508,6 +509,7 @@ public class SVPAUnitTest {
 
 	SVPA<ICharPred, Character> autA = getSVPAa(ba);
 	SVPA<ICharPred, Character> autB = getSVPAb(ba);
+	SVPA<ICharPred, Character> autPeter = getCFGAutomata(ba);
 
 	// Only accepts well-matched nested words of lower alphabetic chars
 	private SVPA<ICharPred, Character> getSVPAa(BooleanAlgebra<ICharPred, Character> ba) {
@@ -538,12 +540,38 @@ public class SVPAUnitTest {
 		transitions.add(new Internal<ICharPred, Character>(0, 1, a));
 
 		transitions.add(new Call<ICharPred, Character>(0, 0, 0, trueChar));
-		transitions.add(new Return<ICharPred, Character>(0, 0, 0, trueChar));
+		transitions.add(new Return<ICharPred, Character>(0, 0, 0, trueRetChar));
 		transitions.add(new Call<ICharPred, Character>(1, 1, 0, trueChar));
-		transitions.add(new Return<ICharPred, Character>(1, 1, 0, trueChar));
+		transitions.add(new Return<ICharPred, Character>(1, 1, 0, trueRetChar));
 
 		try {
 			return SVPA.MkSVPA(transitions, Arrays.asList(0), Arrays.asList(1), ba);
+		} catch (AutomataException e) {
+			return null;
+		}
+	}
+
+	// Test from Peter Ohman
+	private static SVPA<ICharPred, Character> getCFGAutomata(BooleanAlgebra<ICharPred, Character> ba){
+		Collection<SVPAMove<ICharPred, Character>> transitions = new LinkedList<SVPAMove<ICharPred, Character>>();
+
+		// extra state "0" is prior to the entry of "main"
+		transitions.add(new Internal<ICharPred, Character>(0, 1, new CharPred('1')));
+		transitions.add(new Call<ICharPred, Character>(1, 2, 1, new CharPred('2')));
+		transitions.add(new Internal<ICharPred, Character>(2, 3, new CharPred('3')));
+		transitions.add(new Internal<ICharPred, Character>(2, 4, new CharPred('4')));
+		transitions.add(new Call<ICharPred, Character>(3, 2, 3, new CharPred('2')));
+		transitions.add(new Return<ICharPred, Character>(4, 5, 3, new CharPred('5',true)));
+		transitions.add(new Return<ICharPred, Character>(4, 6, 1, new CharPred('6',true)));
+		transitions.add(new Return<ICharPred, Character>(4, 8, 7, new CharPred('8',true)));
+		transitions.add(new Internal<ICharPred, Character>(5, 4, new CharPred('4')));
+		transitions.add(new Internal<ICharPred, Character>(6, 7, new CharPred('7')));
+		transitions.add(new Call<ICharPred, Character>(7, 2, 7, new CharPred('2')));
+		transitions.add(new Internal<ICharPred, Character>(8, 9, new CharPred('9')));
+
+		try {
+			SVPA<ICharPred, Character> svpa =  SVPA.MkSVPA(transitions, Arrays.asList(0), Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), ba);
+			return svpa;
 		} catch (AutomataException e) {
 			return null;
 		}

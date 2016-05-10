@@ -25,13 +25,28 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 /**
  * CharPred: a set of characters represented as contiguous intervals
  */
-public class CharPred implements ICharPred{
+public class CharPred extends ICharPred{
+	
+	/**
+	 * The set containing only the character <code>c</code>
+	 */
+	public CharPred(char c, boolean isReturn) {
+		this(c, c, isReturn);		
+	}
 	
 	/**
 	 * The set containing only the character <code>c</code>
 	 */
 	public CharPred(char c) {
-		this(c, c);
+		this(c, false);
+	}
+	
+	/**
+	 * The set containing only the interval <code>[bot,top]</code> (extremes
+	 * included)
+	 */
+	public CharPred(Character bot, Character top, boolean isReturn) {
+		this(ImmutableList.of(ImmutablePair.of(bot, top)), isReturn);
 	}
 
 	/**
@@ -39,24 +54,37 @@ public class CharPred implements ICharPred{
 	 * included)
 	 */
 	public CharPred(Character bot, Character top) {
-		this(ImmutableList.of(ImmutablePair.of(bot, top)));
+		this(bot, top, false);
 	}
 
 	public static CharPred of(ImmutableList<Character> characters) {
+		return of(characters, false);
+	}
+	
+	public static CharPred of(ImmutableList<Character> characters, boolean isReturn) {
 		ImmutableList.Builder<ImmutablePair<Character, Character>> intervals = ImmutableList.builder();
 		for (Character c : checkNotNull(characters)) {
 			intervals.add(ImmutablePair.of(checkNotNull(c), c));
 		}
-		return new CharPred(intervals.build());
+		CharPred res =  new CharPred(intervals.build(), isReturn);
+		if(isReturn)
+			res.setAsReturn();
+		return res;
 	}
 
-	public CharPred(ImmutableList<ImmutablePair<Character, Character>> intervals) {
+	public CharPred(ImmutableList<ImmutablePair<Character, Character>> intervals){
+		this(intervals,false);
+	}
+	
+	public CharPred(ImmutableList<ImmutablePair<Character, Character>> intervals, boolean isReturn) {
 		for (ImmutablePair<Character, Character> interval : checkNotNull(intervals)) {
 			checkArgument(interval.left != null && interval.right != null &&
 					interval.left <= interval.right);
 		}
 
 		this.intervals = sortIntervals(checkNotNull(intervals));
+		if(isReturn)
+			setAsReturn();
 	}
 
 	private static ImmutableList<ImmutablePair<Character, Character>> sortIntervals(

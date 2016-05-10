@@ -20,23 +20,27 @@ import utilities.Pair;
 /**
  * CharPred: a set of characters represented as contiguous intervals
  */
-public class BinaryCharPred implements ICharPred {
+public class BinaryCharPred extends ICharPred {
 	
 	public ArrayList<Pair<CharPred,CharPred>> notEqual;
 	public CharPred equals;	
 	
+	private BinaryCharPred(){
+		setAsReturn();
+	}
+	
 	/**
-	 * The set containing only the interval <code>[bot,top]</code> (extremes
-	 * included)
+	 * Return language is p, and it forces equality with call if forceEquality=true
 	 */
 	public BinaryCharPred(CharPred p, boolean forceEquality) {
+		this();
 		checkArgument(p != null);
 		notEqual = new ArrayList<Pair<CharPred,CharPred>>();
-		equals = StdCharPred.FALSE;
-		if(forceEquality)
-			equals = p; 
-		else
+		equals = p; 
+		if(!forceEquality){
 			notEqual.add(new Pair<CharPred, CharPred>(StdCharPred.TRUE, p));
+		}
+		
 	}
 	
 	public void normalize(BooleanAlgebra<CharPred, Character> ba){
@@ -61,15 +65,17 @@ public class BinaryCharPred implements ICharPred {
 	}
 	
 	public BinaryCharPred(CharPred eq, ArrayList<Pair<CharPred,CharPred>> notEqual) {
+		this();
 		checkArgument(eq != null && notEqual!=null);
 		this.equals = eq;
-		this.notEqual = notEqual;		
+		this.notEqual = notEqual;	
 	}
 	
 	/**
 	 * c and r without caring about equality
 	 */
 	public BinaryCharPred(CharPred c, CharPred r, BooleanAlgebra<CharPred, Character> ba) {
+		this();
 		checkArgument(c != null && r!=null);
 		notEqual = new ArrayList<Pair<CharPred,CharPred>>();
 		equals = StdCharPred.FALSE;
