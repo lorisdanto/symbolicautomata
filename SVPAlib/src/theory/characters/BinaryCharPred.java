@@ -32,10 +32,8 @@ public class BinaryCharPred implements ICharPred {
 	public BinaryCharPred(CharPred p, boolean forceEquality) {
 		checkArgument(p != null);
 		notEqual = new ArrayList<Pair<CharPred,CharPred>>();
-		equals = StdCharPred.FALSE;
-		if(forceEquality)
-			equals = p; 
-		else
+		equals = p; 
+		if(!forceEquality)
 			notEqual.add(new Pair<CharPred, CharPred>(StdCharPred.TRUE, p));
 	}
 	
