@@ -1059,8 +1059,7 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 	private static <A, B> SVPA<A, B> removeUnreachableStates(SVPA<A, B> aut,
 			BooleanAlgebra<A, B> ba) {
 
-		Map<Integer, Collection<Integer>> reachRel = aut
-				.getReachabilityRelation(ba);
+		Map<Integer, Collection<Integer>> reachRel = aut.getReachRel(ba).fourth;
 
 		SVPA<A, B> clean = new SVPA<A, B>();
 
