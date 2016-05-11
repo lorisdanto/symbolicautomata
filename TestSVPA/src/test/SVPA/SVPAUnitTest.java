@@ -571,8 +571,8 @@ public class SVPAUnitTest {
 
 		try {
 			SVPA<ICharPred, Character> svpa =  SVPA.MkSVPA(transitions, Arrays.asList(0), Arrays.asList(5), ba);
-			List<TaggedSymbol<Character>> l = svpa.getWitness(ba);
-			System.out.println(l);
+			//List<TaggedSymbol<Character>> l = svpa.getWitness(ba);
+			//System.out.println(l);
 			return svpa;
 		} catch (AutomataException e) {
 			return null;

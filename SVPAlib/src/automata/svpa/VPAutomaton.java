@@ -2,15 +2,13 @@ package automata.svpa;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Random;
 
+import automata.svpa.TaggedSymbol.SymbolTag;
 import theory.BooleanAlgebra;
 import utilities.Pair;
 import utilities.Quadruple;
@@ -281,185 +279,258 @@ public abstract class VPAutomaton<P, S> {
 		return s;
 	}
 
+	/** 
+	 * Generate a string in the language, null if language is empty
+	 * @param ba
+	 * @return
+	 */
 	public LinkedList<TaggedSymbol<S>> getWitness(BooleanAlgebra<P, S> ba) {
-		if (isEmpty)
-			return null;
 
-		Random ran = new Random();
-		Integer finState = new ArrayList<Integer>(getFinalStates()).get(ran.nextInt(getFinalStates().size()));
+		Collection<Integer> states = getStates();
+		Map<Integer, Integer> stateToId = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> idToState = new HashMap<Integer, Integer>();
+		boolean[][] wmReachRel = new boolean[states.size()][states.size()];
+		HashMap<Pair<Integer, Integer>, LinkedList<TaggedSymbol<S>>> witnesses = new HashMap<>();
 
-		HashMap<Pair<Integer, Integer>, LinkedList<TaggedSymbol<S>>> matchedWit = new HashMap<>();
-		HashMap<Pair<Integer, Integer>, LinkedList<TaggedSymbol<S>>> uCallWit = new HashMap<>();
-		HashMap<Pair<Integer, Integer>, LinkedList<TaggedSymbol<S>>> uRetWit = new HashMap<>();
+		Integer count = 0;
+		for (Integer state : getStates()) {
+			stateToId.put(state, count);
+			idToState.put(count, state);
+			wmReachRel[count][count] = true;
+			LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
+			witnesses.put(new Pair<Integer, Integer>(state, state), witness);
 
-		// Map<Integer, Collection<Integer>> rel = getReachabilityRelation(ba);
-		// for (Integer s : getInitialStates())
-		// if (rel.get(s).contains(finState))
-		// return getWitness(ba, getWellMatchedReachRel(ba), rel, s, finState,
-		// true, tried);
+			if (getInitialStates().contains(state) && getFinalStates().contains(state))
+				return witness;
 
-		return null;
-	}
+			count++;
+		}
 
-	// Generate a string in the language, null if language is empty
-	private LinkedList<TaggedSymbol<S>> getWitness(BooleanAlgebra<P, S> ba, Map<Integer, Collection<Integer>> wmrel,
-			Map<Integer, Collection<Integer>> unCallRel, Map<Integer, Collection<Integer>> unRetRel, int from, int to,
-			boolean canBeNotWM) {
+		// Build reflexive relation
+		for (int i = 0; i < wmReachRel.length; i++)
+			for (int j = 0; j < wmReachRel.length; j++)
+				if (i != j)
+					wmReachRel[i][j] = false;
 
-		// LinkedList<TaggedSymbol<S>> output = new
-		// LinkedList<TaggedSymbol<S>>();
-		// if (from == to)
-		// return output;
-		//
-		// // Internal Transition
-		// for (Internal<P, S> t : getInternalsFrom(from))
-		// if (!tried.contains(new Pair<Integer, Integer>(t.to, to)))
-		// if (rel.get(t.to).contains(to)) {
-		// output = getWitness(ba, wmrel, rel, t.to, to, canBeNotWM, tried);
-		// output.addFirst(new TaggedSymbol<S>(ba.generateWitness(t.guard),
-		// SymbolTag.Internal));
-		// return output;
-		// }
-		//
-		// // Calls and returns
-		// for (Call<P, S> tCall : getCallsFrom(from)) {
-		// for (Return<P, S> tReturn : getReturnsTo(to, tCall.stackState))
-		// if (!tried.contains(new Pair<Integer, Integer>(tCall.to,
-		// tReturn.from)))
-		// if (wmrel.get(tCall.to).contains(tReturn.from)) {
-		// P pred = ba.MkAnd(tCall.guard, tReturn.guard);
-		// if (ba.IsSatisfiable(pred)) {
-		//
-		// Pair<S, S> a = ba.generateWitnesses(ba.MkAnd(tCall.guard,
-		// tReturn.guard));
-		// output = getWitness(ba, wmrel, rel, tCall.to, tReturn.from, false,
-		// tried);
-		//
-		// output.addFirst(new TaggedSymbol<S>(a.first, SymbolTag.Call));
-		// output.addLast(new TaggedSymbol<S>(a.second, SymbolTag.Return));
-		// return output;
-		// }
-		// }
-		// }
-		//
-		//
-		// // Epsilon Transition
-		// for (SVPAEpsilon<P, S> t : getEpsilonsFrom(from))
-		// if (!tried.contains(new Pair<Integer, Integer>(t.to, to)))
-		// if (rel.get(t.to).contains(to))
-		// return getWitness(ba, wmrel, rel, t.to, to, canBeNotWM, tried);
-		//
-		// // Closure
-		// for (Integer stateMid : getStates()) {
-		// if (wmrel.get(from).contains(stateMid) &&
-		// wmrel.get(stateMid).contains(to)) {
-		// output = getWitness(ba, wmrel, rel, from, stateMid, canBeNotWM,
-		// tried);
-		// LinkedList<TaggedSymbol<S>> right = getWitness(ba, wmrel, rel,
-		// stateMid, to, canBeNotWM, tried);
-		// output.addAll(right);
-		// return output;
-		// }
-		// // NotWM
-		// if (canBeNotWM) {
-		// //TODO
-		// if (wmrel.get(from).contains(stateMid) &&
-		// wmrel.get(stateMid).contains(to)) {
-		// output = getWitness(ba, wmrel, rel, from, stateMid, canBeNotWM,
-		// tried);
-		// LinkedList<TaggedSymbol<S>> right = getWitness(ba, wmrel, rel,
-		// stateMid, to, canBeNotWM, tried);
-		// output.addAll(right);
-		// return output;
-		// }
-		// }
-		// }
+		// Build one step relation
+		for (Integer state1 : states) {
+			int id1 = stateToId.get(state1);
 
-		throw new IllegalArgumentException("this shouldn't happen");
-	}
+			// Epsilon Transition
+			for (SVPAEpsilon<P, S> t : getEpsilonsFrom(state1)) {
+				wmReachRel[id1][stateToId.get(t.to)] = true;
+				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
+				witnesses.put(new Pair<Integer, Integer>(t.from, t.to), witness);
+				
+				if (getInitialStates().contains(t.from) && getFinalStates().contains(t.to))
+					return witness;
+			}
 
-	// Generate a string in the language, null if language is empty
-	private LinkedList<TaggedSymbol<S>> getWitnessUnmatchedCalls(BooleanAlgebra<P, S> ba,
-			Map<Integer, Collection<Integer>> wmrel, Map<Integer, Collection<Integer>> rel, int from, int to,
-			Random ran) {
+			// Internal Transition
+			for (Internal<P, S> t : getInternalsFrom(state1)) {
+				wmReachRel[id1][stateToId.get(t.to)] = true;
+				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
+				witness.add(new TaggedSymbol<S>(ba.generateWitness(t.guard), SymbolTag.Internal));
+				witnesses.put(new Pair<Integer, Integer>(t.from, t.to), witness);
+				
+				if (getInitialStates().contains(t.from) && getFinalStates().contains(t.to))
+					return witness;
+			}
+		}
 
-		// LinkedList<TaggedSymbol<S>> output = new
-		// LinkedList<TaggedSymbol<S>>();
-		// if (from == to)
-		// return output;
-		//
-		// // Internal Transition
-		// for (Internal<P, S> t : getInternalsFrom(from))
-		// if (!tried.contains(new Pair<Integer, Integer>(t.to, to)))
-		// if (rel.get(t.to).contains(to)) {
-		// output = getWitness(ba, wmrel, rel, t.to, to, ran, canBeNotWM,
-		// tried);
-		// output.addFirst(new TaggedSymbol<S>(ba.generateWitness(t.guard),
-		// SymbolTag.Internal));
-		// return output;
-		// }
-		//
-		// // returnBS
-		// if (canBeNotWM) {
-		// for (ReturnBS<P, S> t : getReturnBSFrom(from))
-		// if (!tried.contains(new Pair<Integer, Integer>(t.to, to)))
-		// if (rel.get(t.to).contains(to)) {
-		// output = getWitness(ba, wmrel, rel, t.to, to, ran, canBeNotWM,
-		// tried);
-		// output.addFirst(new TaggedSymbol<S>(ba.generateWitness(t.guard),
-		// SymbolTag.Return));
-		// return output;
-		// }
-		// }
-		//
-		// // Calls and returns
-		// for (Call<P, S> tCall : getCallsFrom(from)) {
-		// for (Return<P, S> tReturn : getReturnsTo(to, tCall.stackState))
-		// if (!tried.contains(new Pair<Integer, Integer>(tCall.to,
-		// tReturn.from)))
-		// if (wmrel.get(tCall.to).contains(tReturn.from)) {
-		// P pred = ba.MkAnd(tCall.guard, tReturn.guard);
-		// if (ba.IsSatisfiable(pred)) {
-		//
-		// Pair<S, S> a = ba.generateWitnesses(ba.MkAnd(tCall.guard,
-		// tReturn.guard));
-		// output = getWitness(ba, wmrel, rel, tCall.to, tReturn.from, ran,
-		// false, tried);
-		//
-		// output.addFirst(new TaggedSymbol<S>(a.first, SymbolTag.Call));
-		// output.addLast(new TaggedSymbol<S>(a.second, SymbolTag.Return));
-		// return output;
-		// }
-		// }
-		// }
-		//
-		// if (canBeNotWM)
-		// for (Call<P, S> t : getCallsTo(to))
-		// if (!tried.contains(new Pair<Integer, Integer>(from, t.from)))
-		// if (rel.get(from).contains(t.from)) {
-		// output = getWitness(ba, wmrel, rel, from, t.from, ran, canBeNotWM,
-		// tried);
-		// output.addLast(new TaggedSymbol<S>(ba.generateWitness(t.guard),
-		// SymbolTag.Call));
-		// return output;
-		// }
-		//
-		// // Epsilon Transition
-		// for (SVPAEpsilon<P, S> t : getEpsilonsFrom(from))
-		// if (!tried.contains(new Pair<Integer, Integer>(t.to, to)))
-		// if (rel.get(t.to).contains(to))
-		// return getWitness(ba, wmrel, rel, t.to, to, ran, canBeNotWM, tried);
-		//
-		// // Closure
-		// for (Integer stateMid : states) {
-		// int idMid = stateToId.get(stateMid);
-		// if (rel.get(t.to).con && reachabilityRelation[idMid][id2]) {
-		// reachabilityRelation[id1][id2] = true;
-		// break if_check;
-		// }
-		// }
+		// Compute fixpoint of reachability relation
+		boolean changed = true;
+		while (changed) {
+			// start with same set
+			changed = false;
 
-		throw new IllegalArgumentException("this shouldn't happen");
+			for (Integer state1 : states) {
+				int id1 = stateToId.get(state1);
+				for (Integer state2 : states) {
+					int id2 = stateToId.get(state2);
+
+					if_check: if (!wmReachRel[id1][id2]) {
+
+						// Calls and returns
+						for (Call<P, S> tCall : getCallsFrom(state1))
+							for (Return<P, S> tReturn : getReturnsTo(state2, tCall.stackState))
+								if (wmReachRel[stateToId.get(tCall.to)][stateToId.get(tReturn.from)]) {
+									P conj = ba.MkAnd(tCall.guard, tReturn.guard);
+									if (ba.IsSatisfiable(conj)) {
+										wmReachRel[id1][id2] = true;
+
+										LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+												witnesses.get(new Pair<Integer, Integer>(tCall.to, tReturn.from)));
+										Pair<S, S> elements = ba.generateWitnesses(conj);
+										witness.addFirst(new TaggedSymbol<S>(elements.first, SymbolTag.Call));
+										witness.addLast(new TaggedSymbol<S>(elements.second, SymbolTag.Return));
+										witnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
+
+										if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
+											return witness;
+										
+										changed = true;
+										break if_check;
+									}
+								}
+
+						// Closure
+						for (Integer stateMid : states) {
+							int idMid = stateToId.get(stateMid);
+							if (wmReachRel[id1][idMid] && wmReachRel[idMid][id2]) {
+								wmReachRel[id1][id2] = true;
+								LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+										witnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
+								witness.addAll(witnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
+								witnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
+
+								if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
+									return witness;
+								
+								changed = true;
+								break if_check;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Unmatched calls
+		boolean[][] unCallRel = wmReachRel.clone();
+		// Calls
+		for (Call<P, S> tCall : getCallsFrom(getStates())) {
+
+			int idFrom = stateToId.get(tCall.from);
+			int idTo = stateToId.get(tCall.to);
+			if (!unCallRel[idFrom][idTo]) {
+				unCallRel[idFrom][idTo] = true;
+
+				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
+				witness.add(new TaggedSymbol<S>(ba.generateWitness(tCall.guard), SymbolTag.Call));
+				witnesses.put(new Pair<Integer, Integer>(tCall.from, tCall.to), witness);
+				
+				if (getInitialStates().contains(tCall.from) && getFinalStates().contains(tCall.to))
+					return witness;
+			}
+		}
+
+		changed = true;
+		while (changed) {
+			// start with same set
+			changed = false;
+
+			for (Integer state1 : states) {
+				int id1 = stateToId.get(state1);
+				for (Integer state2 : states) {
+					int id2 = stateToId.get(state2);
+
+					if_check: if (!unCallRel[id1][id2]) {
+						// Closure
+						for (Integer stateMid : states) {
+							int idMid = stateToId.get(stateMid);
+							if (unCallRel[id1][idMid] && unCallRel[idMid][id2]) {
+								unCallRel[id1][id2] = true;
+
+								LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+										witnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
+								witness.addAll(witnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
+								witnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
+
+								if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
+									return witness;
+								
+								changed = true;
+								break if_check;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Unmatched returns
+		boolean[][] unRetRel = wmReachRel.clone();
+		// Returns
+		for (ReturnBS<P, S> tRet : getReturnBSFrom(getStates())) {
+			int idFrom = stateToId.get(tRet.from);
+			int idTo = stateToId.get(tRet.to);
+			if (!unRetRel[idFrom][idTo]) {
+				unRetRel[idFrom][idTo] = true;
+
+				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
+				witness.add(new TaggedSymbol<S>(ba.generateWitness(tRet.guard), SymbolTag.Return));
+				witnesses.put(new Pair<Integer, Integer>(tRet.from, tRet.to), witness);
+				
+				if (getInitialStates().contains(tRet.from) && getFinalStates().contains(tRet.to))
+					return witness;
+			}
+		}
+
+		changed = true;
+		while (changed) {
+			// start with same set
+			changed = false;
+
+			for (Integer state1 : states) {
+				int id1 = stateToId.get(state1);
+				for (Integer state2 : states) {
+					int id2 = stateToId.get(state2);
+
+					if_check: if (!unRetRel[id1][id2]) {
+						// Closure
+						for (Integer stateMid : states) {
+							int idMid = stateToId.get(stateMid);
+							if (unRetRel[id1][idMid] && unRetRel[idMid][id2]) {
+								unRetRel[id1][id2] = true;
+
+								LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+										witnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
+								witness.addAll(witnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
+								witnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
+
+								if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
+									return witness;
+								
+								changed = true;
+								break if_check;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Full reachability relation
+		boolean[][] reachRel = wmReachRel.clone();
+
+		for (Integer state1 : states) {
+			int id1 = stateToId.get(state1);
+			for (Integer state2 : states) {
+				int id2 = stateToId.get(state2);
+
+				// Closure
+				if_check: if (!reachRel[id1][id2])
+					for (Integer stateMid : states) {
+						int idMid = stateToId.get(stateMid);
+						if (unRetRel[id1][idMid] && unCallRel[idMid][id2]) {
+							reachRel[id1][id2] = true;
+
+							LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+									witnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
+							witness.addAll(witnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
+							witnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
+
+							if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
+								return witness;
+							
+							break if_check;
+						}
+					}
+			}
+		}
+
+		throw new IllegalArgumentException("The automaton can't be empty");
 
 	}
 
@@ -501,10 +572,7 @@ public abstract class VPAutomaton<P, S> {
 
 		// Compute fixpoint of reachability relation
 		boolean changed = true;
-		boolean[][] tmpRel = new boolean[states.size()][states.size()];
 		while (changed) {
-			// start with same set
-			tmpRel = wmReachRel.clone();
 			changed = false;
 
 			for (Integer state1 : states) {
@@ -546,8 +614,7 @@ public abstract class VPAutomaton<P, S> {
 
 		changed = true;
 		while (changed) {
-			// start with same set
-			tmpRel = unCallRel.clone();
+
 			changed = false;
 
 			for (Integer state1 : states) {
@@ -578,8 +645,7 @@ public abstract class VPAutomaton<P, S> {
 
 		changed = true;
 		while (changed) {
-			// start with same set
-			tmpRel = unRetRel.clone();
+
 			changed = false;
 
 			for (Integer state1 : states) {
