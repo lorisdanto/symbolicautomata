@@ -2,18 +2,16 @@ package automata.svpa;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Random;
 
+import automata.svpa.TaggedSymbol.SymbolTag;
 import theory.BooleanAlgebra;
 import utilities.Pair;
-import automata.svpa.TaggedSymbol.SymbolTag;
+import utilities.Quadruple;
 
 public abstract class VPAutomaton<P, S> {
 
@@ -69,26 +67,22 @@ public abstract class VPAutomaton<P, S> {
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
 	 */
-	public abstract Collection<Return<P, S>> getReturnsFrom(
-			Pair<Integer, Integer> state);
+	public abstract Collection<Return<P, S>> getReturnsFrom(Pair<Integer, Integer> state);
 
 	/**
 	 * Returns the set of return transitions to state <code>s</code>
 	 */
-	public abstract Collection<Return<P, S>> getReturnsTo(
-			Pair<Integer, Integer> state);
+	public abstract Collection<Return<P, S>> getReturnsTo(Pair<Integer, Integer> state);
 
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
 	 */
-	public abstract Collection<Return<P, S>> getReturnsFrom(Integer state,
-			Integer stackState);
+	public abstract Collection<Return<P, S>> getReturnsFrom(Integer state, Integer stackState);
 
 	/**
 	 * Returns the set of return transitions to state <code>s</code>
 	 */
-	public abstract Collection<Return<P, S>> getReturnsTo(Integer state,
-			Integer stackState);
+	public abstract Collection<Return<P, S>> getReturnsTo(Integer state, Integer stackState);
 
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
@@ -103,21 +97,18 @@ public abstract class VPAutomaton<P, S> {
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
 	 */
-	public abstract Collection<Return<P, S>> getReturnsFrom(
-			Collection<Integer> stateSet);
+	public abstract Collection<Return<P, S>> getReturnsFrom(Collection<Integer> stateSet);
 
 	/**
 	 * Returns the set of return transitions starting in a state in
 	 * <code>stateSet</code> with stack state <code>stackState</code>
 	 */
-	public abstract Collection<Return<P, S>> getReturnsFrom(
-			Collection<Integer> stateSet, Integer stackState);
+	public abstract Collection<Return<P, S>> getReturnsFrom(Collection<Integer> stateSet, Integer stackState);
 
 	/**
 	 * Returns the set of return transitions to a state in <code>stateSet</code>
 	 */
-	public abstract Collection<Return<P, S>> getReturnsTo(
-			Collection<Integer> stateSet);
+	public abstract Collection<Return<P, S>> getReturnsTo(Collection<Integer> stateSet);
 
 	/**
 	 * Returns the set of call transitions starting a state <code>state</code>
@@ -128,15 +119,13 @@ public abstract class VPAutomaton<P, S> {
 	 * Returns the set of call transitions starting in state <code>state</code>
 	 * with stack state <code>stackState</code>
 	 */
-	public abstract Collection<Call<P, S>> getCallsFrom(Integer state,
-			Integer stackState);
+	public abstract Collection<Call<P, S>> getCallsFrom(Integer state, Integer stackState);
 
 	/**
 	 * Returns the set of call transitions starting in a state in
 	 * <code>stateSet</code> with stack state <code>stackState</code>
 	 */
-	public abstract Collection<Call<P, S>> getCallsFrom(
-			Collection<Integer> stateSet, Integer stackState);
+	public abstract Collection<Call<P, S>> getCallsFrom(Collection<Integer> stateSet, Integer stackState);
 
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
@@ -146,8 +135,7 @@ public abstract class VPAutomaton<P, S> {
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
 	 */
-	public abstract Collection<Call<P, S>> getCallsFrom(
-			Collection<Integer> stateSet);
+	public abstract Collection<Call<P, S>> getCallsFrom(Collection<Integer> stateSet);
 
 	/**
 	 * Returns the set of return transitions to state <code>s</code>
@@ -172,14 +160,12 @@ public abstract class VPAutomaton<P, S> {
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
 	 */
-	public abstract Collection<ReturnBS<P, S>> getReturnBSFrom(
-			Collection<Integer> stateSet);
+	public abstract Collection<ReturnBS<P, S>> getReturnBSFrom(Collection<Integer> stateSet);
 
 	/**
 	 * Returns the set of return transitions to state <code>s</code>
 	 */
-	public abstract Collection<ReturnBS<P, S>> getReturnBSTo(
-			Collection<Integer> stateSet);
+	public abstract Collection<ReturnBS<P, S>> getReturnBSTo(Collection<Integer> stateSet);
 
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
@@ -194,14 +180,12 @@ public abstract class VPAutomaton<P, S> {
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
 	 */
-	public abstract Collection<SVPAEpsilon<P, S>> getEpsilonsFrom(
-			Collection<Integer> stateSet);
+	public abstract Collection<SVPAEpsilon<P, S>> getEpsilonsFrom(Collection<Integer> stateSet);
 
 	/**
 	 * Returns the set of return transitions to state <code>s</code>
 	 */
-	public abstract Collection<SVPAEpsilon<P, S>> getEpsilonsTo(
-			Collection<Integer> stateSet);
+	public abstract Collection<SVPAEpsilon<P, S>> getEpsilonsTo(Collection<Integer> stateSet);
 
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
@@ -216,14 +200,12 @@ public abstract class VPAutomaton<P, S> {
 	/**
 	 * Returns the set of return transitions starting a state <code>s</code>
 	 */
-	public abstract Collection<Internal<P, S>> getInternalsFrom(
-			Collection<Integer> stateSet);
+	public abstract Collection<Internal<P, S>> getInternalsFrom(Collection<Integer> stateSet);
 
 	/**
 	 * Returns the set of return transitions to state <code>s</code>
 	 */
-	public abstract Collection<Internal<P, S>> getInternalsTo(
-			Collection<Integer> stateSet);
+	public abstract Collection<Internal<P, S>> getInternalsTo(Collection<Integer> stateSet);
 
 	/**
 	 * Returns the set of states
@@ -246,8 +228,7 @@ public abstract class VPAutomaton<P, S> {
 	 */
 	public boolean createDotFile(String name, String path) {
 		try {
-			FileWriter fw = new FileWriter(path + name
-					+ (name.endsWith(".dot") ? "" : ".dot"));
+			FileWriter fw = new FileWriter(path + name + (name.endsWith(".dot") ? "" : ".dot"));
 			fw.write("digraph " + name + "{\n rankdir=LR;\n");
 			for (Integer state : getStates()) {
 
@@ -285,8 +266,7 @@ public abstract class VPAutomaton<P, S> {
 	 */
 	public String toString() {
 		String s = "";
-		s = "Automaton: " + getMoves().size() + " transitions, "
-				+ getStates().size() + " states" + "\n";
+		s = "Automaton: " + getMoves().size() + " transitions, " + getStates().size() + " states" + "\n";
 		s += "Transitions \n";
 		for (SVPAMove<P, S> t : getMoves())
 			s = s + t + "\n";
@@ -299,332 +279,116 @@ public abstract class VPAutomaton<P, S> {
 		return s;
 	}
 
+	/** 
+	 * Generate a string in the language, null if language is empty
+	 * @param ba
+	 * @return
+	 */
 	public LinkedList<TaggedSymbol<S>> getWitness(BooleanAlgebra<P, S> ba) {
-		if (isEmpty)
-			return null;
-
-		Random ran = new Random();
-		Integer finState = new ArrayList<Integer>(getFinalStates()).get(ran
-				.nextInt(getFinalStates().size()));
-
-		HashSet<Pair<Integer, Integer>> tried = new HashSet<Pair<Integer, Integer>>();
-		Map<Integer, Collection<Integer>> rel = getReachabilityRelation(ba);
-		for (Integer s : getInitialStates())
-			if (rel.get(s).contains(finState))
-				return getWitness(ba, getWellMatchedReachRel(ba), rel, s,
-						finState, ran, true, tried);
-
-		return null;
-	}
-
-	// Generate a string in the language, null if language is empty
-	private LinkedList<TaggedSymbol<S>> getWitness(BooleanAlgebra<P, S> ba,
-			Map<Integer, Collection<Integer>> wmrel,
-			Map<Integer, Collection<Integer>> rel, int from, int to,
-			Random ran, boolean canBeNotWM,
-			HashSet<Pair<Integer, Integer>> tried) {
-
-		tried.add(new Pair<Integer, Integer>(from, to));
-
-		LinkedList<TaggedSymbol<S>> output = new LinkedList<TaggedSymbol<S>>();
-		if (from == to)
-			return output;
-
-		// Internal Transition
-		for (Internal<P, S> t : getInternalsFrom(from))
-			if (!tried.contains(new Pair<Integer, Integer>(t.to, to)))
-				if (rel.get(t.to).contains(to)) {
-					output = getWitness(ba, wmrel, rel, t.to, to, ran,
-							canBeNotWM, tried);
-					output.addFirst(new TaggedSymbol<S>(ba
-							.generateWitness(t.guard), SymbolTag.Internal));
-					return output;
-				}
-
-		// returnBS
-		if (canBeNotWM) {
-			for (ReturnBS<P, S> t : getReturnBSFrom(from))
-				if (!tried.contains(new Pair<Integer, Integer>(t.to, to)))
-					if (rel.get(t.to).contains(to)) {
-						output = getWitness(ba, wmrel, rel, t.to, to, ran,
-								canBeNotWM, tried);
-						output.addFirst(new TaggedSymbol<S>(ba
-								.generateWitness(t.guard), SymbolTag.Return));
-						return output;
-					}
-		}
-
-		// Calls and returns
-		for (Call<P, S> tCall : getCallsFrom(from)) {
-			for (Return<P, S> tReturn : getReturnsTo(to, tCall.stackState))
-				if (!tried.contains(new Pair<Integer, Integer>(tCall.to,
-						tReturn.from)))
-					if (wmrel.get(tCall.to).contains(tReturn.from)) {
-						P pred = ba.MkAnd(tCall.guard, tReturn.guard);
-						if (ba.IsSatisfiable(pred)) {
-
-							Pair<S, S> a = ba.generateWitnesses(ba.MkAnd(
-									tCall.guard, tReturn.guard));
-							output = getWitness(ba, wmrel, rel, tCall.to,
-									tReturn.from, ran, false, tried);
-
-							output.addFirst(new TaggedSymbol<S>(a.first,
-									SymbolTag.Call));
-							output.addLast(new TaggedSymbol<S>(a.second,
-									SymbolTag.Return));
-							return output;
-						}
-					}
-		}
-
-		if (canBeNotWM)
-			for (Call<P, S> t : getCallsTo(to))
-				if (!tried.contains(new Pair<Integer, Integer>(from, t.from)))
-					if (rel.get(from).contains(t.from)) {
-						output = getWitness(ba, wmrel, rel, from, t.from, ran,
-								canBeNotWM, tried);
-						output.addLast(new TaggedSymbol<S>(ba
-								.generateWitness(t.guard), SymbolTag.Call));
-						return output;
-					}
-
-		// Epsilon Transition
-		for (SVPAEpsilon<P, S> t : getEpsilonsFrom(from))
-			if (!tried.contains(new Pair<Integer, Integer>(t.to, to)))
-				if (rel.get(t.to).contains(to))
-					return getWitness(ba, wmrel, rel, t.to, to, ran,
-							canBeNotWM, tried);
-
-		return output;
-	}
-
-	// Compute well matched reachability relation between states
-	private Map<Integer, Collection<Integer>> getWellMatchedReachRel(
-			BooleanAlgebra<P, S> ba) {
 
 		Collection<Integer> states = getStates();
 		Map<Integer, Integer> stateToId = new HashMap<Integer, Integer>();
 		Map<Integer, Integer> idToState = new HashMap<Integer, Integer>();
-		boolean[][] reachabilityRelation = new boolean[states.size()][states
-				.size()];
-
-		// Build reflexive relation
-		for (int i = 0; i < reachabilityRelation.length; i++)
-			for (int j = 0; j < reachabilityRelation.length; j++)
-				reachabilityRelation[i][j] = false;
-
-		Integer count = 0;
-		for (Integer state : states) {
-			stateToId.put(state, count);
-			idToState.put(count, state);
-			reachabilityRelation[count][count] = true;
-			count++;
-		}
-
-		// Compute fixpoint of reachability relation
-		boolean[][] reachabilityRelationTmp = new boolean[states.size()][states
-				.size()];
-		while (!Arrays
-				.deepEquals(reachabilityRelation, reachabilityRelationTmp)) {
-			// start with same set
-			reachabilityRelationTmp = reachabilityRelation.clone();
-
-			for (Integer state1 : states) {
-				int id1 = stateToId.get(state1);
-
-				for (Integer state2 : states) {
-
-					int id2 = stateToId.get(state2);
-
-					if_check: if (!reachabilityRelation[id1][id2]) {
-
-						// Epsilon Transition
-						for (SVPAEpsilon<P, S> t : getEpsilonsFrom(state1))
-							if (reachabilityRelation[stateToId.get(t.to)][id2]) {
-								reachabilityRelation[id1][id2] = true;
-								break if_check;
-							}
-
-						// Internal Transition
-						for (Internal<P, S> t : getInternalsFrom(state1))
-							if (reachabilityRelation[stateToId.get(t.to)][id2]) {
-								reachabilityRelation[id1][id2] = true;
-								break if_check;
-							}
-
-						// Calls and returns
-						for (Call<P, S> tCall : getCallsFrom(state1))
-							for (Return<P, S> tReturn : getReturnsTo(state2,
-									tCall.stackState))
-								if (reachabilityRelation[stateToId
-										.get(tCall.to)][stateToId
-										.get(tReturn.from)])
-									if (ba.IsSatisfiable(ba.MkAnd(tCall.guard,
-											tReturn.guard))) {
-										reachabilityRelation[id1][id2] = true;
-										break if_check;
-									}
-
-						// Closure
-						try {
-							for (Integer stateMid : states) {
-								int idMid = stateToId.get(stateMid);
-								if (reachabilityRelation[id1][idMid]
-										&& reachabilityRelation[idMid][id2]) {
-									reachabilityRelation[id1][id2] = true;
-									break if_check;
-								}
-							}
-						} catch (Exception e) {
-							System.out.print(e);
-						}
-					}
-				}
-			}
-		}
-		// Copy to adjacency list
-		Map<Integer, Collection<Integer>> reachRelList = new HashMap<Integer, Collection<Integer>>();
-
-		for (int i = 0; i < reachabilityRelation.length; i++) {
-			Collection<Integer> reachableFromi = new HashSet<Integer>();
-			for (int j = 0; j < reachabilityRelation.length; j++)
-				if (reachabilityRelation[i][j])
-					reachableFromi.add(idToState.get(j));
-			reachRelList.put(idToState.get(i), reachableFromi);
-		}
-		return reachRelList;
-	}
-
-	// Compute reachability relation between states
-	protected Map<Integer, Collection<Integer>> getReachabilityRelation(
-			BooleanAlgebra<P, S> ba) {
-
-		Collection<Integer> states = getStates();
-		Map<Integer, Integer> stateToId = new HashMap<Integer, Integer>();
-		Map<Integer, Integer> idToState = new HashMap<Integer, Integer>();
-		boolean[][] reachabilityRelation = new boolean[states.size()][states
-				.size()];
-
-		// Build reflexive relation
-		for (int i = 0; i < reachabilityRelation.length; i++)
-			for (int j = 0; j < reachabilityRelation.length; j++)
-				reachabilityRelation[i][j] = false;
+		boolean[][] wmReachRel = new boolean[states.size()][states.size()];
+		HashMap<Pair<Integer, Integer>, LinkedList<TaggedSymbol<S>>> witnesses = new HashMap<>();
 
 		Integer count = 0;
 		for (Integer state : getStates()) {
 			stateToId.put(state, count);
 			idToState.put(count, state);
-			reachabilityRelation[count][count] = true;
+			wmReachRel[count][count] = true;
+			LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
+			witnesses.put(new Pair<Integer, Integer>(state, state), witness);
+
+			if (getInitialStates().contains(state) && getFinalStates().contains(state))
+				return witness;
+
 			count++;
 		}
 
+		// Build reflexive relation
+		for (int i = 0; i < wmReachRel.length; i++)
+			for (int j = 0; j < wmReachRel.length; j++)
+				if (i != j)
+					wmReachRel[i][j] = false;
+
+		// Build one step relation
+		for (Integer state1 : states) {
+			int id1 = stateToId.get(state1);
+
+			// Epsilon Transition
+			for (SVPAEpsilon<P, S> t : getEpsilonsFrom(state1)) {
+				wmReachRel[id1][stateToId.get(t.to)] = true;
+				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
+				witnesses.put(new Pair<Integer, Integer>(t.from, t.to), witness);
+				
+				if (getInitialStates().contains(t.from) && getFinalStates().contains(t.to))
+					return witness;
+			}
+
+			// Internal Transition
+			for (Internal<P, S> t : getInternalsFrom(state1)) {
+				wmReachRel[id1][stateToId.get(t.to)] = true;
+				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
+				witness.add(new TaggedSymbol<S>(ba.generateWitness(t.guard), SymbolTag.Internal));
+				witnesses.put(new Pair<Integer, Integer>(t.from, t.to), witness);
+				
+				if (getInitialStates().contains(t.from) && getFinalStates().contains(t.to))
+					return witness;
+			}
+		}
+
 		// Compute fixpoint of reachability relation
-		boolean[][] reachabilityRelationTmp = new boolean[states.size()][states
-				.size()];
-		while (!Arrays
-				.deepEquals(reachabilityRelation, reachabilityRelationTmp)) {
+		boolean changed = true;
+		while (changed) {
 			// start with same set
-			reachabilityRelationTmp = reachabilityRelation.clone();
+			changed = false;
 
 			for (Integer state1 : states) {
 				int id1 = stateToId.get(state1);
-
 				for (Integer state2 : states) {
-
 					int id2 = stateToId.get(state2);
 
-					if_check: if (!reachabilityRelation[id1][id2]) {
-
-						// Epsilon Transition
-						for (SVPAEpsilon<P, S> t : getEpsilonsFrom(state1))
-							if (reachabilityRelation[stateToId.get(t.to)][id2]) {
-								reachabilityRelation[id1][id2] = true;
-								break if_check;
-							}
-
-						// Internal Transition
-						for (Internal<P, S> t : getInternalsFrom(state1))
-							if (reachabilityRelation[stateToId.get(t.to)][id2]) {
-								reachabilityRelation[id1][id2] = true;
-								break if_check;
-							}
+					if_check: if (!wmReachRel[id1][id2]) {
 
 						// Calls and returns
 						for (Call<P, S> tCall : getCallsFrom(state1))
-							for (Return<P, S> tReturn : getReturnsTo(state2,
-									tCall.stackState))
-								if (reachabilityRelation[stateToId
-										.get(tCall.to)][stateToId
-										.get(tReturn.from)])
-									if (ba.IsSatisfiable(ba.MkAnd(tCall.guard,
-											tReturn.guard))) {
-										reachabilityRelation[id1][id2] = true;
+							for (Return<P, S> tReturn : getReturnsTo(state2, tCall.stackState))
+								if (wmReachRel[stateToId.get(tCall.to)][stateToId.get(tReturn.from)]) {
+									P conj = ba.MkAnd(tCall.guard, tReturn.guard);
+									if (ba.IsSatisfiable(conj)) {
+										wmReachRel[id1][id2] = true;
+
+										LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+												witnesses.get(new Pair<Integer, Integer>(tCall.to, tReturn.from)));
+										Pair<S, S> elements = ba.generateWitnesses(conj);
+										witness.addFirst(new TaggedSymbol<S>(elements.first, SymbolTag.Call));
+										witness.addLast(new TaggedSymbol<S>(elements.second, SymbolTag.Return));
+										witnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
+
+										if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
+											return witness;
+										
+										changed = true;
 										break if_check;
 									}
-
-						// Closure
-						try {
-							for (Integer stateMid : states) {
-								int idMid = stateToId.get(stateMid);
-								if (reachabilityRelation[id1][idMid]
-										&& reachabilityRelation[idMid][id2]) {
-									reachabilityRelation[id1][id2] = true;
-									break if_check;
 								}
-							}
-						} catch (Exception e) {
-							System.out.print(e);
-						}
-					}
-				}
-			}
-		}
-
-		// Compute call closure
-		boolean[][] reachabilityRelationCall = reachabilityRelation.clone();
-		reachabilityRelationTmp = new boolean[states.size()][states.size()];
-		while (!Arrays.deepEquals(reachabilityRelationCall,
-				reachabilityRelationTmp)) {
-			// start with same set
-			reachabilityRelationTmp = reachabilityRelationCall.clone();
-
-			for (Integer state1 : states) {
-				int id1 = stateToId.get(state1);
-
-				for (Integer state2 : states) {
-
-					int id2 = stateToId.get(state2);
-					if_check2: if (!reachabilityRelationCall[id1][id2]) {
-
-						// Epsilon Transition
-						for (SVPAEpsilon<P, S> t : getEpsilonsFrom(state1))
-							if (reachabilityRelationCall[stateToId.get(t.to)][id2]) {
-								reachabilityRelationCall[id1][id2] = true;
-								break if_check2;
-							}
-
-						// Calls
-						for (Call<P, S> tCall : getCallsFrom(state1))
-							if (reachabilityRelationCall[stateToId
-									.get(tCall.to)][id2]) {
-								reachabilityRelationCall[id1][id2] = true;
-								break if_check2;
-							}
-
-						// Internal Transition
-						for (Internal<P, S> t : getInternalsFrom(state1))
-							if (reachabilityRelationCall[stateToId.get(t.to)][id2]) {
-								reachabilityRelationCall[id1][id2] = true;
-								break if_check2;
-							}
 
 						// Closure
 						for (Integer stateMid : states) {
 							int idMid = stateToId.get(stateMid);
-							if (reachabilityRelationCall[id1][idMid]
-									&& reachabilityRelationCall[idMid][id2]) {
-								reachabilityRelationCall[id1][id2] = true;
-								break if_check2;
+							if (wmReachRel[id1][idMid] && wmReachRel[idMid][id2]) {
+								wmReachRel[id1][id2] = true;
+								LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+										witnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
+								witness.addAll(witnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
+								witnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
+
+								if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
+									return witness;
+								
+								changed = true;
+								break if_check;
 							}
 						}
 					}
@@ -632,90 +396,338 @@ public abstract class VPAutomaton<P, S> {
 			}
 		}
 
-		// Compute return closure
-		boolean[][] reachabilityRelationReturn = reachabilityRelation.clone();
-		reachabilityRelationTmp = new boolean[states.size()][states.size()];
-		while (!Arrays.deepEquals(reachabilityRelationReturn,
-				reachabilityRelationTmp)) {
+		// Unmatched calls
+		boolean[][] unCallRel = wmReachRel.clone();
+		// Calls
+		for (Call<P, S> tCall : getCallsFrom(getStates())) {
+
+			int idFrom = stateToId.get(tCall.from);
+			int idTo = stateToId.get(tCall.to);
+			if (!unCallRel[idFrom][idTo]) {
+				unCallRel[idFrom][idTo] = true;
+
+				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
+				witness.add(new TaggedSymbol<S>(ba.generateWitness(tCall.guard), SymbolTag.Call));
+				witnesses.put(new Pair<Integer, Integer>(tCall.from, tCall.to), witness);
+				
+				if (getInitialStates().contains(tCall.from) && getFinalStates().contains(tCall.to))
+					return witness;
+			}
+		}
+
+		changed = true;
+		while (changed) {
 			// start with same set
-			reachabilityRelationTmp = reachabilityRelationReturn.clone();
+			changed = false;
 
 			for (Integer state1 : states) {
 				int id1 = stateToId.get(state1);
-
 				for (Integer state2 : states) {
-
 					int id2 = stateToId.get(state2);
-					if_check3: if (!reachabilityRelationReturn[id1][id2]) {
 
-						// Epsilon Transition
-						for (SVPAEpsilon<P, S> t : getEpsilonsFrom(state1))
-							if (reachabilityRelationReturn[stateToId.get(t.to)][id2]) {
-								reachabilityRelationReturn[id1][id2] = true;
-								break if_check3;
-							}
-
-						// Bottom stack returns
-						for (ReturnBS<P, S> tRet : getReturnBSFrom(state1))
-							if (reachabilityRelationReturn[stateToId
-									.get(tRet.to)][id2]) {
-								reachabilityRelationReturn[id1][id2] = true;
-								break if_check3;
-							}
-
-						// Internal Transition
-						for (Internal<P, S> t : getInternalsFrom(state1))
-							if (reachabilityRelationReturn[stateToId.get(t.to)][id2]) {
-								reachabilityRelationReturn[id1][id2] = true;
-								break if_check3;
-							}
-
+					if_check: if (!unCallRel[id1][id2]) {
 						// Closure
 						for (Integer stateMid : states) {
 							int idMid = stateToId.get(stateMid);
-							if (reachabilityRelationReturn[id1][idMid]
-									&& reachabilityRelationReturn[idMid][id2]) {
-								reachabilityRelationReturn[id1][id2] = true;
-								break if_check3;
+							if (unCallRel[id1][idMid] && unCallRel[idMid][id2]) {
+								unCallRel[id1][id2] = true;
+
+								LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+										witnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
+								witness.addAll(witnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
+								witnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
+
+								if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
+									return witness;
+								
+								changed = true;
+								break if_check;
 							}
 						}
-
 					}
 				}
 			}
 		}
 
-		// calls and returns closure
+		// Unmatched returns
+		boolean[][] unRetRel = wmReachRel.clone();
+		// Returns
+		for (ReturnBS<P, S> tRet : getReturnBSFrom(getStates())) {
+			int idFrom = stateToId.get(tRet.from);
+			int idTo = stateToId.get(tRet.to);
+			if (!unRetRel[idFrom][idTo]) {
+				unRetRel[idFrom][idTo] = true;
+
+				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
+				witness.add(new TaggedSymbol<S>(ba.generateWitness(tRet.guard), SymbolTag.Return));
+				witnesses.put(new Pair<Integer, Integer>(tRet.from, tRet.to), witness);
+				
+				if (getInitialStates().contains(tRet.from) && getFinalStates().contains(tRet.to))
+					return witness;
+			}
+		}
+
+		changed = true;
+		while (changed) {
+			// start with same set
+			changed = false;
+
+			for (Integer state1 : states) {
+				int id1 = stateToId.get(state1);
+				for (Integer state2 : states) {
+					int id2 = stateToId.get(state2);
+
+					if_check: if (!unRetRel[id1][id2]) {
+						// Closure
+						for (Integer stateMid : states) {
+							int idMid = stateToId.get(stateMid);
+							if (unRetRel[id1][idMid] && unRetRel[idMid][id2]) {
+								unRetRel[id1][id2] = true;
+
+								LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+										witnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
+								witness.addAll(witnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
+								witnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
+
+								if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
+									return witness;
+								
+								changed = true;
+								break if_check;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Full reachability relation
+		boolean[][] reachRel = wmReachRel.clone();
+
 		for (Integer state1 : states) {
 			int id1 = stateToId.get(state1);
 			for (Integer state2 : states) {
 				int id2 = stateToId.get(state2);
-				if (reachabilityRelationCall[id1][id2]
-						|| reachabilityRelationReturn[id1][id2])
-					reachabilityRelation[id1][id2] = true;
-				else
+
+				// Closure
+				if_check: if (!reachRel[id1][id2])
 					for (Integer stateMid : states) {
 						int idMid = stateToId.get(stateMid);
-						if (reachabilityRelationReturn[id1][idMid]
-								&& reachabilityRelationCall[idMid][id2]) {
-							reachabilityRelationReturn[id1][id2] = true;
-							break;
+						if (unRetRel[id1][idMid] && unCallRel[idMid][id2]) {
+							reachRel[id1][id2] = true;
+
+							LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+									witnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
+							witness.addAll(witnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
+							witnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
+
+							if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
+								return witness;
+							
+							break if_check;
 						}
 					}
 			}
 		}
 
-		// Copy to adjacency list
-		Map<Integer, Collection<Integer>> reachRelList = new HashMap<Integer, Collection<Integer>>();
+		throw new IllegalArgumentException("The automaton can't be empty");
 
-		for (int i = 0; i < reachabilityRelation.length; i++) {
-			Collection<Integer> reachableFromi = new HashSet<Integer>();
-			for (int j = 0; j < reachabilityRelation.length; j++)
-				if (reachabilityRelation[i][j])
-					reachableFromi.add(idToState.get(j));
-			reachRelList.put(idToState.get(i), reachableFromi);
+	}
+
+	// Compute reachability relations between states (wm, ucall, uret, unm)
+	protected Quadruple<Map<Integer, Collection<Integer>>, Map<Integer, Collection<Integer>>, Map<Integer, Collection<Integer>>, Map<Integer, Collection<Integer>>> getReachRel(
+			BooleanAlgebra<P, S> ba) {
+
+		Collection<Integer> states = getStates();
+		Map<Integer, Integer> stateToId = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> idToState = new HashMap<Integer, Integer>();
+		boolean[][] wmReachRel = new boolean[states.size()][states.size()];
+
+		Integer count = 0;
+		for (Integer state : getStates()) {
+			stateToId.put(state, count);
+			idToState.put(count, state);
+			wmReachRel[count][count] = true;
+			count++;
 		}
-		return reachRelList;
+
+		// Build reflexive relation
+		for (int i = 0; i < wmReachRel.length; i++)
+			for (int j = 0; j < wmReachRel.length; j++)
+				if (i != j)
+					wmReachRel[i][j] = false;
+
+		// Build one step relation
+		for (Integer state1 : states) {
+			int id1 = stateToId.get(state1);
+
+			// Epsilon Transition
+			for (SVPAEpsilon<P, S> t : getEpsilonsFrom(state1))
+				wmReachRel[id1][stateToId.get(t.to)] = true;
+
+			// Internal Transition
+			for (Internal<P, S> t : getInternalsFrom(state1))
+				wmReachRel[id1][stateToId.get(t.to)] = true;
+		}
+
+		// Compute fixpoint of reachability relation
+		boolean changed = true;
+		while (changed) {
+			changed = false;
+
+			for (Integer state1 : states) {
+				int id1 = stateToId.get(state1);
+				for (Integer state2 : states) {
+					int id2 = stateToId.get(state2);
+
+					if_check: if (!wmReachRel[id1][id2]) {
+
+						// Calls and returns
+						for (Call<P, S> tCall : getCallsFrom(state1))
+							for (Return<P, S> tReturn : getReturnsTo(state2, tCall.stackState))
+								if (wmReachRel[stateToId.get(tCall.to)][stateToId.get(tReturn.from)])
+									if (ba.IsSatisfiable(ba.MkAnd(tCall.guard, tReturn.guard))) {
+										wmReachRel[id1][id2] = true;
+										changed = true;
+										break if_check;
+									}
+
+						// Closure
+						for (Integer stateMid : states) {
+							int idMid = stateToId.get(stateMid);
+							if (wmReachRel[id1][idMid] && wmReachRel[idMid][id2]) {
+								wmReachRel[id1][id2] = true;
+								changed = true;
+								break if_check;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Unmatched calls
+		boolean[][] unCallRel = wmReachRel.clone();
+		// Calls
+		for (Call<P, S> tCall : getCallsFrom(getStates()))
+			unCallRel[stateToId.get(tCall.from)][stateToId.get(tCall.to)] = true;
+
+		changed = true;
+		while (changed) {
+
+			changed = false;
+
+			for (Integer state1 : states) {
+				int id1 = stateToId.get(state1);
+				for (Integer state2 : states) {
+					int id2 = stateToId.get(state2);
+
+					if_check: if (!unCallRel[id1][id2]) {
+						// Closure
+						for (Integer stateMid : states) {
+							int idMid = stateToId.get(stateMid);
+							if (unCallRel[id1][idMid] && unCallRel[idMid][id2]) {
+								unCallRel[id1][id2] = true;
+								changed = true;
+								break if_check;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Unmatched returns
+		boolean[][] unRetRel = wmReachRel.clone();
+		// Returns
+		for (ReturnBS<P, S> tRet : getReturnBSFrom(getStates()))
+			unRetRel[stateToId.get(tRet.from)][stateToId.get(tRet.to)] = true;
+
+		changed = true;
+		while (changed) {
+
+			changed = false;
+
+			for (Integer state1 : states) {
+				int id1 = stateToId.get(state1);
+				for (Integer state2 : states) {
+					int id2 = stateToId.get(state2);
+
+					if_check: if (!unRetRel[id1][id2]) {
+						// Closure
+						for (Integer stateMid : states) {
+							int idMid = stateToId.get(stateMid);
+							if (unRetRel[id1][idMid] && unRetRel[idMid][id2]) {
+								unRetRel[id1][id2] = true;
+								changed = true;
+								break if_check;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Full reachability relation
+		boolean[][] reachRel = wmReachRel.clone();
+
+		for (Integer state1 : states) {
+			int id1 = stateToId.get(state1);
+			for (Integer state2 : states) {
+				int id2 = stateToId.get(state2);
+
+				// Closure
+				if (!reachRel[id1][id2])
+					for (Integer stateMid : states) {
+						int idMid = stateToId.get(stateMid);
+						if (unRetRel[id1][idMid] && unCallRel[idMid][id2]) {
+							reachRel[id1][id2] = true;
+						}
+					}
+			}
+		}
+
+		// Put into lists
+		Map<Integer, Collection<Integer>> wmRelList = new HashMap<Integer, Collection<Integer>>();
+
+		for (int i = 0; i < wmReachRel.length; i++) {
+			Collection<Integer> reachableFromi = new HashSet<Integer>();
+			for (int j = 0; j < wmReachRel.length; j++)
+				if (wmReachRel[i][j])
+					reachableFromi.add(idToState.get(j));
+			wmRelList.put(idToState.get(i), reachableFromi);
+		}
+
+		Map<Integer, Collection<Integer>> uCallRelList = new HashMap<Integer, Collection<Integer>>();
+
+		for (int i = 0; i < unCallRel.length; i++) {
+			Collection<Integer> reachableFromi = new HashSet<Integer>();
+			for (int j = 0; j < unCallRel.length; j++)
+				if (unCallRel[i][j])
+					reachableFromi.add(idToState.get(j));
+			uCallRelList.put(idToState.get(i), reachableFromi);
+		}
+
+		Map<Integer, Collection<Integer>> uRetRelList = new HashMap<Integer, Collection<Integer>>();
+		for (int i = 0; i < unRetRel.length; i++) {
+			Collection<Integer> reachableFromi = new HashSet<Integer>();
+			for (int j = 0; j < unRetRel.length; j++)
+				if (unRetRel[i][j])
+					reachableFromi.add(idToState.get(j));
+			uRetRelList.put(idToState.get(i), reachableFromi);
+		}
+
+		Map<Integer, Collection<Integer>> relList = new HashMap<Integer, Collection<Integer>>();
+		for (int i = 0; i < reachRel.length; i++) {
+			Collection<Integer> reachableFromi = new HashSet<Integer>();
+			for (int j = 0; j < reachRel.length; j++)
+				if (reachRel[i][j])
+					reachableFromi.add(idToState.get(j));
+			relList.put(idToState.get(i), reachableFromi);
+		}
+
+		return new Quadruple<Map<Integer, Collection<Integer>>, Map<Integer, Collection<Integer>>, Map<Integer, Collection<Integer>>, Map<Integer, Collection<Integer>>>(
+				wmRelList, uCallRelList, uRetRelList, relList);
 	}
 
 }

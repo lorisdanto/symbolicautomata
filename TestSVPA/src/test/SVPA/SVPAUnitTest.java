@@ -570,7 +570,9 @@ public class SVPAUnitTest {
 		transitions.add(new Internal<ICharPred, Character>(8, 9, new CharPred('9')));
 
 		try {
-			SVPA<ICharPred, Character> svpa =  SVPA.MkSVPA(transitions, Arrays.asList(0), Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), ba);
+			SVPA<ICharPred, Character> svpa =  SVPA.MkSVPA(transitions, Arrays.asList(0), Arrays.asList(5), ba);
+			//List<TaggedSymbol<Character>> l = svpa.getWitness(ba);
+			//System.out.println(l);
 			return svpa;
 		} catch (AutomataException e) {
 			return null;
