@@ -398,6 +398,7 @@ public abstract class VPAutomaton<P, S> {
 
 		// Unmatched calls
 		boolean[][] unCallRel = wmReachRel.clone();
+		HashMap<Pair<Integer, Integer>, LinkedList<TaggedSymbol<S>>> ucWitnesses = new HashMap<>(witnesses);
 		// Calls
 		for (Call<P, S> tCall : getCallsFrom(getStates())) {
 
@@ -408,7 +409,7 @@ public abstract class VPAutomaton<P, S> {
 
 				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
 				witness.add(new TaggedSymbol<S>(ba.generateWitness(tCall.guard), SymbolTag.Call));
-				witnesses.put(new Pair<Integer, Integer>(tCall.from, tCall.to), witness);
+				ucWitnesses.put(new Pair<Integer, Integer>(tCall.from, tCall.to), witness);
 				
 				if (getInitialStates().contains(tCall.from) && getFinalStates().contains(tCall.to))
 					return witness;
@@ -433,9 +434,9 @@ public abstract class VPAutomaton<P, S> {
 								unCallRel[id1][id2] = true;
 
 								LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
-										witnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
-								witness.addAll(witnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
-								witnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
+										ucWitnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
+								witness.addAll(ucWitnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
+								ucWitnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
 
 								if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
 									return witness;
@@ -450,7 +451,8 @@ public abstract class VPAutomaton<P, S> {
 		}
 
 		// Unmatched returns
-		boolean[][] unRetRel = wmReachRel.clone();
+		boolean[][] unRetRel = wmReachRel.clone();		
+		HashMap<Pair<Integer, Integer>, LinkedList<TaggedSymbol<S>>> urWitnesses = new HashMap<>(witnesses);
 		// Returns
 		for (ReturnBS<P, S> tRet : getReturnBSFrom(getStates())) {
 			int idFrom = stateToId.get(tRet.from);
@@ -460,7 +462,7 @@ public abstract class VPAutomaton<P, S> {
 
 				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
 				witness.add(new TaggedSymbol<S>(ba.generateWitness(tRet.guard), SymbolTag.Return));
-				witnesses.put(new Pair<Integer, Integer>(tRet.from, tRet.to), witness);
+				urWitnesses.put(new Pair<Integer, Integer>(tRet.from, tRet.to), witness);
 				
 				if (getInitialStates().contains(tRet.from) && getFinalStates().contains(tRet.to))
 					return witness;
@@ -485,9 +487,9 @@ public abstract class VPAutomaton<P, S> {
 								unRetRel[id1][id2] = true;
 
 								LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
-										witnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
-								witness.addAll(witnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
-								witnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
+										urWitnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
+								witness.addAll(urWitnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
+								urWitnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
 
 								if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
 									return witness;
@@ -502,29 +504,24 @@ public abstract class VPAutomaton<P, S> {
 		}
 
 		// Full reachability relation
-		boolean[][] reachRel = wmReachRel.clone();
-
-		for (Integer state1 : states) {
+		boolean[][] reachRel = wmReachRel.clone();				
+		for (Integer state1 : getInitialStates()) {
 			int id1 = stateToId.get(state1);
-			for (Integer state2 : states) {
+			for (Integer state2 : getFinalStates()) {
 				int id2 = stateToId.get(state2);
 
 				// Closure
-				if_check: if (!reachRel[id1][id2])
+				if (!reachRel[id1][id2])
 					for (Integer stateMid : states) {
 						int idMid = stateToId.get(stateMid);
 						if (unRetRel[id1][idMid] && unCallRel[idMid][id2]) {
 							reachRel[id1][id2] = true;
 
 							LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
-									witnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
-							witness.addAll(witnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
-							witnesses.put(new Pair<Integer, Integer>(state1, state2), witness);
+									urWitnesses.get(new Pair<Integer, Integer>(state1, stateMid)));
+							witness.addAll(ucWitnesses.get(new Pair<Integer, Integer>(stateMid, state2)));
 
-							if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
-								return witness;
-							
-							break if_check;
+							return witness;
 						}
 					}
 			}
