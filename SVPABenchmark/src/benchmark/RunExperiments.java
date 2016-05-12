@@ -29,18 +29,18 @@ public class RunExperiments {
 
 	public static void main(String[] args) throws InterruptedException {
 
-		Timers.setForCongruence();
-		
-		RunLTLEmptinessMoreData();
-//		RunLTLEmptiness();
-//		RunLTLSelfEquivalence();
+
+//		RunLTLEmptinessMoreData();
+		RunLTLSelfEquivMoreData();
+		// RunLTLEmptiness();
+		// RunLTLSelfEquivalence();
 
 	}
 
 	public static void RunLTLEmptinessMoreData() {
 		try {
 			FileWriter fw = new FileWriter(emptinessOutputFile);
-			fw.append("formula, size, congruence-pq, total, solver, subsumption\n");
+			fw.append("formula, size, total, solver, subsumption\n");
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
 				if (Files.isRegularFile(filePath) && filePath.toString().contains(containedString)) {
 					try {
@@ -65,16 +65,16 @@ public class RunExperiments {
 
 								fw.append(pair.second.getSize() + ", ");
 
-								Timers.resetAll();								
 								try {
 									SAFA.isEmpty(safa, bdds, timeout);
-									fw.append(Timers.getFull() + ", "+Timers.getSolver() + ", "+Timers.getSubsumption());
-									System.out.print(Timers.getFull() + ", "+Timers.getSolver() + ", "+Timers.getSubsumption());
+									fw.append(Timers.getFull() + ", " + Timers.getSolver() + ", "
+											+ Timers.getSubsumption());
+									System.out.print(Timers.getFull() + ", " + Timers.getSolver() + ", "
+											+ Timers.getSubsumption());
 								} catch (TimeoutException toe) {
 									fw.append("10000, 10000, 10000");
 									System.out.print("10000, 10000, 10000");
 								}
-
 
 								fw.append("\n");
 								System.out.println();
@@ -93,7 +93,64 @@ public class RunExperiments {
 			e.printStackTrace();
 		}
 	}
-	
+
+	public static void RunLTLSelfEquivMoreData() {
+		try {
+			FileWriter fw = new FileWriter(equivalenceOutputFile);
+			fw.append("formula, size, total, solver, subsumption\n");
+			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
+				if (Files.isRegularFile(filePath) && filePath.toString().contains(containedString)) {
+					try {
+						List<LTLNode> nodes = LTLParserProvider.parse(new FileReader(filePath.toFile()));
+
+						System.out.println(filePath);
+
+						int counter = 0;
+						for (LTLNode ltl : nodes) {
+							fw.append(filePath.getFileName().toString());
+							System.out.println(counter);
+							if (counter > 0)
+								fw.append(counter + "");
+							fw.append(", ");
+
+							if (counter >= fromCounter) {
+								Pair<BDDSolver, LTLFormula<BDD, BDD>> pair = LTLConverter.getLTLBDD(ltl);
+								BDDSolver bdds = pair.first;
+								LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
+								SAFA<BDD, BDD> safa = null;
+								safa = tot.getSAFA(bdds);
+
+								fw.append(pair.second.getSize() + ", ");
+
+								try {
+									SAFA.isEquivalent(safa, safa, bdds, SAFA.getBooleanExpressionFactory(), timeout);
+									fw.append(Timers.getFull() + ", " + Timers.getSolver() + ", "
+											+ Timers.getSubsumption());
+									System.out.print(Timers.getFull() + ", " + Timers.getSolver() + ", "
+											+ Timers.getSubsumption());
+								} catch (TimeoutException toe) {
+									fw.append("10000, 10000, 10000");
+									System.out.print("10000, 10000, 10000");
+								}
+
+								fw.append("\n");
+								System.out.println();
+							}
+							counter++;
+						}
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			});
+			fw.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	public static void RunLTLEmptiness() {
 		try {
 			FileWriter fw = new FileWriter(emptinessOutputFile);
