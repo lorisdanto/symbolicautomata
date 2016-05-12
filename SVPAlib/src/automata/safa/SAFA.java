@@ -83,6 +83,10 @@ public class SAFA<P, S> {
 		return initialState;
 	}
 
+	public Collection<Integer> getStates() {
+		return states;
+	}
+	
 	public Collection<Integer> getFinalStates() {
 		return finalStates;
 	}
