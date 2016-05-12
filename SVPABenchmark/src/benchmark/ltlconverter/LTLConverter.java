@@ -209,5 +209,31 @@ public class LTLConverter {
 			return outputLTL;
 		}
 	}
+	
+	
+	public static void toMona(FormulaNode phi, String filname) {
+		//throws IO
+		// gets string
+		// calls below
+		//dumps in file
+	}
+	
+	
+	//Skeleton method
+	
+	public static void toMona(FormulaNode phi, HashMap<String, Integer> atomToInt, StringBuilder sb, int var, int varcount) {
+		String oldVar = "x"+var;
+		String newVar1 = "x"+varcount;
+		String newVar2 = "x"+(varcount+1);
+		if (phi instanceof AlwaysNode) {
+			AlwaysNode cphi = (AlwaysNode) phi;
+			
+			sb.append("all1 "+newVar1+", "+oldVar+"<="+newVar1+"<=last -> ");
+			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount+1);
+		} else{
+			///todo
+		}
+		
+	}
 
 }
