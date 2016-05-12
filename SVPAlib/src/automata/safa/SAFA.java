@@ -29,6 +29,7 @@ import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
 import theory.BooleanAlgebra;
 import utilities.Pair;
+import utilities.Timers;
 import utilities.UnionFindHopKarp;
 
 /**
@@ -299,12 +300,12 @@ public class SAFA<P, S> {
 			SAFA<P, S> raut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr, long timeout)
 					throws TimeoutException {
 
-		long startTime = System.currentTimeMillis();
+		Timers.setForCongruence();
+		Timers.startFull();
 
 		SAFARelation similar = new SATRelation();
 
 		PriorityQueue<Pair<Pair<E, E>, List<S>>> worklist = new PriorityQueue<>(new RelationComparator<>());
-		// LinkedList<Pair<Pair<E, E>, List<S>>> worklist = new LinkedList<>();
 
 		BooleanExpressionMorphism<E> coerce = new BooleanExpressionMorphism<>((x) -> boolexpr.MkState(x), boolexpr);
 		E leftInitial = coerce.apply(laut.initialState);
@@ -313,8 +314,7 @@ public class SAFA<P, S> {
 		similar.add(leftInitial, rightInitial);
 		worklist.add(new Pair<>(new Pair<>(leftInitial, rightInitial), new LinkedList<>()));
 		while (!worklist.isEmpty()) {
-			if (System.currentTimeMillis() - startTime > timeout)
-				throw new TimeoutException("Timeout in the equivalence check");
+			Timers.assertFullTO(timeout);
 
 			Pair<Pair<E, E>, List<S>> next = worklist.remove();
 
@@ -323,11 +323,14 @@ public class SAFA<P, S> {
 			List<S> witness = next.getSecond();
 
 			P guard = ba.True();
+			boolean isSat = true;
 			do {
-				if (System.currentTimeMillis() - startTime > timeout)
-					throw new TimeoutException("Timeout in the equivalence check");
+				Timers.assertFullTO(timeout);
 
+				Timers.startSolver();
 				S model = ba.generateWitness(guard);
+				Timers.stopSolver();
+
 				P implicant = ba.True();
 				Map<Integer, E> leftMove = new HashMap<>();
 				Map<Integer, E> rightMove = new HashMap<>();
@@ -335,13 +338,24 @@ public class SAFA<P, S> {
 				for (Integer s : left.getStates()) {
 					E succ = boolexpr.False();
 					for (SAFAInputMove<P, S> tr : laut.getInputMovesFrom(s)) {
-						if (System.currentTimeMillis() - startTime > timeout)
-							throw new TimeoutException("Timeout in the equivalence check");
-						if (ba.HasModel(tr.guard, model)) {
+						Timers.assertFullTO(timeout);
+
+						Timers.startSolver();
+						boolean hm = ba.HasModel(tr.guard, model);
+						Timers.stopSolver();
+
+						if (hm) {
+							Timers.startSubsumption();
 							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
+							Timers.stopSubsumption();
+
+							Timers.startSolver();
 							implicant = ba.MkAnd(implicant, tr.guard);
+							Timers.stopSolver();
 						} else {
+							Timers.startSolver();
 							implicant = ba.MkAnd(implicant, ba.MkNot(tr.guard));
+							Timers.stopSolver();
 						}
 					}
 					leftMove.put(s, succ);
@@ -350,36 +364,64 @@ public class SAFA<P, S> {
 				for (Integer s : right.getStates()) {
 					E succ = boolexpr.False();
 					for (SAFAInputMove<P, S> tr : raut.getInputMovesFrom(s)) {
-						if (System.currentTimeMillis() - startTime > timeout)
-							throw new TimeoutException("Timeout in the equivalence check");
-						if (ba.HasModel(tr.guard, model)) {
+						Timers.assertFullTO(timeout);
+
+						Timers.startSolver();
+						boolean hm = ba.HasModel(tr.guard, model);
+						Timers.stopSolver();
+
+						if (hm) {
+							Timers.startSubsumption();
 							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
+							Timers.stopSubsumption();
+
+							Timers.startSolver();
 							implicant = ba.MkAnd(implicant, tr.guard);
+							Timers.stopSolver();
 						} else {
+							Timers.startSolver();
 							implicant = ba.MkAnd(implicant, ba.MkNot(tr.guard));
+							Timers.stopSolver();
 						}
 					}
 					rightMove.put(s, succ);
 				}
 
+				Timers.startSubsumption();
 				E leftSucc = boolexpr.substitute((lit) -> leftMove.get(lit)).apply(left);
 				E rightSucc = boolexpr.substitute((lit) -> rightMove.get(lit)).apply(right);
 				List<S> succWitness = new LinkedList<>();
 				succWitness.addAll(witness);
 				succWitness.add(model);
-				if (leftSucc.hasModel(laut.finalStates) != rightSucc.hasModel(raut.finalStates)) {
+				
+				boolean checkIfDiff = leftSucc.hasModel(laut.finalStates) != rightSucc.hasModel(raut.finalStates);
+				Timers.stopSubsumption();
+
+				if (checkIfDiff) {
 					// leftSucc is accepting and rightSucc is rejecting or
 					// vice versa
+					Timers.stopFull();
 					return new Pair<>(false, succWitness);
-				} else if (!similar.isMember(leftSucc, rightSucc)) {
-					if (!similar.add(leftSucc, rightSucc)) {
-						return new Pair<>(false, succWitness);
+				} else{ 
+					Timers.startSubsumption();
+					if (!similar.isMember(leftSucc, rightSucc)) {
+						if (!similar.add(leftSucc, rightSucc)) {
+							Timers.stopSubsumption();
+							Timers.stopFull();
+							return new Pair<>(false, succWitness);
+						}
+						worklist.add(new Pair<>(new Pair<>(leftSucc, rightSucc), succWitness));
 					}
-					worklist.add(new Pair<>(new Pair<>(leftSucc, rightSucc), succWitness));
+					Timers.stopSubsumption();
 				}
+				Timers.startSolver();
 				guard = ba.MkAnd(guard, ba.MkNot(implicant));
-			} while (ba.IsSatisfiable(guard));
+				
+				isSat =  ba.IsSatisfiable(guard);
+				Timers.stopSolver();
+			} while (isSat);
 		}
+		Timers.stopFull();
 		return new Pair<>(true, null);
 	}
 
@@ -390,14 +432,14 @@ public class SAFA<P, S> {
 			List<A> xWitness = x.second;
 			Pair<E, E> yRel = y.first;
 			List<A> yWitness = y.second;
-			
-			int lsize = xRel.first.getSize()+xRel.second.getSize();
-			int rsize = yRel.first.getSize()+yRel.second.getSize();
-			if(lsize<rsize)
+
+			int lsize = xRel.first.getSize() + xRel.second.getSize();
+			int rsize = yRel.first.getSize() + yRel.second.getSize();
+			if (lsize < rsize)
 				return -1;
-			if(lsize<rsize)
-				return 1;			
-			return xWitness.size()-yWitness.size();
+			if (lsize < rsize)
+				return 1;
+			return xWitness.size() - yWitness.size();
 		}
 	}
 
