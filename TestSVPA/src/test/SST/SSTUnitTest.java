@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.sat4j.specs.TimeoutException;
 
 import automata.AutomataException;
 import automata.sfa.SFA;
@@ -155,7 +156,7 @@ public class SSTUnitTest {
 	}
 
 	@Test
-	public void testShuffle() {
+	public void testShuffle() throws TimeoutException {
 		UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sstBase = getAlphaToUpperCase(ba);
 
@@ -187,7 +188,7 @@ public class SSTUnitTest {
 	}
 
 	@Test
-	public void testShuffleWithAut() {
+	public void testShuffleWithAut() throws TimeoutException {
 		UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sstBase = getAlphaToUpperCase(ba);
 		SST<CharPred, CharFunc, Character> sstsst = sstBase.concatenateWith(
@@ -221,7 +222,7 @@ public class SSTUnitTest {
 	}
 
 	@Test
-	public void testPreImage() {
+	public void testPreImage() throws TimeoutException {
 		UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sstBase = getLetterCopy(ba);
 
@@ -234,7 +235,7 @@ public class SSTUnitTest {
 	}
 	
 	@Test
-	public void testRestrict() {
+	public void testRestrict() throws TimeoutException {
 		UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sstBase = getLetterCopy(ba);
 
@@ -245,7 +246,7 @@ public class SSTUnitTest {
 	}
 
 	@Test
-	public void testCombine() {
+	public void testCombine() throws TimeoutException {
 
 		try {
 			UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
@@ -509,7 +510,13 @@ public class SSTUnitTest {
 
 		// Output function just outputs x
 
-		return SFA.MkSFA(transitionsA, 0, Arrays.asList(2), ba);
+		try {
+			return SFA.MkSFA(transitionsA, 0, Arrays.asList(2), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	// SST with one state, keeps all numbers. Defined only on numbers

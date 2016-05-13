@@ -10,21 +10,20 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Test;
+import org.sat4j.specs.TimeoutException;
 
 import automata.sfa.SFA;
 import automata.sfa.SFAEpsilon;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
 import theory.characters.CharPred;
-import theory.characters.CharPred;
 import theory.characters.StdCharPred;
-import theory.intervals.UnaryCharIntervalSolver;
 import theory.intervals.UnaryCharIntervalSolver;
 
 public class SFAUnitTest {
 
 	@Test
-	public void testCharTheory() {
+	public void testCharTheory() throws TimeoutException {
 
 		LinkedList<SFAMove<CharPred, Character>> transitionsRex = new LinkedList<SFAMove<CharPred, Character>>();
 		transitionsRex.add(new SFAInputMove<CharPred, Character>(0, 2, new CharPred('0', '8')));
@@ -82,7 +81,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testEpsRemove() {
+	public void testEpsRemove() throws TimeoutException {
 		SFA<CharPred, Character> autAnoEps = autA.removeEpsilonMoves(ba);
 
 		assertFalse(autA.isEpsilonFree());
@@ -90,7 +89,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testAmbiguity() {
+	public void testAmbiguity() throws TimeoutException {
 		SFA<CharPred, Character> autAmb = getAmbSFA(ba);
 		SFA<CharPred, Character> autUnamb = getUnambSFA(ba);
 
@@ -102,7 +101,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testIntersectionWith() {
+	public void testIntersectionWith() throws TimeoutException {
 		SFA<CharPred, Character> intersection = autA.intersectionWith(autB, ba);
 
 		assertTrue(autA.accepts(la, ba));
@@ -123,7 +122,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testMinimization() {
+	public void testMinimization() throws TimeoutException {
 		SFA<CharPred, Character> autM = getSFAtoMin2(ba);
 
 		SFA<CharPred, Character> min = autM.minimize(ba);
@@ -139,7 +138,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testDeterminization() {
+	public void testDeterminization() throws TimeoutException {
 		SFA<CharPred, Character> detAutA = autA.determinize(ba);
 
 		assertFalse(autA.isDeterministic(ba));
@@ -148,7 +147,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testMkTotal() {
+	public void testMkTotal() throws TimeoutException {
 		SFA<CharPred, Character> autcSfa = getSFAc(ba);
 		SFA<CharPred, Character> totc = autcSfa.mkTotal(ba);
 
@@ -157,7 +156,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testGetWitness() {
+	public void testGetWitness() throws TimeoutException {
 		SFA<CharPred, Character> ca = autA.complement(ba);
 
 		boolean oneIsOk = false;
@@ -168,7 +167,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testComplement() {
+	public void testComplement() throws TimeoutException {
 		SFA<CharPred, Character> complementA = autA.complement(ba);
 		SFA<CharPred, Character> complementB = autB.complement(ba);
 
@@ -194,7 +193,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testEquivalence() {
+	public void testEquivalence() throws TimeoutException {
 		SFA<CharPred, Character> cA = autA.complement(ba);
 		SFA<CharPred, Character> cUcA = autA.unionWith(cA, ba);
 		SFA<CharPred, Character> ccA = cA.complement(ba);
@@ -217,7 +216,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testEquivalenceHK() {
+	public void testEquivalenceHK() throws TimeoutException {
 		SFA<CharPred, Character> cA = autA.complement(ba);
 		SFA<CharPred, Character> cUcA = autA.unionWith(cA, ba);
 		SFA<CharPred, Character> ccA = cA.complement(ba);
@@ -240,7 +239,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testUnion() {
+	public void testUnion() throws TimeoutException {
 		SFA<CharPred, Character> union = autA.unionWith(autB, ba);
 
 		assertTrue(autA.accepts(la, ba));
@@ -260,7 +259,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testDifference() {
+	public void testDifference() throws TimeoutException {
 		SFA<CharPred, Character> difference = autA.minus(autB, ba);
 
 		assertTrue(autA.accepts(la, ba));
@@ -280,7 +279,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testMinus() {
+	public void testMinus() throws TimeoutException {
 		SFA<CharPred, Character> justA = justAlpha(ba);
 		SFA<CharPred, Character> plus = justA.concatenateWith(SFA.star(justA, ba), ba);
 
@@ -316,7 +315,13 @@ public class SFAUnitTest {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));
-		return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
+		try {
+			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	// [a-z]+ ambiguous
@@ -326,7 +331,13 @@ public class SFAUnitTest {
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 0, alpha));
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));
 		transitionsA.add(new SFAInputMove<CharPred, Character>(1, 1, alpha));
-		return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
+		try {
+			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	// [a-z]+ unambiguos
@@ -335,7 +346,13 @@ public class SFAUnitTest {
 		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 0, alpha));
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));
-		return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
+		try {
+			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	// [a-z]* with epsilon transition
@@ -344,7 +361,13 @@ public class SFAUnitTest {
 		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
 		transitionsA.add(new SFAEpsilon<CharPred, Character>(0, 1));
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 0, alpha));
-		return SFA.MkSFA(transitionsA, 0, Arrays.asList(0, 1), ba);
+		try {
+			return SFA.MkSFA(transitionsA, 0, Arrays.asList(0, 1), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	// [a-z]+
@@ -355,7 +378,13 @@ public class SFAUnitTest {
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));
 		transitionsA.add(new SFAInputMove<CharPred, Character>(1, 2, alpha));
 		transitionsA.add(new SFAInputMove<CharPred, Character>(2, 2, alpha));
-		return SFA.MkSFA(transitionsA, 0, Arrays.asList(1, 2), ba);
+		try {
+			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1, 2), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	// [a-z]*
@@ -363,7 +392,13 @@ public class SFAUnitTest {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 0, alpha));
-		return SFA.MkSFA(transitionsA, 0, Arrays.asList(0), ba);
+		try {
+			return SFA.MkSFA(transitionsA, 0, Arrays.asList(0), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;		
 	}
 
 	// [a-z][0-9]*
@@ -373,7 +408,13 @@ public class SFAUnitTest {
 		transitionsB.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));
 		transitionsB.add(new SFAInputMove<CharPred, Character>(1, 1, num));
 		transitionsB.add(new SFAInputMove<CharPred, Character>(0, 2, allAlpha));
-		return SFA.MkSFA(transitionsB, 0, Arrays.asList(1), ba);
+		try {
+			return SFA.MkSFA(transitionsB, 0, Arrays.asList(1), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	// -------------------------

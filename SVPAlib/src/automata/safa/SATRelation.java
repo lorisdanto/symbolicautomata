@@ -149,7 +149,7 @@ public class SATRelation extends SAFARelation {
 		this(SolverFactory.newDefault());
 	}
 	
-	private int mkIff(BooleanExpression p, BooleanExpression q) {
+	private int mkIff(BooleanExpression p, BooleanExpression q) throws TimeoutException {
 		// p and q are drawn from different vocabularies (0 in p is not the same as 0 in q), so
 		// rename them apart.
 		int pname = mkLeft.apply(p);
@@ -164,7 +164,7 @@ public class SATRelation extends SAFARelation {
 		return !factory.getSolver().isSatisfiable(mem, false);
 	}
 	
-	public boolean add(BooleanExpression p, BooleanExpression q) {
+	public boolean add(BooleanExpression p, BooleanExpression q) throws TimeoutException {
 		VecInt pair = new VecInt();
 		pair.push(mkIff(p, q));
 		try {

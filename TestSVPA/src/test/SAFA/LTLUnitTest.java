@@ -30,7 +30,7 @@ import utilities.Pair;
 
 public class LTLUnitTest {
 	@Test
-	public void testEventuallyAndOr() {
+	public void testEventuallyAndOr() throws TimeoutException {
 		LTLFormula<CharPred, Character> conj = new And<>(eva, evn);
 		SAFA<CharPred, Character> sconj = conj.getSAFA(ba);
 		LTLFormula<CharPred, Character> union = new Or<>(eva, evn);
@@ -105,7 +105,7 @@ public class LTLUnitTest {
 	
 
 	@Test
-	public void testLargeEmptiness() {
+	public void testLargeEmptiness() throws TimeoutException {
 		int sizeTot = 4;
 
 		for (int size = 2; size < sizeTot; size++) {
@@ -134,7 +134,7 @@ public class LTLUnitTest {
 	}
 	
 	@Test
-	public void testLargeEmptinessBDD() {
+	public void testLargeEmptinessBDD() throws TimeoutException {
 		int sizeTot = 12;
 		BDDExpressionFactory bef = new BDDExpressionFactory(sizeTot);
 		//PositiveBooleanExpressionFactory bef = new PositiveBooleanExpressionFactory();
@@ -173,7 +173,7 @@ public class LTLUnitTest {
 	}
 	
 	@Test
-	public void testLargeEmptinessSAT() {
+	public void testLargeEmptinessSAT() throws TimeoutException {
 		int sizeTot = 7;
 
 		for (int size = 2; size < sizeTot; size++) {
@@ -267,8 +267,8 @@ public class LTLUnitTest {
 
 	LTLFormula<CharPred, Character> eva = ev(ba, alpha);
 	LTLFormula<CharPred, Character> evn = ev(ba, num);
-	SAFA<CharPred, Character> seva = eva.getSAFA(ba);
-	SAFA<CharPred, Character> sevn = evn.getSAFA(ba);
+	SAFA<CharPred, Character> seva = getseva();
+	SAFA<CharPred, Character> sevn = getsevn();
 
 	// Test strings
 	List<Character> la = lOfS("a#a"); // accepted only by autA
@@ -276,6 +276,26 @@ public class LTLUnitTest {
 	List<Character> lab = lOfS("a3"); // accepted only by both autA and autB
 	List<Character> lnot = lOfS("##"); // accepted only by neither autA nor autB
 
+	public SAFA<CharPred, Character> getseva(){
+		try {
+			return eva.getSAFA(ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public SAFA<CharPred, Character> getsevn(){
+		try {
+			return evn.getSAFA(ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	// eventually p
 	private LTLFormula<CharPred, Character> ev(UnaryCharIntervalSolver ba, CharPred p) {
 		return new Eventually<CharPred, Character>(new Predicate<CharPred, Character>(p));

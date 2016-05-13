@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.sfa.SFA;
 
 import theory.BooleanAlgebraSubst;
@@ -67,7 +69,7 @@ public class OutputUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	// given a summary extract where we would end up starting in q0 on var x0
 	protected Integer getInitStateSummary(
 			HashMap<Integer, HashMap<Integer, Integer>> f, SFA<P, S> aut,
-			BooleanAlgebraSubst<P, F, S> ba) {
+			BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		HashMap<Integer, P> currState = new HashMap<Integer, P>();
 		currState.put(aut.getInitialState(), ba.True());
 

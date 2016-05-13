@@ -5,6 +5,8 @@ package automata.svpa;
 
 import java.util.Stack;
 
+import org.sat4j.specs.TimeoutException;
+
 import theory.BooleanAlgebra;
 import utilities.Pair;
 
@@ -24,7 +26,7 @@ public abstract class SVPAMove<U,S> implements Cloneable{
 
 	public abstract boolean isSatisfiable(BooleanAlgebra<U,S> boolal);
 	
-	public abstract boolean isDisjointFrom(SVPAMove<U,S> t, BooleanAlgebra<U,S> ba);		
+	public abstract boolean isDisjointFrom(SVPAMove<U,S> t, BooleanAlgebra<U,S> ba) throws TimeoutException;		
 	
 	public abstract Pair<Integer, Stack<Pair<Integer, S>>> getNextState(Pair<Integer, Stack<Pair<Integer, S>>> state,
 			TaggedSymbol<S> input, BooleanAlgebra<U, S> ba);	

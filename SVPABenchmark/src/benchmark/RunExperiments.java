@@ -25,37 +25,40 @@ import utilities.Pair;
 import utilities.Timers;
 
 public class RunExperiments {
-	static long timeout = 10000;
+	static long timeout = 5000;
 
 	static int fromCounter = 0;
 	static String emptinessOutputFile = "results/emptiness";
 	static String equivalenceOutputFile = "results/selfEquivalence";
 	static String ranEquivalenceOutputFile = "results/ranEquivalence";
 	static String containedString = "";
+	static String notContainedString = "aposijfwo";
 	static boolean skipRev = false;
-	static boolean useBDDs = true;
+	static boolean useBDDs = true;	
 
 	public static void main(String[] args) throws InterruptedException {
-		skipRev = true;
-		RunLTLEmptiness();
-		RunLTLEquivChangeState();
-		RunLTLSelfEquiv();
-
-
+	
 		useBDDs = false;
 		skipRev = false;
 		RunLTLEmptiness();
+		RunLTLSelfEquiv();		
 		RunLTLEquivChangeState();
-		RunLTLSelfEquiv();
 
+		
+		skipRev = true;
+		useBDDs = true;
+		RunLTLEmptiness();
+		RunLTLSelfEquiv();		
+		RunLTLEquivChangeState();
 	}
 
 	public static void RunLTLEmptiness() {
 		try {
-			FileWriter fw = new FileWriter(emptinessOutputFile + (useBDDs ? "BDD" : "") +".csv");
+			FileWriter fw = new FileWriter(emptinessOutputFile + (useBDDs ? "BDD" : "") + ".csv");
 			fw.append("formula, size, total, solver, subsumption, reverse\n");
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
-				if (Files.isRegularFile(filePath) && filePath.toString().contains(containedString)) {
+				if (Files.isRegularFile(filePath) && filePath.toString().contains(containedString)
+						&& !filePath.toString().contains(notContainedString)) {
 					try {
 						List<LTLNode> nodes = LTLParserProvider.parse(new FileReader(filePath.toFile()));
 
@@ -88,10 +91,10 @@ public class RunExperiments {
 												safa.stateCount() + 1);
 										result = SAFA.isEquivalent(safa, SAFA.getEmptySAFA(bdds), bdds, bef, timeout)
 												.getFirst();
-										
-									}else{
-										result = SAFA.isEquivalent(safa, SAFA.getEmptySAFA(bdds), bdds, SAFA.getBooleanExpressionFactory(), timeout)
-												.getFirst();
+
+									} else {
+										result = SAFA.isEquivalent(safa, SAFA.getEmptySAFA(bdds), bdds,
+												SAFA.getBooleanExpressionFactory(), timeout).getFirst();
 									}
 									fw.append(Timers.getFull() + ", " + Timers.getSolver() + ", "
 											+ Timers.getSubsumption() + ", ");
@@ -149,10 +152,11 @@ public class RunExperiments {
 		try {
 			Random r = new Random(200);
 
-			FileWriter fw = new FileWriter(ranEquivalenceOutputFile + (useBDDs ? "BDD" : "") +".csv");
+			FileWriter fw = new FileWriter(ranEquivalenceOutputFile + (useBDDs ? "BDD" : "") + ".csv");
 			fw.append("formula, size, total, solver, subsumption, reverse\n");
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
-				if (Files.isRegularFile(filePath) && filePath.toString().contains(containedString)) {
+				if (Files.isRegularFile(filePath) && filePath.toString().contains(containedString)
+						&& !filePath.toString().contains(notContainedString)) {
 					try {
 						List<LTLNode> nodes = LTLParserProvider.parse(new FileReader(filePath.toFile()));
 
@@ -194,12 +198,11 @@ public class RunExperiments {
 									if (useBDDs) {
 										BooleanExpressionFactory<BDDExpression> bef = new BDDExpressionFactory(
 												safa1.stateCount() + safa2.stateCount());
-										result = SAFA.isEquivalent(safa1, safa2, bdds, bef, timeout)
-												.getFirst();
-										
-									}else{
-										result = SAFA.isEquivalent(safa1, safa2, bdds, SAFA.getBooleanExpressionFactory(), timeout)
-												.getFirst();
+										result = SAFA.isEquivalent(safa1, safa2, bdds, bef, timeout).getFirst();
+
+									} else {
+										result = SAFA.isEquivalent(safa1, safa2, bdds,
+												SAFA.getBooleanExpressionFactory(), timeout).getFirst();
 									}
 									fw.append(Timers.getFull() + ", " + Timers.getSolver() + ", "
 											+ Timers.getSubsumption() + ", ");
@@ -226,13 +229,15 @@ public class RunExperiments {
 										to2 = true;
 									}
 
-									if (!(to1 && to2)) {
-										fw.append(result + "");
-										System.out.print(result);
-									} else {
-										fw.append("TO");
-										System.out.print("TO");
-									}
+									
+								}
+								
+								if (!(to1 && to2)) {
+									fw.append(result + "");
+									System.out.print(result);
+								} else {
+									fw.append("TO");
+									System.out.print("TO");
 								}
 
 								fw.append("\n");
@@ -255,10 +260,11 @@ public class RunExperiments {
 
 	public static void RunLTLSelfEquiv() {
 		try {
-			FileWriter fw = new FileWriter(equivalenceOutputFile + (useBDDs ? "BDD" : "") +".csv");
+			FileWriter fw = new FileWriter(equivalenceOutputFile + (useBDDs ? "BDD" : "") + ".csv");
 			fw.append("formula, size, total, solver, subsumption\n");
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
-				if (Files.isRegularFile(filePath) && filePath.toString().contains(containedString)) {
+				if (Files.isRegularFile(filePath) && filePath.toString().contains(containedString)
+						&& !filePath.toString().contains(notContainedString)) {
 					try {
 						List<LTLNode> nodes = LTLParserProvider.parse(new FileReader(filePath.toFile()));
 
@@ -289,14 +295,13 @@ public class RunExperiments {
 									if (useBDDs) {
 										BooleanExpressionFactory<BDDExpression> bef = new BDDExpressionFactory(
 												safa.stateCount() + safa.stateCount());
-										result = SAFA.isEquivalent(safa, safa, bdds, bef, timeout)
-												.getFirst();
-										
-									}else{
-										result = SAFA.isEquivalent(safa, safa, bdds, SAFA.getBooleanExpressionFactory(), timeout)
-												.getFirst();
+										result = SAFA.isEquivalent(safa, safa, bdds, bef, timeout).getFirst();
+
+									} else {
+										result = SAFA.isEquivalent(safa, safa, bdds, SAFA.getBooleanExpressionFactory(),
+												timeout).getFirst();
 									}
-									
+
 									fw.append(Timers.getFull() + ", " + Timers.getSolver() + ", "
 											+ Timers.getSubsumption() + ", ");
 									System.out.print(Timers.getFull() + ", " + Timers.getSolver() + ", "

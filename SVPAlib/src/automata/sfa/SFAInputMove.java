@@ -6,6 +6,8 @@
  */
 package automata.sfa;
 
+import org.sat4j.specs.TimeoutException;
+
 import theory.BooleanAlgebra;
 
 /**
@@ -32,7 +34,7 @@ public class SFAInputMove<P,S> extends SFAMove<P, S>{
 	}
 	
 	@Override
-	public boolean isDisjointFrom(SFAMove<P,S> t, BooleanAlgebra<P,S> ba){
+	public boolean isDisjointFrom(SFAMove<P,S> t, BooleanAlgebra<P,S> ba) throws TimeoutException{
 		if(t.isEpsilonTransition())
 			return true;
 		if (from.equals(t.from)){			

@@ -23,28 +23,33 @@ public abstract class BooleanAlgebra<P, S> {
 
 	/**
 	 * @return the complement of <code>p</code>
+	 * @throws TimeoutException 
 	 */
-	public abstract P MkNot(P p);
+	public abstract P MkNot(P p) throws TimeoutException;
 
 	/**
 	 * @return the disjunction of the predicates in <code>pset</code>
+	 * @throws TimeoutException 
 	 */
-	public abstract P MkOr(Collection<P> pset);
+	public abstract P MkOr(Collection<P> pset) throws TimeoutException;
 
 	/**
 	 * @return the predicate <code>p1</code> or <code>p2</code>
+	 * @throws TimeoutException 
 	 */
-	public abstract P MkOr(P p1, P p2);
+	public abstract P MkOr(P p1, P p2) throws TimeoutException;
 
 	/**
 	 * @return the conjunction of the predicates in <code>pset</code>
+	 * @throws TimeoutException 
 	 */
-	public abstract P MkAnd(Collection<P> pset);
+	public abstract P MkAnd(Collection<P> pset) throws TimeoutException;
 
 	/**
 	 * @return the predicate <code>p1</code> and <code>p2</code>
+	 * @throws TimeoutException 
 	 */
-	public abstract P MkAnd(P p1, P p2);
+	public abstract P MkAnd(P p1, P p2) throws TimeoutException;
 
 	/**
 	 * @return the predicate true

@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.safa.BooleanExpression;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
@@ -13,7 +15,7 @@ import theory.BooleanAlgebra;
 
 public abstract class LTLFormula<P,S> {
 	
-	public <E extends BooleanExpression> SAFA<P,S> getSAFA(BooleanAlgebra<P, S> ba){
+	public <E extends BooleanExpression> SAFA<P,S> getSAFA(BooleanAlgebra<P, S> ba) throws TimeoutException{
 				
 		HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToStateId = new HashMap<>();
 		
@@ -25,12 +27,12 @@ public abstract class LTLFormula<P,S> {
 	}
 	
 	// Checks whether a formula should be a final state in the automaton
-	public LTLFormula<P,S> pushNegations(BooleanAlgebra<P, S> ba){
+	public LTLFormula<P,S> pushNegations(BooleanAlgebra<P, S> ba) throws TimeoutException{
 		return pushNegations(true,ba, new HashMap<>(), new HashMap<>());
 	}
 	
 	// Checks whether a formula should be a final state in the automaton
-	protected abstract LTLFormula<P,S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba, HashMap<String, LTLFormula<P,S>> posHash, HashMap<String, LTLFormula<P,S>> negHash);	
+	protected abstract LTLFormula<P,S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba, HashMap<String, LTLFormula<P,S>> posHash, HashMap<String, LTLFormula<P,S>> negHash) throws TimeoutException;	
 	
 	// returns set of disjoint predicates that are the triggers of transitions out of this state
 	protected abstract PositiveBooleanExpression accumulateSAFAStatesTransitions(

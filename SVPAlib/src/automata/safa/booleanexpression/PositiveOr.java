@@ -3,6 +3,8 @@ package automata.safa.booleanexpression;
 import java.util.Collection;
 import java.util.Set;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.safa.BooleanExpression;
 import automata.safa.LatticeMorphism;
 
@@ -36,7 +38,7 @@ public class PositiveOr extends PositiveBooleanExpression {
 	}
 
 	@Override
-	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) {
+	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) throws TimeoutException {
 		return f.MkOr(f.apply(left), f.apply(right));
 	}
 

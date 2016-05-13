@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
@@ -62,7 +64,7 @@ public class Or<P, S> extends LTLFormula<P, S> {
 		if (formulaToState.containsKey(this))
 			return formulaToState.get(this);
 
-		PositiveBooleanExpression initialState = boolexpr.True();
+		PositiveBooleanExpression initialState = boolexpr.False();
 
 		// Compute transitions for children
 		for (LTLFormula<P, S> phi : disjuncts) {
@@ -87,7 +89,7 @@ public class Or<P, S> extends LTLFormula<P, S> {
 
 	@Override
 	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba,
-			HashMap<String, LTLFormula<P, S>> posHash, HashMap<String, LTLFormula<P, S>> negHash) {
+			HashMap<String, LTLFormula<P, S>> posHash, HashMap<String, LTLFormula<P, S>> negHash) throws TimeoutException {
 		String key = this.toString();
 
 		LTLFormula<P, S> out = new False<>();

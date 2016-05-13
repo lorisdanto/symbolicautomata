@@ -10,6 +10,8 @@ package transducers.sst;
 import java.util.HashMap;
 import java.util.List;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.sfa.SFA;
 
 import theory.BooleanAlgebraSubst;
@@ -35,10 +37,11 @@ public interface Token<P, F, S> {
 	/**
 	 * @return a set of state, predicate pairs (q,p) resulting from applying the
 	 *         automaton aut starting in state currstate to the current token
+	 * @throws TimeoutException 
 	 */
 	HashMap<Integer, P> getNextState(
 			HashMap<Integer, HashMap<Integer, Integer>> f, P guard,
-			SFA<P, S> aut, Integer currState, BooleanAlgebraSubst<P, F, S> ba);
+			SFA<P, S> aut, Integer currState, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException;
 
 	/**
 	 * Renames the token by applying the offset

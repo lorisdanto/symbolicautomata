@@ -3,10 +3,11 @@ package utilities;
 import org.sat4j.specs.TimeoutException;
 
 public class Timers {
-	
+			
 	private Timers() {
 	}
 
+	private static long timeout = Long.MAX_VALUE;
 	private static long[] startTime;
 	private static long[] total;
 	private static boolean[] isRunning;
@@ -20,6 +21,10 @@ public class Timers {
 			isRunning[i] = false;
 		}
 	}
+	
+	public static void setTimeout(long to){
+		timeout = to;
+	}
 
 	public static void resetAll() {
 		setNumberOfTimers(startTime.length);
@@ -31,24 +36,24 @@ public class Timers {
 	}
 
 	public static void start(int i) {
-		if (isRunning[i])
-			throw new IllegalArgumentException("Timer was still running");
+//		if (isRunning[i])
+//			throw new IllegalArgumentException("Timer was still running");
 
 		startTime[i] = System.currentTimeMillis();
 		isRunning[i] = true;
 	}
 
 	public static void stop(int i) {
-		if (!isRunning[i])
-			throw new IllegalArgumentException("Timer was not running");
+//		if (!isRunning[i])
+//			throw new IllegalArgumentException("Timer was not running");
 		
 		total[i] += System.currentTimeMillis() - startTime[i];
 		isRunning[i] = false;
 	}
 	
 	public static long getValue(int i) {
-		if (isRunning[i])
-			throw new IllegalArgumentException("Timer was still running");
+//		if (isRunning[i])
+//			throw new IllegalArgumentException("Timer was still running");
 		
 		return total[i];
 	}
@@ -97,6 +102,13 @@ public class Timers {
 	public static long getSubsumption() {
 		return getValue(subsumption);
 	}
+	
+	public static boolean fullTO(){
+		long tmp = total[full];
+		if(isRunning[full])
+			tmp += System.currentTimeMillis() - startTime[full];
+		return tmp>timeout;
+	}
 
 	public static boolean fullTO(long timeout){
 		long tmp = total[full];
@@ -105,8 +117,13 @@ public class Timers {
 		return tmp>timeout;
 	}
 	
-	public static void assertFullTO(long timeout) throws TimeoutException{
-		if(fullTO(timeout))
+	public static void assertFullTO(long to) throws TimeoutException{
+		if(fullTO(to))
+			throw new TimeoutException("Timeout");
+	}
+	
+	public static void assertFullTO() throws TimeoutException{
+		if(fullTO())
 			throw new TimeoutException("Timeout");
 	}
 	

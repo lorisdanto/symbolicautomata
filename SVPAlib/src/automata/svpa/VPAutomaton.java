@@ -11,6 +11,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 
+import org.sat4j.specs.TimeoutException;
+
 import theory.BooleanAlgebra;
 import utilities.Pair;
 import automata.svpa.TaggedSymbol.SymbolTag;
@@ -299,7 +301,7 @@ public abstract class VPAutomaton<P, S> {
 		return s;
 	}
 
-	public LinkedList<TaggedSymbol<S>> getWitness(BooleanAlgebra<P, S> ba) {
+	public LinkedList<TaggedSymbol<S>> getWitness(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		if (isEmpty)
 			return null;
 
@@ -322,7 +324,7 @@ public abstract class VPAutomaton<P, S> {
 			Map<Integer, Collection<Integer>> wmrel,
 			Map<Integer, Collection<Integer>> rel, int from, int to,
 			Random ran, boolean canBeNotWM,
-			HashSet<Pair<Integer, Integer>> tried) {
+			HashSet<Pair<Integer, Integer>> tried) throws TimeoutException {
 
 		tried.add(new Pair<Integer, Integer>(from, to));
 
@@ -400,7 +402,7 @@ public abstract class VPAutomaton<P, S> {
 
 	// Compute well matched reachability relation between states
 	private Map<Integer, Collection<Integer>> getWellMatchedReachRel(
-			BooleanAlgebra<P, S> ba) {
+			BooleanAlgebra<P, S> ba) throws TimeoutException {
 
 		Collection<Integer> states = getStates();
 		Map<Integer, Integer> stateToId = new HashMap<Integer, Integer>();
@@ -497,7 +499,7 @@ public abstract class VPAutomaton<P, S> {
 
 	// Compute reachability relation between states
 	protected Map<Integer, Collection<Integer>> getReachabilityRelation(
-			BooleanAlgebra<P, S> ba) {
+			BooleanAlgebra<P, S> ba) throws TimeoutException {
 
 		Collection<Integer> states = getStates();
 		Map<Integer, Integer> stateToId = new HashMap<Integer, Integer>();

@@ -22,12 +22,12 @@ public class SAFABooleanAlgebra<P,S> extends BooleanAlgebra<SAFA<P,S>, List<S>> 
 	}
 
 	@Override
-	public SAFA<P, S> MkNot(SAFA<P, S> p) {
+	public SAFA<P, S> MkNot(SAFA<P, S> p) throws TimeoutException {
 		return p.negate(ba);
 	}
 
 	@Override
-	public SAFA<P, S> MkOr(Collection<SAFA<P, S>> pset) {
+	public SAFA<P, S> MkOr(Collection<SAFA<P, S>> pset) throws TimeoutException {
 		SAFA<P,S> result = SAFA.getEmptySAFA(ba);
 		for (SAFA<P,S> aut : pset) {
 			result = result.unionWith(aut, ba);
@@ -36,12 +36,12 @@ public class SAFABooleanAlgebra<P,S> extends BooleanAlgebra<SAFA<P,S>, List<S>> 
 	}
 
 	@Override
-	public SAFA<P, S> MkOr(SAFA<P, S> p1, SAFA<P, S> p2) {
+	public SAFA<P, S> MkOr(SAFA<P, S> p1, SAFA<P, S> p2) throws TimeoutException {
 		return p1.unionWith(p2, ba);
 	}
 
 	@Override
-	public SAFA<P, S> MkAnd(Collection<SAFA<P, S>> pset) {
+	public SAFA<P, S> MkAnd(Collection<SAFA<P, S>> pset) throws TimeoutException {
 		SAFA<P,S> result = SAFA.getFullSAFA(ba);
 		for (SAFA<P,S> aut : pset) {
 			result = result.intersectionWith(aut, ba);
@@ -50,7 +50,7 @@ public class SAFABooleanAlgebra<P,S> extends BooleanAlgebra<SAFA<P,S>, List<S>> 
 	}
 
 	@Override
-	public SAFA<P, S> MkAnd(SAFA<P, S> p1, SAFA<P, S> p2) {
+	public SAFA<P, S> MkAnd(SAFA<P, S> p1, SAFA<P, S> p2) throws TimeoutException {
 		return p1.intersectionWith(p2, ba);
 	}
 

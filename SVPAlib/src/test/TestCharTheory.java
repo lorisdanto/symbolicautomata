@@ -4,6 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.sat4j.specs.TimeoutException;
 
 import theory.characters.CharPred;
 import theory.characters.ICharPred;
@@ -15,7 +16,7 @@ public class TestCharTheory {
 	final EqualitySolver solver = new EqualitySolver();
 
 	@Test
-    public void solverTestBasic() {
+    public void solverTestBasic() throws TimeoutException {
         final CharPred isDigit = new CharPred('0','9');
         assertTrue(solver.HasModel(isDigit, '5'));
         assertTrue(solver.HasModel(isDigit, '0'));

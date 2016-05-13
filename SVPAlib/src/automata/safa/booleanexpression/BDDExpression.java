@@ -4,9 +4,12 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.safa.BooleanExpression;
 import automata.safa.LatticeMorphism;
 import theory.bdd.BDD;
+import utilities.Timers;
 
 public class BDDExpression extends BooleanExpression {
 
@@ -27,7 +30,8 @@ public class BDDExpression extends BooleanExpression {
 		return states;
 	}
 
-	private static <R> R apply(LatticeMorphism<BooleanExpression, R> f, BDD bdd) {
+	private static <R> R apply(LatticeMorphism<BooleanExpression, R> f, BDD bdd) throws TimeoutException {
+		Timers.assertFullTO();
 		if (bdd.isOne()) {
 			return f.True();
 		} else if (bdd.isZero()) {
@@ -39,7 +43,7 @@ public class BDDExpression extends BooleanExpression {
 	}
 	
 	@Override
-	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) {
+	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) throws TimeoutException {
 		return apply(f, this.bdd);
 	}
 

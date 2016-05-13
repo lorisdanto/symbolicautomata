@@ -21,14 +21,13 @@ import automata.safa.booleanexpression.SumOfProducts;
 import automata.safa.booleanexpression.SumOfProductsFactory;
 import theory.BooleanAlgebra;
 import theory.characters.CharPred;
-import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 import theory.intervals.UnaryCharIntervalSolver;
 import theory.safa.SAFABooleanAlgebra;
 
 public class SAFAUnitTest {
 	@Test
-	public void testIntersection() {
+	public void testIntersection() throws TimeoutException {
 		SAFA<CharPred, Character> intersection = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
 
 		assertTrue(atLeastOneAlpha.accepts(la, ba));
@@ -49,7 +48,7 @@ public class SAFAUnitTest {
 	
 	
 	@Test
-	public void testUnion() {
+	public void testUnion() throws TimeoutException {
 		SAFA<CharPred, Character> union = atLeastOneAlpha.unionWith(atLeastOneNum, ba);
 
 		assertTrue(atLeastOneAlpha.accepts(la, ba));
@@ -131,7 +130,13 @@ public class SAFAUnitTest {
 		transitionsA.add(new SAFAInputMove<CharPred, Character>(0, sp0, ba.True()));
 		transitionsA.add(new SAFAInputMove<CharPred, Character>(0, sp1, p));
 		transitionsA.add(new SAFAInputMove<CharPred, Character>(1, sp1, ba.True()));
-		return SAFA.MkSAFA(transitionsA, boolexpr.MkState(0), Arrays.asList(1), ba);
+		try {
+			return SAFA.MkSAFA(transitionsA, boolexpr.MkState(0), Arrays.asList(1), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}	
 
 	// -------------------------
@@ -145,7 +150,7 @@ public class SAFAUnitTest {
 		return l;
 	}
 
-	private <P,S> SAFA<P,S> eventually(BooleanAlgebra<P,S> ba, P predicate) {
+	private <P,S> SAFA<P,S> eventually(BooleanAlgebra<P,S> ba, P predicate) throws TimeoutException {
 		PositiveBooleanExpression initialState = boolexpr.MkState(0);
 		Collection<Integer> finalStates = new LinkedList<>();
 		Collection<SAFAInputMove<P,S>> transitions = new LinkedList<>();

@@ -3,6 +3,8 @@ package logic.ltl;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
@@ -79,7 +81,7 @@ public class Eventually<P, S> extends LTLFormula<P, S> {
 
 	@Override
 	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba,
-			HashMap<String, LTLFormula<P, S>> posHash, HashMap<String, LTLFormula<P, S>> negHash) {
+			HashMap<String, LTLFormula<P, S>> posHash, HashMap<String, LTLFormula<P, S>> negHash) throws TimeoutException {
 		String key = this.toString();
 
 		LTLFormula<P, S> out = new False<>();

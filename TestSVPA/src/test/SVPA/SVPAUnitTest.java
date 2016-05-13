@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Test;
+import org.sat4j.specs.TimeoutException;
 
 import automata.AutomataException;
 import automata.svpa.Call;
@@ -34,7 +35,7 @@ public class SVPAUnitTest {
 	}
 
 	@Test
-	public void testPropertiesAccessors() {
+	public void testPropertiesAccessors() throws TimeoutException {
 		assertTrue(autA.isDeterministic(ba));
 		assertTrue(autA.stateCount == 2);
 		assertTrue(autA.transitionCount == 6);
@@ -64,7 +65,7 @@ public class SVPAUnitTest {
 	}
 
 	@Test
-	public void testIntersectionWith() {
+	public void testIntersectionWith() throws TimeoutException {
 
 		// Compute intersection
 		SVPA<ICharPred, Character> inters = autA.intersectionWith(autB, ba);
@@ -88,7 +89,7 @@ public class SVPAUnitTest {
 	}
 			
 	@Test
-	public void testMkTotal() {
+	public void testMkTotal() throws TimeoutException {
 		
 		SVPA<ICharPred, Character> totA = autA.mkTotal(ba);
 
@@ -525,6 +526,10 @@ public class SVPAUnitTest {
 			return SVPA.MkSVPA(transitions, Arrays.asList(0), Arrays.asList(0), ba);
 		} catch (AutomataException e) {
 			return null;
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
 		}
 
 	}
@@ -545,6 +550,10 @@ public class SVPAUnitTest {
 		try {
 			return SVPA.MkSVPA(transitions, Arrays.asList(0), Arrays.asList(1), ba);
 		} catch (AutomataException e) {
+			return null;
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 			return null;
 		}
 	}

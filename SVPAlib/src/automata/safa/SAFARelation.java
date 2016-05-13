@@ -19,6 +19,7 @@ public abstract class SAFARelation {
 	 * Add a pair to the relation
 	 * @param p
 	 * @param q
+	 * @throws TimeoutException 
 	 */
-	public abstract boolean add(BooleanExpression p, BooleanExpression q);
+	public abstract boolean add(BooleanExpression p, BooleanExpression q) throws TimeoutException;
 }

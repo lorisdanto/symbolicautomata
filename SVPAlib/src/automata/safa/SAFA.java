@@ -118,7 +118,7 @@ public class SAFA<P, S> {
 	 * automaton if normalize is true
 	 */
 	public static <A, B> SAFA<A, B> MkSAFA(Collection<SAFAInputMove<A, B>> transitions,
-			PositiveBooleanExpression initialState, Collection<Integer> finalStates, BooleanAlgebra<A, B> ba) {
+			PositiveBooleanExpression initialState, Collection<Integer> finalStates, BooleanAlgebra<A, B> ba) throws TimeoutException {
 		return MkSAFA(transitions, initialState, finalStates, ba, true, true);
 	}
 
@@ -129,7 +129,7 @@ public class SAFA<P, S> {
 	 */
 	public static <A, B> SAFA<A, B> MkSAFA(Collection<SAFAInputMove<A, B>> transitions,
 			PositiveBooleanExpression initialState, Collection<Integer> finalStates, BooleanAlgebra<A, B> ba,
-			boolean normalize, boolean complete) {
+			boolean normalize, boolean complete) throws TimeoutException {
 
 		SAFA<A, B> aut = new SAFA<A, B>();
 
@@ -306,6 +306,7 @@ public class SAFA<P, S> {
 
 		Timers.setForCongruence();
 		Timers.startFull();
+		Timers.setTimeout(timeout);
 
 		SAFARelation similar = new SATRelation();
 
@@ -639,15 +640,17 @@ public class SAFA<P, S> {
 
 	/**
 	 * Computes the intersection with <code>aut</code> as a new SFA
+	 * @throws TimeoutException 
 	 */
-	public SAFA<P, S> intersectionWith(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+	public SAFA<P, S> intersectionWith(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return binaryOp(this, aut, ba, BoolOp.Intersection);
 	}
 
 	/**
 	 * Computes the intersection with <code>aut</code> as a new SFA
+	 * @throws TimeoutException 
 	 */
-	public SAFA<P, S> unionWith(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+	public SAFA<P, S> unionWith(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return binaryOp(this, aut, ba, BoolOp.Union);
 	}
 
@@ -682,8 +685,9 @@ public class SAFA<P, S> {
 	/**
 	 * Computes the complement of the automaton as a new SAFA. The input
 	 * automaton need not be normal.
+	 * @throws TimeoutException 
 	 */
-	public SAFA<P, S> negate(BooleanAlgebra<P, S> ba) {
+	public SAFA<P, S> negate(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		// DeMorganize all transitions
 
 		Collection<SAFAInputMove<P, S>> transitions = new ArrayList<SAFAInputMove<P, S>>();
@@ -729,8 +733,9 @@ public class SAFA<P, S> {
 	/**
 	 * Computes the intersection with <code>aut1</code> and <code>aut2</code> as
 	 * a new SFA
+	 * @throws TimeoutException 
 	 */
-	public static <A, B> SAFA<A, B> binaryOp(SAFA<A, B> aut1, SAFA<A, B> aut2, BooleanAlgebra<A, B> ba, BoolOp op) {
+	public static <A, B> SAFA<A, B> binaryOp(SAFA<A, B> aut1, SAFA<A, B> aut2, BooleanAlgebra<A, B> ba, BoolOp op) throws TimeoutException {
 
 		int offset = aut1.maxStateId + 1;
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();
@@ -770,7 +775,7 @@ public class SAFA<P, S> {
 	 * 
 	 * @throws TimeoutException
 	 */
-	public SAFA<P, S> normalize(BooleanAlgebra<P, S> ba) {
+	public SAFA<P, S> normalize(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();
 
 		// Copy all transitions (with proper renaming for aut2)
@@ -813,8 +818,9 @@ public class SAFA<P, S> {
 	/**
 	 * Normalizes the SAFA by having at most one transition for each symbol out
 	 * of each state
+	 * @throws TimeoutException 
 	 */
-	public SAFA<P, S> complete(BooleanAlgebra<P, S> ba) {
+	public SAFA<P, S> complete(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();
 
 		// Copy all transitions (with proper renaming for aut2)

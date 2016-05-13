@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.sat4j.specs.TimeoutException;
+
 import theory.BooleanAlgebra;
 import utilities.Block;
 import utilities.UnionFindHopKarp;
@@ -133,9 +135,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 	/**
 	 * Create an automaton and removes unreachable states
+	 * @throws TimeoutException 
 	 */
 	public static <A, B> SFA<A, B> MkSFA(Collection<SFAMove<A, B>> transitions, Integer initialState,
-			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba) {
+			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		return MkSFA(transitions, initialState, finalStates, ba, true);
 	}
@@ -143,9 +146,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * Create an automaton and removes unreachable states and only removes
 	 * unreachable states if <code>remUnreachableStates<code> is true
+	 * @throws TimeoutException 
 	 */
 	public static <A, B> SFA<A, B> MkSFA(Collection<SFAMove<A, B>> transitions, Integer initialState,
-			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba, boolean remUnreachableStates) {
+			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba, boolean remUnreachableStates) throws TimeoutException {
 
 		return MkSFA(transitions, initialState, finalStates, ba, remUnreachableStates, true);
 	}
@@ -156,7 +160,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 * automaton if normalize is true
 	 */
 	private static <A, B> SFA<A, B> MkSFA(Collection<SFAMove<A, B>> transitions, Integer initialState,
-			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba, boolean remUnreachableStates, boolean normalize) {
+			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba, boolean remUnreachableStates, boolean normalize) throws TimeoutException {
 
 		SFA<A, B> aut = new SFA<A, B>();
 
@@ -221,16 +225,18 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 	/**
 	 * Computes the intersection with <code>aut</code> as a new SFA
+	 * @throws TimeoutException 
 	 */
-	public SFA<P, S> intersectionWith(SFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+	public SFA<P, S> intersectionWith(SFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return intersection(this, aut, ba);
 	}
 
 	/**
 	 * Computes the intersection with <code>aut1</code> and <code>aut2</code> as
 	 * a new SFA
+	 * @throws TimeoutException 
 	 */
-	public static <A, B> SFA<A, B> intersection(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> intersection(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		// if one of the automata is empty return the empty SFA
 		if (aut1.isEmpty || aut2.isEmpty)
@@ -297,30 +303,34 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 	/**
 	 * Computes <code>this</code> minus <code>aut</code> as a new SFA
+	 * @throws TimeoutException 
 	 */
-	public SFA<P, S> minus(SFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+	public SFA<P, S> minus(SFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return difference(this, aut, ba);
 	}
 
 	/**
 	 * Computes <code>aut1</code> minus <code>aut2</code> as a new SFA
+	 * @throws TimeoutException 
 	 */
-	public static <A, B> SFA<A, B> difference(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> difference(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) throws TimeoutException {
 		return aut1.intersectionWith(aut2.complement(ba), ba);
 	}
 
 	/**
 	 * Computes the union with <code>aut</code> as a new SFA
+	 * @throws TimeoutException 
 	 */
-	public SFA<P, S> unionWith(SFA<P, S> aut1, BooleanAlgebra<P, S> ba) {
+	public SFA<P, S> unionWith(SFA<P, S> aut1, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return union(this, aut1, ba);
 	}
 
 	/**
 	 * Computes the union of <code>aut1</code> and <code>aut2</code> as a new
 	 * SFA
+	 * @throws TimeoutException 
 	 */
-	public static <A, B> SFA<A, B> union(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> union(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		// if both automata are empty return the empty SFA
 		if (aut1.isEmpty && aut2.isEmpty)
@@ -373,15 +383,17 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 	/**
 	 * @return the complement automaton as a new SFA
+	 * @throws TimeoutException 
 	 */
-	public SFA<P, S> complement(BooleanAlgebra<P, S> ba) {
+	public SFA<P, S> complement(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return complementOf(this, ba);
 	}
 
 	/**
 	 * @return the complement of <code>aut</code> as a new SFA
+	 * @throws TimeoutException 
 	 */
-	public static <A, B> SFA<A, B> complementOf(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> complementOf(SFA<A, B> aut, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		// make aut total to make sure it has a sink state
 		SFA<A, B> autTotal = aut.mkTotal(ba);
@@ -401,16 +413,18 @@ public class SFA<P, S> extends Automaton<P, S> {
 	// ------------------------------------------------------
 	/**
 	 * @return an equivalent copy without epsilon moves
+	 * @throws TimeoutException 
 	 */
-	public SFA<P, S> removeEpsilonMoves(BooleanAlgebra<P, S> ba) {
+	public SFA<P, S> removeEpsilonMoves(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return removeEpsilonMovesFrom(this, ba);
 	}
 
 	/**
 	 * @return an equivalent copy without epsilon moves
+	 * @throws TimeoutException 
 	 */
 	@SuppressWarnings("unchecked")
-	public static <A, B> SFA<A, B> removeEpsilonMovesFrom(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> removeEpsilonMovesFrom(SFA<A, B> aut, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		if (aut.isEpsilonFree)
 			return (SFA<A, B>) aut.clone();
@@ -467,17 +481,19 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * @return a new total equivalent total SFA (with one transition for each
 	 *         symbol out of every state)
+	 * @throws TimeoutException 
 	 */
-	public SFA<P, S> mkTotal(BooleanAlgebra<P, S> ba) {
+	public SFA<P, S> mkTotal(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return mkTotal(this, ba);
 	}
 
 	/**
 	 * @return a new total total SFA (with one transition for each symbol out of
 	 *         every state) equivalent to <code>aut</code>
+	 * @throws TimeoutException 
 	 */
 	@SuppressWarnings("unchecked")
-	public static <A, B> SFA<A, B> mkTotal(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> mkTotal(SFA<A, B> aut, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		if (aut.isTotal) {
 			return (SFA<A, B>) aut.clone();
@@ -521,15 +537,17 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 	/**
 	 * checks whether the aut accepts the same language
+	 * @throws TimeoutException 
 	 */
-	public boolean isEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+	public boolean isEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return areEquivalent(this, aut, ba);
 	}
 
 	/**
 	 * checks whether aut1 is equivalent to aut2
+	 * @throws TimeoutException 
 	 */
-	public static <A, B> boolean areEquivalent(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
+	public static <A, B> boolean areEquivalent(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) throws TimeoutException {
 		if (!difference(aut1, aut2, ba).isEmpty)
 			return false;
 		return difference(aut2, aut1, ba).isEmpty;
@@ -537,16 +555,18 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 	/**
 	 * checks whether the aut accepts the same language
+	 * @throws TimeoutException 
 	 */
-	public Pair<Boolean,List<S>> isHopcroftKarpEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+	public Pair<Boolean,List<S>> isHopcroftKarpEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return areHopcroftKarpEquivalent(this.determinize(ba).mkTotal(ba).normalize(ba),
 				aut.determinize(ba).mkTotal(ba).normalize(ba), ba);
 	}
 
 	/**
 	 * checks whether aut1 is equivalent to aut2 using Hopcroft Karp's algorithm
+	 * @throws TimeoutException 
 	 */
-	public static <A, B> Pair<Boolean,List<B>> areHopcroftKarpEquivalent(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
+	public static <A, B> Pair<Boolean,List<B>> areHopcroftKarpEquivalent(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		UnionFindHopKarp<B> ds = new UnionFindHopKarp<>();
 		int offset = aut1.stateCount();
@@ -589,16 +609,18 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 	/**
 	 * concatenation with aut
+	 * @throws TimeoutException 
 	 */
-	public SFA<P, S> concatenateWith(SFA<P, S> aut, BooleanAlgebra<P, S> ba) {
+	public SFA<P, S> concatenateWith(SFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return concatenate(this, aut, ba);
 	}
 
 	/**
 	 * concatenates aut1 with aut2
+	 * @throws TimeoutException 
 	 */
 	@SuppressWarnings("unchecked")
-	public static <A, B> SFA<A, B> concatenate(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> concatenate(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		if (aut1.isEmpty || aut2.isEmpty)
 			return getEmptySFA(ba);
@@ -630,9 +652,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 	/**
 	 * language star
+	 * @throws TimeoutException 
 	 */
 	@SuppressWarnings("unchecked")
-	public static <A, B> SFA<A, B> star(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> star(SFA<A, B> aut, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		Collection<SFAMove<A, B>> transitions = new ArrayList<SFAMove<A, B>>();
 		Integer initialState = 0;
@@ -658,15 +681,17 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 	/**
 	 * @return an equivalent deterministic SFA
+	 * @throws TimeoutException 
 	 */
-	public SFA<P, S> determinize(BooleanAlgebra<P, S> ba) {
+	public SFA<P, S> determinize(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return determinize(this, ba);
 	}
 
 	/**
 	 * @return a deterministic SFA that is equivalent to <code>aut</code>
+	 * @throws TimeoutException 
 	 */
-	public static <A, B> SFA<A, B> determinize(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> determinize(SFA<A, B> aut, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		if (aut.isDeterministic(ba))
 			return aut;
@@ -749,16 +774,18 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * Creates a normalized copy of the SFA where all transitions between states
 	 * are collapsed taking their union, and states are renamed with 0,1,...
+	 * @throws TimeoutException 
 	 */
-	public SFA<P, S> normalize(BooleanAlgebra<P, S> ba) {
+	public SFA<P, S> normalize(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return getNormalized(this, ba);
 	}
 
 	/**
 	 * Creates a normalized copy of <code>aut<code> where all transitions
 	 * between states are collapsed taking their union
+	 * @throws TimeoutException 
 	 */
-	public static <A, B> SFA<A, B> getNormalized(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> getNormalized(SFA<A, B> aut, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		if (aut.isEmpty)
 			return getEmptySFA(ba);
@@ -797,15 +824,17 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 	/**
 	 * @return a minimized copy of the SFA
+	 * @throws TimeoutException 
 	 */
-	public SFA<P, S> minimize(BooleanAlgebra<P, S> ba) {
+	public SFA<P, S> minimize(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return getMinimalOf(this, ba);
 	}
 
 	/**
 	 * @return a minimized copy of <code>aut<code>
+	 * @throws TimeoutException 
 	 */
-	public static <A, B> SFA<A, B> getMinimalOf(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> getMinimalOf(SFA<A, B> aut, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		if (aut.isEmpty)
 			return getEmptySFA(ba);
@@ -990,8 +1019,9 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 * 
 	 * @return an ambiguous input if the automaton is ambiguous,
 	 *         <code>null</code> otherwise
+	 * @throws TimeoutException 
 	 */
-	public List<S> getAmbiguousInput(BooleanAlgebra<P, S> ba) {
+	public List<S> getAmbiguousInput(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return getAmbiguousInput(this, ba);
 	}
 
@@ -1000,9 +1030,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 * 
 	 * @return an ambiguous input if the automaton is ambiguous,
 	 *         <code>null</code> otherwise
+	 * @throws TimeoutException 
 	 */
 	@SuppressWarnings("unchecked")
-	public static <A, B> List<B> getAmbiguousInput(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
+	public static <A, B> List<B> getAmbiguousInput(SFA<A, B> aut, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		SFA<A, B> aut1 = (SFA<A, B>) aut.clone();
 		SFA<A, B> aut2 = (SFA<A, B>) aut.clone();
@@ -1103,8 +1134,9 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 * Checks whether the automaton is deterministic
 	 * 
 	 * @return true iff the automaton is deterministic
+	 * @throws TimeoutException 
 	 */
-	public boolean isDeterministic(BooleanAlgebra<P, S> ba) {
+	public boolean isDeterministic(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		// Check if we set it before
 		if (isDeterministic)
 			return true;
@@ -1140,7 +1172,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	// ------------------------------------------------------
 
 	// creates a new SFA where all unreachable or dead states have been removed
-	private static <A, B> SFA<A, B> removeDeadOrUnreachableStates(SFA<A, B> aut, BooleanAlgebra<A, B> ba) {
+	private static <A, B> SFA<A, B> removeDeadOrUnreachableStates(SFA<A, B> aut, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		// components of new SFA
 		Collection<SFAMove<A, B>> transitions = new ArrayList<SFAMove<A, B>>();
