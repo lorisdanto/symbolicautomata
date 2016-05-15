@@ -61,12 +61,8 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 		PositiveBooleanExpression initialState = boolexpr.MkState(id);
 		formulaToState.put(this, initialState);
 
-		// Create true state
-		True<P, S> t = new True<>();
-		PositiveBooleanExpression trueState = t.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba);
-
 		// delta([p], p) = true
-		moves.add(new SAFAInputMove<>(id, trueState, predicate));
+		moves.add(new SAFAInputMove<>(id, boolexpr.True(), predicate));
 
 		if (this.isFinalState())
 			finalStates.add(id);

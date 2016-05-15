@@ -888,8 +888,6 @@ public class SAFA<P, S> {
 		// Copy all transitions (with proper renaming for aut2)
 		Collection<SAFAInputMove<P, S>> transitions = new ArrayList<SAFAInputMove<P, S>>();
 
-		boolean addedSink = false;
-		int sink = maxStateId + 1;
 		for (int state : states) {
 			ArrayList<SAFAInputMove<P, S>> trFromState = new ArrayList<>(getInputMovesFrom(state));
 			ArrayList<P> predicates = new ArrayList<>();
@@ -911,13 +909,10 @@ public class SAFA<P, S> {
 				if (newTo != null) {
 					transitions.add(new SAFAInputMove<>(state, newTo, minterm.first));
 				} else {
-					transitions.add(new SAFAInputMove<>(state, boolexpr.MkState(sink), minterm.first));
-					addedSink = true;
+					transitions.add(new SAFAInputMove<>(state, boolexpr.False(), minterm.first));
 				}
 			}
 		}
-		if (addedSink)
-			transitions.add(new SAFAInputMove<>(sink, boolexpr.MkState(sink), ba.True()));
 
 		return MkSAFA(transitions, initialState, finalStates, ba, false, false);
 	}

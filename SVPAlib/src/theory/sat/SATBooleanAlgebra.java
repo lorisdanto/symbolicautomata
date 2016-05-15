@@ -170,7 +170,7 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 	}
 
 	public Integer MkAnd(Integer left, Integer right) {
-		List<Integer> conjuncts = new LinkedList<>();
+		Set<Integer> conjuncts = new TreeSet<>();
 		conjuncts.add(left);
 		conjuncts.add(right);
 		return MkAnd(conjuncts);

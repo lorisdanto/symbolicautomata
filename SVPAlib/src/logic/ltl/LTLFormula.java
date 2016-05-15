@@ -22,7 +22,7 @@ public abstract class LTLFormula<P,S> {
 		Collection<Integer> finalStates = new HashSet<>();
 		Collection<SAFAInputMove<P, S>> moves = new LinkedList<>();
 		PositiveBooleanExpression initialState = this.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
-		
+
 		return SAFA.MkSAFA(moves, initialState, finalStates, ba, false, true);
 	}
 	
