@@ -76,8 +76,7 @@ public class RunExperiments {
 								Pair<BDDSolver, LTLFormula<BDD, BDD>> pair = LTLConverter.getLTLBDD(ltl);
 								BDDSolver bdds = pair.first;
 								LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
-								SAFA<BDD, BDD> safa = null;
-								safa = tot.getSAFA(bdds);
+								SAFA<BDD, BDD> safa = tot.getSAFA(bdds).simplify(bdds);
 
 								fw.append(pair.second.getSize() + ", ");
 

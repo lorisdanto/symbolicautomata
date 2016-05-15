@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.sat4j.specs.TimeoutException;
@@ -216,6 +218,111 @@ public class SAFA<P, S> {
 		}
 
 		return initialState.hasModel(currConf);
+	}
+
+	class Distance extends BooleanExpressionFactory<Integer> {
+		public int[] distance;
+		public Distance(int size) {
+			distance = new int[size];
+			for (int s = 0; s < size; s++) {
+				distance[s] = size;
+			}
+		}
+
+		public Integer MkAnd(Integer p, Integer q) {
+			return (p > q) ? p : q;
+		}
+
+		public Integer MkOr(Integer p, Integer q) {
+			return (p > q) ? q : p;
+		}
+
+		public Integer True() {
+			return 0;
+		}
+
+		public Integer False() {
+			return distance.length;
+		}
+
+		public Integer MkState(int i) {
+			return distance[i];
+		}
+		public boolean setDistance(int state, int d) {
+			if (d < distance[state]) {
+				distance[state] = d;
+				return true;
+			} else {
+				return false;
+			}
+		}
+		public int getDistance(int state) {
+			return distance[state];
+		}
+	}
+
+	// The "distance" of a state s is an under-approximation of the shortest length of a word accepted from s.
+	// If the distance of s is > maxStateId then no accepting configurations are reachable from s.
+	private Distance computeDistances() {
+		Distance distance = new Distance(maxStateId + 1);
+		for (Integer s : finalStates) {
+			distance.setDistance(s, 0);
+		}
+		BooleanExpressionMorphism<Integer> formulaDistance = new BooleanExpressionMorphism<>((s) -> distance.getDistance(s), distance);
+		boolean changed = true;
+		while (changed) {
+			changed = false;
+			for (Integer s : getStates()) {
+				for (SAFAInputMove<P, S> tr : getInputMovesFrom(s)) {
+					changed = distance.setDistance(s, 1 + formulaDistance.apply(tr.to)) || changed;
+				}
+			}
+		}
+		return distance;
+	}
+
+	public SAFA<P,S> simplify(BooleanAlgebra<P, S> ba) throws TimeoutException {
+		Distance distance = computeDistances();
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();
+
+		// Replace rejecting states with False
+		BooleanExpressionMorphism<PositiveBooleanExpression> simplify =
+				new BooleanExpressionMorphism<>((s) -> distance.getDistance(s) > maxStateId ? boolexpr.False() : boolexpr.MkState(s), boolexpr);
+
+		Collection<SAFAInputMove<P,S>> transitions = new LinkedList<SAFAInputMove<P,S>>();
+
+		// Over-approximate set of states that are reachable from the initial configuration & may reach an accepting configuration
+		// Collect states & simplified transitions into a new automaton.
+		PositiveBooleanExpression initial = simplify.apply(initialState);
+		Collection<Integer> states = new TreeSet<Integer>(); // reachable states
+		Collection<Integer> worklist = new TreeSet<Integer>();
+		worklist.addAll(initial.getStates());
+		while (!worklist.isEmpty()) {
+			int s = worklist.iterator().next();
+			worklist.remove(s);
+			states.add(s);
+			for (SAFAInputMove<P, S> tr : getInputMovesFrom(s)) {
+				PositiveBooleanExpression postState = simplify.apply(tr.to);
+				if (!postState.equals(boolexpr.False())) {
+					transitions.add(new SAFAInputMove<P,S>(s, postState, tr.guard));
+					for (Integer succ : postState.getStates()) {
+						if (!states.contains(succ)) {
+							worklist.add(succ);
+						}
+					}
+				}
+			}
+		}
+
+		// final states are the reachable states
+		Collection<Integer> finalStates = new TreeSet<Integer>();
+		for(Integer s : this.finalStates) {
+			if (states.contains(s)) {
+				finalStates.add(s);
+			}
+		}
+
+		return MkSAFA(transitions, initial, finalStates, ba, false, false);
 	}
 
 	// /**
