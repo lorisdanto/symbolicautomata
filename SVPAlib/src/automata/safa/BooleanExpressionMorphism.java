@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.sat4j.specs.TimeoutException;
-
 public class BooleanExpressionMorphism<R> implements LatticeMorphism<BooleanExpression, R> {
 	BooleanExpressionFactory<R> boolexpr;
 	Function<Integer, R> sigma;
@@ -38,7 +36,7 @@ public class BooleanExpressionMorphism<R> implements LatticeMorphism<BooleanExpr
 		return sigma.apply(state);
 	}
 	
-	public R apply(BooleanExpression phi) throws TimeoutException {
+	public R apply(BooleanExpression phi) {
 		if (cache.containsKey(phi)) {
 			return cache.get(phi);
 		} else {

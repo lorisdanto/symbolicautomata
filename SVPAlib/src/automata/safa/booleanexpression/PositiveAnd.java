@@ -42,7 +42,7 @@ public class PositiveAnd extends PositiveBooleanExpression {
 	}
 
 	@Override
-	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) throws TimeoutException {
+	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) {
 		return f.MkAnd(f.apply(left), f.apply(right));
 	}
 

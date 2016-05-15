@@ -9,7 +9,7 @@ public abstract class BooleanExpression {
 	
 	public abstract Set<Integer> getStates();
 	
-	public abstract <R> R apply(LatticeMorphism<BooleanExpression, R> f) throws TimeoutException;
+	public abstract <R> R apply(LatticeMorphism<BooleanExpression, R> f);
 
 	@Override
 	public abstract Object clone();

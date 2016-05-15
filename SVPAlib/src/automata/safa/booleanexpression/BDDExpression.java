@@ -31,7 +31,7 @@ public class BDDExpression extends BooleanExpression {
 	}
 	
 	@Override
-	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) throws TimeoutException {
+	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) {
 		if (bdd.isOne()) {
 			return f.True();
 		} else if (bdd.isZero()) {
