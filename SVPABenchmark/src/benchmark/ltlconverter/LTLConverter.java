@@ -266,7 +266,9 @@ public class LTLConverter {
 	//Skeleton method
 	
 	public static void toMona(FormulaNode phi, HashMap<String, Integer> atomToInt, StringBuilder sb, int var, int varcount) {
-		String oldVar = "x"+var;
+		
+		//0 if is the initial position (i.e. start)
+		String oldVar = var==0 ? "0":"x"+var;
 		String newVar1 = "x"+varcount;
 		String newVar2 = "x"+(varcount+1);
 		
