@@ -21,6 +21,8 @@ public abstract class LTLFormula<P,S> {
 		
 		Collection<Integer> finalStates = new HashSet<>();
 		Collection<SAFAInputMove<P, S>> moves = new LinkedList<>();
+		//This is the state for the empty string
+		finalStates.add(-1);
 		PositiveBooleanExpression initialState = this.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
 
 		return SAFA.MkSAFA(moves, initialState, finalStates, ba, false, true);

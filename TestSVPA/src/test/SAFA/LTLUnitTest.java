@@ -265,7 +265,7 @@ public class LTLUnitTest {
 		LTLFormula<CharPred, Character> nextA = new Next<>(a);
 		LTLFormula<CharPred, Character> globallyA = new Globally<>(a);
 		LTLFormula<CharPred, Character> globallyNextA = new Globally<>(nextA);
-		LTLFormula<CharPred, Character> finallyA = new Globally<>(a);
+		LTLFormula<CharPred, Character> finallyA = new Eventually<>(a);
 		LTLFormula<CharPred, Character> aUntilB = new Until<>(a,b);
 		LTLFormula<CharPred, Character> notA = new Not<>(a);
 
@@ -349,6 +349,6 @@ public class LTLUnitTest {
 		return l;
 	}
 	private boolean models(String s, LTLFormula<CharPred, Character> phi) throws TimeoutException {
-		return phi.getSAFA(ba).accepts(lOfS(s), ba);
+		return phi.pushNegations(ba).getSAFA(ba).accepts(lOfS(s), ba);
 	}
 }

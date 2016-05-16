@@ -61,15 +61,19 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 				ba);
 
 		// Update hash tables
-		int id = formulaToState.size();
-		PositiveBooleanExpression initialState = boolexpr.MkAnd(boolexpr.MkState(id), phiState);
+		// New state for G X phi		
+		int idEmpty = -1;
+		
+		int idGXphi = formulaToState.size();
+		PositiveBooleanExpression initialState = boolexpr.MkAnd(boolexpr.MkState(idGXphi), boolexpr.MkOr(phiState, boolexpr.MkState(idEmpty)));
 		formulaToState.put(this, initialState);
+								
 
 		// delta(G phi, p) = phi /\ G phi
-		moves.add(new SAFAInputMove<P, S>(id, initialState, ba.True()));
+		moves.add(new SAFAInputMove<P, S>(idGXphi, initialState, ba.True()));
 
 		if (this.isFinalState())
-			finalStates.add(id);
+			finalStates.add(idGXphi);
 
 		return initialState;
 	}
@@ -108,29 +112,6 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 		phi.toString(sb);
 		sb.append(")");
 	}
-
-	// @Override
-	// public SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
-	// BooleanExpressionFactory<PositiveBooleanExpression> boolexpr =
-	// SAFA.getBooleanExpressionFactory();
-	//
-	// SAFA<P, S> phiSafa = phi.getSAFANew(ba);
-	// int formulaId = phiSafa.getMaxStateId() + 1;
-	//
-	// PositiveBooleanExpression initialState =
-	// boolexpr.MkAnd(boolexpr.MkState(formulaId), phiSafa.getInitialState());
-	// Collection<Integer> finalStates = new
-	// HashSet<>(phiSafa.getFinalStates());
-	// finalStates.add(formulaId);
-	//
-	// // Copy all transitions (with proper renaming for aut2)
-	// Collection<SAFAInputMove<P, S>> transitions = new
-	// ArrayList<SAFAInputMove<P, S>>(phiSafa.getInputMoves());
-	// transitions.add(new SAFAInputMove<>(formulaId, initialState, ba.True()));
-	//
-	// return SAFA.MkSAFA(transitions, initialState, finalStates, ba, false,
-	// true);
-	// }
 
 	@Override
 	public int getSize() {

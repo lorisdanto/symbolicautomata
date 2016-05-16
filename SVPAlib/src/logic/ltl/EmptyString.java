@@ -3,29 +3,21 @@ package logic.ltl;
 import java.util.Collection;
 import java.util.HashMap;
 
-import org.sat4j.specs.TimeoutException;
-
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
 import automata.safa.booleanexpression.PositiveBooleanExpression;
 import theory.BooleanAlgebra;
 
-public class Predicate<P, S> extends LTLFormula<P, S> {
+public class EmptyString<P, S> extends LTLFormula<P, S> {
 
-	protected P predicate;
-
-	public Predicate(P predicate) {
+	public EmptyString() {
 		super();
-		this.predicate = predicate;
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((predicate == null) ? 0 : predicate.hashCode());
-		return result;
+		return 11;
 	}
 
 	@Override
@@ -34,14 +26,7 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 			return true;
 		if (obj == null)
 			return false;
-		if (!(obj instanceof Predicate))
-			return false;
-		@SuppressWarnings("unchecked")
-		Predicate<P, S> other = (Predicate<P, S>) obj;
-		if (predicate == null) {
-			if (other.predicate != null)
-				return false;
-		} else if (predicate != other.predicate)
+		if (!(obj instanceof EmptyString))
 			return false;
 		return true;
 	}
@@ -56,37 +41,39 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 		if (formulaToState.containsKey(this))
 			return formulaToState.get(this);
 
-		// Update hash tables	
-		int id = formulaToState.size();
-		PositiveBooleanExpression initialState = boolexpr.MkState(id);
+		// Update hash tables
+		int emptyid = -1;
+		PositiveBooleanExpression initialState = boolexpr.MkState(emptyid);
 		formulaToState.put(this, initialState);
-
-		// delta([p], p) = true
-		moves.add(new SAFAInputMove<>(id, boolexpr.True(), predicate));
-
-		if (this.isFinalState())
-			finalStates.add(id);
 
 		return initialState;
 	}
 
 	@Override
 	protected boolean isFinalState() {
-		return false;
+		return true;
 	}
 
 	@Override
 	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba,
-			HashMap<String, LTLFormula<P, S>> posHash, HashMap<String, LTLFormula<P, S>> negHash) throws TimeoutException {
-		if (isPositive)
+			HashMap<String, LTLFormula<P, S>> posHash, HashMap<String, LTLFormula<P, S>> negHash) {
+		if (isPositive) {
 			return this;
-		else
-			return new Or<>(new Predicate<>(ba.MkNot(this.predicate)), new EmptyString<>());
+		} else {
+			String key = this.toString();
+			if (negHash.containsKey(key)) {
+				return negHash.get(key);
+			} else {
+				LTLFormula<P, S> out = new Next<>(new True<>());
+				negHash.put(key, out);
+				return out;
+			}
+		}
 	}
 
 	@Override
 	public void toString(StringBuilder sb) {
-		sb.append(predicate.toString());
+		sb.append("emptyString");
 	}
 
 	@Override
