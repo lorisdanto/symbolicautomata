@@ -49,7 +49,7 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -58,14 +58,13 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 
 		// Compute transitions for children
 		PositiveBooleanExpression phiState = phi.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates,
-				ba);
+				ba, emptyId);
 
 		// Update hash tables
 		// New state for G X phi		
-		int idEmpty = -1;
 		
 		int idGXphi = formulaToState.size();
-		PositiveBooleanExpression initialState = boolexpr.MkAnd(boolexpr.MkState(idGXphi), boolexpr.MkOr(phiState, boolexpr.MkState(idEmpty)));
+		PositiveBooleanExpression initialState = boolexpr.MkAnd(boolexpr.MkState(idGXphi), boolexpr.MkOr(phiState, boolexpr.MkState(emptyId)));
 		formulaToState.put(this, initialState);
 								
 

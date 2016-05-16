@@ -56,7 +56,7 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -64,11 +64,11 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 			return formulaToState.get(this);
 
 		// Compute transitions for children
-		PositiveBooleanExpression leftState = left.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba);
-		PositiveBooleanExpression rightState =right.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba);
+		PositiveBooleanExpression leftState = left.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba, emptyId);
+		PositiveBooleanExpression rightState =right.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba, emptyId);
 
 		LTLFormula<P, S> gleft = new Globally<>(left);
-		PositiveBooleanExpression globallyLeftState = gleft.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba);
+		PositiveBooleanExpression globallyLeftState = gleft.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba, emptyId);
 		
 		// initialState (l /\ (l U r)) \/ r	\/ G l	
 		int id =formulaToState.size();

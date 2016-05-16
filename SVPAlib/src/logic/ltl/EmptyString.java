@@ -34,16 +34,15 @@ public class EmptyString<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
 		if (formulaToState.containsKey(this))
 			return formulaToState.get(this);
 
-		// Update hash tables
-		int emptyid = -1;
-		PositiveBooleanExpression initialState = boolexpr.MkState(emptyid);
+		// Update hash tables		
+		PositiveBooleanExpression initialState = boolexpr.MkState(emptyId);
 		formulaToState.put(this, initialState);
 
 		return initialState;
