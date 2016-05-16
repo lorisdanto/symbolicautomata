@@ -26,7 +26,7 @@ public abstract class LTLFormula<P,S> {
 		finalStates.add(emptyId);
 		PositiveBooleanExpression initialState = this.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, emptyId);
 
-		return SAFA.MkSAFA(moves, initialState, finalStates, ba, false, true);
+		return SAFA.MkSAFA(moves, initialState, finalStates, ba);
 	}
 	
 	// Checks whether a formula should be a final state in the automaton

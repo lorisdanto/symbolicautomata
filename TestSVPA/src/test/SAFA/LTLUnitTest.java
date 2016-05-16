@@ -31,7 +31,6 @@ import theory.intervals.UnaryCharIntervalSolver;
 import theory.sat.SATBooleanAlgebra;
 import utilities.Pair;
 
-
 public class LTLUnitTest {
 	@Test
 	public void testEventuallyAndOr() throws TimeoutException {
@@ -106,7 +105,6 @@ public class LTLUnitTest {
 		assertTrue(b == b1.first);
 
 	}
-	
 
 	@Test
 	public void testLargeEmptiness() throws TimeoutException {
@@ -133,34 +131,33 @@ public class LTLUnitTest {
 
 			long stopTime = System.currentTimeMillis();
 			long elapsedTime = stopTime - startTime;
-			System.out.println(size+" "+elapsedTime);
+			System.out.println(size + " " + elapsedTime);
 		}
 	}
-	
+
 	@Test
 	public void testLargeEmptinessBDD() throws TimeoutException {
 		int sizeTot = 7;
 		BDDExpressionFactory bef = new BDDExpressionFactory(sizeTot);
-		//PositiveBooleanExpressionFactory bef = new PositiveBooleanExpressionFactory();
-		//SumOfProductsFactory bef = SumOfProductsFactory.getInstance();
+		// PositiveBooleanExpressionFactory bef = new
+		// PositiveBooleanExpressionFactory();
+		// SumOfProductsFactory bef = SumOfProductsFactory.getInstance();
 
 		for (int size = 5; size < sizeTot; size++) {
 
 			BDDSolver bs = new BDDSolver(size);
 			LTLFormula<BDD, BDD> tot = new True<>();
 			List<LTLFormula<BDD, BDD>> conjuncts = new LinkedList<>();
-			for (int i = 0; i <  size; i++) {
-				conjuncts.add(new Eventually<>(new Predicate<BDD, BDD>(
-							bs.factory.ithVar(i)
-						)));
-//				LTLFormula<Integer, boolean[]> evch = new Eventually<>(new Predicate<Integer, boolean[]>(i));
-//				tot = new And<>(evch, tot);
+			for (int i = 0; i < size; i++) {
+				conjuncts.add(new Eventually<>(new Predicate<BDD, BDD>(bs.factory.ithVar(i))));
+				// LTLFormula<Integer, boolean[]> evch = new Eventually<>(new
+				// Predicate<Integer, boolean[]>(i));
+				// tot = new And<>(evch, tot);
 			}
 			tot = new And<>(conjuncts);
-			
+
 			long startTime = System.currentTimeMillis();
 			SAFA<BDD, BDD> safa1 = tot.getSAFA(bs);
-			
 
 			boolean b = true;
 			try {
@@ -172,31 +169,32 @@ public class LTLUnitTest {
 
 			long stopTime = System.currentTimeMillis();
 			long elapsedTime = stopTime - startTime;
-			System.out.println(size+" "+elapsedTime);
+			System.out.println(size + " " + elapsedTime);
 		}
 	}
-	
+
 	@Test
 	public void testLargeEmptinessSAT() throws TimeoutException {
 		int sizeTot = 4;
 
 		for (int size = 2; size < sizeTot; size++) {
 			System.out.println(size);
-			
+
 			SATBooleanAlgebra ba = new SATBooleanAlgebra(size + 1);
 			LTLFormula<Integer, boolean[]> tot = new True<>();
 			List<LTLFormula<Integer, boolean[]>> conjuncts = new LinkedList<>();
-			for (int i = 1; i <  size; i++) {
+			for (int i = 1; i < size; i++) {
 				conjuncts.add(new Eventually<>(new Predicate<Integer, boolean[]>(i)));
-//				LTLFormula<Integer, boolean[]> evch = new Eventually<>(new Predicate<Integer, boolean[]>(i));
-//				tot = new And<>(evch, tot);
+				// LTLFormula<Integer, boolean[]> evch = new Eventually<>(new
+				// Predicate<Integer, boolean[]>(i));
+				// tot = new And<>(evch, tot);
 			}
 			tot = new And<>(conjuncts);
 			long startTime = System.currentTimeMillis();
 			SAFA<Integer, boolean[]> safa1 = tot.getSAFA(ba);
 			long stopTime = System.currentTimeMillis();
-			System.out.println("BuildSAFA "+(stopTime - startTime));
-			
+			System.out.println("BuildSAFA " + (stopTime - startTime));
+
 			startTime = System.currentTimeMillis();
 			boolean b = true;
 			try {
@@ -208,7 +206,7 @@ public class LTLUnitTest {
 
 			stopTime = System.currentTimeMillis();
 			long elapsedTime = stopTime - startTime;
-			System.out.println("Emptiness "+elapsedTime);
+			System.out.println("Emptiness " + elapsedTime);
 		}
 	}
 
@@ -218,21 +216,22 @@ public class LTLUnitTest {
 		SATBooleanAlgebra ba = new SATBooleanAlgebra(size + 1);
 		LTLFormula<Integer, boolean[]> tot = new True<>();
 		List<LTLFormula<Integer, boolean[]>> conjuncts = new LinkedList<>();
-		for (int i = 1; i <  size; i++) {
+		for (int i = 1; i < size; i++) {
 			conjuncts.add(new Eventually<>(new Predicate<Integer, boolean[]>(i)));
-//			LTLFormula<Integer, boolean[]> evch = new Eventually<>(new Predicate<Integer, boolean[]>(i));
-//			tot = new And<>(evch, tot);
+			// LTLFormula<Integer, boolean[]> evch = new Eventually<>(new
+			// Predicate<Integer, boolean[]>(i));
+			// tot = new And<>(evch, tot);
 		}
 		tot = new And<>(conjuncts);
 		SAFA<Integer, boolean[]> safa1 = tot.getSAFA(ba);
 
 		tot = new True<>();
 		for (int i = size - 1; i >= 1; i--) {
-		LTLFormula<Integer, boolean[]> evch = new Eventually<>(new Predicate<Integer, boolean[]>(i));
+			LTLFormula<Integer, boolean[]> evch = new Eventually<>(new Predicate<Integer, boolean[]>(i));
 			tot = new And<>(evch, tot);
 		}
 		SAFA<Integer, boolean[]> safa2 = tot.getSAFA(ba);
-		
+
 		long startTime = System.currentTimeMillis();
 
 		boolean b = true;
@@ -266,7 +265,7 @@ public class LTLUnitTest {
 		LTLFormula<CharPred, Character> globallyA = new Globally<>(a);
 		LTLFormula<CharPred, Character> globallyNextA = new Globally<>(nextA);
 		LTLFormula<CharPred, Character> finallyA = new Eventually<>(a);
-		LTLFormula<CharPred, Character> aUntilB = new Until<>(a,b);
+		LTLFormula<CharPred, Character> aUntilB = new Until<>(a, b);
 		LTLFormula<CharPred, Character> notA = new Not<>(a);
 
 		assertFalse(models("", a));
@@ -313,7 +312,7 @@ public class LTLUnitTest {
 	List<Character> lab = lOfS("a3"); // accepted only by both autA and autB
 	List<Character> lnot = lOfS("##"); // accepted only by neither autA nor autB
 
-	public SAFA<CharPred, Character> getseva(){
+	public SAFA<CharPred, Character> getseva() {
 		try {
 			return eva.getSAFA(ba);
 		} catch (TimeoutException e) {
@@ -322,8 +321,8 @@ public class LTLUnitTest {
 		}
 		return null;
 	}
-	
-	public SAFA<CharPred, Character> getsevn(){
+
+	public SAFA<CharPred, Character> getsevn() {
 		try {
 			return evn.getSAFA(ba);
 		} catch (TimeoutException e) {
@@ -332,7 +331,7 @@ public class LTLUnitTest {
 		}
 		return null;
 	}
-	
+
 	// eventually p
 	private LTLFormula<CharPred, Character> ev(UnaryCharIntervalSolver ba, CharPred p) {
 		return new Eventually<CharPred, Character>(new Predicate<CharPred, Character>(p));
@@ -348,7 +347,10 @@ public class LTLUnitTest {
 			l.add(ca[i]);
 		return l;
 	}
+
 	private boolean models(String s, LTLFormula<CharPred, Character> phi) throws TimeoutException {
-		return phi.pushNegations(ba).getSAFA(ba).accepts(lOfS(s), ba);
+		LTLFormula<CharPred, Character> phin = phi.pushNegations(ba);
+		SAFA<CharPred, Character> safa = phin.getSAFA(ba);
+		return safa.accepts(lOfS(s), ba);
 	}
 }

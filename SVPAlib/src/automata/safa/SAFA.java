@@ -8,6 +8,7 @@ package automata.safa;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,7 +18,6 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Function;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.sat4j.specs.TimeoutException;
@@ -121,7 +121,7 @@ public class SAFA<P, S> {
 	 */
 	public static <A, B> SAFA<A, B> MkSAFA(Collection<SAFAInputMove<A, B>> transitions,
 			PositiveBooleanExpression initialState, Collection<Integer> finalStates, BooleanAlgebra<A, B> ba) throws TimeoutException {
-		return MkSAFA(transitions, initialState, finalStates, ba, true, true);
+		return MkSAFA(transitions, initialState, finalStates, ba, true, true, true);
 	}
 
 	/*
@@ -131,7 +131,9 @@ public class SAFA<P, S> {
 	 */
 	public static <A, B> SAFA<A, B> MkSAFA(Collection<SAFAInputMove<A, B>> transitions,
 			PositiveBooleanExpression initialState, Collection<Integer> finalStates, BooleanAlgebra<A, B> ba,
-			boolean normalize, boolean complete) throws TimeoutException {
+			boolean normalize, 
+			boolean simplify,
+			boolean complete) throws TimeoutException {
 
 		SAFA<A, B> aut = new SAFA<A, B>();
 
@@ -141,15 +143,23 @@ public class SAFA<P, S> {
 
 		aut.initialState = initialState;
 		aut.finalStates = new HashSet<>(finalStates);
+		//Hack
+		aut.maxStateId=0;
+		for(int state: aut.finalStates)
+			aut.maxStateId = Integer.max(aut.maxStateId, state);
 
 		for (SAFAInputMove<A, B> t : transitions)
-			aut.addTransition(t, ba, false);
-
+			aut.addTransition(t, ba, false);		
+		
 		if (complete && !normalize)
 			aut = aut.complete(ba);
 
-		if (normalize)
+		if (simplify)
+			aut = aut.simplify(ba);
+		
+		if (normalize){
 			return aut.normalize(ba);
+		}
 		else
 			return aut;
 	}
@@ -322,7 +332,7 @@ public class SAFA<P, S> {
 			}
 		}
 
-		return MkSAFA(transitions, initial, finalStates, ba, false, false);
+		return MkSAFA(transitions, initial, finalStates, ba, false ,false, false);
 	}
 
 	// /**
@@ -375,8 +385,7 @@ public class SAFA<P, S> {
 			throws TimeoutException {
 		// TODO: the default boolean expression factory should *not* be
 		// boolexpr.
-		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();
-		return isEquivalent(aut, getEmptySAFA(ba), ba, boolexpr).getFirst();
+		return isEmpty(aut, ba, Long.MAX_VALUE);
 	}
 
 	/**
@@ -830,7 +839,7 @@ public class SAFA<P, S> {
 		}
 
 		PositiveBooleanExpression notInitial = demorganize.apply(initialState);
-		return MkSAFA(transitions, notInitial, nonFinal, ba, false, false);
+		return MkSAFA(transitions, notInitial, nonFinal, ba, false, false, false);
 	}
 
 	public enum BoolOp {
@@ -873,7 +882,7 @@ public class SAFA<P, S> {
 			throw new NotImplementedException("Operation " + op + " not implemented");
 		}
 
-		return MkSAFA(transitions, initialState, finalStates, ba, false, false);
+		return MkSAFA(transitions, initialState, finalStates, ba, false, false, false);
 	}
 
 	/**
@@ -914,7 +923,7 @@ public class SAFA<P, S> {
 			}
 		}
 
-		return MkSAFA(transitions, initialState, finalStates, ba, false, false);
+		return MkSAFA(transitions, initialState, finalStates, ba, false, false, false);
 	}
 
 	/**
@@ -945,7 +954,7 @@ public class SAFA<P, S> {
 		if (addedSink)
 			transitions.add(new SAFAInputMove<>(sink, boolexpr.MkState(sink), ba.True()));
 
-		return MkSAFA(transitions, initialState, finalStates, ba, false, false);
+		return MkSAFA(transitions, initialState, finalStates, ba, false, false, false);
 	}
 
 	// ------------------------------------------------------
