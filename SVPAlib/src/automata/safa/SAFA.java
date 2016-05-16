@@ -235,7 +235,7 @@ public class SAFA<P, S> {
 		public Distance(int size) {
 			distance = new int[size];
 			for (int s = 0; s < size; s++) {
-				distance[s] = size;
+				distance[s] = size + 1;
 			}
 		}
 
@@ -278,16 +278,16 @@ public class SAFA<P, S> {
 		for (Integer s : finalStates) {
 			distance.setDistance(s, 0);
 		}
-		BooleanExpressionMorphism<Integer> formulaDistance = new BooleanExpressionMorphism<>((s) -> distance.getDistance(s), distance);
-		boolean changed = true;
-		while (changed) {
+		boolean changed;
+		do {
 			changed = false;
 			for (Integer s : getStates()) {
 				for (SAFAInputMove<P, S> tr : getInputMovesFrom(s)) {
+					BooleanExpressionMorphism<Integer> formulaDistance = new BooleanExpressionMorphism<>((st) -> distance.getDistance(st), distance);
 					changed = distance.setDistance(s, 1 + formulaDistance.apply(tr.to)) || changed;
 				}
 			}
-		}
+		} while (changed);
 		return distance;
 	}
 
@@ -297,7 +297,7 @@ public class SAFA<P, S> {
 
 		// Replace rejecting states with False
 		BooleanExpressionMorphism<PositiveBooleanExpression> simplify =
-				new BooleanExpressionMorphism<>((s) -> distance.getDistance(s) > maxStateId ? boolexpr.False() : boolexpr.MkState(s), boolexpr);
+				new BooleanExpressionMorphism<>((s) -> distance.getDistance(s) > maxStateId+1 ? boolexpr.False() : boolexpr.MkState(s), boolexpr);
 
 		Collection<SAFAInputMove<P,S>> transitions = new LinkedList<SAFAInputMove<P,S>>();
 
