@@ -56,13 +56,26 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 		if (formulaToState.containsKey(this))
 			return formulaToState.get(this);
 
+		//True
+		LTLFormula<P, S> tr = new True<>();
+		int trueid = formulaToState.size();
+		PositiveBooleanExpression trueState = boolexpr.MkState(trueid);
+		if(formulaToState.containsKey(tr))
+			trueState = formulaToState.get(tr);
+		else{
+			formulaToState.put(tr, trueState);
+			finalStates.add(trueid);
+			// delta(True, true) = True
+			moves.add(new SAFAInputMove<>(trueid, trueState, ba.True()));			
+		}
+						
 		// Update hash tables	
 		int id = formulaToState.size();
 		PositiveBooleanExpression initialState = boolexpr.MkState(id);
 		formulaToState.put(this, initialState);
 
 		// delta([p], p) = true
-		moves.add(new SAFAInputMove<>(id, boolexpr.True(), predicate));
+		moves.add(new SAFAInputMove<>(id, trueState, predicate));
 
 		if (this.isFinalState())
 			finalStates.add(id);
