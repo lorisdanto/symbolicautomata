@@ -25,7 +25,7 @@ import utilities.Pair;
 import utilities.Timers;
 
 public class RunExperiments {
-	static long timeout = 5000;
+	static long timeout = 1000;
 
 	static int fromCounter = 0;
 	static String emptinessOutputFile = "results/emptiness";
@@ -40,7 +40,7 @@ public class RunExperiments {
 	
 		useBDDs = false;
 		skipRev = false;
-		//RunLTLEmptiness();
+		RunLTLEmptiness();
 		RunLTLSelfEquiv();		
 		RunLTLEquivChangeState();
 
