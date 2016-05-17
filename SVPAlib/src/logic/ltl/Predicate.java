@@ -42,7 +42,7 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 		if (predicate == null) {
 			if (other.predicate != null)
 				return false;
-		} else if (predicate != other.predicate)
+		} else if (!predicate.equals(other.predicate))
 			return false;
 		return true;
 	}
