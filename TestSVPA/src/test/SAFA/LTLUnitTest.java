@@ -59,6 +59,15 @@ public class LTLUnitTest {
 		assertTrue(sunion.accepts(lab, ba));
 		assertFalse(sunion.accepts(lnot, ba));
 	}
+	
+	@Test
+	public void unary() throws TimeoutException {
+		LTLFormula<CharPred, Character> GXt = new Globally<>(new Next<>(new True<>()));
+		SAFA<CharPred, Character> phi = GXt.getSAFA(ba);
+		
+		assertTrue(SAFA.isEmpty(phi, ba));
+		assertTrue(SAFA.isEmpty(phi.getUnaryPathSAFA(ba), ba));
+	}
 
 	@Test
 	public void testLargeEquiv() throws TimeoutException {

@@ -2,6 +2,7 @@ package logic.ltl;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.sat4j.specs.TimeoutException;
 
@@ -38,7 +39,7 @@ public class Last<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, HashSet<Integer> states) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -46,11 +47,13 @@ public class Last<P, S> extends LTLFormula<P, S> {
 			return formulaToState.get(this);
 
 		// Update hash tables
-		int id = formulaToState.size();
+		int id = states.size();
+		states.add(id);
 		PositiveBooleanExpression initialState = boolexpr.MkState(id);
 		formulaToState.put(this, initialState);
 
-		int id2 = formulaToState.size();
+		int id2 = states.size();
+		states.add(id2);
 		PositiveBooleanExpression toState = boolexpr.MkState(id2);
 
 		// delta(last, true) = next
@@ -62,10 +65,6 @@ public class Last<P, S> extends LTLFormula<P, S> {
 		return initialState;
 	}
 
-	@Override
-	protected boolean isFinalState() {
-		return false;
-	}
 
 	@Override
 	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba,

@@ -3,6 +3,7 @@ package logic.ltl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.sat4j.specs.TimeoutException;
@@ -57,7 +58,7 @@ public class Or<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, HashSet<Integer> states) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -69,7 +70,7 @@ public class Or<P, S> extends LTLFormula<P, S> {
 		// Compute transitions for children
 		for (LTLFormula<P, S> phi : disjuncts) {
 			PositiveBooleanExpression conjInit = phi.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates,
-					ba, emptyId);
+					ba, states);
 			initialState = boolexpr.MkOr(initialState, conjInit);
 		}
 
@@ -77,14 +78,6 @@ public class Or<P, S> extends LTLFormula<P, S> {
 		formulaToState.put(this, initialState);
 
 		return initialState;
-	}
-
-	@Override
-	protected boolean isFinalState() {
-		boolean isF = true;
-		for (LTLFormula<P, S> phi : disjuncts)
-			isF = isF || phi.isFinalState();
-		return isF;
 	}
 
 	@Override

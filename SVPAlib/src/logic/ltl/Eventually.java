@@ -2,6 +2,7 @@ package logic.ltl;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.sat4j.specs.TimeoutException;
 
@@ -49,7 +50,7 @@ public class Eventually<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, HashSet<Integer> states) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -58,25 +59,18 @@ public class Eventually<P, S> extends LTLFormula<P, S> {
 
 		// Compute transitions for children
 		PositiveBooleanExpression phiState = phi.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates,
-				ba, emptyId);
+				ba, states);
 
 		// Update hash tables
-		int id = formulaToState.size();
+		int id = states.size();
+		states.add(id);
 		PositiveBooleanExpression initialState = boolexpr.MkOr(boolexpr.MkState(id), phiState);
 		formulaToState.put(this, initialState);
 
 		// delta(F phi, true) = phi \/ F phi
 		moves.add(new SAFAInputMove<P, S>(id, initialState, ba.True()));
 
-		if (this.isFinalState())
-			finalStates.add(id);
-
 		return initialState;
-	}
-
-	@Override
-	protected boolean isFinalState() {
-		return false;
 	}
 
 	@Override

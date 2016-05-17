@@ -2,6 +2,7 @@ package logic.ltl;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.sat4j.specs.TimeoutException;
 
@@ -49,7 +50,7 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, HashSet<Integer> states) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -58,30 +59,23 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 
 		// Compute transitions for children
 		PositiveBooleanExpression phiState = phi.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates,
-				ba, emptyId);
+				ba, states);
 
 		// Update hash tables
 		// New state for G X phi		
 		
-		int idGXphi = formulaToState.size();
-		PositiveBooleanExpression initialState = boolexpr.MkAnd(boolexpr.MkState(idGXphi), phiState);		
+		int idXGphi = states.size();
+		states.add(idXGphi);
+		PositiveBooleanExpression initialState = boolexpr.MkAnd(boolexpr.MkState(idXGphi), phiState);		
 		formulaToState.put(this, initialState);
 		
-		PositiveBooleanExpression nextState = boolexpr.MkAnd(boolexpr.MkState(idGXphi), boolexpr.MkOr(phiState, boolexpr.MkState(emptyId)));
+		PositiveBooleanExpression nextState = boolexpr.MkOr( boolexpr.MkState(0), boolexpr.MkAnd(boolexpr.MkState(idXGphi),phiState));
+		finalStates.add(0);
 								
-
 		// delta(G phi, p) = phi /\ G phi
-		moves.add(new SAFAInputMove<P, S>(idGXphi, nextState, ba.True()));
-
-		if (this.isFinalState())
-			finalStates.add(idGXphi);
+		moves.add(new SAFAInputMove<P, S>(idXGphi, nextState, ba.True()));
 
 		return initialState;
-	}
-
-	@Override
-	protected boolean isFinalState() {
-		return true;
 	}
 
 	@Override

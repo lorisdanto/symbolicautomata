@@ -2,6 +2,7 @@ package logic.ltl;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.sat4j.specs.TimeoutException;
 
@@ -56,7 +57,7 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, HashSet<Integer> states) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -64,29 +65,22 @@ public class WeakUntil<P, S> extends LTLFormula<P, S> {
 			return formulaToState.get(this);
 
 		// Compute transitions for children
-		PositiveBooleanExpression leftState = left.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba, emptyId);
-		PositiveBooleanExpression rightState =right.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba, emptyId);
+		PositiveBooleanExpression leftState = left.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba, states);
+		PositiveBooleanExpression rightState =right.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba, states);
 
 		LTLFormula<P, S> gleft = new Globally<>(left);
-		PositiveBooleanExpression globallyLeftState = gleft.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba, emptyId);
+		PositiveBooleanExpression globallyLeftState = gleft.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba, states);
 		
 		// initialState (l /\ (l U r)) \/ r	\/ G l	
-		int id =formulaToState.size();
+		int id =states.size();
+		states.add(id);
 		PositiveBooleanExpression initialState = boolexpr.MkOr(boolexpr.MkOr(boolexpr.MkAnd(leftState, boolexpr.MkState(id)), rightState), globallyLeftState);
 		formulaToState.put(this, initialState);
 
 		// delta(l W r, true) = (l /\ (l W r)) \/ r	
 		moves.add(new SAFAInputMove<P, S>(id, initialState, ba.True()));
-
-		if (this.isFinalState())
-			finalStates.add(id);
 		
 		return initialState;
-	}
-
-	@Override
-	protected boolean isFinalState() {
-		return true;
 	}
 
 	@Override

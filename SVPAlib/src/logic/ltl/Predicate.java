@@ -2,6 +2,7 @@ package logic.ltl;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.sat4j.specs.TimeoutException;
 
@@ -49,43 +50,30 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, HashSet<Integer> states) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
 		if (formulaToState.containsKey(this))
-			return formulaToState.get(this);
-
-		//True
-		LTLFormula<P, S> tr = new True<>();
-		int trueid = formulaToState.size();
-		PositiveBooleanExpression trueState = boolexpr.MkState(trueid);
-		if(formulaToState.containsKey(tr))
-			trueState = formulaToState.get(tr);
-		else{
-			formulaToState.put(tr, trueState);
-			finalStates.add(trueid);
-			// delta(True, true) = True
-			moves.add(new SAFAInputMove<>(trueid, trueState, ba.True()));			
-		}
+			return formulaToState.get(this);		
 						
 		// Update hash tables	
-		int id = formulaToState.size();
+		int id = states.size();
+		states.add(id);
 		PositiveBooleanExpression initialState = boolexpr.MkState(id);
 		formulaToState.put(this, initialState);
+		
+		int nextid = states.size();
+		states.add(nextid);
+		PositiveBooleanExpression nextState = boolexpr.MkState(nextid);
 
 		// delta([p], p) = true
-		moves.add(new SAFAInputMove<>(id, trueState, predicate));
+		moves.add(new SAFAInputMove<>(id, nextState, predicate));
+		moves.add(new SAFAInputMove<>(nextid, nextState, ba.True()));
 
-		if (this.isFinalState())
-			finalStates.add(id);
+		finalStates.add(nextid);
 
 		return initialState;
-	}
-
-	@Override
-	protected boolean isFinalState() {
-		return false;
 	}
 
 	@Override

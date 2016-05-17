@@ -2,6 +2,7 @@ package logic.ltl;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
@@ -34,7 +35,7 @@ public class False<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, HashSet<Integer> states) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -42,16 +43,12 @@ public class False<P, S> extends LTLFormula<P, S> {
 			return formulaToState.get(this);
 
 		// Update hash tables
-		int id =formulaToState.size();
+		int id =states.size();
+		states.add(id);
 		PositiveBooleanExpression initialState = boolexpr.MkState(id);
 		formulaToState.put(this, initialState);		
 		
 		return initialState;
-	}
-
-	@Override
-	protected boolean isFinalState() {
-		return false;
 	}
 	
 	@Override

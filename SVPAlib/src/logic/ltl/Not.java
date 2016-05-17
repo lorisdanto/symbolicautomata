@@ -2,6 +2,7 @@ package logic.ltl;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.sat4j.specs.TimeoutException;
 
@@ -47,7 +48,7 @@ public class Not<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, HashSet<Integer> states) {
 
 		// If I already visited avoid recomputing
 		if (formulaToState.containsKey(this))
@@ -55,12 +56,7 @@ public class Not<P, S> extends LTLFormula<P, S> {
 		
 		throw new UnsupportedOperationException("At this point the formula should be in negation normal form.");
 	}
-
-	@Override
-	protected boolean isFinalState() {
-		throw new UnsupportedOperationException("At this point the formula should be in negation normal form.");
-	}
-
+	
 	@Override
 	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba,
 			HashMap<String, LTLFormula<P, S>> posHash, HashMap<String, LTLFormula<P, S>> negHash) throws TimeoutException {
