@@ -57,7 +57,7 @@ public class Or<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -69,7 +69,7 @@ public class Or<P, S> extends LTLFormula<P, S> {
 		// Compute transitions for children
 		for (LTLFormula<P, S> phi : disjuncts) {
 			PositiveBooleanExpression conjInit = phi.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates,
-					ba);
+					ba, emptyId);
 			initialState = boolexpr.MkOr(initialState, conjInit);
 		}
 

@@ -49,21 +49,30 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
 		if (formulaToState.containsKey(this))
 			return formulaToState.get(this);
 
-		// Update hash tables
+		//True
+		LTLFormula<P, S> tr = new True<>();
+		int trueid = formulaToState.size();
+		PositiveBooleanExpression trueState = boolexpr.MkState(trueid);
+		if(formulaToState.containsKey(tr))
+			trueState = formulaToState.get(tr);
+		else{
+			formulaToState.put(tr, trueState);
+			finalStates.add(trueid);
+			// delta(True, true) = True
+			moves.add(new SAFAInputMove<>(trueid, trueState, ba.True()));			
+		}
+						
+		// Update hash tables	
 		int id = formulaToState.size();
 		PositiveBooleanExpression initialState = boolexpr.MkState(id);
 		formulaToState.put(this, initialState);
-
-		// Create true state
-		True<P, S> t = new True<>();
-		PositiveBooleanExpression trueState = t.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba);
 
 		// delta([p], p) = true
 		moves.add(new SAFAInputMove<>(id, trueState, predicate));
@@ -85,7 +94,7 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 		if (isPositive)
 			return this;
 		else
-			return new Predicate<>(ba.MkNot(this.predicate));
+			return new Or<>(new Predicate<>(ba.MkNot(this.predicate)), new EmptyString<>());
 	}
 
 	@Override

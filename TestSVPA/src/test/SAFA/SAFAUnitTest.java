@@ -156,7 +156,7 @@ public class SAFAUnitTest {
 		Collection<SAFAInputMove<P,S>> transitions = new LinkedList<>();
 		transitions.add(new SAFAInputMove<P,S>(0, boolexpr.True(), predicate));
 		transitions.add(new SAFAInputMove<P,S>(0, boolexpr.MkState(0), ba.MkNot(predicate)));
-		return SAFA.MkSAFA(transitions, initialState, finalStates, ba, false, false);
+		return SAFA.MkSAFA(transitions, initialState, finalStates, ba);
 	}
 
     @Test

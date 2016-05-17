@@ -29,22 +29,17 @@ public class BDDExpression extends BooleanExpression {
 		}
 		return states;
 	}
-
-	private static <R> R apply(LatticeMorphism<BooleanExpression, R> f, BDD bdd) throws TimeoutException {
-		Timers.assertFullTO();
+	
+	@Override
+	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) {
 		if (bdd.isOne()) {
 			return f.True();
 		} else if (bdd.isZero()) {
 			return f.False();
 		} else {
-			return f.MkOr(f.MkAnd(f.apply(bdd.var()), apply(f, bdd.high())),
-						apply(f, bdd.low()));
+			return f.MkOr(f.MkAnd(f.apply(bdd.var()), f.apply(new BDDExpression(bdd.high()))),
+						f.apply(new BDDExpression(bdd.low())));
 		}
-	}
-	
-	@Override
-	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) throws TimeoutException {
-		return apply(f, this.bdd);
 	}
 
 	@Override
@@ -76,4 +71,17 @@ public class BDDExpression extends BooleanExpression {
 		return bdd.nodeCount();
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof BDDExpression) {
+			return this.bdd.equals(((BDDExpression) o).bdd);
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return this.bdd.hashCode();
+	}
 }

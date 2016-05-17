@@ -38,7 +38,7 @@ public class PositiveOr extends PositiveBooleanExpression {
 	}
 
 	@Override
-	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) throws TimeoutException {
+	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) {
 		return f.MkOr(f.apply(left), f.apply(right));
 	}
 

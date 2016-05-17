@@ -21,9 +21,12 @@ public abstract class LTLFormula<P,S> {
 		
 		Collection<Integer> finalStates = new HashSet<>();
 		Collection<SAFAInputMove<P, S>> moves = new LinkedList<>();
-		PositiveBooleanExpression initialState = this.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
-		
-		return SAFA.MkSAFA(moves, initialState, finalStates, ba, false, true);
+		//This is the state for the empty string
+		int emptyId = this.getSize()*4;
+		finalStates.add(emptyId);
+		PositiveBooleanExpression initialState = this.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba, emptyId);
+
+		return SAFA.MkSAFA(moves, initialState, finalStates, ba);
 	}
 	
 	// Checks whether a formula should be a final state in the automaton
@@ -39,7 +42,7 @@ public abstract class LTLFormula<P,S> {
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToInitState,
 			Collection<SAFAInputMove<P, S>> moves,
 			Collection<Integer> finalStates,
-			BooleanAlgebra<P, S> ba);
+			BooleanAlgebra<P, S> ba, int emptyId);
 	
 //	public abstract SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba);
 	

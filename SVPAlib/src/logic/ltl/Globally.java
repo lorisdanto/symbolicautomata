@@ -49,7 +49,7 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 	@Override
 	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
 			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, int emptyId) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
@@ -58,18 +58,21 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 
 		// Compute transitions for children
 		PositiveBooleanExpression phiState = phi.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates,
-				ba);
+				ba, emptyId);
 
 		// Update hash tables
-		int id = formulaToState.size();
-		PositiveBooleanExpression initialState = boolexpr.MkAnd(boolexpr.MkState(id), phiState);
+		// New state for G X phi		
+		
+		int idGXphi = formulaToState.size();
+		PositiveBooleanExpression initialState = boolexpr.MkAnd(boolexpr.MkState(idGXphi), boolexpr.MkOr(phiState, boolexpr.MkState(emptyId)));
 		formulaToState.put(this, initialState);
+								
 
 		// delta(G phi, p) = phi /\ G phi
-		moves.add(new SAFAInputMove<P, S>(id, initialState, ba.True()));
+		moves.add(new SAFAInputMove<P, S>(idGXphi, initialState, ba.True()));
 
 		if (this.isFinalState())
-			finalStates.add(id);
+			finalStates.add(idGXphi);
 
 		return initialState;
 	}
@@ -108,29 +111,6 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 		phi.toString(sb);
 		sb.append(")");
 	}
-
-	// @Override
-	// public SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
-	// BooleanExpressionFactory<PositiveBooleanExpression> boolexpr =
-	// SAFA.getBooleanExpressionFactory();
-	//
-	// SAFA<P, S> phiSafa = phi.getSAFANew(ba);
-	// int formulaId = phiSafa.getMaxStateId() + 1;
-	//
-	// PositiveBooleanExpression initialState =
-	// boolexpr.MkAnd(boolexpr.MkState(formulaId), phiSafa.getInitialState());
-	// Collection<Integer> finalStates = new
-	// HashSet<>(phiSafa.getFinalStates());
-	// finalStates.add(formulaId);
-	//
-	// // Copy all transitions (with proper renaming for aut2)
-	// Collection<SAFAInputMove<P, S>> transitions = new
-	// ArrayList<SAFAInputMove<P, S>>(phiSafa.getInputMoves());
-	// transitions.add(new SAFAInputMove<>(formulaId, initialState, ba.True()));
-	//
-	// return SAFA.MkSAFA(transitions, initialState, finalStates, ba, false,
-	// true);
-	// }
 
 	@Override
 	public int getSize() {

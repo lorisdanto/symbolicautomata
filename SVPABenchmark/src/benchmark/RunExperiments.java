@@ -25,7 +25,7 @@ import utilities.Pair;
 import utilities.Timers;
 
 public class RunExperiments {
-	static long timeout = 5000;
+	static long timeout = 1000;
 
 	static int fromCounter = 0;
 	static String emptinessOutputFile = "results/emptiness";
@@ -76,8 +76,7 @@ public class RunExperiments {
 								Pair<BDDSolver, LTLFormula<BDD, BDD>> pair = LTLConverter.getLTLBDD(ltl);
 								BDDSolver bdds = pair.first;
 								LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
-								SAFA<BDD, BDD> safa = null;
-								safa = tot.getSAFA(bdds);
+								SAFA<BDD, BDD> safa = tot.getSAFA(bdds);
 
 								fw.append(pair.second.getSize() + ", ");
 
