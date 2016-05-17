@@ -424,7 +424,7 @@ public class SAFA<P, S> {
 		Timers.startFull();
 		Timers.setTimeout(timeout);
 
-		SAFARelation similar = new SATRelation();
+		SAFARelation similar = new BDDRelation(laut.maxStateId, raut.maxStateId);
 
 		PriorityQueue<Pair<Pair<E, E>, List<S>>> worklist = new PriorityQueue<>(new RelationComparator<>());
 
