@@ -273,10 +273,10 @@ public class LTLUnitTest {
 		assertFalse(models("", nextA));
 		assertFalse(models("a", nextA));
 		assertTrue(models("ba", nextA));
-		assertTrue(models("", globallyA));
+		assertFalse(models("", globallyA));
 		assertTrue(models("aaa", globallyA));
 		assertFalse(models("aaab", globallyA));
-		assertTrue(models("", globallyNextA));
+		assertFalse(models("", globallyNextA));
 		assertFalse(models("aaa", globallyNextA));
 		assertFalse(models("bb", finallyA));
 		assertTrue(models("bba", finallyA));
@@ -285,7 +285,7 @@ public class LTLUnitTest {
 		assertFalse(models("", aUntilB));
 		assertTrue(models("b", aUntilB));
 		assertTrue(models("b", notA));
-		assertTrue(models("", notA));
+		assertFalse(models("", notA));
 		assertFalse(models("ab", notA));
 		assertTrue(models("ba", notA));
 	}

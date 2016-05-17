@@ -45,12 +45,16 @@ public class True<P, S> extends LTLFormula<P, S> {
 		int id = formulaToState.size();
 		PositiveBooleanExpression initialState = boolexpr.MkState(id);
 		formulaToState.put(this, initialState);
+		
+		int id2 = formulaToState.size();
+		PositiveBooleanExpression toState = boolexpr.MkState(id2);
 
 		// delta(True, true) = True
-		moves.add(new SAFAInputMove<>(id, boolexpr.MkState(id), ba.True()));
+		moves.add(new SAFAInputMove<>(id, toState, ba.True()));
+		moves.add(new SAFAInputMove<>(id2, toState, ba.True()));
 
 		// True is a final state
-		finalStates.add(id);
+		finalStates.add(id2);
 
 		return initialState;
 	}

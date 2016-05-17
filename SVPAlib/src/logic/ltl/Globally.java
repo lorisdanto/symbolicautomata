@@ -64,12 +64,14 @@ public class Globally<P, S> extends LTLFormula<P, S> {
 		// New state for G X phi		
 		
 		int idGXphi = formulaToState.size();
-		PositiveBooleanExpression initialState = boolexpr.MkAnd(boolexpr.MkState(idGXphi), boolexpr.MkOr(phiState, boolexpr.MkState(emptyId)));
+		PositiveBooleanExpression initialState = boolexpr.MkAnd(boolexpr.MkState(idGXphi), phiState);		
 		formulaToState.put(this, initialState);
+		
+		PositiveBooleanExpression nextState = boolexpr.MkAnd(boolexpr.MkState(idGXphi), boolexpr.MkOr(phiState, boolexpr.MkState(emptyId)));
 								
 
 		// delta(G phi, p) = phi /\ G phi
-		moves.add(new SAFAInputMove<P, S>(idGXphi, initialState, ba.True()));
+		moves.add(new SAFAInputMove<P, S>(idGXphi, nextState, ba.True()));
 
 		if (this.isFinalState())
 			finalStates.add(idGXphi);

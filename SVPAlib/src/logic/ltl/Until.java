@@ -74,9 +74,6 @@ public class Until<P, S> extends LTLFormula<P, S> {
 
 		// delta(l U r, true) = (l /\ (l U r)) \/ r	
 		moves.add(new SAFAInputMove<P, S>(id, initialState, ba.True()));
-
-		if (this.isFinalState())
-			finalStates.add(id);
 		
 		return initialState;
 	}
