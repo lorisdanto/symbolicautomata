@@ -797,6 +797,22 @@ public class SAFA<P, S> {
 			return boolexpr.MkState(i);
 		}
 	}
+	
+	/**
+	 * Computes the complement of the automaton as a new SAFA. The input
+	 * automaton need not be normal.
+	 * @throws TimeoutException 
+	 */
+	public SAFA<P, S> getUnaryPathSAFA(BooleanAlgebra<P, S> ba) throws TimeoutException {
+		// DeMorganize all transitions
+
+		Collection<SAFAInputMove<P, S>> transitions = new ArrayList<SAFAInputMove<P, S>>();
+
+		for(SAFAInputMove<P, S> t: this.getInputMoves())
+			transitions.add(new SAFAInputMove<P,S>(t.from, t.to, ba.True()));
+		
+		return SAFA.MkSAFA(transitions, this.initialState, finalStates, ba, false, false, false);
+	}
 
 	/**
 	 * Computes the complement of the automaton as a new SAFA. The input

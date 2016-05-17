@@ -77,7 +77,8 @@ public class RunExperiments {
 								BDDSolver bdds = pair.first;
 								LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
 								SAFA<BDD, BDD> safa = tot.getSAFA(bdds);
-
+//								safa = safa.getUnaryPathSAFA(bdds);
+								
 								fw.append(pair.second.getSize() + ", ");
 
 								boolean result = true;
