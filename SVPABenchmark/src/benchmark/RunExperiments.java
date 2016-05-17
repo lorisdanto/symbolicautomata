@@ -25,7 +25,7 @@ import utilities.Pair;
 import utilities.Timers;
 
 public class RunExperiments {
-	static long timeout = 1000;
+	static long timeout = 5000;
 
 	static int fromCounter = 0;
 	static String emptinessOutputFile = "results/emptiness";
@@ -34,21 +34,20 @@ public class RunExperiments {
 	static String containedString = "";
 	static String notContainedString = "aposijfwo";
 	static boolean skipRev = false;
-	static boolean useBDDs = true;	
+	static boolean useBDDs = true;
 
 	public static void main(String[] args) throws InterruptedException {
-	
+
 		useBDDs = false;
 		skipRev = false;
 		RunLTLEmptiness();
-		RunLTLSelfEquiv();		
+		RunLTLSelfEquiv();
 		RunLTLEquivChangeState();
 
-		
 		skipRev = true;
 		useBDDs = true;
 		RunLTLEmptiness();
-		RunLTLSelfEquiv();		
+		RunLTLSelfEquiv();
 		RunLTLEquivChangeState();
 	}
 
@@ -73,12 +72,13 @@ public class RunExperiments {
 							fw.append(", ");
 
 							if (counter >= fromCounter) {
+								Timers.setTimeout(Long.MAX_VALUE);
 								Pair<BDDSolver, LTLFormula<BDD, BDD>> pair = LTLConverter.getLTLBDD(ltl);
 								BDDSolver bdds = pair.first;
 								LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
 								SAFA<BDD, BDD> safa = tot.getSAFA(bdds);
-								//safa = safa.getUnaryPathSAFA(bdds);
-								
+								// safa = safa.getUnaryPathSAFA(bdds);
+
 								fw.append(pair.second.getSize() + ", ");
 
 								boolean result = true;
@@ -104,6 +104,10 @@ public class RunExperiments {
 									to1 = true;
 									fw.append(timeout + ", " + timeout + ", " + timeout + ", ");
 									System.out.print(timeout + ", " + timeout + ", " + timeout + ", ");
+								}catch (NullPointerException np) {
+									to1 = true;
+									fw.append(timeout + ", " + timeout + ", " + timeout + ", ");
+									System.out.print(timeout + ", " + timeout + ", " + timeout + ", ");
 								}
 
 								if (!skipRev) {
@@ -116,6 +120,10 @@ public class RunExperiments {
 										fw.append(System.currentTimeMillis() - startTime2 + ", ");
 										System.out.print(System.currentTimeMillis() - startTime2 + ", ");
 									} catch (TimeoutException toe) {
+										fw.append(timeout + ", ");
+										System.out.print(timeout + ", ");
+										to2 = true;
+									}catch (NullPointerException np) {
 										fw.append(timeout + ", ");
 										System.out.print(timeout + ", ");
 										to2 = true;
@@ -171,6 +179,7 @@ public class RunExperiments {
 							fw.append(", ");
 
 							if (counter >= fromCounter) {
+								Timers.setTimeout(Long.MAX_VALUE);
 								Pair<BDDSolver, LTLFormula<BDD, BDD>> pair = LTLConverter.getLTLBDD(ltl);
 								BDDSolver bdds = pair.first;
 								LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
@@ -212,6 +221,10 @@ public class RunExperiments {
 									to1 = true;
 									fw.append(timeout + ", " + timeout + ", " + timeout + ", ");
 									System.out.print(timeout + ", " + timeout + ", " + timeout + ", ");
+								} catch (NullPointerException np) {
+									to1 = true;
+									fw.append(timeout + ", " + timeout + ", " + timeout + ", ");
+									System.out.print(timeout + ", " + timeout + ", " + timeout + ", ");
 								}
 
 								if (!skipRev) {
@@ -227,11 +240,14 @@ public class RunExperiments {
 										fw.append(timeout + ", ");
 										System.out.print(timeout + ", ");
 										to2 = true;
+									} catch (NullPointerException np) {
+										fw.append(timeout + ", ");
+										System.out.print(timeout + ", ");
+										to2 = true;
 									}
 
-									
 								}
-								
+
 								if (!(to1 && to2)) {
 									fw.append(result + "");
 									System.out.print(result);
@@ -279,6 +295,7 @@ public class RunExperiments {
 							fw.append(", ");
 
 							if (counter >= fromCounter) {
+								Timers.setTimeout(Long.MAX_VALUE);
 								Pair<BDDSolver, LTLFormula<BDD, BDD>> pair = LTLConverter.getLTLBDD(ltl);
 								BDDSolver bdds = pair.first;
 								LTLFormula<BDD, BDD> tot = pair.second.pushNegations(bdds);
@@ -310,6 +327,10 @@ public class RunExperiments {
 									to1 = true;
 									fw.append(timeout + ", " + timeout + ", " + timeout + ", ");
 									System.out.print(timeout + ", " + timeout + ", " + timeout + ", ");
+								}catch (NullPointerException np) {
+									to1 = true;
+									fw.append(timeout + ", " + timeout + ", " + timeout + ", ");
+									System.out.print(timeout + ", " + timeout + ", " + timeout + ", ");
 								}
 
 								if (!skipRev) {
@@ -321,6 +342,10 @@ public class RunExperiments {
 										if (!result)
 											throw new IllegalArgumentException("bug");
 									} catch (TimeoutException toe) {
+										fw.append(timeout + ", ");
+										System.out.print(timeout + ", ");
+										to2 = true;
+									} catch (NullPointerException np) {
 										fw.append(timeout + ", ");
 										System.out.print(timeout + ", ");
 										to2 = true;

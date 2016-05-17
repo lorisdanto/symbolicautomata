@@ -62,7 +62,7 @@ public class LTLUnitTest {
 	
 	@Test
 	public void unary() throws TimeoutException {
-		LTLFormula<CharPred, Character> GXt = new Globally<>(new Next<>(new True<>()));
+		LTLFormula<CharPred, Character> GXt = new Globally<CharPred, Character>(new Next<CharPred, Character>(new True<CharPred, Character>()));
 		SAFA<CharPred, Character> phi = GXt.getSAFA(ba);
 		
 		assertTrue(SAFA.isEmpty(phi, ba));

@@ -8,10 +8,11 @@ public class Timers {
 	}
 
 	private static long timeout = Long.MAX_VALUE;
-	private static long[] startTime;
-	private static long[] total;
-	private static boolean[] isRunning;
-
+	private static long[] startTime = new long[3];
+	private static long[] total = new long[3];
+	private static boolean[] isRunning = new boolean[3];
+	
+	
 	public static void setNumberOfTimers(int n) {
 		startTime = new long[n];
 		total = new long[n];
