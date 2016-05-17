@@ -94,7 +94,7 @@ public class Predicate<P, S> extends LTLFormula<P, S> {
 		if (isPositive)
 			return this;
 		else
-			return new Or<>(new Predicate<>(ba.MkNot(this.predicate)), new EmptyString<>());
+			return new Predicate<>(ba.MkNot(this.predicate));
 	}
 
 	@Override

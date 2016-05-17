@@ -109,26 +109,6 @@ public class Eventually<P, S> extends LTLFormula<P, S> {
 		sb.append(")");
 	}
 
-	// @Override
-	// public SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba) {
-	// BooleanExpressionFactory<PositiveBooleanExpression> boolexpr =
-	// SAFA.getBooleanExpressionFactory();
-	//
-	// SAFA<P,S> phiSafa = phi.getSAFANew(ba);
-	// int formulaId = phiSafa.getMaxStateId()+1;
-	//
-	// PositiveBooleanExpression initialState =
-	// boolexpr.MkOr(boolexpr.MkState(formulaId), phiSafa.getInitialState());
-	// Collection<Integer> finalStates = phiSafa.getFinalStates();
-	//
-	// // Copy all transitions (with proper renaming for aut2)
-	// Collection<SAFAInputMove<P, S>> transitions = new
-	// ArrayList<SAFAInputMove<P, S>>(phiSafa.getInputMoves());
-	// transitions.add(new SAFAInputMove<>(formulaId, initialState, ba.True()));
-	//
-	// return SAFA.MkSAFA(transitions, initialState, finalStates, ba, false,
-	// true);
-	// }
 
 	@Override
 	public int getSize() {
