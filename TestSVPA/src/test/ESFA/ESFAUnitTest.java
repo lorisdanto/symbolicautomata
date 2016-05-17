@@ -1,5 +1,4 @@
 package test.ESFA;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -10,14 +9,13 @@ import java.util.List;
 
 import org.junit.Test;
 
-import theory.CharPred;
-import theory.CharSolver;
-import theory.StdCharPred;
-import automata.sfa.SFA;
-import automata.sfa.SFAEpsilon;
-import automata.sfa.SFAInputMove;
-import automata.sfa.SFAMove;
-import automata.esfa.*;
+import automata.esfa.CartesianESFA;
+import automata.esfa.CartesianESFAInputMove;
+import automata.esfa.ESFAEpsilon;
+import automata.esfa.ESFAMove;
+import theory.characters.CharPred;
+import theory.characters.StdCharPred;
+import theory.intervals.UnaryCharIntervalSolver;
 
 public class ESFAUnitTest {
 
@@ -36,7 +34,7 @@ public class ESFAUnitTest {
 	}
 
 	
-	CharSolver ba = new CharSolver();
+	UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 	CharPred alpha = StdCharPred.LOWER_ALPHA;
 	CharPred allAlpha = StdCharPred.ALPHA;
 	CharPred a = new CharPred('a');
@@ -55,7 +53,7 @@ public class ESFAUnitTest {
 	List<Character> lab = lOfS("a"); // accepted only by both autA and autB
 	List<Character> lnot = lOfS("44"); // accepted only by neither autA nor autB
 
-	private CartesianESFA<CharPred, Character> getESFAa(CharSolver kba) {
+	private CartesianESFA<CharPred, Character> getESFAa(UnaryCharIntervalSolver kba) {
 		Collection<ESFAMove<CharPred, Character>> transitionsA = new LinkedList<ESFAMove<CharPred, Character>>();
 		transitionsA.add(new ESFAEpsilon<CharPred, Character>(1, 3));
 		List<CharPred> guard_1 = new ArrayList<CharPred>();

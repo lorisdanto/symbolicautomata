@@ -9,7 +9,7 @@ This allows you to represent large characters sets like UTF.
 For example a transition 0-[a-z]->1 represents a transition for going from state 0 to state 1 with every symbol in the interval [a-z].
 
 You can read more about symbolic automata here:
-*http://www.cis.upenn.edu/~lorisdan/symbolicautomata.html*
+*http://pages.cs.wisc.edu/~loris/symbolicautomata.html*
 
 The library
 ----------------
@@ -18,6 +18,15 @@ The library supports:
 - *Symbolic visibly pushdown automata* and all their algorithms
 - *Symbolic streaming string transducers*
 - The character theory of intervals
+
+Before installing
+----------------
+If you want to run the benchmarks from 
+*https://github.com/lorisdanto/automatark*
+you will need to run 
+"git submodule init"
+and then
+"git submodule update"
 
 Instructions with Eclipse
 ----------------

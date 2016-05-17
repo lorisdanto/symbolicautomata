@@ -11,13 +11,15 @@ import java.util.List;
 
 import org.junit.Test;
 
-import theory.CharPred;
-import theory.CharSolver;
-import theory.StdCharPred;
 import automata.sfa.SFA;
 import automata.sfa.SFAEpsilon;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
+import theory.characters.CharPred;
+import theory.characters.CharPred;
+import theory.characters.StdCharPred;
+import theory.intervals.UnaryCharIntervalSolver;
+import theory.intervals.UnaryCharIntervalSolver;
 
 public class SFAUnitTest {
 
@@ -25,35 +27,25 @@ public class SFAUnitTest {
 	public void testCharTheory() {
 
 		LinkedList<SFAMove<CharPred, Character>> transitionsRex = new LinkedList<SFAMove<CharPred, Character>>();
-		transitionsRex.add(new SFAInputMove<CharPred, Character>(0, 2,
-				new CharPred('0', '8')));
-		transitionsRex.add(new SFAInputMove<CharPred, Character>(0, 1,
-				new CharPred('b')));
-		transitionsRex.add(new SFAInputMove<CharPred, Character>(2, 1,
-				new CharPred('b')));
-		transitionsRex.add(new SFAInputMove<CharPred, Character>(2, 2,
-				new CharPred('0', '8')));
+		transitionsRex.add(new SFAInputMove<CharPred, Character>(0, 2, new CharPred('0', '8')));
+		transitionsRex.add(new SFAInputMove<CharPred, Character>(0, 1, new CharPred('b')));
+		transitionsRex.add(new SFAInputMove<CharPred, Character>(2, 1, new CharPred('b')));
+		transitionsRex.add(new SFAInputMove<CharPred, Character>(2, 2, new CharPred('0', '8')));
 
 		LinkedList<Integer> finStates = new LinkedList<>();
 		finStates.add(1);
 
 		LinkedList<SFAMove<CharPred, Character>> transitionsLeft = new LinkedList<SFAMove<CharPred, Character>>();
-		transitionsLeft.add(new SFAInputMove<CharPred, Character>(0, 1,
-				new CharPred('0', '9')));
-		transitionsLeft.add(new SFAInputMove<CharPred, Character>(0, 2,
-				new CharPred('b')));
-		transitionsLeft.add(new SFAInputMove<CharPred, Character>(1, 2,
-				new CharPred('b')));
-		transitionsLeft.add(new SFAInputMove<CharPred, Character>(1, 1,
-				new CharPred('0', '9')));
+		transitionsLeft.add(new SFAInputMove<CharPred, Character>(0, 1, new CharPred('0', '9')));
+		transitionsLeft.add(new SFAInputMove<CharPred, Character>(0, 2, new CharPred('b')));
+		transitionsLeft.add(new SFAInputMove<CharPred, Character>(1, 2, new CharPred('b')));
+		transitionsLeft.add(new SFAInputMove<CharPred, Character>(1, 1, new CharPred('0', '9')));
 
 		LinkedList<Integer> finStates2 = new LinkedList<>();
 		finStates2.add(1);
 		for (int i = 0; i < 100; i++) {
-			SFA<CharPred, Character> rex = SFA.MkSFA(transitionsRex, 0,
-					finStates, ba);
-			SFA<CharPred, Character> left = SFA.MkSFA(transitionsLeft, 0,
-					finStates2, ba);
+			SFA<CharPred, Character> rex = SFA.MkSFA(transitionsRex, 0, finStates, ba);
+			SFA<CharPred, Character> left = SFA.MkSFA(transitionsLeft, 0, finStates2, ba);
 
 			SFA<CharPred, Character> min = left.minus(rex, ba);
 			if (min.isEmpty())
@@ -225,6 +217,29 @@ public class SFAUnitTest {
 	}
 
 	@Test
+	public void testEquivalenceHK() {
+		SFA<CharPred, Character> cA = autA.complement(ba);
+		SFA<CharPred, Character> cUcA = autA.unionWith(cA, ba);
+		SFA<CharPred, Character> ccA = cA.complement(ba);
+		SFA<CharPred, Character> cB = autB.complement(ba);
+		SFA<CharPred, Character> cUcB = autB.unionWith(cB, ba);
+		SFA<CharPred, Character> ccB = cB.complement(ba);
+
+		assertFalse(autA.isHopcroftKarpEquivalentTo(autB, ba).first);
+
+		assertTrue(autA.isHopcroftKarpEquivalentTo(ccA, ba).first);
+
+		boolean res = autB.isHopcroftKarpEquivalentTo(ccB, ba).first;
+
+		assertTrue(res);
+
+		assertTrue(cUcA.isHopcroftKarpEquivalentTo(SFA.getFullSFA(ba), ba).first);
+
+		assertTrue(cUcB.isHopcroftKarpEquivalentTo(SFA.getFullSFA(ba), ba).first);
+		assertTrue(cUcB.isHopcroftKarpEquivalentTo(cUcA, ba).first);
+	}
+
+	@Test
 	public void testUnion() {
 		SFA<CharPred, Character> union = autA.unionWith(autB, ba);
 
@@ -263,24 +278,23 @@ public class SFAUnitTest {
 		assertFalse(difference.accepts(lab, ba));
 		assertFalse(difference.accepts(lnot, ba));
 	}
-	
+
 	@Test
-	public void testMinus(){
+	public void testMinus() {
 		SFA<CharPred, Character> justA = justAlpha(ba);
-		SFA<CharPred, Character> plus = justA.concatenateWith(SFA.star(justA, ba),ba);
+		SFA<CharPred, Character> plus = justA.concatenateWith(SFA.star(justA, ba), ba);
 
+		SFA<CharPred, Character> sfaAMPlus = justA.minus(plus, ba);
+		assertTrue(sfaAMPlus.isEmpty());
 
-        SFA<CharPred, Character> sfaAMPlus = justA.minus(plus, ba);
-        assertTrue(sfaAMPlus.isEmpty());
-
-        SFA<CharPred, Character> sfaPlusMA = plus.minus(justA, ba);
-        assertFalse(sfaPlusMA.isEmpty());
+		SFA<CharPred, Character> sfaPlusMA = plus.minus(justA, ba);
+		assertFalse(sfaPlusMA.isEmpty());
 	}
 
 	// ---------------------------------------
 	// Predicates
 	// ---------------------------------------
-	CharSolver ba = new CharSolver();
+	UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 	CharPred alpha = StdCharPred.LOWER_ALPHA;
 	CharPred allAlpha = StdCharPred.ALPHA;
 	CharPred a = new CharPred('a');
@@ -298,15 +312,15 @@ public class SFAUnitTest {
 	List<Character> lnot = lOfS("44"); // accepted only by neither autA nor autB
 
 	// [a-z]+ ambiguous
-		private SFA<CharPred, Character> justAlpha(CharSolver ba) {
+	private SFA<CharPred, Character> justAlpha(UnaryCharIntervalSolver ba) {
 
-			Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();		
-			transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));		
-			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
-		}
-	
+		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
+		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));
+		return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
+	}
+
 	// [a-z]+ ambiguous
-	private SFA<CharPred, Character> getAmbSFA(CharSolver ba) {
+	private SFA<CharPred, Character> getAmbSFA(UnaryCharIntervalSolver ba) {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 0, alpha));
@@ -316,7 +330,7 @@ public class SFAUnitTest {
 	}
 
 	// [a-z]+ unambiguos
-	private SFA<CharPred, Character> getUnambSFA(CharSolver ba) {
+	private SFA<CharPred, Character> getUnambSFA(UnaryCharIntervalSolver ba) {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 0, alpha));
@@ -325,7 +339,7 @@ public class SFAUnitTest {
 	}
 
 	// [a-z]* with epsilon transition
-	private SFA<CharPred, Character> getSFAa(CharSolver ba) {
+	private SFA<CharPred, Character> getSFAa(UnaryCharIntervalSolver ba) {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
 		transitionsA.add(new SFAEpsilon<CharPred, Character>(0, 1));
@@ -334,7 +348,7 @@ public class SFAUnitTest {
 	}
 
 	// [a-z]+
-	private SFA<CharPred, Character> getSFAtoMin2(CharSolver ba) {
+	private SFA<CharPred, Character> getSFAtoMin2(UnaryCharIntervalSolver ba) {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
 
@@ -345,7 +359,7 @@ public class SFAUnitTest {
 	}
 
 	// [a-z]*
-	private SFA<CharPred, Character> getSFAc(CharSolver ba) {
+	private SFA<CharPred, Character> getSFAc(UnaryCharIntervalSolver ba) {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 0, alpha));
@@ -353,7 +367,7 @@ public class SFAUnitTest {
 	}
 
 	// [a-z][0-9]*
-	private SFA<CharPred, Character> getSFAb(CharSolver ba) {
+	private SFA<CharPred, Character> getSFAb(UnaryCharIntervalSolver ba) {
 
 		Collection<SFAMove<CharPred, Character>> transitionsB = new LinkedList<SFAMove<CharPred, Character>>();
 		transitionsB.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));

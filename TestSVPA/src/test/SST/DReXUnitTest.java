@@ -18,11 +18,15 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import theory.CharConstant;
-import theory.CharFunc;
-import theory.CharOffset;
-import theory.CharPred;
-import theory.CharSolver;
+import automata.sfa.SFA;
+import automata.sfa.SFAInputMove;
+import automata.sfa.SFAMove;
+import theory.characters.CharFunc;
+import theory.characters.CharOffset;
+import theory.characters.CharPred;
+import theory.characters.CharPred;
+import theory.intervals.UnaryCharIntervalSolver;
+import theory.intervals.UnaryCharIntervalSolver;
 import transducers.sst.CharFunction;
 import transducers.sst.ConstantToken;
 import transducers.sst.FunctionalVariableUpdate;
@@ -33,9 +37,6 @@ import transducers.sst.SSTMove;
 import transducers.sst.SSTVariable;
 import transducers.sst.SimpleVariableUpdate;
 import transducers.sst.Token;
-import automata.sfa.SFA;
-import automata.sfa.SFAInputMove;
-import automata.sfa.SFAMove;
 
 /**
  * DReXUnitTest
@@ -44,7 +45,7 @@ public class DReXUnitTest {
 
 	@Test
 	public void testPrePost() {
-		CharSolver ba = new CharSolver();
+		UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sstID = getID(ba).star(ba);
 
 		
@@ -104,7 +105,7 @@ public class DReXUnitTest {
 	
 	@Test
 	public void testPrePostArjunEmail() {
-		CharSolver ba = new CharSolver();
+		UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sst = getSTTArjun(ba);
 
 		
@@ -118,7 +119,7 @@ public class DReXUnitTest {
 	}
 
 	// S: F(0) = a
-	private SST<CharPred, CharFunc, Character> getID(CharSolver ba) {
+	private SST<CharPred, CharFunc, Character> getID(UnaryCharIntervalSolver ba) {
 
 		List<Token<CharPred, CharFunc, Character>> output = new ArrayList<Token<CharPred, CharFunc, Character>>();
 		output.add(new CharFunction<CharPred, CharFunc, Character>(CharOffset.IDENTITY));
@@ -144,7 +145,7 @@ public class DReXUnitTest {
 
 	
 	// Identity transducer
-	private SST<CharPred, CharFunc, Character> getSTTArjun(CharSolver ba) {
+	private SST<CharPred, CharFunc, Character> getSTTArjun(UnaryCharIntervalSolver ba) {
 
 		SST<CharPred, CharFunc, Character> symbol9xm9 = SST.getBaseSST(new CharPred('9'), justXp(-9), ba);
 		SST<CharPred, CharFunc, Character> epsilon1 = SST.getEpsilonSST(consttokclist('1'), ba);
@@ -166,7 +167,7 @@ public class DReXUnitTest {
 	}
 	
 	// Identity transducer
-	private SST<CharPred, CharFunc, Character> getIDSTT(CharSolver ba) {
+	private SST<CharPred, CharFunc, Character> getIDSTT(UnaryCharIntervalSolver ba) {
 
 		Collection<SSTMove<CharPred, CharFunc, Character>> transitionsA = new ArrayList<SSTMove<CharPred, CharFunc, Character>>();
 
@@ -181,7 +182,7 @@ public class DReXUnitTest {
 	}
 
 	// SFA that accepts strings contatining at least two as
-	private SFA<CharPred, Character> alphaNumSFA(CharSolver ba) {
+	private SFA<CharPred, Character> alphaNumSFA(UnaryCharIntervalSolver ba) {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new ArrayList<SFAMove<CharPred, Character>>();
 		CharPred alphaNum = ba.MkOr(alpha, num);
@@ -194,7 +195,7 @@ public class DReXUnitTest {
 	}
 
 	// SFA that accepts strings contatining at least two as
-	private SFA<CharPred, Character> arjunOutputSFA(CharSolver ba) {
+	private SFA<CharPred, Character> arjunOutputSFA(UnaryCharIntervalSolver ba) {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new ArrayList<SFAMove<CharPred, Character>>();
 		CharPred num09 = ba.MkOr(num0, num);
