@@ -101,6 +101,8 @@ public class Until<P, S> extends LTLFormula<P, S> {
 		} else {
 			if (negHash.containsKey(key))
 				return negHash.get(key);
+			
+			// not (A U B) == (not B) W (not A /\ not B) 
 			LTLFormula<P, S> rightNeg = right.pushNegations(isPositive, ba, posHash, negHash);
 			out = new WeakUntil<>(rightNeg, new And<>(left.pushNegations(isPositive, ba, posHash, negHash), rightNeg));
 			negHash.put(key, out);

@@ -96,7 +96,7 @@ public class Next<P, S> extends LTLFormula<P, S> {
 		} else {
 			if (negHash.containsKey(key))
 				return negHash.get(key);
-			out = new Next<>(phi.pushNegations(isPositive, ba, posHash, negHash));
+			out = new Or<>(new Next<>(phi.pushNegations(isPositive, ba, posHash, negHash)), new Last<>());
 			negHash.put(key, out);
 			return out;
 		}
