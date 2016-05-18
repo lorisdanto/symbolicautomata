@@ -21,8 +21,7 @@ public class TestConverter {
 	public static void Run() {
 		try {
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
-				if (Files.isRegularFile(filePath) && filePath.toString().contains(containedString)
-						&& !filePath.toString().contains(notContainedString)) {
+				if (Files.isRegularFile(filePath) && filePath.toString().endsWith(".ltl")) {
 					try {
 						List<LTLNode> nodes = LTLParserProvider.parse(new FileReader(filePath.toFile()));
 						System.out.println(filePath);
