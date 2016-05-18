@@ -235,7 +235,7 @@ public class LTLConverter {
 		// gets string
 		StringBuilder sb = new StringBuilder();
 		// Preamble
-		sb.append("WS1S; \n");
+		sb.append("ws1s;\n\n");
 		// add all declarations of propositions
 		// e.g. var2 A1;
 		for (String atom : atoms) {
@@ -315,7 +315,7 @@ public class LTLConverter {
 			// find which proposition it represents, then print it
 			// e.g. p1; (declared in preamble)
 			IdNode cphi = (IdNode) phi;
-			sb.append("(" +oldVar + " in A"+ atomToInt.get(cphi.getName())+")");
+			sb.append(" " +oldVar + " in A"+ atomToInt.get(cphi.getName())+" ");
 		} else if (phi instanceof ImplicationNode) {
 			// toMona(left) => toMona(right)
 			ImplicationNode cphi = (ImplicationNode) phi;
