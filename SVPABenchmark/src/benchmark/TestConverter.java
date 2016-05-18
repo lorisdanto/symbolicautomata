@@ -20,7 +20,7 @@ public class TestConverter {
 
 	public static void Run() {
 		try {
-			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
+			Files.walk(Paths.get("../automatark/LTL/testMona")).forEach(filePath -> {
 				if (Files.isRegularFile(filePath) && filePath.toString().contains(containedString)
 						&& !filePath.toString().contains(notContainedString)) {
 					try {
