@@ -354,7 +354,7 @@ public class LTLConverter {
 			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & ~");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, varcount, varcount + 1);
 			sb.append(" & ");
-			sb.append("all1 " + newVar2 + ": " + oldVar + "<=" + newVar2 +" & "+ newVar2+"<="+ newVar1 + "=> ~");
+			sb.append("all1 " + newVar2 + ": " + oldVar + "<=" + newVar2 +" & "+ newVar2+"<"+ newVar1 + "=> ~");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 2);
 
 			sb.append("))");
@@ -374,7 +374,7 @@ public class LTLConverter {
 			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & ");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, varcount, varcount + 1);
 			sb.append(" & ");
-			sb.append("all1 " + newVar2 + ": " + oldVar + "<=" + newVar2 +" & "+ newVar2 + "<="+ newVar1 + "=>");
+			sb.append("all1 " + newVar2 + ": " + oldVar + "<=" + newVar2 +" & "+ newVar2 + "<"+ newVar1 + "=>");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 2);
 
 			sb.append(")");
@@ -387,7 +387,7 @@ public class LTLConverter {
 			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & ");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, varcount, varcount + 1);
 			sb.append(" & ");
-			sb.append("all1 " + newVar2 + ": " + oldVar + "<=" + newVar2 +" & "+ newVar2 + "<="+ newVar1 + "=>");
+			sb.append("all1 " + newVar2 + ": " + oldVar + "<=" + newVar2 +" & "+ newVar2 + "<"+ newVar1 + "=>");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 2);
 			sb.append(" | ");
 			sb.append("all1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +"  => ");
