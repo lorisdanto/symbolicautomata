@@ -30,7 +30,7 @@ public class TestConverter {
 							LTLConverter.toMona(ltl, filePath.toString());
 							LTLConverter.formulaCounter++;
 						}
-						LTLConverter.formulaCounter=1;
+						LTLConverter.formulaCounter=0;
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();

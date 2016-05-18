@@ -46,7 +46,7 @@ import theory.bddalgebra.BDDSolver;
 import utilities.Pair;
 
 public class LTLConverter {
-	public static int formulaCounter=1;
+	public static int formulaCounter=0;
 	
 	public static Pair<BDDSolver, LTLFormula<BDD, BDD>> getLTLBDD(FormulaNode phi) {
 		Set<String> atoms = phi.returnLeafNodes();
@@ -235,15 +235,13 @@ public class LTLConverter {
 		// gets string
 		StringBuilder sb = new StringBuilder();
 		// Preamble
-		sb.append("ws1s;\n\n");
+		sb.append("m2l-str;\n\n");
 		// add all declarations of propositions
 		// e.g. var2 A1;
 		for (String atom : atoms) {
 			sb.append("var2 A" + atomToInt.get(atom) + ";\n");
 		}
 		// add all predicates
-		sb.append("var2 $;\n");
-		sb.append("allpos $;\n");
 		sb.append("var1 start;\n");
 		sb.append("all1 x: x>=start;\n");
 		
@@ -280,7 +278,7 @@ public class LTLConverter {
 		if (phi instanceof AlwaysNode) {
 			// all y, x<=y<=last -> toMona(child, y)
 			AlwaysNode cphi = (AlwaysNode) phi;
-			sb.append("all1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & "+ newVar1+ "<=max($) => ");
+			sb.append("all1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" => ");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 1);
 
 		} else if (phi instanceof AndNode) {
@@ -304,7 +302,7 @@ public class LTLConverter {
 		} else if (phi instanceof EventuallyNode) {
 			// exists y, x<=y<=last && toMona(child, y)
 			EventuallyNode cphi = (EventuallyNode) phi;
-			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & "+ newVar1+ "<=max($) & ");
+			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & ");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 1);
 
 		} else if (phi instanceof FalseNode) {
@@ -353,7 +351,7 @@ public class LTLConverter {
 			ReleaseNode cphi = (ReleaseNode) phi;
 			sb.append("(~(");
 
-			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & "+ newVar1+ "<=max($) & ~");
+			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & ~");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, varcount, varcount + 1);
 			sb.append(" & ");
 			sb.append("all1 " + newVar2 + ": " + oldVar + "<=" + newVar2 +" & "+ newVar2+"<="+ newVar1 + "=> ~");
@@ -373,7 +371,7 @@ public class LTLConverter {
 			UntilNode cphi = (UntilNode) phi;
 			sb.append("(");
 
-			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & "+ newVar1+ "<=max($) & ");
+			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & ");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, varcount, varcount + 1);
 			sb.append(" & ");
 			sb.append("all1 " + newVar2 + ": " + oldVar + "<=" + newVar2 +" & "+ newVar2 + "<="+ newVar1 + "=>");
@@ -386,13 +384,13 @@ public class LTLConverter {
 			WeakUntilNode cphi = (WeakUntilNode) phi;
 			sb.append("(");
 
-			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & "+ newVar1+ "<=max($) & ");
+			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & ");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, varcount, varcount + 1);
 			sb.append(" & ");
 			sb.append("all1 " + newVar2 + ": " + oldVar + "<=" + newVar2 +" & "+ newVar2 + "<="+ newVar1 + "=>");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 2);
 			sb.append(" | ");
-			sb.append("all1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & "+ newVar1 + "<=max($) => ");
+			sb.append("all1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +"  => ");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 1);
 
 			sb.append(" ) ");
