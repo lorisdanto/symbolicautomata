@@ -46,7 +46,7 @@ import theory.bddalgebra.BDDSolver;
 import utilities.Pair;
 
 public class LTLConverter {
-	public static int formulaCounter;
+	public static int formulaCounter=1;
 	
 	public static Pair<BDDSolver, LTLFormula<BDD, BDD>> getLTLBDD(FormulaNode phi) {
 		Set<String> atoms = phi.returnLeafNodes();
@@ -257,7 +257,7 @@ public class LTLConverter {
 		// dumps in file
 		Path p = Paths.get(fileName);
 		String file = p.getFileName().toString();
-		BufferedWriter bwr = new BufferedWriter(new FileWriter(new File("./MonaFiles"+file +formulaCounter+ ".mona")));
+		BufferedWriter bwr = new BufferedWriter(new FileWriter(new File("./MonaFiles/"+file +formulaCounter+ ".mona")));
 		
 		// write contents of StringBuffer to a file
 		bwr.write(sb.toString());
@@ -287,9 +287,11 @@ public class LTLConverter {
 		} else if (phi instanceof AndNode) {
 			// toMona(left) && toMona(right)
 			AndNode cphi = (AndNode) phi;
+			sb.append("(");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 1);
 			sb.append(" & ");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, varcount, varcount + 1);
+			sb.append(")");
 
 		} else if (phi instanceof EquivalenceNode) {
 			// toMona(left) <=> toMona(right)
@@ -326,7 +328,7 @@ public class LTLConverter {
 		} else if (phi instanceof NegationNode) {
 			// toMona(~child)= ~toMona(child)
 			NegationNode cphi = (NegationNode) phi;
-			sb.append("(~");
+			sb.append("~(");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 1);
 			sb.append(")");
 
@@ -334,7 +336,7 @@ public class LTLConverter {
 			// exists y, y=x+1 && toMona(child, y)
 			NextNode cphi = (NextNode) phi;
 			sb.append("(");
-			sb.append("(ex1 " + newVar1 + ": " + newVar1 + " = " + oldVar + "+1 " + ") &");
+			sb.append("(ex1 " + newVar1 + ": " + newVar1 + " = " + oldVar + "+1 " + ") & ");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 1);
 			sb.append(")");
 
