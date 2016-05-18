@@ -133,7 +133,11 @@ public class JFactory extends BDDFactory {
          * @see net.sf.javabdd.BDD#not()
          */
         public BDD not() {
-            return makeBDD(bdd_not(_index));
+            try {
+				return makeBDD(bdd_not(_index));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -143,7 +147,11 @@ public class JFactory extends BDDFactory {
             int x = _index;
             int y = ((bdd) thenBDD)._index;
             int z = ((bdd) elseBDD)._index;
-            return makeBDD(bdd_ite(x, y, z));
+            try {
+				return makeBDD(bdd_ite(x, y, z));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -166,7 +174,11 @@ public class JFactory extends BDDFactory {
         public BDD compose(BDD g, int var) {
             int x = _index;
             int y = ((bdd) g)._index;
-            return makeBDD(bdd_compose(x, y, var));
+            try {
+				return makeBDD(bdd_compose(x, y, var));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -174,7 +186,11 @@ public class JFactory extends BDDFactory {
          */
         public BDD veccompose(BDDPairing pair) {
             int x = _index;
-            return makeBDD(bdd_veccompose(x, ((bddPair) pair)));
+            try {
+				return makeBDD(bdd_veccompose(x, ((bddPair) pair)));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -933,7 +949,7 @@ public class JFactory extends BDDFactory {
     static final int bddop_not = 10;
     static final int bddop_simplify = 11;
 
-    int bdd_not(int r) {
+    int bdd_not(int r) throws TimeoutException {
         int res;
         firstReorder = 1;
         CHECKa(r, bddfalse);
@@ -962,7 +978,10 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int not_rec(int r) {
+    int not_rec(int r) throws TimeoutException {
+    	 if(Timers.fullTO())
+         	throw new TimeoutException("timeout");
+    	
         BddCacheDataI entry;
         int res;
 
@@ -993,7 +1012,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int bdd_ite(int f, int g, int h) {
+    int bdd_ite(int f, int g, int h) throws TimeoutException {
         int res;
         firstReorder = 1;
 
@@ -1028,7 +1047,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int ite_rec(int f, int g, int h) {
+    int ite_rec(int f, int g, int h) throws TimeoutException {
         BddCacheDataI entry;
         int res;
 
@@ -1942,7 +1961,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int bdd_compose(int f, int g, int var) {
+    int bdd_compose(int f, int g, int var) throws TimeoutException {
         int res;
         firstReorder = 1;
 
@@ -1982,7 +2001,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int compose_rec(int f, int g) {
+    int compose_rec(int f, int g) throws TimeoutException {
         BddCacheDataI entry;
         int res;
 
@@ -2026,7 +2045,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int bdd_veccompose(int f, bddPair pair) {
+    int bdd_veccompose(int f, bddPair pair) throws TimeoutException {
         int res;
         firstReorder = 1;
 
@@ -2063,7 +2082,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int veccompose_rec(int f) {
+    int veccompose_rec(int f) throws TimeoutException {
         BddCacheDataI entry;
         int res;
 
@@ -4810,7 +4829,12 @@ public class JFactory extends BDDFactory {
      * @see net.sf.javabdd.BDDFactory#load(java.io.BufferedReader)
      */
     public BDD load(BufferedReader in) throws IOException {
-        int result = bdd_load(in);
+        int result;
+		try {
+			result = bdd_load(in);
+		} catch (TimeoutException e) {
+			return null;
+		}
         return makeBDD(result);
     }
 
@@ -5987,7 +6011,7 @@ public class JFactory extends BDDFactory {
     int[] loadvar2level;
     LoadHash[] lh_table;
 
-    int bdd_load(BufferedReader ifile) throws IOException {
+    int bdd_load(BufferedReader ifile) throws IOException, TimeoutException {
         int n, vnum, tmproot;
         int root;
 
@@ -6040,7 +6064,7 @@ public class JFactory extends BDDFactory {
         int next;
     }
 
-    int bdd_loaddata(BufferedReader ifile) throws IOException {
+    int bdd_loaddata(BufferedReader ifile) throws IOException, TimeoutException {
         int key, var, low, high, root = 0, n;
 
         for (n = 0; n < lh_nodenum; n++) {
