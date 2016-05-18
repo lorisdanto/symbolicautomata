@@ -28,7 +28,9 @@ public class TestConverter {
 						System.out.println(filePath);
 						for (LTLNode ltl : nodes) {
 							LTLConverter.toMona(ltl, filePath.toString());
+							LTLConverter.formulaCounter++;
 						}
+						LTLConverter.formulaCounter=1;
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
