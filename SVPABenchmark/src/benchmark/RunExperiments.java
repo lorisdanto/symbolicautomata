@@ -40,7 +40,7 @@ public class RunExperiments {
 
 		useBDDs = false;
 		skipRev = false;
-//		RunLTLEmptiness();
+		RunLTLEmptiness();
 		RunLTLSelfEquiv();
 		RunLTLEquivChangeState();
 
