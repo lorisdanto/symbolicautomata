@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.hamcrest.core.IsEqual;
+
 import theory.BooleanAlgebra;
 import utilities.BitVecUtil;
 import utilities.Pair;
@@ -1090,6 +1092,7 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 					clean.addTransition((SVPAMove<A, B>) t.clone(), ba, true);
 		
 		clean.stateCount = clean.states.size();
+		clean.isEmpty = clean.finalStates.isEmpty();
 		return clean;
 	}
 
