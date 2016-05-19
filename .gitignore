@@ -59,3 +59,4 @@ BooleanAlgebras/.settings/org.eclipse.core.resources.prefs
 TestSVPA/.settings/org.eclipse.core.resources.prefs
 BooleanAlgebras/.settings/org.eclipse.jdt.core.prefs
 TestSVPA/.settings/org.eclipse.jdt.core.prefs
+*.mona

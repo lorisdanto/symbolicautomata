@@ -242,8 +242,7 @@ public class LTLConverter {
 			sb.append("var2 A" + atomToInt.get(atom) + ";\n");
 		}
 		// add all predicates
-		sb.append("var1 start;\n");
-		sb.append("all1 x: x>=start;\n");
+		sb.append("all1 x: x>=0 &");
 
 		// calls below
 		toMona(phi, atomToInt, sb, 0, 1);
@@ -348,14 +347,12 @@ public class LTLConverter {
 			// toMona(left, z)
 			ReleaseNode cphi = (ReleaseNode) phi;
 			sb.append("(");
-
 			sb.append("(ex1 " + newVar1 + ": (" + oldVar + "<=" + newVar1 + " & ");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, varcount, varcount + 1);
-			sb.append(")) & ");
+			sb.append(" & ");
 			sb.append("(all1 " + newVar2 + ": (" + oldVar + "<=" + newVar2 + " & " + newVar2 + "<=" + newVar1 + " =>");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 2);
-
-			sb.append(")))");
+			sb.append(")))))");
 
 		} else if (phi instanceof StrongReleaseNode) {
 			// not yet implemented
@@ -368,26 +365,25 @@ public class LTLConverter {
 			// toMona(left, z)
 			UntilNode cphi = (UntilNode) phi;
 			sb.append("(");
-
 			sb.append("(ex1 " + newVar1 + ": (" + oldVar + "<=" + newVar1 + " & ");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, varcount, varcount + 1);
-			sb.append(")) & ");
+			sb.append(" & ");
 			sb.append("(all1 " + newVar2 + ": (" + oldVar + "<=" + newVar2 + " & " + newVar2 + "<" + newVar1 + " =>");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 2);
-
-			sb.append(")))");
+			sb.append(")))))");
 
 		} else if (phi instanceof WeakUntilNode) {
 			// a0 W a1 = a0 U a1 || G(a0)
 			WeakUntilNode cphi = (WeakUntilNode) phi;
 			sb.append("(");
 
+			sb.append("(");
 			sb.append("(ex1 " + newVar1 + ": (" + oldVar + "<=" + newVar1 + " & ");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, varcount, varcount + 1);
-			sb.append(")) & ");
+			sb.append(" & ");
 			sb.append("(all1 " + newVar2 + ": (" + oldVar + "<=" + newVar2 + " & " + newVar2 + "<" + newVar1 + " =>");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 2);
-			sb.append("))");
+			sb.append(")))))");			
 			sb.append(" | ");
 			sb.append("(all1 " + newVar1 + ": (" + oldVar + "<=" + newVar1 + "  => ");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 1);
@@ -397,16 +393,13 @@ public class LTLConverter {
 
 		} else if (phi instanceof XorNode) {
 			// ( ((x) & ~(y)) | (~(x) & (y)) )
+			
 			XorNode cphi = (XorNode) phi;
-			sb.append("( ((");
-			toMona(cphi.getMyLTL1(), atomToInt, sb, var, varcount);
-			sb.append(") & ~(");
-			toMona(cphi.getMyLTL2(), atomToInt, sb, var, varcount);
-			sb.append(")) | (~(");
-			toMona(cphi.getMyLTL1(), atomToInt, sb, var, varcount);
-			sb.append(") & (");
-			toMona(cphi.getMyLTL2(), atomToInt, sb, var, varcount);
-			sb.append(")) )");
+			
+			OrNode xor = new OrNode(new AndNode(cphi.getMyLTL1(), new NegationNode(cphi.getMyLTL2())), 
+					new AndNode(new NegationNode(cphi.getMyLTL1()), cphi.getMyLTL2()));
+						
+			toMona(xor, atomToInt, sb, var, varcount);
 		} else {
 			System.err.println("Wrong instance of phi, program will quit");
 			System.exit(-1);
