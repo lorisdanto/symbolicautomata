@@ -279,8 +279,9 @@ public abstract class VPAutomaton<P, S> {
 		return s;
 	}
 
-	/** 
+	/**
 	 * Generate a string in the language, null if language is empty
+	 * 
 	 * @param ba
 	 * @return
 	 */
@@ -321,7 +322,7 @@ public abstract class VPAutomaton<P, S> {
 				wmReachRel[id1][stateToId.get(t.to)] = true;
 				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
 				witnesses.put(new Pair<Integer, Integer>(t.from, t.to), witness);
-				
+
 				if (getInitialStates().contains(t.from) && getFinalStates().contains(t.to))
 					return witness;
 			}
@@ -332,7 +333,7 @@ public abstract class VPAutomaton<P, S> {
 				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
 				witness.add(new TaggedSymbol<S>(ba.generateWitness(t.guard), SymbolTag.Internal));
 				witnesses.put(new Pair<Integer, Integer>(t.from, t.to), witness);
-				
+
 				if (getInitialStates().contains(t.from) && getFinalStates().contains(t.to))
 					return witness;
 			}
@@ -368,7 +369,7 @@ public abstract class VPAutomaton<P, S> {
 
 										if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
 											return witness;
-										
+
 										changed = true;
 										break if_check;
 									}
@@ -386,7 +387,7 @@ public abstract class VPAutomaton<P, S> {
 
 								if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
 									return witness;
-								
+
 								changed = true;
 								break if_check;
 							}
@@ -397,7 +398,7 @@ public abstract class VPAutomaton<P, S> {
 		}
 
 		// Unmatched calls
-		boolean[][] unCallRel = wmReachRel.clone();
+		boolean[][] unCallRel = copyBoolMatrix(wmReachRel);
 		HashMap<Pair<Integer, Integer>, LinkedList<TaggedSymbol<S>>> ucWitnesses = new HashMap<>(witnesses);
 		// Calls
 		for (Call<P, S> tCall : getCallsFrom(getStates())) {
@@ -410,7 +411,7 @@ public abstract class VPAutomaton<P, S> {
 				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
 				witness.add(new TaggedSymbol<S>(ba.generateWitness(tCall.guard), SymbolTag.Call));
 				ucWitnesses.put(new Pair<Integer, Integer>(tCall.from, tCall.to), witness);
-				
+
 				if (getInitialStates().contains(tCall.from) && getFinalStates().contains(tCall.to))
 					return witness;
 			}
@@ -440,7 +441,7 @@ public abstract class VPAutomaton<P, S> {
 
 								if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
 									return witness;
-								
+
 								changed = true;
 								break if_check;
 							}
@@ -451,7 +452,7 @@ public abstract class VPAutomaton<P, S> {
 		}
 
 		// Unmatched returns
-		boolean[][] unRetRel = wmReachRel.clone();		
+		boolean[][] unRetRel = copyBoolMatrix(wmReachRel);
 		HashMap<Pair<Integer, Integer>, LinkedList<TaggedSymbol<S>>> urWitnesses = new HashMap<>(witnesses);
 		// Returns
 		for (ReturnBS<P, S> tRet : getReturnBSFrom(getStates())) {
@@ -463,7 +464,7 @@ public abstract class VPAutomaton<P, S> {
 				LinkedList<TaggedSymbol<S>> witness = new LinkedList<>();
 				witness.add(new TaggedSymbol<S>(ba.generateWitness(tRet.guard), SymbolTag.Return));
 				urWitnesses.put(new Pair<Integer, Integer>(tRet.from, tRet.to), witness);
-				
+
 				if (getInitialStates().contains(tRet.from) && getFinalStates().contains(tRet.to))
 					return witness;
 			}
@@ -493,7 +494,7 @@ public abstract class VPAutomaton<P, S> {
 
 								if (getInitialStates().contains(state1) && getFinalStates().contains(state2))
 									return witness;
-								
+
 								changed = true;
 								break if_check;
 							}
@@ -504,7 +505,7 @@ public abstract class VPAutomaton<P, S> {
 		}
 
 		// Full reachability relation
-		boolean[][] reachRel = wmReachRel.clone();				
+		boolean[][] reachRel = copyBoolMatrix(wmReachRel);
 		for (Integer state1 : getInitialStates()) {
 			int id1 = stateToId.get(state1);
 			for (Integer state2 : getFinalStates()) {
@@ -529,6 +530,17 @@ public abstract class VPAutomaton<P, S> {
 
 		throw new IllegalArgumentException("The automaton can't be empty");
 
+	}
+
+	private boolean[][] copyBoolMatrix(boolean[][] matrix) {
+		boolean [][] myMatrix = new boolean[matrix.length][];
+		for (int i = 0; i < matrix.length; i++) {
+			boolean[] aMatrix = matrix[i];
+			int aLength = aMatrix.length;
+			myMatrix[i] = new boolean[aLength];
+			System.arraycopy(aMatrix, 0, myMatrix[i], 0, aLength);
+		}
+		return myMatrix;
 	}
 
 	// Compute reachability relations between states (wm, ucall, uret, unm)
@@ -606,27 +618,30 @@ public abstract class VPAutomaton<P, S> {
 		// Unmatched calls
 		boolean[][] unCallRel = wmReachRel.clone();
 		// Calls
-		for (Call<P, S> tCall : getCallsFrom(getStates()))
+		Collection<Call<P, S>> calls = getCallsFrom(getStates());
+		for (Call<P, S> tCall : calls)
 			unCallRel[stateToId.get(tCall.from)][stateToId.get(tCall.to)] = true;
 
-		changed = true;
-		while (changed) {
+		if (!calls.isEmpty()) {
+			changed = true;
+			while (changed) {
 
-			changed = false;
+				changed = false;
 
-			for (Integer state1 : states) {
-				int id1 = stateToId.get(state1);
-				for (Integer state2 : states) {
-					int id2 = stateToId.get(state2);
+				for (Integer state1 : states) {
+					int id1 = stateToId.get(state1);
+					for (Integer state2 : states) {
+						int id2 = stateToId.get(state2);
 
-					if_check: if (!unCallRel[id1][id2]) {
-						// Closure
-						for (Integer stateMid : states) {
-							int idMid = stateToId.get(stateMid);
-							if (unCallRel[id1][idMid] && unCallRel[idMid][id2]) {
-								unCallRel[id1][id2] = true;
-								changed = true;
-								break if_check;
+						if_check: if (!unCallRel[id1][id2]) {
+							// Closure
+							for (Integer stateMid : states) {
+								int idMid = stateToId.get(stateMid);
+								if (unCallRel[id1][idMid] && unCallRel[idMid][id2]) {
+									unCallRel[id1][id2] = true;
+									changed = true;
+									break if_check;
+								}
 							}
 						}
 					}
@@ -637,27 +652,30 @@ public abstract class VPAutomaton<P, S> {
 		// Unmatched returns
 		boolean[][] unRetRel = wmReachRel.clone();
 		// Returns
+		Collection<ReturnBS<P, S>> returns = getReturnBSFrom(getStates());
 		for (ReturnBS<P, S> tRet : getReturnBSFrom(getStates()))
 			unRetRel[stateToId.get(tRet.from)][stateToId.get(tRet.to)] = true;
 
-		changed = true;
-		while (changed) {
+		if (!returns.isEmpty()) {
+			changed = true;
+			while (changed) {
 
-			changed = false;
+				changed = false;
 
-			for (Integer state1 : states) {
-				int id1 = stateToId.get(state1);
-				for (Integer state2 : states) {
-					int id2 = stateToId.get(state2);
+				for (Integer state1 : states) {
+					int id1 = stateToId.get(state1);
+					for (Integer state2 : states) {
+						int id2 = stateToId.get(state2);
 
-					if_check: if (!unRetRel[id1][id2]) {
-						// Closure
-						for (Integer stateMid : states) {
-							int idMid = stateToId.get(stateMid);
-							if (unRetRel[id1][idMid] && unRetRel[idMid][id2]) {
-								unRetRel[id1][id2] = true;
-								changed = true;
-								break if_check;
+						if_check: if (!unRetRel[id1][id2]) {
+							// Closure
+							for (Integer stateMid : states) {
+								int idMid = stateToId.get(stateMid);
+								if (unRetRel[id1][idMid] && unRetRel[idMid][id2]) {
+									unRetRel[id1][id2] = true;
+									changed = true;
+									break if_check;
+								}
 							}
 						}
 					}
