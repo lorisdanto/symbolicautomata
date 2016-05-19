@@ -46,8 +46,8 @@ import theory.bddalgebra.BDDSolver;
 import utilities.Pair;
 
 public class LTLConverter {
-	public static int formulaCounter=0;
-	
+	public static int formulaCounter = 0;
+
 	public static Pair<BDDSolver, LTLFormula<BDD, BDD>> getLTLBDD(FormulaNode phi) {
 		Set<String> atoms = phi.returnLeafNodes();
 		HashMap<String, Integer> atomToInt = new HashMap<String, Integer>();
@@ -244,8 +244,6 @@ public class LTLConverter {
 		// add all predicates
 		sb.append("var1 start;\n");
 		sb.append("all1 x: x>=start;\n");
-		
-		
 
 		// calls below
 		toMona(phi, atomToInt, sb, 0, 1);
@@ -254,11 +252,12 @@ public class LTLConverter {
 		// dumps in file
 		Path p = Paths.get(fileName);
 		String file = p.getFileName().toString();
-		BufferedWriter bwr = new BufferedWriter(new FileWriter(new File("./MonaFiles/"+file +formulaCounter+ ".mona")));
-		
+		BufferedWriter bwr = new BufferedWriter(
+				new FileWriter(new File("./MonaFiles/" + file + formulaCounter + ".mona")));
+
 		// write contents of StringBuffer to a file
 		bwr.write(sb.toString());
-		
+
 		// flush the stream
 		bwr.flush();
 		// close the stream
@@ -278,9 +277,9 @@ public class LTLConverter {
 		if (phi instanceof AlwaysNode) {
 			// all y, x<=y<=last -> toMona(child, y)
 			AlwaysNode cphi = (AlwaysNode) phi;
-			sb.append("all1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" => ");
+			sb.append("(all1 " + newVar1 + ": (" + oldVar + "<=" + newVar1 + " => ");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 1);
-
+			sb.append("))");
 		} else if (phi instanceof AndNode) {
 			// toMona(left) && toMona(right)
 			AndNode cphi = (AndNode) phi;
@@ -302,17 +301,16 @@ public class LTLConverter {
 		} else if (phi instanceof EventuallyNode) {
 			// exists y, x<=y<=last && toMona(child, y)
 			EventuallyNode cphi = (EventuallyNode) phi;
-			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & ");
+			sb.append("(ex1 " + newVar1 + ": (" + oldVar + "<=" + newVar1 + " & ");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 1);
-
+			sb.append("))");
 		} else if (phi instanceof FalseNode) {
 			sb.append(" false ");
-
 		} else if (phi instanceof IdNode) {
 			// find which proposition it represents, then print it
 			// e.g. p1; (declared in preamble)
 			IdNode cphi = (IdNode) phi;
-			sb.append(" " +oldVar + " in A"+ atomToInt.get(cphi.getName())+" ");
+			sb.append(" (" + oldVar + " in A" + atomToInt.get(cphi.getName()) + ") ");
 		} else if (phi instanceof ImplicationNode) {
 			// toMona(left) => toMona(right)
 			ImplicationNode cphi = (ImplicationNode) phi;
@@ -320,22 +318,21 @@ public class LTLConverter {
 			toMona(cphi.getMyLTL1(), atomToInt, sb, var, varcount);
 			sb.append(" => ");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, var, varcount);
-			sb.append(")");
+			sb.append(" )");
 
 		} else if (phi instanceof NegationNode) {
 			// toMona(~child)= ~toMona(child)
 			NegationNode cphi = (NegationNode) phi;
-			sb.append("~(");
+			sb.append("(~(");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, var, varcount);
-			sb.append(")");
+			sb.append("))");
 
 		} else if (phi instanceof NextNode) {
 			// exists y, y=x+1 && toMona(child, y)
 			NextNode cphi = (NextNode) phi;
-			sb.append("(");
-			sb.append("ex1 " + newVar1 + ": " + newVar1 + " = " + oldVar + "+1 " + " & ");
+			sb.append("(ex1 " + newVar1 + ": (" + newVar1 + " = " + oldVar + "+1 " + " & ");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 1);
-			sb.append(")");
+			sb.append("))");
 
 		} else if (phi instanceof OrNode) {
 			// toMona(left) || toMona(right)
@@ -347,17 +344,18 @@ public class LTLConverter {
 			sb.append(")");
 
 		} else if (phi instanceof ReleaseNode) {
-			// a0 R a1 = ~(~a0 U ~a1)
+			// exists y, x<=y<=last && toMona(right, y) && all z, x<=z<=y ->
+			// toMona(left, z)
 			ReleaseNode cphi = (ReleaseNode) phi;
-			sb.append("(~(");
+			sb.append("(");
 
-			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & ~");
+			sb.append("(ex1 " + newVar1 + ": (" + oldVar + "<=" + newVar1 + " & ");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, varcount, varcount + 1);
-			sb.append(" & ");
-			sb.append("all1 " + newVar2 + ": " + oldVar + "<=" + newVar2 +" & "+ newVar2+"<"+ newVar1 + "=> ~");
+			sb.append(")) & ");
+			sb.append("(all1 " + newVar2 + ": (" + oldVar + "<=" + newVar2 + " & " + newVar2 + "<=" + newVar1 + " =>");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 2);
 
-			sb.append("))");
+			sb.append(")))");
 
 		} else if (phi instanceof StrongReleaseNode) {
 			// not yet implemented
@@ -366,47 +364,49 @@ public class LTLConverter {
 			sb.append(" true ");
 
 		} else if (phi instanceof UntilNode) {
-			// exists y, x<=y<=last && toMona(right, y) && all z, x<=z<=y ->
+			// exists y, x<=y<=last && toMona(right, y) && all z, x<=z<y ->
 			// toMona(left, z)
 			UntilNode cphi = (UntilNode) phi;
 			sb.append("(");
 
-			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & ");
+			sb.append("(ex1 " + newVar1 + ": (" + oldVar + "<=" + newVar1 + " & ");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, varcount, varcount + 1);
-			sb.append(" & ");
-			sb.append("all1 " + newVar2 + ": " + oldVar + "<=" + newVar2 +" & "+ newVar2 + "<"+ newVar1 + "=>");
+			sb.append(")) & ");
+			sb.append("(all1 " + newVar2 + ": (" + oldVar + "<=" + newVar2 + " & " + newVar2 + "<" + newVar1 + " =>");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 2);
 
-			sb.append(")");
+			sb.append(")))");
 
 		} else if (phi instanceof WeakUntilNode) {
 			// a0 W a1 = a0 U a1 || G(a0)
 			WeakUntilNode cphi = (WeakUntilNode) phi;
 			sb.append("(");
 
-			sb.append("ex1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +" & ");
+			sb.append("(ex1 " + newVar1 + ": (" + oldVar + "<=" + newVar1 + " & ");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, varcount, varcount + 1);
-			sb.append(" & ");
-			sb.append("all1 " + newVar2 + ": " + oldVar + "<=" + newVar2 +" & "+ newVar2 + "<"+ newVar1 + "=>");
+			sb.append(")) & ");
+			sb.append("(all1 " + newVar2 + ": (" + oldVar + "<=" + newVar2 + " & " + newVar2 + "<" + newVar1 + " =>");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 2);
+			sb.append("))");
 			sb.append(" | ");
-			sb.append("all1 " + newVar1 + ": " + oldVar + "<=" + newVar1 +"  => ");
+			sb.append("(all1 " + newVar1 + ": (" + oldVar + "<=" + newVar1 + "  => ");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, varcount, varcount + 1);
+			sb.append("))");
 
 			sb.append(" ) ");
 
 		} else if (phi instanceof XorNode) {
-			// (x & ~y) | (~x & y)
+			// ( ((x) & ~(y)) | (~(x) & (y)) )
 			XorNode cphi = (XorNode) phi;
-			sb.append("(");
+			sb.append("( ((");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, var, varcount);
-			sb.append(" & ~");
+			sb.append(") & ~(");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, var, varcount);
-			sb.append(" | ~");
+			sb.append(")) | (~(");
 			toMona(cphi.getMyLTL1(), atomToInt, sb, var, varcount);
-			sb.append(" & ");
+			sb.append(") & (");
 			toMona(cphi.getMyLTL2(), atomToInt, sb, var, varcount);
-			sb.append(")");
+			sb.append(")) )");
 		} else {
 			System.err.println("Wrong instance of phi, program will quit");
 			System.exit(-1);
