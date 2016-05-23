@@ -1,3 +1,5 @@
+#this function is slightly different from monaTest.py, this only prints file name and its total time in millliseconds
+
 # how to run this program:
 # this program is tested on python 2.7.10
 # first we need EasyProcess module
@@ -20,7 +22,7 @@ def main():
     dir = os.getcwd() # this returns current directory of monaTest.py
     dir = os.path.join(dir, 'MonaFiles') # this joins the current directory and the directory to MonaFiles
     #print header of the output in format
-    print '%-25s %-25s %-25s'%('File Name', 'Total Time', 'Satisfiability')
+    #print '%-25s %-25s'%('File Name', 'Total Time')
     for root, dirs, files in os.walk(dir):
         for fname in files:
             #print fname
@@ -29,14 +31,14 @@ def main():
                 callProcess('mona '+ fullName, fname)
             
 
-
+#this function is slightly different from monaTest.py, this only prints file name and its total time in millliseconds
 def callProcess(command, filename):
     #set timeout in seconds below in .call(timeout=XX)
     proc = EasyProcess(command).call(timeout=5)
-    totalTime =''
+    totalTime = 6666
     output = proc.stdout
     if output is None:
-        print '%-25s %-25s %-25s'%(filename, 'NoneType', '')
+        print '%-25s %-25s %-25s'%(filename, 7777)
     else:
         # below will check the information of each file
         if '100%' in output:
@@ -45,19 +47,14 @@ def callProcess(command, filename):
             for line in output.split(os.linesep):
                 if str in line:
                     # extract total time
-                    totalTime= line[line.index(str)+len(str):].encode('raw_unicode_escape').decode('utf8')
-            if 'unsatisfiable' in output:
-                satisfiability = 'false'
-            else: satisfiability = 'true'
+                    time= line[line.index(str)+len(str):].encode('raw_unicode_escape').decode('utf8')
+                    totalTime= int(time[6:8])*1000+int(time[9:11])*10
         else:
         # if the AUTOMATON CONSTRUCTION is not 100%,
         # that means it exceeds the timeout limit
-            totalTime = 'timeout'
-            satisfiability= ''
+            totalTime = 5000
                 #print each file's info in format
-        if totalTime =='':
-            totalTime = 'Ref before Assign'
-        print '%-25s %-25s %-25s'%(filename, totalTime, satisfiability)
+        print '%-25s %-25s'%(filename, totalTime)
 
 
 main()

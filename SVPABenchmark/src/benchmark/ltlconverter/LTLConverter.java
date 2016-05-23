@@ -47,6 +47,7 @@ import utilities.Pair;
 
 public class LTLConverter {
 	public static int formulaCounter = 0;
+	public static String tail;
 
 	public static Pair<BDDSolver, LTLFormula<BDD, BDD>> getLTLBDD(FormulaNode phi) {
 		Set<String> atoms = phi.returnLeafNodes();
@@ -251,8 +252,17 @@ public class LTLConverter {
 		// dumps in file
 		Path p = Paths.get(fileName);
 		String file = p.getFileName().toString();
+		
+		if(formulaCounter>=0 && formulaCounter <10){
+			tail = "00"+ Integer.toString(formulaCounter);
+		}else if(formulaCounter<100 && formulaCounter>=10){
+			tail= "0"+ Integer.toString(formulaCounter);
+		}else{
+			tail = Integer.toString(formulaCounter);
+		}
+		
 		BufferedWriter bwr = new BufferedWriter(
-				new FileWriter(new File("./MonaFiles/" + file + formulaCounter + ".mona")));
+				new FileWriter(new File("./MonaFiles/" + file + tail + ".mona")));
 
 		// write contents of StringBuffer to a file
 		bwr.write(sb.toString());
