@@ -1092,7 +1092,7 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 					clean.addTransition((SVPAMove<A, B>) t.clone(), ba, true);
 		
 		clean.stateCount = clean.states.size();
-		clean.isEmpty = clean.finalStates.isEmpty();
+		
 		return clean;
 	}
 
