@@ -388,21 +388,25 @@ public abstract class VPAutomaton<P, S> {
 
 				// Closure
 				for (Integer state2 : fromState1) {
-					Collection<Integer> fromState2 = wmRelList.get(state2);
-					for (int st : fromState2) {
-						int stId = stateToId.get(st);
-						if (!wmReachRel[id1][stId]) {
-							changed = true;
-							newStates.add(st);
-							wmReachRel[id1][stId] = true;
+					if (state1 != state2) {
+						Collection<Integer> fromState2 = wmRelList.get(state2);
+						for (int state3 : fromState2) {
+							if (state3 != state2 && state3 != state1) {
+								int id3 = stateToId.get(state3);
+								if (!wmReachRel[id1][id3]) {
+									changed = true;
+									newStates.add(state3);
+									wmReachRel[id1][id3] = true;
 
-							LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
-									witnesses.get(new Pair<Integer, Integer>(state1, state2)));
-							witness.addAll(witnesses.get(new Pair<Integer, Integer>(state2, st)));
-							witnesses.put(new Pair<Integer, Integer>(state1, st), witness);
+									LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+											witnesses.get(new Pair<Integer, Integer>(state1, state2)));
+									witness.addAll(witnesses.get(new Pair<Integer, Integer>(state2, state3)));
+									witnesses.put(new Pair<Integer, Integer>(state1, state3), witness);
 
-							if (getInitialStates().contains(state1) && getFinalStates().contains(st))
-								return witness;
+									if (getInitialStates().contains(state1) && getFinalStates().contains(state3))
+										return witness;
+								}
+							}
 						}
 					}
 				}
@@ -443,20 +447,22 @@ public abstract class VPAutomaton<P, S> {
 					// Closure
 					for (Integer state2 : fromState1) {
 						Collection<Integer> fromState2 = uCallRelList.get(state2);
-						for (int st : fromState2) {
-							int stId = stateToId.get(st);
-							if (!unCallRel[id1][stId]) {
-								changed = true;
-								newStates.add(st);
-								unCallRel[id1][stId] = true;
+						for (int state3 : fromState2) {
+							if (state3 != state2 && state3 != state1) {
+								int id3 = stateToId.get(state3);
+								if (!unCallRel[id1][id3]) {
+									changed = true;
+									newStates.add(state3);
+									unCallRel[id1][id3] = true;
 
-								LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
-										witnesses.get(new Pair<Integer, Integer>(state1, state2)));
-								witness.addAll(witnesses.get(new Pair<Integer, Integer>(state2, st)));
-								ucWitnesses.put(new Pair<Integer, Integer>(state1, st), witness);
+									LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+											witnesses.get(new Pair<Integer, Integer>(state1, state2)));
+									witness.addAll(witnesses.get(new Pair<Integer, Integer>(state2, state3)));
+									ucWitnesses.put(new Pair<Integer, Integer>(state1, state3), witness);
 
-								if (getInitialStates().contains(state1) && getFinalStates().contains(st))
-									return witness;
+									if (getInitialStates().contains(state1) && getFinalStates().contains(state3))
+										return witness;
+								}
 							}
 						}
 					}
@@ -501,21 +507,25 @@ public abstract class VPAutomaton<P, S> {
 					Collection<Integer> newStates = new HashSet<>();
 					// Closure
 					for (Integer state2 : fromState1) {
-						Collection<Integer> fromState2 = uRetRelList.get(state2);
-						for (int st : fromState2) {
-							int stId = stateToId.get(st);
-							if (!unRetRel[id1][stId]) {
-								changed = true;
-								newStates.add(st);
-								unRetRel[id1][stId] = true;
+						if (state2 != state1) {
+							Collection<Integer> fromState2 = uRetRelList.get(state2);
+							for (int state3 : fromState2) {
+								if (state3 != state2 && state3 != state1) {
+									int id3 = stateToId.get(state3);
+									if (!unRetRel[id1][id3]) {
+										changed = true;
+										newStates.add(state3);
+										unRetRel[id1][id3] = true;
 
-								LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
-										urWitnesses.get(new Pair<Integer, Integer>(state1, state2)));
-								witness.addAll(urWitnesses.get(new Pair<Integer, Integer>(state2, st)));
-								urWitnesses.put(new Pair<Integer, Integer>(state1, st), witness);
+										LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+												urWitnesses.get(new Pair<Integer, Integer>(state1, state2)));
+										witness.addAll(urWitnesses.get(new Pair<Integer, Integer>(state2, state3)));
+										urWitnesses.put(new Pair<Integer, Integer>(state1, state3), witness);
 
-								if (getInitialStates().contains(state1) && getFinalStates().contains(st))
-									return witness;
+										if (getInitialStates().contains(state1) && getFinalStates().contains(state3))
+											return witness;
+									}
+								}
 							}
 						}
 					}
@@ -528,14 +538,18 @@ public abstract class VPAutomaton<P, S> {
 		// Full reachability relation
 		for (Integer state1 : states) {
 			for (Integer state2 : uRetRelList.get(state1)) {
-				for (Integer state3 : uCallRelList.get(state2)) {
-					if (getFinalStates().contains(state3)) {
+				if (state1 != state2) {
+					for (Integer state3 : uCallRelList.get(state2)) {
+						if (state3 != state2 && state3 != state1) {
+							if (getFinalStates().contains(state3)) {
 
-						LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
-								urWitnesses.get(new Pair<Integer, Integer>(state1, state2)));
-						witness.addAll(ucWitnesses.get(new Pair<Integer, Integer>(state2, state3)));
+								LinkedList<TaggedSymbol<S>> witness = new LinkedList<>(
+										urWitnesses.get(new Pair<Integer, Integer>(state1, state2)));
+								witness.addAll(ucWitnesses.get(new Pair<Integer, Integer>(state2, state3)));
 
-						return witness;
+								return witness;
+							}
+						}
 					}
 				}
 			}
@@ -636,13 +650,17 @@ public abstract class VPAutomaton<P, S> {
 
 				// Closure
 				for (Integer state2 : fromState1) {
-					Collection<Integer> fromState2 = wmRelList.get(state2);
-					for (int st : fromState2) {
-						int stId = stateToId.get(st);
-						if (!wmReachRel[id1][stId]) {
-							changed = true;
-							newStates.add(st);
-							wmReachRel[id1][stId] = true;
+					if (state1 != state2) {
+						Collection<Integer> fromState2 = wmRelList.get(state2);
+						for (int state3 : fromState2) {
+							if (state3 != state2 && state3 != state1) {
+								int id3 = stateToId.get(state3);
+								if (!wmReachRel[id1][id3]) {
+									changed = true;
+									newStates.add(state3);
+									wmReachRel[id1][id3] = true;
+								}
+							}
 						}
 					}
 				}
@@ -674,13 +692,17 @@ public abstract class VPAutomaton<P, S> {
 					Collection<Integer> newStates = new HashSet<>();
 					// Closure
 					for (Integer state2 : fromState1) {
-						Collection<Integer> fromState2 = uCallRelList.get(state2);
-						for (int st : fromState2) {
-							int stId = stateToId.get(st);
-							if (!unCallRel[id1][stId]) {
-								changed = true;
-								newStates.add(st);
-								unCallRel[id1][stId] = true;
+						if (state1 != state2) {
+							Collection<Integer> fromState2 = uCallRelList.get(state2);
+							for (int state3 : fromState2) {
+								if (state3 != state2 && state3 != state1) {
+									int id3 = stateToId.get(state3);
+									if (!unCallRel[id1][id3]) {
+										changed = true;
+										newStates.add(state3);
+										unCallRel[id1][id3] = true;
+									}
+								}
 							}
 						}
 					}
@@ -713,13 +735,17 @@ public abstract class VPAutomaton<P, S> {
 					Collection<Integer> newStates = new HashSet<>();
 					// Closure
 					for (Integer state2 : fromState1) {
-						Collection<Integer> fromState2 = uRetRelList.get(state2);
-						for (int st : fromState2) {
-							int stId = stateToId.get(st);
-							if (!unRetRel[id1][stId]) {
-								changed = true;
-								newStates.add(st);
-								unRetRel[id1][stId] = true;
+						if (state1 != state2) {
+							Collection<Integer> fromState2 = uRetRelList.get(state2);
+							for (int state3 : fromState2) {
+								if (state3 != state2 && state3 != state1) {
+									int id3 = stateToId.get(state3);
+									if (!unRetRel[id1][id3]) {
+										changed = true;
+										newStates.add(state3);
+										unRetRel[id1][id3] = true;
+									}
+								}
 							}
 						}
 					}
