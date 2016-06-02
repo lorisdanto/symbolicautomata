@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import automata.AutomataException;
 import automata.svpa.Call;
+import automata.svpa.ImportCharSVPA;
 import automata.svpa.Internal;
 import automata.svpa.Return;
 import automata.svpa.SVPA;
@@ -604,7 +605,17 @@ public class SVPAUnitTest {
 
 	// Another test from Peter
 	@Test
-	public void getBigIntersection(){
+	public void testBigIntersection(){
+		try {
+			SVPA<ICharPred, Character> svpa = getBigIntersection();
+			assertFalse(svpa.isEmpty);
+		} catch (AutomataException e) {
+			e.printStackTrace();
+			assertTrue(false);
+		}
+	}
+
+	public SVPA<ICharPred, Character> getBigIntersection() throws AutomataException {
 		EqualitySolver ba = new EqualitySolver();
 
 		Collection<SVPAMove<ICharPred, Character>> transitions1 = new LinkedList<SVPAMove<ICharPred, Character>>();
@@ -824,17 +835,44 @@ public class SVPAUnitTest {
 		transitions5.add(new Call<ICharPred, Character>(2, 2, 0, StdCharPred.TRUE));
 		transitions5.add(new Return<ICharPred, Character>(2, 2, 0, trueRetChar));
 
-		try {
-			SVPA<ICharPred, Character> svpa1 = SVPA.MkSVPA(transitions1, Arrays.asList(0), Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166), ba);
-			SVPA<ICharPred, Character> svpa3 = SVPA.MkSVPA(transitions3, Arrays.asList(0), Arrays.asList(0), ba);
-			SVPA<ICharPred, Character> svpa4 = SVPA.MkSVPA(transitions4, Arrays.asList(0), Arrays.asList(2), ba);
-			SVPA<ICharPred, Character> svpa5 = SVPA.MkSVPA(transitions5, Arrays.asList(0), Arrays.asList(2), ba);
+		SVPA<ICharPred, Character> svpa1 = SVPA.MkSVPA(transitions1, Arrays.asList(0), Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166), ba);
+		SVPA<ICharPred, Character> svpa3 = SVPA.MkSVPA(transitions3, Arrays.asList(0), Arrays.asList(0), ba);
+		SVPA<ICharPred, Character> svpa4 = SVPA.MkSVPA(transitions4, Arrays.asList(0), Arrays.asList(2), ba);
+		SVPA<ICharPred, Character> svpa5 = SVPA.MkSVPA(transitions5, Arrays.asList(0), Arrays.asList(2), ba);
 
-			SVPA<ICharPred, Character> result = svpa1.intersectionWith(svpa3, ba);
-			result = result.intersectionWith(svpa4, ba);
-			result = result.intersectionWith(svpa5, ba);
-			assertFalse(result.isEmpty);
-		} catch (AutomataException e) {
+		SVPA<ICharPred, Character> result = svpa1.intersectionWith(svpa3, ba);
+		result = result.intersectionWith(svpa4, ba);
+		result = result.intersectionWith(svpa5, ba);
+		return result;
+	}
+
+
+	// Testing char SVPA importer
+	@Test
+	public void testSmallImport(){
+		EqualitySolver ba = new EqualitySolver();
+		SVPA<ICharPred, Character> cfgAutomaton = getCFGAutomata(ba);
+
+		// TODO: how can we assert equality here?
+		// For now: just make sure we don't get an exception
+		try {
+			ImportCharSVPA.importSVPA(cfgAutomaton.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertTrue(false);
+		}
+	}
+
+	@Test
+	public void testLargeImport(){
+		try {
+			SVPA<ICharPred, Character> bigAutomaton = getBigIntersection();
+
+			// TODO: how can we assert equality here?
+			// For now: just make sure we don't get an exception
+			ImportCharSVPA.importSVPA(bigAutomaton.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
 			assertTrue(false);
 		}
 	}

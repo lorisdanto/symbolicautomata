@@ -197,6 +197,11 @@ public class CharPred extends ICharPred{
 	// Only prints readable chars, otherwise print unicode
 	public static String printChar(char c) {
 		Map<Character, String> unescapeMap = new HashMap<Character, String>();
+		unescapeMap.put('-', "\\-");
+		unescapeMap.put('(', "\\(");
+		unescapeMap.put(')', "\\)");
+		unescapeMap.put('[', "\\[");
+		unescapeMap.put(']', "\\]");
 		unescapeMap.put('\t', "\\t");
 		unescapeMap.put('\b', "\\b");
 		unescapeMap.put('\n', "\\n");
