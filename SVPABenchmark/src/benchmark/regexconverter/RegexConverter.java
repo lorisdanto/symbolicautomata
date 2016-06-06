@@ -12,8 +12,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Set;
 
 import org.sat4j.specs.TimeoutException;
@@ -48,27 +51,27 @@ import theory.intervals.UnaryCharIntervalSolver;;
 
 public class RegexConverter {
 	
-	public static <A, B> SFA<A, B> toSFA(FormulaNode phi, BooleanAlgebra<A, B> ba, UnaryCharIntervalSolver unarySolver) throws TimeoutException{
-		SFA<A, B> outputSFA = null;
+	public static SFA<CharPred, Character> toSFA(FormulaNode phi, UnaryCharIntervalSolver unarySolver) throws TimeoutException{
+		SFA<CharPred, Character> outputSFA = null;
 		
 		if (phi instanceof UnionNode) {
 			UnionNode cphi= (UnionNode)phi;
-			SFA<A, B> left = toSFA(cphi.getMyRegex1(), ba, unarySolver);
-			SFA<A, B> right = toSFA(cphi.getMyRegex2(), ba, unarySolver);
-			outputSFA = SFA.union(left, right, ba);
+//			SFA<CharPred, Character> left = toSFA(cphi.getMyRegex1(), ba, unarySolver);
+//			SFA<CharPred, Character> right = toSFA(cphi.getMyRegex2(), ba, unarySolver);
+//			outputSFA = SFA.union(left, right, ba);
 			
 		} else if (phi instanceof ConcatenationNode) {
-			ConcatenationNode cphi= (ConcatenationNode)phi;
-			List<RegexNode> concateList = cphi.getList();
-			for(RegexNode node: concateList){
-				SFA<A, B> tempSFA = toSFA(node, ba, unarySolver);
-				outputSFA = SFA.concatenate(outputSFA, tempSFA, ba);
-			}
+//			ConcatenationNode cphi= (ConcatenationNode)phi;
+//			List<RegexNode> concateList = cphi.getList();
+//			for(RegexNode node: concateList){
+//				SFA<CharPred, Character> tempSFA = toSFA(node, unarySolver);
+//				outputSFA = SFA.concatenate(outputSFA, tempSFA);
+//			}
 			
 		} else if (phi instanceof DotNode) {
-			DotNode cphi= (DotNode)phi;
-			//unfinished
-			
+			Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
+			transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, unarySolver.True()));
+			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), unarySolver);			
 		} else if (phi instanceof StartAnchorNode) {
 			StartAnchorNode cphi= (StartAnchorNode)phi;
 			//unfinished
@@ -78,14 +81,14 @@ public class RegexConverter {
 			//unfinished
 			
 		} else if (phi instanceof StarNode) {
-			StarNode cphi= (StarNode)phi;
-			SFA<A, B> tempSFA = toSFA(cphi.getMyRegex1(), ba, unarySolver);
-			outputSFA = SFA.star(tempSFA, ba);
+//			StarNode cphi= (StarNode)phi;
+//			SFA<A, B> tempSFA = toSFA(cphi.getMyRegex1(), ba, unarySolver);
+//			outputSFA = SFA.star(tempSFA, ba);
 			
 		} else if (phi instanceof PlusNode) {
-			PlusNode cphi= (PlusNode)phi;
-			SFA<A, B> tempSFA = toSFA(cphi.getMyRegex1(), ba, unarySolver);
-			outputSFA = SFA.concatenate(tempSFA, SFA.star(tempSFA, ba), ba);
+//			PlusNode cphi= (PlusNode)phi;
+//			SFA<A, B> tempSFA = toSFA(cphi.getMyRegex1(), ba, unarySolver);
+//			outputSFA = SFA.concatenate(tempSFA, SFA.star(tempSFA, ba), ba);
 			
 		} else if (phi instanceof OptionalNode) {
 			OptionalNode cphi= (OptionalNode)phi;
@@ -123,33 +126,33 @@ public class RegexConverter {
 
 			List<IntervalNode> intervalList = cphi.getIntervals();
 			Iterator<IntervalNode> it = intervalList.iterator();
+			CharPred predicate = unarySolver.False();
 			if (it.hasNext()) {
-				CharPred predicate = getCharPred(it.next());
+				predicate = getCharPred(it.next());
 				while (it.hasNext()){
 					CharPred temp = getCharPred(it.next());
 					predicate =unarySolver.MkOr(predicate, temp);
 				}
 			}
+			predicate = unarySolver.MkNot(predicate);
 			//TODO
-			//outputSFA = 
-			
-			outputSFA = SFA.complementOf( outputSFA ,ba);
+			//mksfa with proper transitions
 			
 		} else if (phi instanceof RepetitionNode) {
-			RepetitionNode cphi= (RepetitionNode)phi;
-			SFA<A, B> tempSFA = toSFA(cphi.getMyRegex1(), ba, unarySolver);
-			if (cphi.getMode().equals("min")){
-				for (int i=0;i<cphi.getMin();i++){
-					outputSFA = SFA.concatenate(outputSFA, tempSFA, ba);
-				}
-			}else if(cphi.getMode().equals("minToInfinite")){
-				//TODO
-				for (int i=0;i<cphi.getMin();i++){
-					//tempSFA = SFA.concatenate(, tempSFA, ba);
-				}
-			}else{ //minToMax
-				
-			}
+//			RepetitionNode cphi= (RepetitionNode)phi;
+//			SFA<A, B> tempSFA = toSFA(cphi.getMyRegex1(), ba, unarySolver);
+//			if (cphi.getMode().equals("min")){
+//				for (int i=0;i<cphi.getMin();i++){
+//					outputSFA = SFA.concatenate(outputSFA, tempSFA, ba);
+//				}
+//			}else if(cphi.getMode().equals("minToInfinite")){
+//				//TODO
+//				for (int i=0;i<cphi.getMin();i++){
+//					//tempSFA = SFA.concatenate(, tempSFA, ba);
+//				}
+//			}else{ //minToMax
+//				
+//			}
 		} else {
 			System.err.println("Wrong instance of phi, program will quit");
 			System.exit(-1);

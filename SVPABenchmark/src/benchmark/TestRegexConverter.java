@@ -24,8 +24,7 @@ public class TestRegexConverter {
 						for (RegexNode node : nodes) {
 							//Counter++;
 							UnaryCharIntervalSolver solver = new UnaryCharIntervalSolver();
-							BooleanAlgebra<A,B> ba= (BooleanAlgebra<A, B>) solver;
-							SFA<A, B> sfa =(SFA<A, B>) RegexConverter.toSFA(node, ba, solver);
+							SFA<A, B> sfa =(SFA<A, B>) RegexConverter.toSFA(node, solver);
 						}
 						//Counter=0;
 					} catch (Exception e1) {
