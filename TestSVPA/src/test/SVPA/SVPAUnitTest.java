@@ -3,6 +3,7 @@ package test.SVPA;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -871,6 +872,26 @@ public class SVPAUnitTest {
 			// TODO: how can we assert equality here?
 			// For now: just make sure we don't get an exception
 			ImportCharSVPA.importSVPA(bigAutomaton.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertTrue(false);
+		}
+	}
+
+	// slow intersection test (first_svpa_intersect is large)
+	@Test
+	public void testFileIntersectionImport(){
+		try {
+			SVPA<ICharPred, Character> first =
+					ImportCharSVPA.importSVPA(new File(getClass().getClassLoader().getResource("first_svpa_intersect").getFile()));
+			SVPA<ICharPred, Character> second =
+					ImportCharSVPA.importSVPA(new File(getClass().getClassLoader().getResource("second_svpa_intersect").getFile()));
+			SVPA<ICharPred, Character> third =
+					ImportCharSVPA.importSVPA(new File(getClass().getClassLoader().getResource("third_svpa_intersect").getFile()));
+
+			EqualitySolver ba = new EqualitySolver();
+			SVPA<ICharPred, Character> result = first.intersectionWith(second, ba);
+			result = result.intersectionWith(third, ba);
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertTrue(false);

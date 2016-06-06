@@ -52,6 +52,7 @@ public class ImportCharSVPA {
 		reEscapeMap.put("\\f", '\f');
 		reEscapeMap.put("\\\'", '\'');
 		reEscapeMap.put("\\\"", '\"');
+		reEscapeMap.put("\\\\", '\\');
 	}
 
 	/**
