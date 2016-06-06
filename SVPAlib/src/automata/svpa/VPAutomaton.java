@@ -606,22 +606,9 @@ public abstract class VPAutomaton<P, S> {
 			count++;
 		}
 
-		// Build one step relation
-		for (Integer state1 : states) {
-			int id1 = stateToId.get(state1);
-
-			// Epsilon Transition
-			for (SVPAEpsilon<P, S> t : getEpsilonsFrom(state1)) {
-				wmReachRel[id1][stateToId.get(t.to)] = true;
-				wmRelList.get(state1).add(t.to);
-			}
-
-			// Internal Transition
-			for (Internal<P, S> t : getInternalsFrom(state1)) {
-				wmReachRel[id1][stateToId.get(t.to)] = true;
-				wmRelList.get(state1).add(t.to);
-			}
-		}
+		// Build relation for epsilon and internal transitions
+		for (Integer state1 : states)
+			dfsInternal(state1, stateToId, wmReachRel, wmRelList);
 
 		// Compute fixpoint of reachability relation
 		boolean changed = true;
@@ -647,26 +634,33 @@ public abstract class VPAutomaton<P, S> {
 								}
 						}
 				}
+				fromState1.addAll(newStates);
+			}
 
-				// Closure
-				for (Integer state2 : fromState1) {
-					if (state1 != state2) {
-						Collection<Integer> fromState2 = wmRelList.get(state2);
-						for (int state3 : fromState2) {
-							if (state3 != state2 && state3 != state1) {
-								int id3 = stateToId.get(state3);
-								if (!wmReachRel[id1][id3]) {
-									changed = true;
-									newStates.add(state3);
-									wmReachRel[id1][id3] = true;
+			if (changed)
+				for (Integer state1 : states) {
+					int id1 = stateToId.get(state1);
+					Collection<Integer> fromState1 = wmRelList.get(state1);
+					Collection<Integer> newStates = new HashSet<>();
+					// Closure
+					for (Integer state2 : fromState1) {
+						if (state1 != state2) {
+							Collection<Integer> fromState2 = wmRelList.get(state2);
+							for (int state3 : fromState2) {
+								if (state3 != state2 && state3 != state1) {
+									int id3 = stateToId.get(state3);
+									if (!wmReachRel[id1][id3]) {
+										changed = true;
+										newStates.add(state3);
+										wmReachRel[id1][id3] = true;
+									}
 								}
 							}
 						}
 					}
-				}
 
-				fromState1.addAll(newStates);
-			}
+					fromState1.addAll(newStates);
+				}
 		}
 
 		// Unmatched calls
@@ -675,12 +669,16 @@ public abstract class VPAutomaton<P, S> {
 
 		// Calls
 		Collection<Call<P, S>> calls = getCallsFrom(getStates());
-		for (Call<P, S> tCall : calls) {
+		for (Call<P, S> tCall : calls)
+
+		{
 			unCallRel[stateToId.get(tCall.from)][stateToId.get(tCall.to)] = true;
 			uCallRelList.get(tCall.from).add(tCall.to);
 		}
 
-		if (!calls.isEmpty()) {
+		if (!calls.isEmpty())
+
+		{
 			changed = true;
 			while (changed) {
 
@@ -718,12 +716,16 @@ public abstract class VPAutomaton<P, S> {
 
 		// Returns
 		Collection<ReturnBS<P, S>> returns = getReturnBSFrom(getStates());
-		for (ReturnBS<P, S> tRet : returns) {
+		for (ReturnBS<P, S> tRet : returns)
+
+		{
 			unRetRel[stateToId.get(tRet.from)][stateToId.get(tRet.to)] = true;
 			uRetRelList.get(tRet.from).add(tRet.to);
 		}
 
-		if (!returns.isEmpty()) {
+		if (!returns.isEmpty())
+
+		{
 			changed = true;
 			while (changed) {
 
@@ -758,7 +760,9 @@ public abstract class VPAutomaton<P, S> {
 		// Full reachability relation
 		Map<Integer, Collection<Integer>> relList = copyMap(uRetRelList);
 
-		for (Integer state1 : states) {
+		for (Integer state1 : states)
+
+		{
 			Collection<Integer> newStates = new HashSet<>();
 			for (Integer state2 : uRetRelList.get(state1)) {
 				newStates.addAll(uCallRelList.get(state2));
@@ -768,6 +772,40 @@ public abstract class VPAutomaton<P, S> {
 
 		return new Quadruple<Map<Integer, Collection<Integer>>, Map<Integer, Collection<Integer>>, Map<Integer, Collection<Integer>>, Map<Integer, Collection<Integer>>>(
 				wmRelList, uCallRelList, uRetRelList, relList);
+
 	}
 
+	public void dfsInternal(int stateFrom, Map<Integer, Integer> stateToId, boolean[][] reachRel,
+			Map<Integer, Collection<Integer>> wmRelList) {
+
+		HashSet<Integer> reached = new HashSet<>();
+		LinkedList<Integer> toVisit = new LinkedList<>();
+		toVisit.add(stateFrom);
+
+		int id = stateToId.get(stateFrom);
+
+		while (!toVisit.isEmpty()) {
+			int state = toVisit.removeFirst();
+
+			// Epsilon Transition
+			for (SVPAEpsilon<P, S> t : getEpsilonsFrom(state)) {
+				if (!reached.contains(t.to)) {
+					reachRel[id][stateToId.get(t.to)] = true;
+					wmRelList.get(stateFrom).add(t.to);
+					toVisit.add(t.to);
+					reached.add(t.to);
+				}
+			}
+
+			// Internal Transition
+			for (Internal<P, S> t : getInternalsFrom(state)) {
+				if (!reached.contains(t.to)) {
+					reachRel[id][stateToId.get(t.to)] = true;
+					wmRelList.get(stateFrom).add(t.to);
+					toVisit.add(t.to);
+					reached.add(t.to);
+				}
+			}
+		}
+	}
 }
