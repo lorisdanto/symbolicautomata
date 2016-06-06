@@ -1,0 +1,13 @@
+Automaton: 7 transitions, 3 states
+Transitions 
+I: 0 -[\]]-> 2
+I: 0 -[\u0000-\uffff]-> 0
+C: 0 -[\u0000-\uffff], 0-> 1
+I: 1 -[\u0000-\uffff]-> 1
+C: 1 -[\u0000-\uffff], 1-> 1
+R: 1 -neq [([\u0000-\uffff], [\u0000-\uffff])], eq [\u0000-\uffff], 0-> 0
+R: 1 -neq [([\u0000-\uffff], [\u0000-\uffff])], eq [\u0000-\uffff], 1-> 1
+Initial States 
+0
+Final States 
+2

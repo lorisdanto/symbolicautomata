@@ -209,6 +209,7 @@ public class CharPred extends ICharPred{
 		unescapeMap.put('\f', "\\f");
 		unescapeMap.put('\'', "\\\'");
 		unescapeMap.put('\"', "\\\"");
+		unescapeMap.put('\\', "\\\\");
 		if (unescapeMap.containsKey(c)) {
 			return unescapeMap.get(c);
 		} else if (c < 0x20 || c > 0x7f) {
