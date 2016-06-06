@@ -638,29 +638,8 @@ public abstract class VPAutomaton<P, S> {
 			}
 
 			if (changed)
-				for (Integer state1 : states) {
-					int id1 = stateToId.get(state1);
-					Collection<Integer> fromState1 = wmRelList.get(state1);
-					Collection<Integer> newStates = new HashSet<>();
-					// Closure
-					for (Integer state2 : fromState1) {
-						if (state1 != state2) {
-							Collection<Integer> fromState2 = wmRelList.get(state2);
-							for (int state3 : fromState2) {
-								if (state3 != state2 && state3 != state1) {
-									int id3 = stateToId.get(state3);
-									if (!wmReachRel[id1][id3]) {
-										changed = true;
-										newStates.add(state3);
-										wmReachRel[id1][id3] = true;
-									}
-								}
-							}
-						}
-					}
-
-					fromState1.addAll(newStates);
-				}
+				for (Integer state1 : states)
+					dfsReachRel(state1, stateToId, wmReachRel, wmRelList);				
 		}
 
 		// Unmatched calls
@@ -677,38 +656,8 @@ public abstract class VPAutomaton<P, S> {
 		}
 
 		if (!calls.isEmpty())
-
-		{
-			changed = true;
-			while (changed) {
-
-				changed = false;
-				for (Integer state1 : states) {
-					int id1 = stateToId.get(state1);
-
-					Collection<Integer> fromState1 = uCallRelList.get(state1);
-					Collection<Integer> newStates = new HashSet<>();
-					// Closure
-					for (Integer state2 : fromState1) {
-						if (state1 != state2) {
-							Collection<Integer> fromState2 = uCallRelList.get(state2);
-							for (int state3 : fromState2) {
-								if (state3 != state2 && state3 != state1) {
-									int id3 = stateToId.get(state3);
-									if (!unCallRel[id1][id3]) {
-										changed = true;
-										newStates.add(state3);
-										unCallRel[id1][id3] = true;
-									}
-								}
-							}
-						}
-					}
-
-					fromState1.addAll(newStates);
-				}
-			}
-		}
+			for (Integer state1 : states)
+				dfsReachRel(state1, stateToId, unCallRel, uCallRelList);				
 
 		// Unmatched returns
 		boolean[][] unRetRel = copyBoolMatrix(wmReachRel);
@@ -717,45 +666,14 @@ public abstract class VPAutomaton<P, S> {
 		// Returns
 		Collection<ReturnBS<P, S>> returns = getReturnBSFrom(getStates());
 		for (ReturnBS<P, S> tRet : returns)
-
 		{
 			unRetRel[stateToId.get(tRet.from)][stateToId.get(tRet.to)] = true;
 			uRetRelList.get(tRet.from).add(tRet.to);
 		}
 
 		if (!returns.isEmpty())
-
-		{
-			changed = true;
-			while (changed) {
-
-				changed = false;
-				for (Integer state1 : states) {
-					int id1 = stateToId.get(state1);
-
-					Collection<Integer> fromState1 = uRetRelList.get(state1);
-					Collection<Integer> newStates = new HashSet<>();
-					// Closure
-					for (Integer state2 : fromState1) {
-						if (state1 != state2) {
-							Collection<Integer> fromState2 = uRetRelList.get(state2);
-							for (int state3 : fromState2) {
-								if (state3 != state2 && state3 != state1) {
-									int id3 = stateToId.get(state3);
-									if (!unRetRel[id1][id3]) {
-										changed = true;
-										newStates.add(state3);
-										unRetRel[id1][id3] = true;
-									}
-								}
-							}
-						}
-					}
-
-					fromState1.addAll(newStates);
-				}
-			}
-		}
+			for (Integer state1 : states)
+				dfsReachRel(state1, stateToId, unRetRel, uRetRelList);		
 
 		// Full reachability relation
 		Map<Integer, Collection<Integer>> relList = copyMap(uRetRelList);
@@ -775,7 +693,7 @@ public abstract class VPAutomaton<P, S> {
 
 	}
 
-	public void dfsInternal(int stateFrom, Map<Integer, Integer> stateToId, boolean[][] reachRel,
+	private void dfsInternal(int stateFrom, Map<Integer, Integer> stateToId, boolean[][] reachRel,
 			Map<Integer, Collection<Integer>> wmRelList) {
 
 		HashSet<Integer> reached = new HashSet<>();
@@ -804,6 +722,30 @@ public abstract class VPAutomaton<P, S> {
 					wmRelList.get(stateFrom).add(t.to);
 					toVisit.add(t.to);
 					reached.add(t.to);
+				}
+			}
+		}
+	}
+
+	private void dfsReachRel(int stateFrom, Map<Integer, Integer> stateToId, boolean[][] reachRel,
+			Map<Integer, Collection<Integer>> wmRelList) {
+
+		HashSet<Integer> reached = new HashSet<>();
+		LinkedList<Integer> toVisit = new LinkedList<>();
+		toVisit.add(stateFrom);
+
+		int id = stateToId.get(stateFrom);
+
+		while (!toVisit.isEmpty()) {
+			int state = toVisit.removeFirst();
+
+			// Epsilon Transition
+			for (Integer to : wmRelList.get(state)) {
+				if (!reached.contains(to)) {
+					reachRel[id][stateToId.get(to)] = true;
+					wmRelList.get(stateFrom).add(to);
+					toVisit.add(to);
+					reached.add(to);
 				}
 			}
 		}
