@@ -589,6 +589,10 @@ public abstract class VPAutomaton<P, S> {
 		Map<Integer, Collection<Integer>> wmRelList = new HashMap<Integer, Collection<Integer>>();
 		boolean[][] wmReachRel = new boolean[states.size()][states.size()];
 
+		HashSet<Integer> relevantStates = new HashSet<>();
+		relevantStates.addAll(getInitialStates());
+		HashSet<Integer> callStates = new HashSet<>();
+
 		Integer count = 0;
 		for (Integer state : getStates()) {
 			stateToId.put(state, count);
@@ -603,11 +607,34 @@ public abstract class VPAutomaton<P, S> {
 				if (count != j)
 					wmReachRel[count][j] = false;
 
+			if (!getCallsFrom(state).isEmpty()){
+				relevantStates.add(state);
+				callStates.add(state);
+			}else{
+				if (!getReturnBSFrom(state).isEmpty())
+					relevantStates.add(state);
+				else{
+					if (!getReturnsFrom(state).isEmpty())
+						relevantStates.add(state);
+					else{
+						if (!getCallsTo(state).isEmpty())
+							relevantStates.add(state);
+						else{
+							if (!getReturnBSTo(state).isEmpty())
+								relevantStates.add(state);
+							else
+								if (!getReturnsTo(state).isEmpty())
+									relevantStates.add(state);
+						}
+					}
+				}
+			}
+				
 			count++;
 		}
 
 		// Build relation for epsilon and internal transitions
-		for (Integer state1 : states)
+		for (Integer state1 : relevantStates)
 			dfsInternal(state1, stateToId, wmReachRel, wmRelList);
 
 		// Compute fixpoint of reachability relation
@@ -615,7 +642,7 @@ public abstract class VPAutomaton<P, S> {
 		while (changed) {
 			changed = false;
 
-			for (Integer state1 : states) {
+			for (Integer state1 : callStates) {
 				int id1 = stateToId.get(state1);
 
 				Collection<Integer> fromState1 = wmRelList.get(state1);
@@ -638,8 +665,8 @@ public abstract class VPAutomaton<P, S> {
 			}
 
 			if (changed)
-				for (Integer state1 : states)
-					dfsReachRel(state1, stateToId, wmReachRel, wmRelList);				
+				for (Integer state1 : relevantStates)
+					dfsReachRel(state1, stateToId, wmReachRel, wmRelList);
 		}
 
 		// Unmatched calls
@@ -649,15 +676,14 @@ public abstract class VPAutomaton<P, S> {
 		// Calls
 		Collection<Call<P, S>> calls = getCallsFrom(getStates());
 		for (Call<P, S> tCall : calls)
-
 		{
 			unCallRel[stateToId.get(tCall.from)][stateToId.get(tCall.to)] = true;
 			uCallRelList.get(tCall.from).add(tCall.to);
 		}
 
 		if (!calls.isEmpty())
-			for (Integer state1 : states)
-				dfsReachRel(state1, stateToId, unCallRel, uCallRelList);				
+			for (Integer state1 : relevantStates)
+				dfsReachRel(state1, stateToId, unCallRel, uCallRelList);
 
 		// Unmatched returns
 		boolean[][] unRetRel = copyBoolMatrix(wmReachRel);
@@ -665,15 +691,14 @@ public abstract class VPAutomaton<P, S> {
 
 		// Returns
 		Collection<ReturnBS<P, S>> returns = getReturnBSFrom(getStates());
-		for (ReturnBS<P, S> tRet : returns)
-		{
+		for (ReturnBS<P, S> tRet : returns) {
 			unRetRel[stateToId.get(tRet.from)][stateToId.get(tRet.to)] = true;
 			uRetRelList.get(tRet.from).add(tRet.to);
 		}
 
 		if (!returns.isEmpty())
-			for (Integer state1 : states)
-				dfsReachRel(state1, stateToId, unRetRel, uRetRelList);		
+			for (Integer state1 : relevantStates)
+				dfsReachRel(state1, stateToId, unRetRel, uRetRelList);
 
 		// Full reachability relation
 		Map<Integer, Collection<Integer>> relList = copyMap(uRetRelList);
