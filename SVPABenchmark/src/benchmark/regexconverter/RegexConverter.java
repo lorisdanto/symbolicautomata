@@ -11,12 +11,11 @@ import org.sat4j.specs.TimeoutException;
 
 import com.google.common.collect.ImmutableList;
 
-import RegexParser.RegexParserProvider;
 import RegexParser.CharacterClassNode;
+import RegexParser.AnchorNode;
 import RegexParser.CharNode;
 import RegexParser.ConcatenationNode;
 import RegexParser.DotNode;
-import RegexParser.EndAnchorNode;
 import RegexParser.EscapedCharNode;
 import RegexParser.FormulaNode;
 import RegexParser.IntervalNode;
@@ -25,17 +24,14 @@ import RegexParser.NormalCharNode;
 import RegexParser.NotCharacterClassNode;
 import RegexParser.OptionalNode;
 import RegexParser.PlusNode;
-import RegexParser.RegexListNode;
 import RegexParser.RegexNode;
 import RegexParser.RepetitionNode;
 import RegexParser.StarNode;
-import RegexParser.StartAnchorNode;
 import RegexParser.UnionNode;
 
 import automata.sfa.*;
-import theory.BooleanAlgebra;
 import theory.characters.*;
-import theory.intervals.UnaryCharIntervalSolver;;
+import theory.intervals.UnaryCharIntervalSolver;
 
 public class RegexConverter {
 
@@ -77,14 +73,42 @@ public class RegexConverter {
 			transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, unarySolver.True()));
 			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), unarySolver);
 
-		} else if (phi instanceof StartAnchorNode) {
-			StartAnchorNode cphi = (StartAnchorNode) phi;
-			// unfinished
-
-		} else if (phi instanceof EndAnchorNode) {
-			EndAnchorNode cphi = (EndAnchorNode) phi;
-			// unfinished
-
+		} else if (phi instanceof AnchorNode) {
+			AnchorNode cphi = (AnchorNode) phi;
+			SFA<CharPred, Character> tempSFA = toSFA(cphi.getMyRegex1(), unarySolver);
+			if(cphi.hasStartAnchor() && cphi.hasEndAnchor()){
+				// for start anchor, create a SFA that has state 0 that goes to state 1 with every input and add self-loop for state 1
+				Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
+				Collection<SFAMove<CharPred, Character>> transitionsB = new LinkedList<SFAMove<CharPred, Character>>();
+				transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, unarySolver.True()));
+				transitionsA.add(new SFAInputMove<CharPred, Character>(1, 1, unarySolver.True()));
+				// for end anchor, create a SFA that has state 0 that goes to state 1 with every input and add self-loop for state 1
+				transitionsB.add(new SFAInputMove<CharPred, Character>(0, 1, unarySolver.True()));
+				transitionsB.add(new SFAInputMove<CharPred, Character>(1, 1, unarySolver.True()));
+				//concatenate with start anchor SFA
+				outputSFA = SFA.concatenate(SFA.MkSFA(transitionsA, 0, Arrays.asList(1), unarySolver), tempSFA, unarySolver);	
+				//then concatenate with end anchor SFA
+				outputSFA = SFA.concatenate(outputSFA, SFA.MkSFA(transitionsB, 0, Arrays.asList(1), unarySolver), unarySolver);	
+				return outputSFA;
+			}
+			else if(cphi.hasStartAnchor()){
+				// for start anchor, create a SFA that has state 0 that goes to state 1 with every input and add self-loop for state 1
+				Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
+				transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, unarySolver.True()));
+				transitionsA.add(new SFAInputMove<CharPred, Character>(1, 1, unarySolver.True()));
+				// put startAnchor SFA to the front of the following SFA
+				outputSFA = SFA.concatenate(SFA.MkSFA(transitionsA, 0, Arrays.asList(1), unarySolver), tempSFA, unarySolver) ;	
+			}else if(cphi.hasEndAnchor()){
+				// for end anchor, create a SFA that has state 0 that goes to state 1 with every input and add self-loop for state 1
+				Collection<SFAMove<CharPred, Character>> transitionsB = new LinkedList<SFAMove<CharPred, Character>>();
+				transitionsB.add(new SFAInputMove<CharPred, Character>(0, 1, unarySolver.True()));
+				transitionsB.add(new SFAInputMove<CharPred, Character>(1, 1, unarySolver.True()));
+				outputSFA = SFA.concatenate(SFA.MkSFA(transitionsB, 0, Arrays.asList(1), unarySolver), tempSFA, unarySolver);
+			}else{
+				System.err.println("Wrong anchor node construction, program will quit");
+				System.exit(-1);
+			}
+			
 		} else if (phi instanceof StarNode) {
 			// use existing SFA.star() method
 			StarNode cphi = (StarNode) phi;
@@ -100,9 +124,12 @@ public class RegexConverter {
 		} else if (phi instanceof OptionalNode) {
 			OptionalNode cphi = (OptionalNode) phi;
 			SFA<CharPred, Character> tempSFA = toSFA(cphi.getMyRegex1(), unarySolver);
-			// I write the optional method according to SFA.star, the method is
-			// at the end of this file
-			outputSFA = optional(tempSFA, unarySolver);
+			
+			// build a SFA that has epsilon transition from state 0 to 1 and then union them
+			Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
+			transitions.add(new SFAEpsilon<CharPred, Character>(0, 1));
+			
+			outputSFA = SFA.union(tempSFA, SFA.MkSFA(transitions,0, Arrays.asList(1), unarySolver), unarySolver);
 
 		} else if (phi instanceof NormalCharNode) {
 			// make a SFA that has a transition which accepts this char
@@ -302,11 +329,12 @@ public class RegexConverter {
 				predicate = new CharPred(single.getChar());
 			}
 		} else { // if it is a range interval
-			// TODO: currently ignore the case of metaCharacters in range e.g.
-			// [\d-\d]
+			// metaCharacters in range is undefined behavior
+			// e.g. [\d-\d]
 			CharNode start = node.getChar1();
 			CharNode end = node.getChar2();
 			if (start instanceof MetaCharNode || end instanceof MetaCharNode) {
+				System.err.println("range intervals cannot have meta character, behavior undefined.");
 				throw new UnsupportedOperationException();
 			}
 			predicate = new CharPred(start.getChar(), end.getChar());
@@ -315,20 +343,20 @@ public class RegexConverter {
 		return predicate;
 	}
 
-	// ptional behaves like star except it does not have epsilon which returns
-	// to the
-	@SuppressWarnings("unchecked")
-	private static <A, B> SFA<CharPred, Character> optional(SFA<A, B> aut, BooleanAlgebra<A, B> ab)
-			throws TimeoutException {
-
-		Collection<SFAMove<A, B>> transitions = aut.getTransitions();
-		Integer initialState = aut.getInitialState();
-		Collection<Integer> finalStates = aut.getFinalStates();
-
-		for (Integer finState : finalStates) {
-			transitions.add(new SFAEpsilon<A, B>(initialState, finState));
-		}
-
-		return (SFA<CharPred, Character>) SFA.MkSFA(transitions, initialState, finalStates, ab, false);
-	}
+//	// ptional behaves like star except it does not have epsilon which returns
+//	// to the
+//	@SuppressWarnings("unchecked")
+//	private static <A, B> SFA<CharPred, Character> optional(SFA<A, B> aut, BooleanAlgebra<A, B> ab)
+//			throws TimeoutException {
+//
+//		Collection<SFAMove<A, B>> transitions = aut.getTransitions();
+//		Integer initialState = aut.getInitialState();
+//		Collection<Integer> finalStates = aut.getFinalStates();
+//
+//		for (Integer finState : finalStates) {
+//			transitions.add(new SFAEpsilon<A, B>(initialState, finState));
+//		}
+//
+//		return (SFA<CharPred, Character>) SFA.MkSFA(transitions, initialState, finalStates, ab, false);
+//	}
 }
