@@ -75,38 +75,14 @@ public class RegexConverter {
 
 		} else if (phi instanceof AnchorNode) {
 			AnchorNode cphi = (AnchorNode) phi;
-			SFA<CharPred, Character> tempSFA = toSFA(cphi.getMyRegex1(), unarySolver);
-			if(cphi.hasStartAnchor() && cphi.hasEndAnchor()){
-				// for start anchor, create a SFA that has state 0 that goes to state 1 with every input and add self-loop for state 1
-				Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
-				Collection<SFAMove<CharPred, Character>> transitionsB = new LinkedList<SFAMove<CharPred, Character>>();
-				transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, unarySolver.True()));
-				transitionsA.add(new SFAInputMove<CharPred, Character>(1, 1, unarySolver.True()));
-				// for end anchor, create a SFA that has state 0 that goes to state 1 with every input and add self-loop for state 1
-				transitionsB.add(new SFAInputMove<CharPred, Character>(0, 1, unarySolver.True()));
-				transitionsB.add(new SFAInputMove<CharPred, Character>(1, 1, unarySolver.True()));
-				//concatenate with start anchor SFA
-				outputSFA = SFA.concatenate(SFA.MkSFA(transitionsA, 0, Arrays.asList(1), unarySolver), tempSFA, unarySolver);	
-				//then concatenate with end anchor SFA
-				outputSFA = SFA.concatenate(outputSFA, SFA.MkSFA(transitionsB, 0, Arrays.asList(1), unarySolver), unarySolver);	
-				return outputSFA;
-			}
-			else if(cphi.hasStartAnchor()){
-				// for start anchor, create a SFA that has state 0 that goes to state 1 with every input and add self-loop for state 1
-				Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
-				transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, unarySolver.True()));
-				transitionsA.add(new SFAInputMove<CharPred, Character>(1, 1, unarySolver.True()));
+			outputSFA = toSFA(cphi.getMyRegex1(), unarySolver);
+			if(cphi.hasStartAnchor()){
 				// put startAnchor SFA to the front of the following SFA
-				outputSFA = SFA.concatenate(SFA.MkSFA(transitionsA, 0, Arrays.asList(1), unarySolver), tempSFA, unarySolver) ;	
-			}else if(cphi.hasEndAnchor()){
+				outputSFA = SFA.concatenate(SFA.getFullSFA(unarySolver), outputSFA, unarySolver) ;
+			}
+			if(cphi.hasEndAnchor()){
 				// for end anchor, create a SFA that has state 0 that goes to state 1 with every input and add self-loop for state 1
-				Collection<SFAMove<CharPred, Character>> transitionsB = new LinkedList<SFAMove<CharPred, Character>>();
-				transitionsB.add(new SFAInputMove<CharPred, Character>(0, 1, unarySolver.True()));
-				transitionsB.add(new SFAInputMove<CharPred, Character>(1, 1, unarySolver.True()));
-				outputSFA = SFA.concatenate(SFA.MkSFA(transitionsB, 0, Arrays.asList(1), unarySolver), tempSFA, unarySolver);
-			}else{
-				System.err.println("Wrong anchor node construction, program will quit");
-				System.exit(-1);
+				outputSFA = SFA.concatenate(outputSFA, SFA.getFullSFA(unarySolver), unarySolver);
 			}
 			
 		} else if (phi instanceof StarNode) {
@@ -125,11 +101,9 @@ public class RegexConverter {
 			OptionalNode cphi = (OptionalNode) phi;
 			SFA<CharPred, Character> tempSFA = toSFA(cphi.getMyRegex1(), unarySolver);
 			
-			// build a SFA that has epsilon transition from state 0 to 1 and then union them
+			// build an SFA that only accepts the empty string
 			Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
-			transitions.add(new SFAEpsilon<CharPred, Character>(0, 1));
-			
-			outputSFA = SFA.union(tempSFA, SFA.MkSFA(transitions,0, Arrays.asList(1), unarySolver), unarySolver);
+			outputSFA = SFA.union(tempSFA, SFA.MkSFA(transitions,0, Arrays.asList(0), unarySolver), unarySolver);
 
 		} else if (phi instanceof NormalCharNode) {
 			// make a SFA that has a transition which accepts this char
