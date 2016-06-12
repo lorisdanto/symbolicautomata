@@ -302,16 +302,8 @@ public class RegexConverter {
 				// TODO: not sure if backslash is needed
 				predicate = new CharPred(single.getChar());
 			}
-		} else { // if it is a range interval
-			// metaCharacters in range is undefined behavior
-			// e.g. [\d-\d]
-			CharNode start = node.getChar1();
-			CharNode end = node.getChar2();
-			if (start instanceof MetaCharNode || end instanceof MetaCharNode) {
-				System.err.println("range intervals cannot have meta character, behavior undefined.");
-				throw new UnsupportedOperationException();
-			}
-			predicate = new CharPred(start.getChar(), end.getChar());
+		} else {
+			predicate = new CharPred(node.getChar1().getChar(), node.getChar2().getChar());
 		}
 
 		return predicate;
