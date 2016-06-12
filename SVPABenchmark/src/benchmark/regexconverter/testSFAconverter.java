@@ -179,7 +179,7 @@ public class testSFAconverter {
 		assertFalse(sfa2.accepts(lOfS("b"), solver));
 		assertFalse(sfa2.accepts(lOfS("c"), solver));
 		
-		// assertFalse(sfa2.accepts(lOfS("ab"), solver)); 
+		assertFalse(sfa2.accepts(lOfS("ab"), solver)); 
 		
 		assertTrue(sfa2.accepts(lOfS("a"), solver));
 		assertTrue(sfa2.accepts(lOfS("ba"), solver));

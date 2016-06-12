@@ -1,19 +1,17 @@
 package benchmark.regexconverter;
 
 
-import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.sat4j.specs.TimeoutException;
 
-import com.google.common.collect.ImmutableList;
-
-import RegexParser.CharacterClassNode;
 import RegexParser.AnchorNode;
 import RegexParser.CharNode;
+import RegexParser.CharacterClassNode;
 import RegexParser.ConcatenationNode;
 import RegexParser.DotNode;
 import RegexParser.EscapedCharNode;
@@ -28,9 +26,11 @@ import RegexParser.RegexNode;
 import RegexParser.RepetitionNode;
 import RegexParser.StarNode;
 import RegexParser.UnionNode;
-
-import automata.sfa.*;
-import theory.characters.*;
+import automata.sfa.SFA;
+import automata.sfa.SFAInputMove;
+import automata.sfa.SFAMove;
+import theory.characters.CharPred;
+import theory.characters.StdCharPred;
 import theory.intervals.UnaryCharIntervalSolver;
 
 public class RegexConverter {
@@ -76,11 +76,11 @@ public class RegexConverter {
 		} else if (phi instanceof AnchorNode) {
 			AnchorNode cphi = (AnchorNode) phi;
 			outputSFA = toSFA(cphi.getMyRegex1(), unarySolver);
-			if(cphi.hasStartAnchor()){
+			if(!cphi.hasStartAnchor()){
 				// put startAnchor SFA to the front of the following SFA
 				outputSFA = SFA.concatenate(SFA.getFullSFA(unarySolver), outputSFA, unarySolver) ;
 			}
-			if(cphi.hasEndAnchor()){
+			if(!cphi.hasEndAnchor()){
 				// for end anchor, create a SFA that has state 0 that goes to state 1 with every input and add self-loop for state 1
 				outputSFA = SFA.concatenate(outputSFA, SFA.getFullSFA(unarySolver), unarySolver);
 			}
