@@ -18,6 +18,7 @@ import RegexParser.EscapedCharNode;
 import RegexParser.FormulaNode;
 import RegexParser.IntervalNode;
 import RegexParser.MetaCharNode;
+import RegexParser.ModifierNode;
 import RegexParser.NormalCharNode;
 import RegexParser.NotCharacterClassNode;
 import RegexParser.OptionalNode;
@@ -246,7 +247,9 @@ public class RegexConverter {
 				return outputSFA;
 			}
 			
-		} else {
+		}else if (phi instanceof ModifierNode) {
+			throw new UnsupportedOperationException();
+		}else {
 			System.err.println("Wrong instance of phi, program will quit");
 			System.exit(-1);
 		}
@@ -309,20 +312,4 @@ public class RegexConverter {
 		return predicate;
 	}
 
-//	// ptional behaves like star except it does not have epsilon which returns
-//	// to the
-//	@SuppressWarnings("unchecked")
-//	private static <A, B> SFA<CharPred, Character> optional(SFA<A, B> aut, BooleanAlgebra<A, B> ab)
-//			throws TimeoutException {
-//
-//		Collection<SFAMove<A, B>> transitions = aut.getTransitions();
-//		Integer initialState = aut.getInitialState();
-//		Collection<Integer> finalStates = aut.getFinalStates();
-//
-//		for (Integer finState : finalStates) {
-//			transitions.add(new SFAEpsilon<A, B>(initialState, finState));
-//		}
-//
-//		return (SFA<CharPred, Character>) SFA.MkSFA(transitions, initialState, finalStates, ab, false);
-//	}
 }

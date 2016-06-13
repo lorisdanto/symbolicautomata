@@ -26,6 +26,29 @@ public class testSFAconverter {
 	}
 	
 	@Test
+	public void testMetaChar() {
+		String regex = "\\s";
+		SFAprovider test = new SFAprovider(regex, solver);
+		SFA<CharPred, Character> sfa = test.getSFA();
+		assertFalse(sfa.accepts(lOfS("a"), solver));
+		assertTrue(sfa.accepts(lOfS(" "), solver));
+		
+		String regex2 = "\\S";
+		SFAprovider test2 = new SFAprovider(regex2, solver);
+		SFA<CharPred, Character> sfa2 = test2.getSFA();
+		assertTrue(sfa2.accepts(lOfS("a"), solver));
+		assertFalse(sfa2.accepts(lOfS(" "), solver));
+		
+		String regex3 = "\\w";
+		SFAprovider test3 = new SFAprovider(regex3, solver);
+		SFA<CharPred, Character> sfa3 = test3.getSFA();
+		assertTrue(sfa3.accepts(lOfS("a"), solver));
+		assertTrue(sfa3.accepts(lOfS("_"), solver));
+		assertTrue(sfa3.accepts(lOfS("1"), solver));
+		assertFalse(sfa3.accepts(lOfS(" "), solver));
+	}
+	
+	@Test
 	public void testCharacterClass() {
 		String regex1 = "[\\d]";
 		SFAprovider test1 = new SFAprovider(regex1, solver);
