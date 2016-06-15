@@ -41,26 +41,39 @@ public class RunIntersectionExp {
 		for (String regex : list) {
 			safaList.add((new SFAprovider(regex, solver)).getSFA().getSAFA(solver));
 		}
+		// ArrayList<SAFA<CharPred, Character>> temp = new
+		// ArrayList<SAFA<CharPred, Character>>();
+		// temp.add(safaList.get(0));
+		// temp.add(safaList.get(1));
+		// temp.add(safaList.get(2));
+		// temp.add(safaList.get(3));
+		// temp.add(safaList.get(5));
+		//
+		// System.out.println(hasIntersection(solver, temp));
 
-		System.out.println(hasIntersection(solver, safaList));
+		//System.out.println(hasIntersection(solver, safaList));
+		for (int q = 0; q < safaList.size() - 5; q++) {
+			for (int i = q + 1; i < safaList.size() - 4; i++) {
+				for (int j = i + 1; j < safaList.size() - 3; j++) {
+					for (int k = j + 1; k < safaList.size() - 2; k++) {
+						for (int m = k + 1; m < safaList.size() - 1; m++) {
+							for (int n = m + 1; n < safaList.size(); n++) {
+								ArrayList<SAFA<CharPred, Character>> temp = new ArrayList<SAFA<CharPred, Character>>();
+								temp.add(safaList.get(q));
+								temp.add(safaList.get(i));
+								temp.add(safaList.get(j));
+								temp.add(safaList.get(k));
+								temp.add(safaList.get(m));
+								temp.add(safaList.get(n));
 
-		for (int i = 0; i < safaList.size() - 4; i++) {
-			for (int j = i + 1; j < safaList.size() - 3; j++) {
-				for (int k = j + 1; k < safaList.size() - 2; k++) {
-					for (int m = k + 1; m < safaList.size() - 1; m++) {
-						for (int n = m + 1; n < safaList.size(); n++) {
-							ArrayList<SAFA<CharPred, Character>> temp = new ArrayList<SAFA<CharPred, Character>>();
-							temp.add(safaList.get(i));
-							temp.add(safaList.get(j));
-							temp.add(safaList.get(k));
-							temp.add(safaList.get(m));
-							temp.add(safaList.get(n));
-
-							boolean hasintersect = hasIntersection(solver, temp);
-							System.out.println(hasintersect);
-							if (hasintersect) {
-								System.out.println(i + "\n" + j + "\n" + k + "\n" + m + "\n" + n);
-								System.exit(-1);
+								boolean hasintersect = hasIntersection(solver, temp);
+							    System.out.print(hasintersect+"  ");
+							    System.out.println(q + " " + i + " " + j + " " + k + " " + m + " " + n);
+//								if (hasintersect) {
+//									System.out.println(hasintersect);
+//									System.out.println(q + "\n" + i + "\n" + j + "\n" + k + "\n" + m + "\n" + n);
+//									// System.exit(-1);
+//								}
 							}
 						}
 					}
