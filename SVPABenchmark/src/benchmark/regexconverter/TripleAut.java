@@ -44,6 +44,14 @@ public class TripleAut {
 		this.intersectedSFA = sfa4;
 	}
 	
+	public void setSFA(SFA<CharPred, Character> sfa1, SFA<CharPred, Character> sfa2, SFA<CharPred, Character> sfa3) throws TimeoutException{
+		this.mySFA1 = sfa1;
+		this.mySFA2 = sfa2;
+		this.mySFA3 = sfa3;
+		this.intersectedSFA = this.mySFA1.intersectionWith(mySFA2, solver);
+		this.intersectedSFA = this.intersectedSFA.intersectionWith(mySFA3, solver);
+	}
+	
 	public void buildSAFA() throws TimeoutException{
 		this.mySAFA1 = this.mySFA1.getSAFA(solver);
 		this.mySAFA2 = this.mySFA2.getSAFA(solver); 

@@ -37,6 +37,12 @@ public class PairAut {
 		this.intersectedSFA = sfa3;
 	}
 	
+	public void setSFA(SFA<CharPred, Character> sfa1, SFA<CharPred, Character> sfa2) throws TimeoutException{
+		this.mySFA1 = sfa1;
+		this.mySFA2 = sfa2;
+		this.intersectedSFA = this.mySFA1.intersectionWith(mySFA2, solver);
+	}
+	
 	public void buildSAFA() throws TimeoutException{
 		this.mySAFA1 = this.mySFA1.getSAFA(solver);
 		this.mySAFA2 = this.mySFA2.getSAFA(solver);

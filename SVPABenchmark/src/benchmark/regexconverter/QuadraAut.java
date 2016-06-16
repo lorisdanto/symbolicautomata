@@ -51,6 +51,16 @@ public class QuadraAut {
 		this.intersectedSFA = sfa5;
 	}
 	
+	public void setSFA(SFA<CharPred, Character> sfa1, SFA<CharPred, Character> sfa2, SFA<CharPred, Character> sfa3, SFA<CharPred, Character> sfa4) throws TimeoutException{
+		this.mySFA1 = sfa1;
+		this.mySFA2 = sfa2;
+		this.mySFA3 = sfa3;
+		this.mySFA4 = sfa4;
+		this.intersectedSFA = this.mySFA1.intersectionWith(mySFA2, solver);
+		this.intersectedSFA = this.intersectedSFA.intersectionWith(mySFA3, solver);
+		this.intersectedSFA = this.intersectedSFA.intersectionWith(mySFA4, solver);
+	}
+	
 	public void buildSAFA() throws TimeoutException{
 		this.mySAFA1 = this.mySFA1.getSAFA(solver);
 		this.mySAFA2 = this.mySFA2.getSAFA(solver); 
