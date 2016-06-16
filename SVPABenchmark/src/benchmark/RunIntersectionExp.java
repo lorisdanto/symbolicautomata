@@ -132,7 +132,7 @@ public class RunIntersectionExp {
 		if (sfaList.size() == 2) {
 			try {
 				result = sfaList.get(0).intersectionWith(sfaList.get(1), solver, timeOut);
-				if (!SFA.areEquivalent(result, SFA.getEmptySFA(solver), solver, timeOut)) {
+				if (!result.isEmpty()) {
 					return result;
 				}
 				return null;
@@ -146,7 +146,7 @@ public class RunIntersectionExp {
 				for (int i = 2; i < sfaList.size(); i++) {
 					result = result.intersectionWith(sfaList.get(i), solver, timeOut);
 				}
-				if (!SFA.areEquivalent(result, SFA.getEmptySFA(solver), solver, timeOut)) {
+				if (!result.isEmpty()) {
 					return result;
 				}
 				return null;
