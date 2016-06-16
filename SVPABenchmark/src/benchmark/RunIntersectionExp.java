@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import org.sat4j.specs.TimeoutException;
@@ -12,20 +13,41 @@ import RegexParser.RegexListNode;
 import RegexParser.RegexParserProvider;
 import automata.safa.SAFA;
 import automata.sfa.SFA;
+import benchmark.regexconverter.PairAut;
+import benchmark.regexconverter.PentaAut;
+import benchmark.regexconverter.QuadraAut;
+import benchmark.regexconverter.TripleAut;
 import theory.characters.CharPred;
 import theory.intervals.UnaryCharIntervalSolver;
+import utilities.Timers;
 
 public class RunIntersectionExp {
 	static FileReader inFile;
+	private static PrintWriter outFile;
+	private static ArrayList<PairAut> pairList = new ArrayList<PairAut>();
+	private static ArrayList<TripleAut> tripleList = new ArrayList<TripleAut>();
+	private static ArrayList<QuadraAut> quadraList = new ArrayList<QuadraAut>();
+	private static ArrayList<PentaAut> pentaList = new ArrayList<PentaAut>();
+	private static UnaryCharIntervalSolver solver = new UnaryCharIntervalSolver();
+	private static long timeout = 5000;
+	private static ArrayList<SFA<CharPred, Character>> sfaList = new ArrayList<SFA<CharPred, Character>>();
+	private static ArrayList<SAFA<CharPred, Character>> safaList = new ArrayList<SAFA<CharPred, Character>>();
 
 	public static void main(String[] args) throws TimeoutException {
+		
 		ArrayList<String> list = new ArrayList<String>();
-		ArrayList<SAFA<CharPred, Character>> safaList = new ArrayList<SAFA<CharPred, Character>>();
-		UnaryCharIntervalSolver solver = new UnaryCharIntervalSolver();
+		
+
 		try {
-			inFile = new FileReader(args[0]);
+			inFile = new FileReader("src/benchmark/regexconverter/pattern@.txt");
 		} catch (FileNotFoundException ex) {
-			System.err.println("File " + args[0] + " not found.");
+			System.err.println("File not found.");
+			System.exit(-1);
+		}
+		try {
+			outFile = new PrintWriter("src/benchmark/regexconverter/IntersectionResult.txt");
+		} catch (FileNotFoundException ex) {
+			System.err.println("File could not be opened for writing.");
 			System.exit(-1);
 		}
 
@@ -39,74 +61,204 @@ public class RunIntersectionExp {
 		}
 
 		for (String regex : list) {
-			safaList.add((new SFAprovider(regex, solver)).getSFA().getSAFA(solver));
+			sfaList.add((new SFAprovider(regex, solver)).getSFA());
 		}
-		// ArrayList<SAFA<CharPred, Character>> temp = new
-		// ArrayList<SAFA<CharPred, Character>>();
-		// temp.add(safaList.get(0));
-		// temp.add(safaList.get(1));
-		// temp.add(safaList.get(2));
-		// temp.add(safaList.get(3));
-		// temp.add(safaList.get(5));
-		//
-		// System.out.println(hasIntersection(solver, temp));
 
-		//System.out.println(hasIntersection(solver, safaList));
-		for (int q = 0; q < safaList.size() - 5; q++) {
-			for (int i = q + 1; i < safaList.size() - 4; i++) {
-				for (int j = i + 1; j < safaList.size() - 3; j++) {
-					for (int k = j + 1; k < safaList.size() - 2; k++) {
-						for (int m = k + 1; m < safaList.size() - 1; m++) {
-							for (int n = m + 1; n < safaList.size(); n++) {
-								ArrayList<SAFA<CharPred, Character>> temp = new ArrayList<SAFA<CharPred, Character>>();
-								temp.add(safaList.get(q));
-								temp.add(safaList.get(i));
-								temp.add(safaList.get(j));
-								temp.add(safaList.get(k));
-								temp.add(safaList.get(m));
-								temp.add(safaList.get(n));
+//		for (SFA<CharPred, Character> sfa : sfaList) {
+//			safaList.add(sfa.getSAFA(solver));
+//		}
+		
 
-								boolean hasintersect = hasIntersection(solver, temp);
-							    System.out.print(hasintersect+"  ");
-							    System.out.println(q + " " + i + " " + j + " " + k + " " + m + " " + n);
-//								if (hasintersect) {
-//									System.out.println(hasintersect);
-//									System.out.println(q + "\n" + i + "\n" + j + "\n" + k + "\n" + m + "\n" + n);
-//									// System.exit(-1);
-//								}
-							}
-						}
-					}
+		
+		outFile.print("name		|SAFA1|		|SAFA2|		|SFA1|		|SFA2|		FullTime		SolverTime		SubsTime		SFAtime");
+		outFile.print(System.getProperty("line.separator"));
+		//generate pairs that has intersection
+		generatePairSFA();
+		generateTripleSFA();
+		//TODO: generate TripleSFA, QuadraSFA and PentsSFA
+		outFile.close();
+
+	}
+
+	/*
+	 * see if a list of SFAs have intersection, if there is, return the intersectedeSFA
+	 * otherwise return null
+	 */
+	private static SFA<CharPred, Character> IntersectedSFA(UnaryCharIntervalSolver solver,
+			ArrayList<SFA<CharPred, Character>> sfaList) {
+		SFA<CharPred, Character> result;
+		if (sfaList.size() < 2) {
+			return null;
+		}
+		if (sfaList.size() == 2) {
+			try {
+				result = sfaList.get(0).intersectionWith(sfaList.get(1), solver);
+				if(!SFA.areEquivalent(result, SFA.getEmptySFA(solver), solver)){
+					return result;	
 				}
+				return null;
+			} catch (Exception e) {
+				return null;
+			}
+
+		} else {
+			try {
+				result = sfaList.get(0).intersectionWith(sfaList.get(1), solver);
+				for (int i = 2; i < sfaList.size(); i++) {
+					result = result.intersectionWith(sfaList.get(i), solver);
+				}
+				if(!SFA.areEquivalent(result, SFA.getEmptySFA(solver), solver)){
+					return result;	
+				}
+				return null;
+			} catch (Exception e) {
+				return null;
 			}
 		}
 
 	}
+	
+	
+	
+	/*
+	 * loop through every combination of the file and generate pairs of SFA that intersect
+	 */
+	private static void generatePairSFA() throws TimeoutException {
+		for (int m = 0; m < sfaList.size() - 1; m++) {
+			for (int n = m + 1; n < sfaList.size(); n++) {
+				ArrayList<SFA<CharPred, Character>> temp = new ArrayList<SFA<CharPred, Character>>();
+				SFA<CharPred, Character> sfa1 = sfaList.get(m);
+				SFA<CharPred, Character> sfa2 = sfaList.get(n);
+				temp.add(sfa1);
+				temp.add(sfa2);
+				SFA<CharPred, Character> intersectedSFA = IntersectedSFA(solver, temp);
+				boolean hasIntersection = false;
+				if(intersectedSFA !=null){
+					hasIntersection = true;
+					pairList.add(new PairAut(m, n, sfa1, sfa2, intersectedSFA));
+				}
+				System.out.print(hasIntersection + "  ");
+				System.out.println(m + " " + n);
+			}
+		}
+	}
+	
+	/*
+	 * generate a bundle of three SFAs that have intersection, see TripleAut.java
+	 * also write to the file that has the result of experiment while generating triple bundle
+	 */
+	private static void generateTripleSFA() throws TimeoutException{
+		
+		for(PairAut pair: pairList){
+			int i = pair.getFirstIndex();
+			int j =pair.getSecondIndex();
+			for(int k=0;(k !=i) && (k!=j) && k<sfaList.size();k++){
+				ArrayList<SFA<CharPred, Character>> temp= new ArrayList<SFA<CharPred, Character>>();
+				temp.add(pair.getIntersectedSFA());
+				temp.add(sfaList.get(k));
+				SFA<CharPred, Character> intersectedSFA = IntersectedSFA(solver, temp);
+				if(intersectedSFA != null){
+					temp = pair.getSFAlist();
+					//build new TripleAut
+					TripleAut newTriple = new TripleAut(i,j,k, temp.get(0),temp.get(1),sfaList.get(k), intersectedSFA);
+					tripleList.add(newTriple);
+					outFile.print(i+","+j+"="+i+j+k+"\t\t"+ pair.getIntersectedSFA().stateCount()+"\t\t"+ intersectedSFA.stateCount()+"\t\t");
+					//now build SAFA from SFA in PairAutomata
+					pair.buildSAFA();
+					outFile.print(pair.getIntersectedSAFA().stateCount()+ newTriple.getIntersectedSAFA().stateCount());
+					
+					//Run SAFA Equivalence test, also count full time solver time and subsumption time
+					Timers.setTimeout(Long.MAX_VALUE);
+					try {
+						SAFA.isEquivalent(pair.getIntersectedSAFA(), newTriple.getIntersectedSAFA(), solver, SAFA.getBooleanExpressionFactory(), timeout);
+						outFile.print(Timers.getFull() + "\t\t" + Timers.getSolver() + "\t\t" + Timers.getSubsumption()+"\t\t");
+					} catch (TimeoutException e) {
+						outFile.print(timeout + "\t\t" + timeout + "\t\t" + timeout +"\t\t");
+					}
+					
+					// Now calculate the cost of SFA Equivalence test
+					long startDate = System.currentTimeMillis();
+					SFA.areEquivalent(pair.getIntersectedSFA(), intersectedSFA, solver);
+					long endDate = System.currentTimeMillis();
+					long sfaTestTime = endDate- startDate;
+					outFile.print(sfaTestTime);
+					outFile.print(System.getProperty("line.separator"));
+				}
+				
+			}
+		}
+	}
+	
+	
+	
+	
+	/*
+	 * loop through every combination of the file and generate pairs of SAFA that intersect
+	 */
+//	private static void generatePairSAFA(ArrayList<SAFA<CharPred, Character>> safaL, long timeout) throws TimeoutException {
+//		for (int m = 0; m < safaL.size() - 1; m++) {
+//			for (int n = m + 1; n < safaL.size(); n++) {
+//				ArrayList<SAFA<CharPred, Character>> temp = new ArrayList<SAFA<CharPred, Character>>();
+//				SAFA<CharPred, Character> safa1 = safaL.get(m);
+//				SAFA<CharPred, Character> safa2 = safaL.get(n);
+//				temp.add(safa1);
+//				temp.add(safa2);
+//				SAFA<CharPred, Character> intersectedSAFA = IntersectedSAFA(solver, temp, timeout);
+//				boolean hasIntersection = false;
+//				if(intersectedSAFA !=null){
+//					hasIntersection = true;
+//					pairList.add(new PairAut(m, n, safa1, safa2, intersectedSAFA));
+//				}
+//				if (hasIntersection) {
+//					pairList.add(new PairAut(m, n, safa1, safa2,safa1.intersectionWith(safa2, solver)));
+//				}
+//				System.out.print(hasIntersection + "  ");
+//				System.out.println(m + " " + n);
+//			}
+//		}
+//	}
+	
+	
 
-	private static boolean hasIntersection(UnaryCharIntervalSolver solver,
-			ArrayList<SAFA<CharPred, Character>> safaList) throws TimeoutException {
+	/*
+	 * see if a list of SAFAs have intersection
+	 */
+	private static SAFA<CharPred, Character> IntersectedSAFA(UnaryCharIntervalSolver solver,
+			ArrayList<SAFA<CharPred, Character>> safaList, long timeout) {
 		SAFA<CharPred, Character> result;
 		if (safaList.size() < 2) {
-			return false;
+			return null;
 		}
 		if (safaList.size() == 2) {
-			result = safaList.get(0).intersectionWith(safaList.get(1), solver);
-			return !SAFA.isEmpty(result, solver);
-		} else {
-			result = safaList.get(0).intersectionWith(safaList.get(1), solver);
-			for (int i = 2; i < safaList.size(); i++) {
-				result = result.intersectionWith(safaList.get(i), solver);
+
+			try {
+				result = safaList.get(0).intersectionWith(safaList.get(1), solver);
+				// return !SAFA.isEmpty(result, solver);
+				if(!SAFA.isEmpty(result, solver, timeout)){
+					return result;
+				}
+				return null;
+			} catch (Exception e) {
+				return null;
 			}
-			return !SAFA.isEmpty(result, solver);
+
+		} else {
+			try {
+				result = safaList.get(0).intersectionWith(safaList.get(1), solver);
+				for (int i = 2; i < safaList.size(); i++) {
+					result = result.intersectionWith(safaList.get(i), solver);
+				}
+				if(!SAFA.isEmpty(result, solver, timeout)){
+					return result;
+				}
+				return null;
+			} catch (Exception e) {
+				return null;
+			}
 		}
 
 	}
 
-	// private static ArrayList<SAFA<CharPred, Character>>
-	// findExample(UnaryCharIntervalSolver solver,ArrayList<SAFA<CharPred,
-	// Character>> safaList, int numOfExample){
-	//
-	// return safaList;
-	// }
+
 
 }
