@@ -393,23 +393,47 @@ public class RunIntersectionExp {
 		for (PairAut pair : pairList) {
 			int i = pair.getFirstIndex();
 			int j = pair.getSecondIndex();
+			
+			//avoid recomputing the intersection of first two every time
+			ArrayList<SAFA<CharPred, Character>> IntersectFirstTwoSAFA = pair.getSAFAlist();
+			Timers.setTimeout(Long.MAX_VALUE);
+			SAFA<CharPred, Character> intersectedSAFAtemp = IntersectedSAFA(solver, IntersectFirstTwoSAFA, timeOut);
+			long fullTimeSAFAtemp = Timers.getFull();
+			long solverTimeSAFAtemp = Timers.getSolver();
+			long subTimeSAFAtemp = Timers.getSubsumption();
+			
+			// also pre-computing the intersection of the first two SFAs 
+			ArrayList<SFA<CharPred, Character>> IntersectFirstTwoSFA = new ArrayList<SFA<CharPred, Character>>();
+			SFA<CharPred, Character> sfa1 = sfaList.get(i);
+			SFA<CharPred, Character> sfa2 = sfaList.get(j);
+			IntersectFirstTwoSFA.add(sfa1);
+			IntersectFirstTwoSFA.add(sfa2);
+			
+			long startDatetemp = System.currentTimeMillis();
+			SFA<CharPred, Character> intersectedSFAtemp = IntersectedSFA(solver, IntersectFirstTwoSFA, timeOut);
+			long endDatetemp = System.currentTimeMillis();
+			long totalTimeSFAtemp = endDatetemp - startDatetemp;
+			
+			
+			
 			for (int k = j+1; k < safaList.size(); k++) {
-				// put three SAFAs to the ArrayList
-				ArrayList<SAFA<CharPred, Character>> temp = pair.getSAFAlist();
+				// intersect intersectedSAFA of first two and the new one 
+				ArrayList<SAFA<CharPred, Character>> temp = new ArrayList<SAFA<CharPred, Character>>();
+				temp.add(intersectedSAFAtemp);
 				temp.add(safaList.get(k));
 				Timers.setTimeout(Long.MAX_VALUE);
 				SAFA<CharPred, Character> intersectedSAFA = IntersectedSAFA(solver, temp, timeOut);
-				long fullTimeSAFA = Timers.getFull();
-				long solverTimeSAFA = Timers.getSolver();
-				long subTimeSAFA = Timers.getSubsumption();
+				long fullTimeSAFA = Timers.getFull()+fullTimeSAFAtemp;
+				long solverTimeSAFA = Timers.getSolver()+solverTimeSAFAtemp;
+				long subTimeSAFA = Timers.getSubsumption()+subTimeSAFAtemp;
 				boolean hasIntersection = false;
 				if (intersectedSAFA != null) {
 					hasIntersection = true;
 					tripleResult.println(i + ";" + j + ";" + k);
 					resultOfEmptiness3.print(i + ";" + j + ";" + k + "   ");
-					SAFA<CharPred, Character> safa1= temp.get(0);
-					SAFA<CharPred, Character> safa2= temp.get(1);
-					SAFA<CharPred, Character> safa3= temp.get(2);
+					SAFA<CharPred, Character> safa1= safaList.get(i);
+					SAFA<CharPred, Character> safa2= safaList.get(j);
+					SAFA<CharPred, Character> safa3= safaList.get(k);
 					// build new TripleAut
 //					TripleAut newTriple = new TripleAut(i, j, k, safa1, safa2, safa3,
 //							intersectedSAFA);
@@ -435,16 +459,13 @@ public class RunIntersectionExp {
 					resultOfEmptiness3.print(sizeSum + "   " + sizeMult + "   ");
 
 					ArrayList<SFA<CharPred, Character>> tempSFA = new ArrayList<SFA<CharPred, Character>>();
-					SFA<CharPred, Character> sfa1 = sfaList.get(i);
-					SFA<CharPred, Character> sfa2 = sfaList.get(j);
 					SFA<CharPred, Character> sfa3 = sfaList.get(k);
-					tempSFA.add(sfa1);
-					tempSFA.add(sfa2);
+					tempSFA.add(intersectedSFAtemp);
 					tempSFA.add(sfa3);
 					long startDate = System.currentTimeMillis();
 					SFA<CharPred, Character> intersectedSFA = IntersectedSFA(solver, tempSFA, timeOut);
 					long endDate = System.currentTimeMillis();
-					long totalTimeSFA = endDate - startDate;
+					long totalTimeSFA = endDate - startDate + totalTimeSFAtemp;
 					if (intersectedSFA == null) {
 						totalTimeSFA = timeOut;
 					}
