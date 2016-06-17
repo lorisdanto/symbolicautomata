@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import org.sat4j.specs.TimeoutException;
+import java.math.*;
 
 import RegexParser.RegexListNode;
 import RegexParser.RegexParserProvider;
@@ -24,9 +25,11 @@ import utilities.Timers;
 public class RunIntersectionExp {
 	static FileReader inFile;
 	static FileReader pairFile;
-	
-	private static PrintWriter resultOfEmptiness;
+
+	private static PrintWriter resultOfEmptiness2;
+	private static PrintWriter resultOfEmptiness3;
 	private static PrintWriter equivalenceFile;
+	private static PrintWriter pairResult;
 	private static PrintWriter tripleResult;
 	private static PrintWriter quadraResult;
 	private static PrintWriter pentaResult;
@@ -35,50 +38,28 @@ public class RunIntersectionExp {
 	private static ArrayList<QuadraAut> quadraList = new ArrayList<QuadraAut>();
 	private static ArrayList<PentaAut> pentaList = new ArrayList<PentaAut>();
 	private static UnaryCharIntervalSolver solver = new UnaryCharIntervalSolver();
-	//private static long timeout = 5000;
+	// private static long timeout = 5000;
 	private static ArrayList<SFA<CharPred, Character>> sfaList = new ArrayList<SFA<CharPred, Character>>();
 	private static ArrayList<SAFA<CharPred, Character>> safaList = new ArrayList<SAFA<CharPred, Character>>();
 	// to store input file of patterns
 	private static ArrayList<String> list = new ArrayList<String>();
-	
+
 	public static void main(String[] args) throws TimeoutException {
 
-		
-
 		try {
-			inFile = new FileReader("src/benchmark/regexconverter/pattern@test.txt");
+			inFile = new FileReader("src/benchmark/regexconverter/pattern@.txt");
 		} catch (FileNotFoundException ex) {
 			System.err.println("File not found.");
 			System.exit(-1);
 		}
-		
-		try {
-			pairFile = new FileReader("src/benchmark/regexconverter/PairResult.txt");
-		} catch (FileNotFoundException ex) {
-			System.err.println("File not found.");
-			System.exit(-1);
-		}
-		
-		try {
-			equivalenceFile = new PrintWriter("src/benchmark/regexconverter/resultOfEquivalence2to3.txt");
-		} catch (FileNotFoundException ex) {
-			System.err.println("File could not be opened for writing.");
-			System.exit(-1);
-		}
 
-		try {
-			resultOfEmptiness = new PrintWriter("src/benchmark/regexconverter/resultOfEmptiness.txt");
-		} catch (FileNotFoundException ex) {
-			System.err.println("File could not be opened for writing.");
-			System.exit(-1);
-		}
-		
-		try {
-			tripleResult = new PrintWriter("src/benchmark/regexconverter/TripleResult.txt");
-		} catch (FileNotFoundException ex) {
-			System.err.println("File could not be opened for writing.");
-			System.exit(-1);
-		}
+		// try {
+		// equivalenceFile = new
+		// PrintWriter("src/benchmark/regexconverter/resultOfEquivalence2to3.txt");
+		// } catch (FileNotFoundException ex) {
+		// System.err.println("File could not be opened for writing.");
+		// System.exit(-1);
+		// }
 
 		try (BufferedReader br = new BufferedReader(inFile)) {
 			String line;
@@ -97,26 +78,67 @@ public class RunIntersectionExp {
 			safaList.add(sfa.getSAFA(solver));
 		}
 
-		equivalenceFile.print("name |SAFA1| |SAFA2| |SFA1| |SFA2| FullTime SolverTime subsTime SFAtime"+"\n");
-		
-
-		// generate pairs that has intersection
-		// generatePairSFA();
-		
-		
-		//resultOfEmptiness.print("Pair  1+2  1*2  SFAtime  ReverseSAFA SAFAfull SAFASolver SAFAsub SFA-SAFAfull Reverse-SAFAfull"+"\n");
-		resultOfEmptiness.print("Triple  1+2+3  1*2*3  SFAtime  ReverseSAFA SAFAfull SAFASolver SAFAsub SFA-SAFAfull Reverse-SAFAfull"+"\n");
-		//generatePairSAFA(5000);
-		
+		// runEmptinessOf2(5000);
 		buildPair();
-		generateTripleSAFA(10000);
-		
-		// TODO: generate TripleSFA, QuadraSFA and PentsSFA
-		
-		resultOfEmptiness.close();
-		equivalenceFile.close();
-		tripleResult.close();
+		runEmptinessOf3(10000);
 
+		// equivalenceFile.print("name |SAFA1| |SAFA2| |SFA1| |SFA2| FullTime
+		// SolverTime subsTime SFAtime"+"\n");
+		// generate pairs that has intersection
+		// resultOfEmptiness2.print("Triple 1+2+3 1*2*3 SFAtime ReverseSAFA
+		// SAFAfull SAFASolver SAFAsub SFA-SAFAfull Reverse-SAFAfull"+"\n");
+		// buildPair();
+		// generateTripleSAFA(10000);
+		// TODO: generate TripleSFA, QuadraSFA and PentsSFA
+		// equivalenceFile.close();
+		// tripleResult.close();
+
+	}
+
+	private static void runEmptinessOf2(long timeOut) throws TimeoutException {
+		try {
+			resultOfEmptiness2 = new PrintWriter("src/benchmark/regexconverter/resultOfEmptiness2.txt");
+		} catch (FileNotFoundException ex) {
+			System.err.println("File could not be opened for writing.");
+			System.exit(-1);
+		}
+
+		try {
+			pairResult = new PrintWriter("src/benchmark/regexconverter/PairResult.txt");
+		} catch (FileNotFoundException ex) {
+			System.err.println("File could not be opened for writing.");
+			System.exit(-1);
+		}
+
+		resultOfEmptiness2
+				.print("Pair  1+2  1*2(#digits)  SFAtime  ReverseSAFA SAFAfull SAFASolver SAFAsub SFA-SAFAfull Reverse-SAFAfull"
+						+ "\n");
+		generatePairSAFA(timeOut);
+		resultOfEmptiness2.close();
+		pairResult.close();
+	}
+
+	private static void runEmptinessOf3(long timeOut) throws TimeoutException {
+		try {
+			resultOfEmptiness3 = new PrintWriter("src/benchmark/regexconverter/resultOfEmptiness3.txt");
+		} catch (FileNotFoundException ex) {
+			System.err.println("File could not be opened for writing.");
+			System.exit(-1);
+		}
+
+		try {
+			tripleResult = new PrintWriter("src/benchmark/regexconverter/TripleResult.txt");
+		} catch (FileNotFoundException ex) {
+			System.err.println("File could not be opened for writing.");
+			System.exit(-1);
+		}
+
+		resultOfEmptiness3
+				.print("Triple  1+2+3  1*2*3(#digits)  SFAtime  ReverseSAFA SAFAfull SAFASolver SAFAsub SFA-SAFAfull Reverse-SAFAfull"
+						+ "\n");
+		generateTripleSAFA(timeOut);
+		resultOfEmptiness3.close();
+		tripleResult.close();
 	}
 
 	/*
@@ -175,7 +197,7 @@ public class RunIntersectionExp {
 	// if(intersectedSFA !=null){
 	// hasIntersection = true;
 	// pairList.add(new PairAut(m, n, sfa1, sfa2, intersectedSFA));
-	// resultOfEmptiness.print(m+"\t"+n+"\n");
+	// resultOfEmptiness2.print(m+"\t"+n+"\n");
 	// }
 	// System.out.print(hasIntersection + " ");
 	// System.out.println(m + " " + n);
@@ -201,7 +223,7 @@ public class RunIntersectionExp {
 	// temp.add(sfaList.get(k));
 	// SFA<CharPred, Character> intersectedSFA = IntersectedSFA(solver, temp);
 	// if(intersectedSFA != null){
-	// resultOfEmptiness.print(i+"\t"+j+"\t"+k+"\n");
+	// resultOfEmptiness2.print(i+"\t"+j+"\t"+k+"\n");
 	// temp = pair.getSFAlist();
 	// //build new TripleAut
 	// TripleAut newTriple = new TripleAut(i,j,k,
@@ -301,13 +323,23 @@ public class RunIntersectionExp {
 				boolean hasIntersection = false;
 				if (intersectedSAFA != null) {
 					hasIntersection = true;
+					pairResult.println(m + ";" + n);
 					pairList.add(new PairAut(m, n, safa1, safa2, intersectedSAFA));
-					resultOfEmptiness.print(m + ";" + n + "   ");
+					resultOfEmptiness2.print(m + ";" + n + "   ");
 					int size1 = safa1.stateCount();
 					int size2 = safa2.stateCount();
 					int sizeSum = size1 + size2;
-					int sizeMult = size1 * size2;
-					resultOfEmptiness.print(sizeSum + "   " + sizeMult + "   ");
+					BigInteger bi1, bi2, bi3;
+					bi1 = new BigInteger(Integer.toString(size1));
+					bi2 = new BigInteger(Integer.toString(size2));
+					bi3 = bi1.multiply(bi2);
+					int sizeMult;
+					try {
+						sizeMult = Integer.toString(bi3.intValueExact()).length();
+					} catch (ArithmeticException e) {
+						sizeMult = Integer.toString(size1).length() + Integer.toString(size2).length() - 1;
+					}
+					resultOfEmptiness2.print(sizeSum + "   " + sizeMult + "   ");
 
 					ArrayList<SFA<CharPred, Character>> tempSFA = new ArrayList<SFA<CharPred, Character>>();
 					SFA<CharPred, Character> sfa1 = sfaList.get(m);
@@ -318,26 +350,33 @@ public class RunIntersectionExp {
 					SFA<CharPred, Character> intersectedSFA = IntersectedSFA(solver, tempSFA, timeOut);
 					long endDate = System.currentTimeMillis();
 					long totalTimeSFA = endDate - startDate;
-					if(intersectedSFA ==null){
+					if (intersectedSFA == null) {
 						totalTimeSFA = timeOut;
 					}
-					resultOfEmptiness.print(totalTimeSFA+"   ");
+					if (totalTimeSFA > 5000) {
+						totalTimeSFA = 5000;
+					}
+					resultOfEmptiness2.print(totalTimeSFA + "   ");
 					long totalTimeReverseSAFA;
-					try{
+					try {
 						long startDate2 = System.currentTimeMillis();
 						SAFA.areReverseEquivalent(intersectedSAFA, SAFA.getEmptySAFA(solver), solver, timeOut);
 						long endDate2 = System.currentTimeMillis();
 						totalTimeReverseSAFA = endDate2 - startDate2;
-					}catch(TimeoutException e){
+					} catch (TimeoutException e) {
 						totalTimeReverseSAFA = timeOut;
 					}
-					resultOfEmptiness.print(totalTimeReverseSAFA+"   ");
-					resultOfEmptiness.print(fullTimeSAFA+"   "+solverTimeSAFA+"   "+ subTimeSAFA+"        ");
-					long SFAMinusSAFA = totalTimeSFA -fullTimeSAFA;
-					long ReverseMinusSAFA = totalTimeReverseSAFA-fullTimeSAFA;
-					resultOfEmptiness.print(SFAMinusSAFA+"   "+ReverseMinusSAFA+"\n");
+					if (totalTimeReverseSAFA > 5000) {
+						totalTimeReverseSAFA = 5000;
+					}
+					resultOfEmptiness2.print(totalTimeReverseSAFA + "   ");
+					resultOfEmptiness2.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "        ");
+					long SFAMinusSAFA = totalTimeSFA - fullTimeSAFA;
+					long ReverseMinusSAFA = totalTimeReverseSAFA - fullTimeSAFA;
+
+					resultOfEmptiness2.print(SFAMinusSAFA + "   " + ReverseMinusSAFA + "\n");
 				}
-				
+
 				System.out.print(hasIntersection + "  ");
 				System.out.println(m + " " + n);
 			}
@@ -354,99 +393,99 @@ public class RunIntersectionExp {
 		for (PairAut pair : pairList) {
 			int i = pair.getFirstIndex();
 			int j = pair.getSecondIndex();
-			for (int k = 0; (k != i) && (k != j) && k < safaList.size(); k++) {
-				ArrayList<SAFA<CharPred, Character>> temp = new ArrayList<SAFA<CharPred, Character>>();
-				temp.add(pair.getIntersectedSAFA());
+			for (int k = j+1; k < safaList.size(); k++) {
+				// put three SAFAs to the ArrayList
+				ArrayList<SAFA<CharPred, Character>> temp = pair.getSAFAlist();
 				temp.add(safaList.get(k));
-				
-				//here is intersectin of 2
 				Timers.setTimeout(Long.MAX_VALUE);
 				SAFA<CharPred, Character> intersectedSAFA = IntersectedSAFA(solver, temp, timeOut);
 				long fullTimeSAFA = Timers.getFull();
 				long solverTimeSAFA = Timers.getSolver();
 				long subTimeSAFA = Timers.getSubsumption();
-				
+				boolean hasIntersection = false;
 				if (intersectedSAFA != null) {
-					tripleResult.print(i+"  "+j+"  "+k+"\n");
-					resultOfEmptiness.print(i + "  " + j + "  " + k + "\n");
-					temp = pair.getSAFAlist();
+					hasIntersection = true;
+					tripleResult.println(i + ";" + j + ";" + k);
+					resultOfEmptiness3.print(i + ";" + j + ";" + k + "   ");
+					SAFA<CharPred, Character> safa1= temp.get(0);
+					SAFA<CharPred, Character> safa2= temp.get(1);
+					SAFA<CharPred, Character> safa3= temp.get(2);
 					// build new TripleAut
-					TripleAut newTriple = new TripleAut(i, j, k, temp.get(0), temp.get(1), safaList.get(k),
-							intersectedSAFA);
-					tripleList.add(newTriple);
-
-					newTriple.setSFA(sfaList.get(i), sfaList.get(j), sfaList.get(k));
+//					TripleAut newTriple = new TripleAut(i, j, k, safa1, safa2, safa3,
+//							intersectedSAFA);
+//					tripleList.add(newTriple);
 					
-					equivalenceFile.print(i + "," + j + "=" + i +","+ j +","+ k + "    " + pair.getIntersectedSFA().stateCount()
-							+ "    " + newTriple.getIntersectedSFA().stateCount() + "    ");
-
-					equivalenceFile.print(pair.getIntersectedSAFA().stateCount() + "    "
-							+ newTriple.getIntersectedSAFA().stateCount() + "    ");
-
-					// Run SAFA Equivalence test, also count full time solver
-					// time and subsumption time
-					Timers.setTimeout(Long.MAX_VALUE);
-					try {
-						SAFA.isEquivalent(pair.getIntersectedSAFA(), newTriple.getIntersectedSAFA(), solver,
-								SAFA.getBooleanExpressionFactory(), timeOut);
-						equivalenceFile.print(Timers.getFull() + "    " + Timers.getSolver() + "    " + Timers.getSubsumption()
-								+ "    ");
-					} catch (TimeoutException e) {
-						equivalenceFile.print(timeOut + "    " + timeOut + "    " + timeOut + "    ");
+					int size1 = safa1.stateCount();
+					int size2 = safa2.stateCount();
+					int size3 = safa3.stateCount();
+					int sizeSum = size1 + size2 + size3;
+					
+					BigInteger bi1,bi2,bi3,bi4;
+					bi1 = new BigInteger(Integer.toString(size1));
+					bi2 = new BigInteger(Integer.toString(size2));
+					bi3 = new BigInteger(Integer.toString(size3));
+					bi4 = bi3.multiply(bi1.multiply(bi2));
+					int sizeMult;
+					try{
+						sizeMult =Integer.toString(bi4.intValueExact()).length() ;
+					}catch(ArithmeticException e){
+						sizeMult = Integer.toString(size1).length()+Integer.toString(size2).length()+Integer.toString(size3).length()-1;
 					}
-
-					// Now calculate the cost of SFA Equivalence test
-					long startDate = System.currentTimeMillis();
-					SFA.areEquivalent(pair.getIntersectedSFA(), newTriple.getIntersectedSFA(), solver);
-					long endDate = System.currentTimeMillis();
-					long sfaTestTime = endDate - startDate;
-					equivalenceFile.print(sfaTestTime+"\n");
 					
-					
-					int size1 = safaList.get(i).stateCount();
-					int size2 = safaList.get(j).stateCount();
-					int size3 = safaList.get(k).stateCount();
-					int sizeSum = size1 + size2+ size3;
-					int sizeMult = size1 * size2*  size3;
-					resultOfEmptiness.print(sizeSum + "   " + sizeMult + "   ");
+					resultOfEmptiness3.print(sizeSum + "   " + sizeMult + "   ");
 
 					ArrayList<SFA<CharPred, Character>> tempSFA = new ArrayList<SFA<CharPred, Character>>();
-					SFA<CharPred, Character> sfa1 = pair.getIntersectedSFA();
-					SFA<CharPred, Character> sfa2 = sfaList.get(k);
+					SFA<CharPred, Character> sfa1 = sfaList.get(i);
+					SFA<CharPred, Character> sfa2 = sfaList.get(j);
+					SFA<CharPred, Character> sfa3 = sfaList.get(k);
 					tempSFA.add(sfa1);
 					tempSFA.add(sfa2);
-					long startDate2 = System.currentTimeMillis();
+					tempSFA.add(sfa3);
+					long startDate = System.currentTimeMillis();
 					SFA<CharPred, Character> intersectedSFA = IntersectedSFA(solver, tempSFA, timeOut);
-					long endDate2 = System.currentTimeMillis();
-					long totalTimeSFA = endDate2 - startDate2;
-					if(intersectedSFA ==null){
+					long endDate = System.currentTimeMillis();
+					long totalTimeSFA = endDate - startDate;
+					if (intersectedSFA == null) {
 						totalTimeSFA = timeOut;
 					}
-					resultOfEmptiness.print(totalTimeSFA+"   ");
+					if(totalTimeSFA>10000){
+						totalTimeSFA = 10000;
+					}
+					resultOfEmptiness3.print(totalTimeSFA + "   ");
 					long totalTimeReverseSAFA;
-					try{
-						long startDate3 = System.currentTimeMillis();
+					try {
+						long startDate2 = System.currentTimeMillis();
 						SAFA.areReverseEquivalent(intersectedSAFA, SAFA.getEmptySAFA(solver), solver, timeOut);
-						long endDate3 = System.currentTimeMillis();
-						totalTimeReverseSAFA = endDate3 - startDate3;
-					}catch(TimeoutException e){
+						long endDate2 = System.currentTimeMillis();
+						totalTimeReverseSAFA = endDate2 - startDate2;
+					} catch (TimeoutException e) {
 						totalTimeReverseSAFA = timeOut;
 					}
-					resultOfEmptiness.print(totalTimeReverseSAFA+"   ");
-					resultOfEmptiness.print(fullTimeSAFA+"   "+solverTimeSAFA+"   "+ subTimeSAFA+"        ");
-					long SFAMinusSAFA = totalTimeSFA -fullTimeSAFA;
-					long ReverseMinusSAFA = totalTimeReverseSAFA-fullTimeSAFA;
-					resultOfEmptiness.print(SFAMinusSAFA+"   "+ReverseMinusSAFA+"\n");
-					
-					
+					if(totalTimeReverseSAFA>10000){
+						totalTimeReverseSAFA = 10000;
+					}
+					resultOfEmptiness3.print(totalTimeReverseSAFA + "   ");
+					resultOfEmptiness3.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "        ");
+					long SFAMinusSAFA = totalTimeSFA - fullTimeSAFA;
+					long ReverseMinusSAFA = totalTimeReverseSAFA - fullTimeSAFA;
+					resultOfEmptiness3.print(SFAMinusSAFA + "   " + ReverseMinusSAFA + "\n");
+
 				}
+				System.out.print(hasIntersection + "  ");
+				System.out.println(i + " " + j+" "+k);
 
 			}
 		}
 	}
-	
-	private static void buildPair() throws TimeoutException{
+
+	private static void buildPair() throws TimeoutException {
 		ArrayList<String> pairlist = new ArrayList<String>();
+		try {
+			pairFile = new FileReader("src/benchmark/regexconverter/PairResult.txt");
+		} catch (FileNotFoundException ex) {
+			System.err.println("File not found.");
+			System.exit(-1);
+		}
 		try (BufferedReader br = new BufferedReader(pairFile)) {
 			String line;
 			while ((line = br.readLine()) != null) {
@@ -455,17 +494,16 @@ public class RunIntersectionExp {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		for(String line: pairlist){
-			String[] splited = line.split("\\t+");
+
+		for (String line : pairlist) {
+			String[] splited = line.split(";");
 			int first = Integer.parseInt(splited[0]);
 			int second = Integer.parseInt(splited[1]);
 			SAFA<CharPred, Character> safa1 = safaList.get(first);
 			SAFA<CharPred, Character> safa2 = safaList.get(second);
-			PairAut newPair = new PairAut(first, second, safa1, safa2, safa1.intersectionWith( safa2, solver));
-			newPair.setSFA(sfaList.get(first),sfaList.get(second));
+			PairAut newPair = new PairAut(first, second, safa1, safa2, safa1.intersectionWith(safa2, solver));
 			pairList.add(newPair);
-			
+			System.out.println("building "+line);
 		}
 	}
 
