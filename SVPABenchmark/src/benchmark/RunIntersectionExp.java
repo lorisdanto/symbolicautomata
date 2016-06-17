@@ -66,12 +66,17 @@ public class RunIntersectionExp {
 			while ((line = br.readLine()) != null) {
 				list.add(line);
 			}
+			System.out.println(list.size());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
 		for (String regex : list) {
-			sfaList.add((new SFAprovider(regex, solver)).getSFA());
+			SFA<CharPred, Character> sfa= (new SFAprovider(regex, solver)).getSFA();
+			if(sfa == null){
+				System.err.println("Cannot build sfa"+regex);
+			}
+			sfaList.add(sfa);
 		}
 
 		for (SFA<CharPred, Character> sfa : sfaList) {
@@ -444,18 +449,18 @@ public class RunIntersectionExp {
 					int size3 = safa3.stateCount();
 					int sizeSum = size1 + size2 + size3;
 					
-					BigInteger bi1,bi2,bi3,bi4;
-					bi1 = new BigInteger(Integer.toString(size1));
-					bi2 = new BigInteger(Integer.toString(size2));
-					bi3 = new BigInteger(Integer.toString(size3));
-					bi4 = bi3.multiply(bi1.multiply(bi2));
-					int sizeMult;
-					try{
-						sizeMult =Integer.toString(bi4.intValueExact()).length() ;
-					}catch(ArithmeticException e){
-						sizeMult = Integer.toString(size1).length()+Integer.toString(size2).length()+Integer.toString(size3).length()-1;
-					}
-					
+//					BigInteger bi1,bi2,bi3,bi4;
+//					bi1 = new BigInteger(Integer.toString(size1));
+//					bi2 = new BigInteger(Integer.toString(size2));
+//					bi3 = new BigInteger(Integer.toString(size3));
+//					bi4 = bi3.multiply(bi1.multiply(bi2));
+//					int sizeMult;
+//					try{
+//						sizeMult =Integer.toString(bi4.intValueExact()).length() ;
+//					}catch(ArithmeticException e){
+//						sizeMult = Integer.toString(size1).length()+Integer.toString(size2).length()+Integer.toString(size3).length()-1;
+//					}
+					int sizeMult = Integer.toString(size1).length()+Integer.toString(size2).length()+Integer.toString(size3).length()-1;
 					resultOfEmptiness3.print(sizeSum + "   " + sizeMult + "   ");
 
 					ArrayList<SFA<CharPred, Character>> tempSFA = new ArrayList<SFA<CharPred, Character>>();
