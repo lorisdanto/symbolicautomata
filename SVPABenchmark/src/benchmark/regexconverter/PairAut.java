@@ -15,40 +15,35 @@ public class PairAut {
 	private int secondIndex;
 	private SAFA<CharPred, Character> mySAFA1;
 	private SAFA<CharPred, Character> mySAFA2;
-	private SAFA<CharPred, Character> intersectedSAFA;
+	
 	
 	private SFA<CharPred, Character> mySFA1;
 	private SFA<CharPred, Character> mySFA2;
-	private SFA<CharPred, Character> intersectedSFA;
 	
-	public PairAut(int index1, int index2, SAFA<CharPred, Character> safa1, SAFA<CharPred, Character> safa2, SAFA<CharPred, Character> safa3){
+	
+	public PairAut(int index1, int index2, SAFA<CharPred, Character> safa1, SAFA<CharPred, Character> safa2){
 		this.firstIndex = index1;
 		this.secondIndex = index2;
 		this.mySAFA1 = safa1;
 		this.mySAFA2 = safa2;
-		this.intersectedSAFA = safa3;
+		
 	}
 	
-	public PairAut(int index1, int index2, SFA<CharPred, Character> sfa1, SFA<CharPred, Character> sfa2, SFA<CharPred, Character> sfa3){
+	public PairAut(int index1, int index2, SFA<CharPred, Character> sfa1, SFA<CharPred, Character> sfa2){
 		this.firstIndex = index1;
 		this.secondIndex = index2;
 		this.mySFA1 = sfa1;
 		this.mySFA2 = sfa2;
-		this.intersectedSFA = sfa3;
+		
 	}
 	
-	public void setSFA(SFA<CharPred, Character> sfa1, SFA<CharPred, Character> sfa2) throws TimeoutException{
+	public void setSFA(SFA<CharPred, Character> sfa1, SFA<CharPred, Character> sfa2){
 		this.mySFA1 = sfa1;
 		this.mySFA2 = sfa2;
-		this.intersectedSFA = this.mySFA1.intersectionWith(mySFA2, solver);
+		
 	}
 	
-	public void buildSAFA() throws TimeoutException{
-		this.mySAFA1 = this.mySFA1.getSAFA(solver);
-		this.mySAFA2 = this.mySFA2.getSAFA(solver);
-		this.intersectedSAFA = this.mySAFA1.intersectionWith(mySAFA2, solver);
-	}
-	
+
 	public ArrayList<SFA<CharPred, Character>> getSFAlist(){
 		ArrayList<SFA<CharPred, Character>> sfaList = new ArrayList<SFA<CharPred, Character>>();
 		sfaList.add(this.mySFA1);
@@ -61,14 +56,6 @@ public class PairAut {
 		safaList.add(this.mySAFA1);
 		safaList.add(this.mySAFA2);
 		return safaList;
-	}
-	
-	public SFA<CharPred, Character> getIntersectedSFA(){
-		return intersectedSFA;
-	}
-	
-	public SAFA<CharPred, Character> getIntersectedSAFA(){
-		return intersectedSAFA;
 	}
 	
 	public ArrayList<Integer> getIndex(){

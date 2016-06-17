@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import org.sat4j.specs.TimeoutException;
 import java.math.*;
 
+import benchmark.regexconverter.Combination;
 import RegexParser.RegexListNode;
 import RegexParser.RegexParserProvider;
 import automata.safa.SAFA;
@@ -38,6 +39,7 @@ public class RunIntersectionExp {
 	private static ArrayList<QuadraAut> quadraList = new ArrayList<QuadraAut>();
 	private static ArrayList<PentaAut> pentaList = new ArrayList<PentaAut>();
 	private static UnaryCharIntervalSolver solver = new UnaryCharIntervalSolver();
+	private static ArrayList<Combination> pairCombination = new ArrayList<Combination>();
 	// private static long timeout = 5000;
 	private static ArrayList<SFA<CharPred, Character>> sfaList = new ArrayList<SFA<CharPred, Character>>();
 	private static ArrayList<SAFA<CharPred, Character>> safaList = new ArrayList<SAFA<CharPred, Character>>();
@@ -329,7 +331,7 @@ public class RunIntersectionExp {
 				if (intersectedSAFA != null) {
 					hasIntersection = true;
 					pairResult.println(m + ";" + n);
-					pairList.add(new PairAut(m, n, safa1, safa2, intersectedSAFA));
+					//pairList.add(new PairAut(m, n, safa1, safa2));
 					resultOfEmptiness2.print(m + ";" + n + "   ");
 					int size1 = safa1.stateCount();
 					int size2 = safa2.stateCount();
@@ -395,112 +397,132 @@ public class RunIntersectionExp {
 	 */
 	private static void generateTripleSAFA(long timeOut) throws TimeoutException {
 
-		for (PairAut pair : pairList) {
-			int i = pair.getFirstIndex();
-			int j = pair.getSecondIndex();
-			
-			//avoid recomputing the intersection of first two every time
-			ArrayList<SAFA<CharPred, Character>> IntersectFirstTwoSAFA = pair.getSAFAlist();
-			Timers.setTimeout(Long.MAX_VALUE);
-			SAFA<CharPred, Character> intersectedSAFAtemp = IntersectedSAFA(solver, IntersectFirstTwoSAFA, timeOut);
-			long fullTimeSAFAtemp = Timers.getFull();
-			long solverTimeSAFAtemp = Timers.getSolver();
-			long subTimeSAFAtemp = Timers.getSubsumption();
-			
-			// also pre-computing the intersection of the first two SFAs 
-			ArrayList<SFA<CharPred, Character>> IntersectFirstTwoSFA = new ArrayList<SFA<CharPred, Character>>();
-			SFA<CharPred, Character> sfa1 = sfaList.get(i);
-			SFA<CharPred, Character> sfa2 = sfaList.get(j);
-			IntersectFirstTwoSFA.add(sfa1);
-			IntersectFirstTwoSFA.add(sfa2);
-			
-			long startDatetemp = System.currentTimeMillis();
-			SFA<CharPred, Character> intersectedSFAtemp = IntersectedSFA(solver, IntersectFirstTwoSFA, timeOut);
-			long endDatetemp = System.currentTimeMillis();
-			long totalTimeSFAtemp = endDatetemp - startDatetemp;
-			
-			
-			
-			for (int k = j+1; k < safaList.size(); k++) {
-				// intersect intersectedSAFA of first two and the new one 
-				ArrayList<SAFA<CharPred, Character>> temp = new ArrayList<SAFA<CharPred, Character>>();
-				temp.add(intersectedSAFAtemp);
-				temp.add(safaList.get(k));
+		for (Combination combi : pairCombination) {
+			int i = combi.getCommonIndex();
+			int j,k;
+			ArrayList<Integer> tempIndexArray = combi.getIndexArray(); 
+			while(!tempIndexArray.isEmpty()){
+				j=tempIndexArray.get(0);
+				
+				//avoid recomputing the intersection of first two every time
+				ArrayList<SAFA<CharPred, Character>> IntersectFirstTwoSAFA = new ArrayList<SAFA<CharPred, Character>>();
+				IntersectFirstTwoSAFA.add(safaList.get(i));
+				IntersectFirstTwoSAFA.add(safaList.get(j));
 				Timers.setTimeout(Long.MAX_VALUE);
-				SAFA<CharPred, Character> intersectedSAFA = IntersectedSAFA(solver, temp, timeOut);
-				long fullTimeSAFA = Timers.getFull()+fullTimeSAFAtemp;
-				long solverTimeSAFA = Timers.getSolver()+solverTimeSAFAtemp;
-				long subTimeSAFA = Timers.getSubsumption()+subTimeSAFAtemp;
-				boolean hasIntersection = false;
-				if (intersectedSAFA != null) {
-					hasIntersection = true;
-					tripleResult.println(i + ";" + j + ";" + k);
-					resultOfEmptiness3.print(i + ";" + j + ";" + k + "   ");
-					SAFA<CharPred, Character> safa1= safaList.get(i);
-					SAFA<CharPred, Character> safa2= safaList.get(j);
-					SAFA<CharPred, Character> safa3= safaList.get(k);
-					// build new TripleAut
-//					TripleAut newTriple = new TripleAut(i, j, k, safa1, safa2, safa3,
-//							intersectedSAFA);
-//					tripleList.add(newTriple);
+				SAFA<CharPred, Character> intersectedSAFAtemp = IntersectedSAFA(solver, IntersectFirstTwoSAFA, timeOut);
+				long fullTimeSAFAtemp = Timers.getFull();
+				long solverTimeSAFAtemp = Timers.getSolver();
+				long subTimeSAFAtemp = Timers.getSubsumption();
+				
+				// also pre-computing the intersection of the first two SFAs 
+				ArrayList<SFA<CharPred, Character>> IntersectFirstTwoSFA = new ArrayList<SFA<CharPred, Character>>();
+				SFA<CharPred, Character> sfa1 = sfaList.get(i);
+				SFA<CharPred, Character> sfa2 = sfaList.get(j);
+				IntersectFirstTwoSFA.add(sfa1);
+				IntersectFirstTwoSFA.add(sfa2);
+				
+				long startDatetemp = System.currentTimeMillis();
+				SFA<CharPred, Character> intersectedSFAtemp = IntersectedSFA(solver, IntersectFirstTwoSFA, timeOut);
+				long endDatetemp = System.currentTimeMillis();
+				long totalTimeSFAtemp = endDatetemp - startDatetemp;
+				
+				
+				for(int tempIndex=1;tempIndex<tempIndexArray.size();tempIndex++){
+					k = tempIndexArray.get(tempIndex);
 					
-					int size1 = safa1.stateCount();
-					int size2 = safa2.stateCount();
-					int size3 = safa3.stateCount();
-					int sizeSum = size1 + size2 + size3;
 					
-//					BigInteger bi1,bi2,bi3,bi4;
-//					bi1 = new BigInteger(Integer.toString(size1));
-//					bi2 = new BigInteger(Integer.toString(size2));
-//					bi3 = new BigInteger(Integer.toString(size3));
-//					bi4 = bi3.multiply(bi1.multiply(bi2));
-//					int sizeMult;
-//					try{
-//						sizeMult =Integer.toString(bi4.intValueExact()).length() ;
-//					}catch(ArithmeticException e){
-//						sizeMult = Integer.toString(size1).length()+Integer.toString(size2).length()+Integer.toString(size3).length()-1;
-//					}
-					int sizeMult = Integer.toString(size1).length()+Integer.toString(size2).length()+Integer.toString(size3).length()-1;
-					resultOfEmptiness3.print(sizeSum + "   " + sizeMult + "   ");
+					// intersect intersectedSAFA of first two and the new one 
+					ArrayList<SAFA<CharPred, Character>> temp = new ArrayList<SAFA<CharPred, Character>>();
+					temp.add(intersectedSAFAtemp);
+					temp.add(safaList.get(k));
+					Timers.setTimeout(Long.MAX_VALUE);
+					SAFA<CharPred, Character> intersectedSAFA = IntersectedSAFA(solver, temp, timeOut-fullTimeSAFAtemp);
+					long fullTimeSAFA = Timers.getFull()+fullTimeSAFAtemp;
+					long solverTimeSAFA = Timers.getSolver()+solverTimeSAFAtemp;
+					long subTimeSAFA = Timers.getSubsumption()+subTimeSAFAtemp;
+					boolean hasIntersection = false;
+					if (intersectedSAFA != null) {
+						hasIntersection = true;
+						tripleResult.println(i + ";" + j + ";" + k);
+						resultOfEmptiness3.print(i + ";" + j + ";" + k + "   ");
+						SAFA<CharPred, Character> safa1= safaList.get(i);
+						SAFA<CharPred, Character> safa2= safaList.get(j);
+						SAFA<CharPred, Character> safa3= safaList.get(k);
+						// build new TripleAut
+//						TripleAut newTriple = new TripleAut(i, j, k, safa1, safa2, safa3,
+//								intersectedSAFA);
+//						tripleList.add(newTriple);
+						
+						int size1 = safa1.stateCount();
+						int size2 = safa2.stateCount();
+						int size3 = safa3.stateCount();
+						int sizeSum = size1 + size2 + size3;
+						int sizeMult;
+						BigInteger bi1,bi2,bi3,bi4;
+						bi1 = new BigInteger(Integer.toString(size1));
+						bi2 = new BigInteger(Integer.toString(size2));
+						bi3 = new BigInteger(Integer.toString(size3));
+						bi4 = bi3.multiply(bi1.multiply(bi2));
+						
+						try{
+							sizeMult =Integer.toString(bi4.intValueExact()).length() ;
+						}catch(ArithmeticException e){
+							sizeMult = Integer.toString(size1).length()+Integer.toString(size2).length()+Integer.toString(size3).length()-1;
+						}
+						//sizeMult = Integer.toString(size1).length()+Integer.toString(size2).length()+Integer.toString(size3).length()-1;
+						resultOfEmptiness3.print(sizeSum + "   " + sizeMult + "   ");
 
-					ArrayList<SFA<CharPred, Character>> tempSFA = new ArrayList<SFA<CharPred, Character>>();
-					SFA<CharPred, Character> sfa3 = sfaList.get(k);
-					tempSFA.add(intersectedSFAtemp);
-					tempSFA.add(sfa3);
-					long startDate = System.currentTimeMillis();
-					SFA<CharPred, Character> intersectedSFA = IntersectedSFA(solver, tempSFA, timeOut);
-					long endDate = System.currentTimeMillis();
-					long totalTimeSFA = endDate - startDate + totalTimeSFAtemp;
-					if (intersectedSFA == null) {
-						totalTimeSFA = timeOut;
-					}
-					if(totalTimeSFA>10000){
-						totalTimeSFA = 10000;
-					}
-					resultOfEmptiness3.print(totalTimeSFA + "   ");
-					long totalTimeReverseSAFA;
-					try {
-						long startDate2 = System.currentTimeMillis();
-						SAFA.areReverseEquivalent(intersectedSAFA, SAFA.getEmptySAFA(solver), solver, timeOut);
-						long endDate2 = System.currentTimeMillis();
-						totalTimeReverseSAFA = endDate2 - startDate2;
-					} catch (TimeoutException e) {
-						totalTimeReverseSAFA = timeOut;
-					}
-					if(totalTimeReverseSAFA>10000){
-						totalTimeReverseSAFA = 10000;
-					}
-					resultOfEmptiness3.print(totalTimeReverseSAFA + "   ");
-					resultOfEmptiness3.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "        ");
-					long SFAMinusSAFA = totalTimeSFA - fullTimeSAFA;
-					long ReverseMinusSAFA = totalTimeReverseSAFA - fullTimeSAFA;
-					resultOfEmptiness3.print(SFAMinusSAFA + "   " + ReverseMinusSAFA + "\n");
+						ArrayList<SFA<CharPred, Character>> tempSFA = new ArrayList<SFA<CharPred, Character>>();
+						SFA<CharPred, Character> sfa3 = sfaList.get(k);
+						tempSFA.add(intersectedSFAtemp);
+						tempSFA.add(sfa3);
+						long startDate = System.currentTimeMillis();
+						SFA<CharPred, Character> intersectedSFA = IntersectedSFA(solver, tempSFA, timeOut-totalTimeSFAtemp);
+						long endDate = System.currentTimeMillis();
+						long totalTimeSFA = endDate - startDate + totalTimeSFAtemp;
+						if (intersectedSFA == null) {
+							totalTimeSFA = timeOut;
+						}
+						if(totalTimeSFA>10000){
+							totalTimeSFA = 10000;
+						}
+						resultOfEmptiness3.print(totalTimeSFA + "   ");
+						long totalTimeReverseSAFA;
+						try {
+							long startDate2 = System.currentTimeMillis();
+							SAFA.areReverseEquivalent(intersectedSAFA, SAFA.getEmptySAFA(solver), solver, timeOut);
+							long endDate2 = System.currentTimeMillis();
+							totalTimeReverseSAFA = endDate2 - startDate2;
+						} catch (TimeoutException e) {
+							totalTimeReverseSAFA = timeOut;
+						}
+						if(totalTimeReverseSAFA>10000){
+							totalTimeReverseSAFA = 10000;
+						}
+						resultOfEmptiness3.print(totalTimeReverseSAFA + "   ");
+						resultOfEmptiness3.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "        ");
+						long SFAMinusSAFA = totalTimeSFA - fullTimeSAFA;
+						long ReverseMinusSAFA = totalTimeReverseSAFA - fullTimeSAFA;
+						resultOfEmptiness3.print(SFAMinusSAFA + "   " + ReverseMinusSAFA + "\n");
 
+					}
+					System.out.print(hasIntersection + "  ");
+					System.out.println(i + " " + j+" "+k);
+					
 				}
-				System.out.print(hasIntersection + "  ");
-				System.out.println(i + " " + j+" "+k);
-
+				
+				tempIndexArray.remove(0);
 			}
+			
+			
+			
+			
+			
+			
+			
+				
+
+			
 		}
 	}
 
@@ -521,14 +543,24 @@ public class RunIntersectionExp {
 			e.printStackTrace();
 		}
 
+		
+		Combination pairComb =new Combination(0);
 		for (String line : pairlist) {
 			String[] splited = line.split(";");
 			int first = Integer.parseInt(splited[0]);
 			int second = Integer.parseInt(splited[1]);
-			SAFA<CharPred, Character> safa1 = safaList.get(first);
-			SAFA<CharPred, Character> safa2 = safaList.get(second);
-			PairAut newPair = new PairAut(first, second, safa1, safa2, safa1.intersectionWith(safa2, solver));
-			pairList.add(newPair);
+			if(pairComb.getCommonIndex() == first){
+				pairComb.addToIndexArray(second);
+			}else{
+				pairComb = new Combination(first,second);
+				
+			}
+			
+			pairCombination.add(pairComb);
+//			SAFA<CharPred, Character> safa1 = safaList.get(first);
+//			SAFA<CharPred, Character> safa2 = safaList.get(second);
+//			PairAut newPair = new PairAut(first, second, safa1, safa2);
+//			pairList.add(newPair);
 			System.out.println("building "+line);
 		}
 	}

@@ -21,7 +21,7 @@ public class PentaAut {
 	private SAFA<CharPred, Character> mySAFA3;
 	private SAFA<CharPred, Character> mySAFA4;
 	private SAFA<CharPred, Character> mySAFA5;
-	private SAFA<CharPred, Character> intersectedSAFA;
+
 	
 	
 	private SFA<CharPred, Character> mySFA1;
@@ -29,9 +29,9 @@ public class PentaAut {
 	private SFA<CharPred, Character> mySFA3;
 	private SFA<CharPred, Character> mySFA4;
 	private SFA<CharPred, Character> mySFA5;
-	private SFA<CharPred, Character> intersectedSFA;
 	
-	public PentaAut(int index1, int index2, int index3, int index4, int index5, SAFA<CharPred, Character> safa1, SAFA<CharPred, Character> safa2, SAFA<CharPred, Character> safa3, SAFA<CharPred, Character> safa4, SAFA<CharPred, Character> safa5, SAFA<CharPred, Character> safa6){
+	
+	public PentaAut(int index1, int index2, int index3, int index4, int index5, SAFA<CharPred, Character> safa1, SAFA<CharPred, Character> safa2, SAFA<CharPred, Character> safa3, SAFA<CharPred, Character> safa4, SAFA<CharPred, Character> safa5){
 		this.firstIndex = index1;
 		this.secondIndex = index2;
 		this.thirdIndex = index3;
@@ -42,11 +42,11 @@ public class PentaAut {
 		this.mySAFA3 = safa3;
 		this.mySAFA4 = safa4;
 		this.mySAFA5 = safa5;
-		this.intersectedSAFA = safa6;
+	
 
 	}
 	
-	public PentaAut(int index1, int index2, int index3, int index4, int index5, SFA<CharPred, Character> sfa1, SFA<CharPred, Character> sfa2, SFA<CharPred, Character> sfa3, SFA<CharPred, Character> sfa4, SFA<CharPred, Character> sfa5, SFA<CharPred, Character> sfa6){
+	public PentaAut(int index1, int index2, int index3, int index4, int index5, SFA<CharPred, Character> sfa1, SFA<CharPred, Character> sfa2, SFA<CharPred, Character> sfa3, SFA<CharPred, Character> sfa4, SFA<CharPred, Character> sfa5){
 		this.firstIndex = index1;
 		this.secondIndex = index2;
 		this.thirdIndex = index3;
@@ -57,7 +57,7 @@ public class PentaAut {
 		this.mySFA3 = sfa3;
 		this.mySFA4 = sfa4;
 		this.mySFA5 = sfa5;
-		this.intersectedSFA = sfa6;
+		
 	}
 	
 	public void setSFA(SFA<CharPred, Character> sfa1, SFA<CharPred, Character> sfa2, SFA<CharPred, Character> sfa3, SFA<CharPred, Character> sfa4, SFA<CharPred, Character> sfa5) throws TimeoutException{
@@ -66,23 +66,9 @@ public class PentaAut {
 		this.mySFA3 = sfa3;
 		this.mySFA4 = sfa4;
 		this.mySFA5 = sfa5;
-		this.intersectedSFA = this.mySFA1.intersectionWith(mySFA2, solver);
-		this.intersectedSFA = this.intersectedSFA.intersectionWith(mySFA3, solver);
-		this.intersectedSFA = this.intersectedSFA.intersectionWith(mySFA4, solver);
-		this.intersectedSFA = this.intersectedSFA.intersectionWith(mySFA5, solver);
+		
 	}
 	
-	public void buildSAFA() throws TimeoutException{
-		this.mySAFA1 = this.mySFA1.getSAFA(solver);
-		this.mySAFA2 = this.mySFA2.getSAFA(solver); 
-		this.mySAFA3 = this.mySFA3.getSAFA(solver); 
-		this.mySAFA4 = this.mySFA4.getSAFA(solver); 
-		this.mySAFA5 = this.mySFA4.getSAFA(solver); 
-		this.intersectedSAFA = this.mySAFA1.intersectionWith(mySAFA2, solver);
-		this.intersectedSAFA = this.intersectedSAFA.intersectionWith(mySAFA3, solver);
-		this.intersectedSAFA = this.intersectedSAFA.intersectionWith(mySAFA4, solver);
-		this.intersectedSAFA = this.intersectedSAFA.intersectionWith(mySAFA5, solver);
-	}
 	
 	public ArrayList<SFA<CharPred, Character>> getSFAlist(){
 		ArrayList<SFA<CharPred, Character>> sfaList = new ArrayList<SFA<CharPred, Character>>();
@@ -104,14 +90,7 @@ public class PentaAut {
 		return safaList;
 	}
 	
-	public SFA<CharPred, Character> getIntersectedSFA(){
-		return intersectedSFA;
-	}
-	
-	public SAFA<CharPred, Character> getIntersectedSAFA(){
-		return intersectedSAFA;
-	}
-	
+
 	public ArrayList<Integer> getIndex(){
 		ArrayList<Integer> list = new ArrayList<Integer>();
 		list.add(this.firstIndex);
