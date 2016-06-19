@@ -16,10 +16,6 @@ import RegexParser.RegexListNode;
 import RegexParser.RegexParserProvider;
 import automata.safa.SAFA;
 import automata.sfa.SFA;
-import benchmark.regexconverter.PairAut;
-import benchmark.regexconverter.PentaAut;
-import benchmark.regexconverter.QuadraAut;
-import benchmark.regexconverter.TripleAut;
 import theory.characters.CharPred;
 import theory.intervals.UnaryCharIntervalSolver;
 import utilities.Timers;
@@ -45,7 +41,6 @@ public class RunIntersectionExp {
 	private static PrintWriter resultOfEmptiness3;
 	private static PrintWriter resultOfEmptiness4;
 	private static PrintWriter resultOfEmptiness5;
-	private static PrintWriter equivalenceFile;
 	private static PrintWriter pairResult;
 	private static PrintWriter tripleResult;
 	private static PrintWriter quadraResult;
@@ -54,6 +49,7 @@ public class RunIntersectionExp {
 	private static UnaryCharIntervalSolver solver = new UnaryCharIntervalSolver();
 	private static ArrayList<Combination> pairCombination = new ArrayList<Combination>();
 	private static ArrayList<MultiCombination> tripleCombination = new ArrayList<MultiCombination>();
+	private static ArrayList<MultiCombination> quadraCombination = new ArrayList<MultiCombination>();
 
 	private static ArrayList<SFA<CharPred, Character>> sfaList = new ArrayList<SFA<CharPred, Character>>();
 	private static ArrayList<SAFA<CharPred, Character>> safaList = new ArrayList<SAFA<CharPred, Character>>();
@@ -86,6 +82,7 @@ public class RunIntersectionExp {
 				list.add(line);
 			}
 			System.out.println(list.size());
+			inFile.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -105,11 +102,13 @@ public class RunIntersectionExp {
 		}
 
 		// run the experiment
-		runEmptinessOf2(5000);
-		buildPair();
-		runEmptinessOf3(5000);
-		buildTriple();
-		runEmptinessOf4(5000);
+		// runEmptinessOf2(5000);
+		// buildPair();
+		// runEmptinessOf3(5000);
+		// buildTriple();
+		// runEmptinessOf4(5000);
+		buildQuadra();
+		runEmptinessOf5(5000);
 
 	}
 
@@ -201,6 +200,36 @@ public class RunIntersectionExp {
 		generateQuadra(timeOut);
 		resultOfEmptiness4.close();
 		quadraResult.close();
+	}
+
+	/**
+	 * This method opens the output files and call the functions to build penta
+	 * and run emptiness test
+	 * 
+	 * @param timeOut
+	 * @throws TimeoutException
+	 */
+	private static void runEmptinessOf5(long timeOut) throws TimeoutException {
+		try {
+			resultOfEmptiness5 = new PrintWriter("src/benchmark/regexconverter/resultOfEmptiness5.txt");
+		} catch (FileNotFoundException ex) {
+			System.err.println("File could not be opened for writing.");
+			System.exit(-1);
+		}
+
+		try {
+			pentaResult = new PrintWriter("src/benchmark/regexconverter/PentaResult.txt");
+		} catch (FileNotFoundException ex) {
+			System.err.println("File could not be opened for writing.");
+			System.exit(-1);
+		}
+
+		resultOfEmptiness5
+				.print("Penta  1+2+3+4+5  1*2*3*4*5(#digits)  SFAtime  ReverseSAFA SAFAfull SAFASolver SAFAsub SFA-SAFAfull Reverse-SAFAfull"
+						+ "\n");
+		generatePenta(timeOut);
+		resultOfEmptiness5.close();
+		pentaResult.close();
 	}
 
 	/**
@@ -371,7 +400,8 @@ public class RunIntersectionExp {
 					try {
 						sizeMult = Integer.toString(bi3.intValueExact()).length();
 					} catch (ArithmeticException e) {
-						// if the multiplication exceeds max int size, then take approximation of digits
+						// if the multiplication exceeds max int size, then take
+						// approximation of digits
 						sizeMult = Integer.toString(size1).length() + Integer.toString(size2).length() - 1;
 					}
 
@@ -401,16 +431,17 @@ public class RunIntersectionExp {
 
 	/**
 	 * find combinations of three SFAs that have intersection, also write to the
-	 * file that has the result of experiment while generating triple
-	 * Output size is limited 2000 since it takes too long to generate complete output
+	 * file that has the result of experiment while generating triple Output
+	 * size is limited 2000 since it takes too long to generate complete output
 	 * 
-	 * To find possible triple from double:
-	 * groups doubles into small groups that has common elements then try the combination between the elements that are not common
-	 * e.g.  if we have 0;1 0;2 0;3 , 0 is common element, then we can try 0;1;2, 0;1;3 and 0;2;3
+	 * To find possible triple from double: groups doubles into small groups
+	 * that has common elements then try the combination between the elements
+	 * that are not common e.g. if we have 0;1 0;2 0;3 , 0 is common element,
+	 * then we can try 0;1;2, 0;1;3 and 0;2;3
 	 */
 	private static void generateTriple(long timeOut) throws TimeoutException {
 		int counter = 0;
-	
+
 		for (Combination combi : pairCombination) {
 			if (counter >= 1999) {
 				break;
@@ -466,11 +497,12 @@ public class RunIntersectionExp {
 						try {
 							sizeMult = Integer.toString(bi4.intValueExact()).length();
 						} catch (ArithmeticException e) {
-							// if the multiplication exceeds max int size, then take approximation of digits
+							// if the multiplication exceeds max int size, then
+							// take approximation of digits
 							sizeMult = Integer.toString(size1).length() + Integer.toString(size2).length()
 									+ Integer.toString(size3).length() - 1;
 						}
-					
+
 						resultOfEmptiness3.print(sizeSum + "   " + sizeMult + "   ");
 
 						if (intersectedSFA == null) {
@@ -524,8 +556,7 @@ public class RunIntersectionExp {
 				for (int tempIndex = 1; tempIndex < tempIndexArray.size() && counter < 2000; tempIndex++) {
 					k = tempIndexArray.get(tempIndex);
 
-					// avoid recomputing the intersection of first three every
-					// time
+					
 					ArrayList<SAFA<CharPred, Character>> intersectedSAFAlist = new ArrayList<SAFA<CharPred, Character>>();
 					intersectedSAFAlist.add(safaList.get(i));
 					intersectedSAFAlist.add(safaList.get(i2));
@@ -534,8 +565,7 @@ public class RunIntersectionExp {
 
 					SAFA<CharPred, Character> intersectedSAFA = IntersectedSAFA(intersectedSAFAlist, timeOut);
 
-					// also pre-computing the intersection of the first three
-					// SFAs
+					
 					ArrayList<SFA<CharPred, Character>> intersectedSFAlist = new ArrayList<SFA<CharPred, Character>>();
 					SFA<CharPred, Character> sfa1 = sfaList.get(i);
 					SFA<CharPred, Character> sfa2 = sfaList.get(i2);
@@ -579,7 +609,7 @@ public class RunIntersectionExp {
 							sizeMult = Integer.toString(bi5.intValueExact()).length();
 						} catch (ArithmeticException e) {
 							sizeMult = Integer.toString(size1).length() + Integer.toString(size2).length()
-									+ Integer.toString(size3).length() + +Integer.toString(size4).length() - 1;
+									+ Integer.toString(size3).length() + Integer.toString(size4).length() - 1;
 						}
 						// sizeMult =
 						// Integer.toString(size1).length()+Integer.toString(size2).length()+Integer.toString(size3).length()-1;
@@ -618,6 +648,124 @@ public class RunIntersectionExp {
 		}
 	}
 
+	private static void generatePenta(long timeOut) throws TimeoutException {
+		int counter = 0;
+		for (MultiCombination combi : quadraCombination) {
+			if (counter >= 1999) {
+				break;
+			}
+			ArrayList<Integer> indexAL = combi.getCommonIndex();
+			int i = indexAL.get(0);
+			// i2 means the second index, i3 means the third index etc.
+			int i2 = indexAL.get(1);
+			int i3 = indexAL.get(2);
+			// j means the second to the end index, k means the end index
+			int j, k;
+			ArrayList<Integer> tempIndexArray = combi.getIndexArray();
+			while (!tempIndexArray.isEmpty() && counter < 2000) {
+				j = tempIndexArray.get(0);
+				for (int tempIndex = 1; tempIndex < tempIndexArray.size() && counter < 2000; tempIndex++) {
+					k = tempIndexArray.get(tempIndex);
+
+					
+					ArrayList<SAFA<CharPred, Character>> intersectedSAFAlist = new ArrayList<SAFA<CharPred, Character>>();
+					SAFA<CharPred, Character> safa1 = safaList.get(i);
+					SAFA<CharPred, Character> safa2 = safaList.get(i2);
+					SAFA<CharPred, Character> safa3 = safaList.get(i3);
+					SAFA<CharPred, Character> safa4 = safaList.get(j);
+					SAFA<CharPred, Character> safa5 = safaList.get(k);
+					intersectedSAFAlist.add(safa1);
+					intersectedSAFAlist.add(safa2);
+					intersectedSAFAlist.add(safa3);
+					intersectedSAFAlist.add(safa4);
+					intersectedSAFAlist.add(safa5);
+
+					SAFA<CharPred, Character> intersectedSAFA = IntersectedSAFA(intersectedSAFAlist, timeOut);
+
+					
+					ArrayList<SFA<CharPred, Character>> intersectedSFAlist = new ArrayList<SFA<CharPred, Character>>();
+					SFA<CharPred, Character> sfa1 = sfaList.get(i);
+					SFA<CharPred, Character> sfa2 = sfaList.get(i2);
+					SFA<CharPred, Character> sfa3 = sfaList.get(i3);
+					SFA<CharPred, Character> sfa4 = sfaList.get(j);
+					SFA<CharPred, Character> lastSFA = sfaList.get(k);
+					intersectedSFAlist.add(sfa1);
+					intersectedSFAlist.add(sfa2);
+					intersectedSFAlist.add(sfa3);
+					intersectedSFAlist.add(sfa4);
+					intersectedSFAlist.add(lastSFA);
+
+					long startDatetemp = System.currentTimeMillis();
+					SFA<CharPred, Character> intersectedSFA = IntersectedSFA(intersectedSFAlist, timeOut);
+					long endDatetemp = System.currentTimeMillis();
+					long totalTimeSFA = endDatetemp - startDatetemp;
+
+					boolean hasIntersection = false;
+					if (intersectedSAFA != null || intersectedSFA != null) {
+						counter++;
+						hasIntersection = true;
+						pentaResult.println(i + ";" + i2 + ";" + i3 + ";" + j + ";" + k);
+						resultOfEmptiness5.print(i + ";" + i2 + ";" + i3 + ";" + j + ";" + k + "   ");
+
+						int size1 = safa1.stateCount();
+						int size2 = safa2.stateCount();
+						int size3 = safa3.stateCount();
+						int size4 = safa4.stateCount();
+						int size5 = safa5.stateCount();
+						int sizeSum = size1 + size2 + size3 + size4 + size5;
+						int sizeMult;
+						BigInteger bi1, bi2, bi3, bi4, bi5, bi6;
+						bi1 = new BigInteger(Integer.toString(size1));
+						bi2 = new BigInteger(Integer.toString(size2));
+						bi3 = new BigInteger(Integer.toString(size3));
+						bi4 = new BigInteger(Integer.toString(size4));
+						bi5 = new BigInteger(Integer.toString(size5));
+						bi6 = bi5.multiply(bi4.multiply(bi3.multiply(bi1.multiply(bi2))));
+
+						try {
+							sizeMult = Integer.toString(bi6.intValueExact()).length();
+						} catch (ArithmeticException e) {
+							sizeMult = Integer.toString(size1).length() + Integer.toString(size2).length()
+									+ Integer.toString(size3).length() + Integer.toString(size4).length()
+									+ Integer.toString(size5).length() - 1;
+						}
+						// sizeMult =
+						// Integer.toString(size1).length()+Integer.toString(size2).length()+Integer.toString(size3).length()-1;
+						resultOfEmptiness5.print(sizeSum + "   " + sizeMult + "   ");
+
+						if (intersectedSFA == null) {
+							totalTimeSFA = timeOut;
+						}
+						if (totalTimeSFA > timeOut) {
+							totalTimeSFA = timeOut;
+						}
+						if (intersectedSAFA == null) {
+							fullTimeSAFA = timeOut;
+							solverTimeSAFA = timeOut;
+							subTimeSAFA = timeOut;
+						}
+
+						if (totalTimeReverseSAFA > timeOut) {
+							totalTimeReverseSAFA = timeOut;
+						}
+						resultOfEmptiness5.print(totalTimeSFA + "   ");
+						resultOfEmptiness5.print(totalTimeReverseSAFA + "   ");
+						resultOfEmptiness5
+								.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "        ");
+						long SFAMinusSAFA = totalTimeSFA - fullTimeSAFA;
+						long ReverseMinusSAFA = totalTimeReverseSAFA - fullTimeSAFA;
+						resultOfEmptiness5.print(SFAMinusSAFA + "   " + ReverseMinusSAFA + "\n");
+					}
+					System.out.print(hasIntersection + "  ");
+					System.out.println(i + " " + i2 + " " + i3 + " " + j + " " + k);
+
+				}
+				tempIndexArray.remove(0);
+			}
+
+		}
+	}
+
 	private static void buildPair() {
 		ArrayList<String> pairlist = new ArrayList<String>();
 		try {
@@ -636,6 +784,7 @@ public class RunIntersectionExp {
 		}
 
 		Combination pairComb = new Combination(0);
+		pairCombination.add(pairComb);
 		for (String line : pairlist) {
 			String[] splited = line.split(";");
 			int first = Integer.parseInt(splited[0]);
@@ -644,10 +793,10 @@ public class RunIntersectionExp {
 				pairComb.addToIndexArray(second);
 			} else {
 				pairComb = new Combination(first, second);
+				pairCombination.add(pairComb);
 
 			}
 
-			pairCombination.add(pairComb);
 			System.out.println("building " + line);
 		}
 	}
@@ -670,6 +819,7 @@ public class RunIntersectionExp {
 		}
 
 		MultiCombination combi = new MultiCombination(0, 1);
+		tripleCombination.add(combi);
 		for (String line : templist) {
 			String[] splited = line.split(";");
 			int first = Integer.parseInt(splited[0]);
@@ -682,9 +832,46 @@ public class RunIntersectionExp {
 			} else {
 				combi = new MultiCombination(first, second);
 				combi.addToIndexArray(third);
+				tripleCombination.add(combi);
 			}
+			System.out.println("building " + line);
+		}
+	}
 
-			tripleCombination.add(combi);
+	private static void buildQuadra() {
+		ArrayList<String> templist = new ArrayList<String>();
+		try {
+			quadraFile = new FileReader("src/benchmark/regexconverter/QuadraResult.txt");
+		} catch (FileNotFoundException ex) {
+			System.err.println("File not found.");
+			System.exit(-1);
+		}
+		try (BufferedReader br = new BufferedReader(quadraFile)) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				templist.add(line);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		MultiCombination combi = new MultiCombination(0, 1, 2);
+		quadraCombination.add(combi);
+		for (String line : templist) {
+			String[] splited = line.split(";");
+			int first = Integer.parseInt(splited[0]);
+			int second = Integer.parseInt(splited[1]);
+			int third = Integer.parseInt(splited[2]);
+			int fourth = Integer.parseInt(splited[3]);
+			ArrayList<Integer> indexs = combi.getCommonIndex();
+
+			if (indexs.get(0) == first && indexs.get(1) == second && indexs.get(2) == third) {
+				combi.addToIndexArray(fourth);
+			} else {
+				combi = new MultiCombination(first, second, third);
+				combi.addToIndexArray(fourth);
+				quadraCombination.add(combi);
+			}
 			System.out.println("building " + line);
 		}
 	}
