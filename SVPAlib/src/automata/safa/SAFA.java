@@ -8,7 +8,6 @@ package automata.safa;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +19,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.tuple.Triple;
 import org.sat4j.specs.TimeoutException;
 
 import com.google.common.collect.Lists;
@@ -411,6 +411,144 @@ public class SAFA<P, S> {
 			SAFA<P, S> raut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr) throws TimeoutException {
 		return isEquivalent(laut, raut, ba, boolexpr, Long.MAX_VALUE);
 	}
+	
+	/**
+	 * Checks whether laut and raut are equivalent using bisimulation up to
+	 * congruence.
+	 */
+	public static <P, S, E extends BooleanExpression> Pair<Boolean, List<S>> 
+			checkEquivalenceOfTwoConfigurations(
+					SAFA<P, S> aut,
+					PositiveBooleanExpression c1,
+					PositiveBooleanExpression c2,
+					BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr, long timeout)
+					throws TimeoutException {
+
+		Timers.setForCongruence();
+		Timers.startFull();
+		Timers.setTimeout(timeout);
+
+		SAFARelation similar = new BDDRelation(aut.maxStateId, aut.maxStateId);
+
+		PriorityQueue<Pair<Pair<E, E>, List<S>>> worklist = new PriorityQueue<>(new RelationComparator<>());
+
+		BooleanExpressionMorphism<E> coerce = new BooleanExpressionMorphism<>((x) -> boolexpr.MkState(x), boolexpr);
+		E leftInitial = coerce.apply(c1);
+		E rightInitial = coerce.apply(c2);
+
+		similar.add(leftInitial, rightInitial);
+		worklist.add(new Pair<>(new Pair<>(leftInitial, rightInitial), new LinkedList<>()));
+		while (!worklist.isEmpty()) {
+			Timers.assertFullTO(timeout);
+
+			Pair<Pair<E, E>, List<S>> next = worklist.remove();
+
+			E left = next.getFirst().getFirst();
+			E right = next.getFirst().getSecond();
+			List<S> witness = next.getSecond();
+
+			P guard = ba.True();
+			boolean isSat = true;
+			do {
+				Timers.assertFullTO(timeout);
+
+				Timers.startSolver();
+				S model = ba.generateWitness(guard);
+				Timers.stopSolver();
+
+				P implicant = ba.True();
+				Map<Integer, E> leftMove = new HashMap<>();
+				Map<Integer, E> rightMove = new HashMap<>();
+
+				for (Integer s : left.getStates()) {
+					E succ = boolexpr.False();
+					for (SAFAInputMove<P, S> tr : aut.getInputMovesFrom(s)) {
+						Timers.assertFullTO(timeout);
+
+						Timers.startSolver();
+						boolean hm = ba.HasModel(tr.guard, model);
+						Timers.stopSolver();
+
+						if (hm) {
+							Timers.startSubsumption();
+							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
+							Timers.stopSubsumption();
+
+							Timers.startSolver();
+							implicant = ba.MkAnd(implicant, tr.guard);
+							Timers.stopSolver();
+						} else {
+							Timers.startSolver();
+							implicant = ba.MkAnd(implicant, ba.MkNot(tr.guard));
+							Timers.stopSolver();
+						}
+					}
+					leftMove.put(s, succ);
+				}
+
+				for (Integer s : right.getStates()) {
+					E succ = boolexpr.False();
+					for (SAFAInputMove<P, S> tr : aut.getInputMovesFrom(s)) {
+						Timers.assertFullTO(timeout);
+
+						Timers.startSolver();
+						boolean hm = ba.HasModel(tr.guard, model);
+						Timers.stopSolver();
+
+						if (hm) {
+							Timers.startSubsumption();
+							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
+							Timers.stopSubsumption();
+
+							Timers.startSolver();
+							implicant = ba.MkAnd(implicant, tr.guard);
+							Timers.stopSolver();
+						} else {
+							Timers.startSolver();
+							implicant = ba.MkAnd(implicant, ba.MkNot(tr.guard));
+							Timers.stopSolver();
+						}
+					}
+					rightMove.put(s, succ);
+				}
+
+				Timers.startSubsumption();
+				E leftSucc = boolexpr.substitute((lit) -> leftMove.get(lit)).apply(left);
+				E rightSucc = boolexpr.substitute((lit) -> rightMove.get(lit)).apply(right);
+				List<S> succWitness = new LinkedList<>();
+				succWitness.addAll(witness);
+				succWitness.add(model);
+				
+				boolean checkIfDiff = leftSucc.hasModel(aut.finalStates) != rightSucc.hasModel(aut.finalStates);
+				Timers.stopSubsumption();
+
+				if (checkIfDiff) {
+					// leftSucc is accepting and rightSucc is rejecting or
+					// vice versa
+					Timers.stopFull();
+					return new Pair<>(false, succWitness);
+				} else{ 
+					Timers.startSubsumption();
+					if (!similar.isMember(leftSucc, rightSucc)) {
+						if (!similar.add(leftSucc, rightSucc)) {
+							Timers.stopSubsumption();
+							Timers.stopFull();
+							return new Pair<>(false, succWitness);
+						}
+						worklist.add(new Pair<>(new Pair<>(leftSucc, rightSucc), succWitness));
+					}
+					Timers.stopSubsumption();
+				}
+				Timers.startSolver();
+				guard = ba.MkAnd(guard, ba.MkNot(implicant));
+				
+				isSat =  ba.IsSatisfiable(guard);
+				Timers.stopSolver();
+			} while (isSat);
+		}
+		Timers.stopFull();
+		return new Pair<>(true, null);
+	}
 
 	/**
 	 * Checks whether laut and raut are equivalent using bisimulation up to
@@ -759,6 +897,15 @@ public class SAFA<P, S> {
 	 * @throws TimeoutException 
 	 */
 	public SAFA<P, S> intersectionWith(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
+		return binaryOp(this, aut, ba, BoolOp.Intersection).getLeft();
+	}
+	
+	/**
+	 * Computes the intersection with <code>aut</code> as a new SFA
+	 * @throws TimeoutException 
+	 */
+	public Triple<SAFA<P, S>,PositiveBooleanExpression,PositiveBooleanExpression> 
+		intersectionWithGetConjucts(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return binaryOp(this, aut, ba, BoolOp.Intersection);
 	}
 
@@ -767,7 +914,7 @@ public class SAFA<P, S> {
 	 * @throws TimeoutException 
 	 */
 	public SAFA<P, S> unionWith(SAFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
-		return binaryOp(this, aut, ba, BoolOp.Union);
+		return binaryOp(this, aut, ba, BoolOp.Union).getLeft();
 	}
 
 	class DeMorgan extends BooleanExpressionFactory<PositiveBooleanExpression> {
@@ -867,7 +1014,8 @@ public class SAFA<P, S> {
 	 * a new SFA
 	 * @throws TimeoutException 
 	 */
-	public static <A, B> SAFA<A, B> binaryOp(SAFA<A, B> aut1, SAFA<A, B> aut2, BooleanAlgebra<A, B> ba, BoolOp op) throws TimeoutException {
+	public static <A, B> Triple<SAFA<A, B>, PositiveBooleanExpression,PositiveBooleanExpression> 
+		binaryOp(SAFA<A, B> aut1, SAFA<A, B> aut2, BooleanAlgebra<A, B> ba, BoolOp op) throws TimeoutException {
 
 		int offset = aut1.maxStateId + 1;
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = getBooleanExpressionFactory();
@@ -884,21 +1032,25 @@ public class SAFA<P, S> {
 		for (SAFAInputMove<A, B> t : aut2.getInputMoves())
 			transitions.add(new SAFAInputMove<>(t.from + offset, boolexpr.offset(offset).apply(t.to), t.guard));
 
-		switch (op) {
+		PositiveBooleanExpression liftedAut2Init = boolexpr.offset(offset).apply(aut2.initialState);
+ 		switch (op) {
 		case Union:
-			initialState = boolexpr.MkOr(aut1.initialState, boolexpr.offset(offset).apply(aut2.initialState));
+			initialState = boolexpr.MkOr(aut1.initialState, liftedAut2Init);
 			break;
 
 		case Intersection:
 			// Add extra moves from new initial state
-			initialState = boolexpr.MkAnd(aut1.initialState, boolexpr.offset(offset).apply(aut2.initialState));
+			initialState = boolexpr.MkAnd(aut1.initialState, liftedAut2Init);
 			break;
 
 		default:
 			throw new NotImplementedException("Operation " + op + " not implemented");
 		}
 
-		return MkSAFA(transitions, initialState, finalStates, ba, false, false, false);
+		return Triple.of(
+						MkSAFA(transitions, initialState, finalStates, ba, false, false, false),
+						aut1.initialState,
+						liftedAut2Init);
 	}
 
 	/**
