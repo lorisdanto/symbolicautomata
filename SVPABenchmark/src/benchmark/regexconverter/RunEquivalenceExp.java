@@ -143,7 +143,7 @@ public class RunEquivalenceExp {
 		
 		
 		equivalence2to3
-				.print("name   |SAFA1|   |SAFA2|   |SFA1|   |SFA2|   FullTime   SolverTime   subsTime   SFAtime"+"\n");
+				.print("name   |SAFA1|   |SAFA2|   |SFA1|   |SFA2|   FullTime   SolverTime   subsTime   SFAtime   SFA-SAFAfull"+"\n");
 		generate2to3(timeOut);
 		equivalence2to3.close();
 		
@@ -195,7 +195,7 @@ public class RunEquivalenceExp {
 		
 		
 		equivalence3to4
-				.print("name   |SAFA1|   |SAFA2|   |SFA1|   |SFA2|   FullTime   SolverTime   subsTime   SFAtime"+"\n");
+				.print("name   |SAFA1|   |SAFA2|   |SFA1|   |SFA2|   FullTime   SolverTime   subsTime   SFAtime   SFA-SAFAfull"+"\n");
 		generate3to4(timeOut);
 		equivalence3to4.close();
 		
@@ -247,7 +247,7 @@ public class RunEquivalenceExp {
 		
 		
 		equivalence4to5
-				.print("name   |SAFA1|   |SAFA2|   |SFA1|   |SFA2|   FullTime   SolverTime   subsTime   SFAtime"+"\n");
+				.print("name   |SAFA1|   |SAFA2|   |SFA1|   |SFA2|   FullTime   SolverTime   subsTime   SFAtime   SFA-SAFAfull"+"\n");
 		generate4to5(timeOut);
 		equivalence4to5.close();
 		
