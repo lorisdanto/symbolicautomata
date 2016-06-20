@@ -272,6 +272,8 @@ public class RunEquivalenceExp {
 				equivalence2to3.print(safa1Size+"   "+ safa2Size+"   "+ sfa1Size+"   "+ sfa2Size+"   ");
 				long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
 				equivalence2to3.print(fullTimeSAFA+"   "+solverTimeSAFA+"   "+subTimeSAFA+"   "+totalTimeSFA +"   "+sfaMinussafa+"\n");
+				System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
+						+ "   " + sfaMinussafa + "\n");
 			}
 		}
 		
@@ -300,6 +302,8 @@ public class RunEquivalenceExp {
 				equivalence3to4.print(safa1Size+"   "+ safa2Size+"   "+ sfa1Size+"   "+ sfa2Size+"   ");
 				long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
 				equivalence3to4.print(fullTimeSAFA+"   "+solverTimeSAFA+"   "+subTimeSAFA+"   "+totalTimeSFA +"   "+sfaMinussafa+"\n");
+				System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
+						+ "   " + sfaMinussafa + "\n");
 			}
 		}
 		
@@ -326,6 +330,8 @@ public class RunEquivalenceExp {
 				equivalence4to5.print(safa1Size+"   "+ safa2Size+"   "+ sfa1Size+"   "+ sfa2Size+"   ");
 				long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
 				equivalence4to5.print(fullTimeSAFA+"   "+solverTimeSAFA+"   "+subTimeSAFA+"   "+totalTimeSFA +"   "+sfaMinussafa+"\n");
+				System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
+						+ "   " + sfaMinussafa + "\n");
 			}
 		}
 		
@@ -381,16 +387,16 @@ public class RunEquivalenceExp {
 	
 	private static void runEquivalent(ArrayList<SAFA<CharPred, Character>> safaLHS, ArrayList<SAFA<CharPred, Character>> safaRHS, ArrayList<SFA<CharPred, Character>> sfaLHS, ArrayList<SFA<CharPred, Character>> sfaRHS, long timeOut){
 		try {
-			Timers.setTimeout(Long.MAX_VALUE);
+			long start = System.currentTimeMillis();
 			SAFA<CharPred, Character> tempLeft = IntersectedSAFA(safaLHS, timeOut);
-			long fullTimeSAFALeft = Timers.getFull();
-			long solverTimeSAFALeft = Timers.getSolver();
-			long subTimeSAFALeft = Timers.getSubsumption();
-			Timers.setTimeout(Long.MAX_VALUE);
+			long fullTimeSAFALeft = System.currentTimeMillis()-start;
+			long solverTimeSAFALeft = 0;
+			long subTimeSAFALeft = 0;
+			start = System.currentTimeMillis();
 			SAFA<CharPred, Character> tempRight = IntersectedSAFA(safaRHS, timeOut-fullTimeSAFALeft);
-			long fullTimeSAFARight = Timers.getFull();
-			long solverTimeSAFARight = Timers.getSolver();
-			long subTimeSAFARight = Timers.getSubsumption();
+			long fullTimeSAFARight = System.currentTimeMillis()-start;
+			long solverTimeSAFARight = 0;
+			long subTimeSAFARight = 0;
 			if(fullTimeSAFALeft+fullTimeSAFARight>=timeOut){
 				fullTimeSAFA = timeOut;
 				solverTimeSAFA = timeOut;

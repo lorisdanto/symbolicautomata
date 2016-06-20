@@ -14,7 +14,10 @@ import java.math.*;
 
 import benchmark.regexconverter.Combination;
 import benchmark.regexconverter.MultiCombination;
+import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
+import automata.safa.booleanexpression.BDDExpression;
+import automata.safa.booleanexpression.BDDExpressionFactory;
 import automata.safa.booleanexpression.PositiveBooleanExpression;
 import automata.sfa.SFA;
 import theory.characters.CharPred;
@@ -216,7 +219,8 @@ public class RunSelfEquivalenceExp {
 			long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
 			equivalence2to3.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
 					+ "   " + sfaMinussafa + "\n");
-
+			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
+					+ "   " + sfaMinussafa + "\n");
 		}
 
 	}
@@ -238,6 +242,8 @@ public class RunSelfEquivalenceExp {
 			equivalence3to4.print(safa1Size + "   " + safa2Size + "   " + sfa1Size + "   " + sfa2Size + "   ");
 			long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
 			equivalence3to4.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
+					+ "   " + sfaMinussafa + "\n");
+			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
 					+ "   " + sfaMinussafa + "\n");
 
 		}
@@ -263,7 +269,8 @@ public class RunSelfEquivalenceExp {
 			long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
 			equivalence4to5.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
 					+ "   " + sfaMinussafa + "\n");
-
+			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
+					+ "   " + sfaMinussafa + "\n");
 		}
 
 	}
@@ -320,17 +327,21 @@ public class RunSelfEquivalenceExp {
 			ArrayList<SFA<CharPred, Character>> sfaLHS, ArrayList<SFA<CharPred, Character>> sfaRHS, long timeOut) {
 		try {
 
-			Timers.setTimeout(Long.MAX_VALUE);
+			long start = System.currentTimeMillis();
 			Triple<SAFA<CharPred, Character>, PositiveBooleanExpression, PositiveBooleanExpression> tempTriple = IntersectedSAFA(
 					safaRHS);
-			long fullTimeSAFAIntersect = Timers.getFull();
-			long solverTimeSAFAIntersect = Timers.getSolver();
-			long subTimeSAFAIntersect = Timers.getSubsumption();
+			long totalTime = System.currentTimeMillis()-start;
+			long fullTimeSAFAIntersect = totalTime;
+			long solverTimeSAFAIntersect = 0;
+			long subTimeSAFAIntersect = 0;
 
-			Timers.setTimeout(Long.MAX_VALUE);
+			
 			SAFA<CharPred, Character> tempSAFA = tempTriple.getLeft();
+			Timers.setTimeout(Long.MAX_VALUE);
+			BooleanExpressionFactory<BDDExpression> bef = new BDDExpressionFactory(
+					tempSAFA.stateCount() + 1);
 			SAFA.checkEquivalenceOfTwoConfigurations(tempSAFA, tempTriple.getMiddle(), tempSAFA.getInitialState(),
-					solver, SAFA.getBooleanExpressionFactory(), timeOut - fullTimeSAFAIntersect);
+					solver, bef, timeOut - fullTimeSAFAIntersect);
 			fullTimeSAFA = Timers.getFull() + fullTimeSAFAIntersect;
 			solverTimeSAFA = Timers.getSolver() + solverTimeSAFAIntersect;
 			subTimeSAFA = Timers.getSubsumption() + subTimeSAFAIntersect;

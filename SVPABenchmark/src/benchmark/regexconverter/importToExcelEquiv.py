@@ -9,11 +9,11 @@ from openpyxl import load_workbook
 
 def main():
     numOfRow=2;
-    xfile = load_workbook('Equivalence2to3.xlsx')
+    xfile = load_workbook('EquivalenceConjunc2to3.xlsx')
     #sheet = xfile.get_sheet_by_name('Emptiness-complete')
     sheet = xfile.active
     
-    with open('EquivalenceOf2to3Excel.txt') as f:
+    with open('EquivalenceOf2to3Excel2.txt') as f:
         for line in f:
             #get time from file
             line = line.split()
@@ -26,7 +26,7 @@ def main():
             safaSolver = int(line[6])
             safaSub = int(line[7])
             sfa = int(line[8])
-           
+            sfaMinussafaFull=int(line[9])
             
            
 
@@ -39,7 +39,7 @@ def main():
             sheet['G'+str(numOfRow)] = safaSolver
             sheet['H'+str(numOfRow)] = safaSub
             sheet['I'+str(numOfRow)] = sfa
-            sheet['J'+str(numOfRow)] = sfa-safaFull
+            sheet['J'+str(numOfRow)] = sfaMinussafaFull
 
             numOfRow +=1
             
