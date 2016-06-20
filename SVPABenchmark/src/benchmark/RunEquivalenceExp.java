@@ -1,4 +1,4 @@
-package benchmark.regexconverter;
+package benchmark;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -11,7 +11,6 @@ import java.util.HashSet;
 import org.sat4j.specs.TimeoutException;
 import java.math.*;
 
-import benchmark.SFAprovider;
 import benchmark.regexconverter.Combination;
 import benchmark.regexconverter.MultiCombination;
 import automata.safa.SAFA;
@@ -32,10 +31,7 @@ public class RunEquivalenceExp {
 	private static PrintWriter equivalence4to5;
 
 	private static UnaryCharIntervalSolver solver = new UnaryCharIntervalSolver();
-	private static ArrayList<Combination> pairCombination = new ArrayList<Combination>();
-	private static ArrayList<MultiCombination> tripleCombination = new ArrayList<MultiCombination>();
-	private static ArrayList<MultiCombination> quadraCombination = new ArrayList<MultiCombination>();
-
+	
 	private static ArrayList<SFA<CharPred, Character>> sfaList = new ArrayList<SFA<CharPred, Character>>();
 	private static ArrayList<SAFA<CharPred, Character>> safaList = new ArrayList<SAFA<CharPred, Character>>();
 	// to store input file of patterns
@@ -386,10 +382,27 @@ public class RunEquivalenceExp {
 	private static void runEquivalent(ArrayList<SAFA<CharPred, Character>> safaLHS, ArrayList<SAFA<CharPred, Character>> safaRHS, ArrayList<SFA<CharPred, Character>> sfaLHS, ArrayList<SFA<CharPred, Character>> sfaRHS, long timeOut){
 		try {
 			Timers.setTimeout(Long.MAX_VALUE);
-			SAFA.isEquivalent(IntersectedSAFA(safaLHS, timeOut), IntersectedSAFA(safaRHS, timeOut), solver, SAFA.getBooleanExpressionFactory(), timeOut);
-			fullTimeSAFA = Timers.getFull();
-			solverTimeSAFA = Timers.getSolver();
-			subTimeSAFA = Timers.getSubsumption();
+			SAFA<CharPred, Character> tempLeft = IntersectedSAFA(safaLHS, timeOut);
+			long fullTimeSAFALeft = Timers.getFull();
+			long solverTimeSAFALeft = Timers.getSolver();
+			long subTimeSAFALeft = Timers.getSubsumption();
+			Timers.setTimeout(Long.MAX_VALUE);
+			SAFA<CharPred, Character> tempRight = IntersectedSAFA(safaRHS, timeOut-fullTimeSAFALeft);
+			long fullTimeSAFARight = Timers.getFull();
+			long solverTimeSAFARight = Timers.getSolver();
+			long subTimeSAFARight = Timers.getSubsumption();
+			if(fullTimeSAFALeft+fullTimeSAFARight>=timeOut){
+				fullTimeSAFA = timeOut;
+				solverTimeSAFA = timeOut;
+				subTimeSAFA = timeOut;
+			}else{
+				Timers.setTimeout(Long.MAX_VALUE);
+				SAFA.isEquivalent(tempLeft, tempRight, solver, SAFA.getBooleanExpressionFactory(), timeOut-fullTimeSAFALeft-fullTimeSAFARight);
+				fullTimeSAFA = Timers.getFull()+fullTimeSAFALeft+fullTimeSAFARight;
+				solverTimeSAFA = Timers.getSolver()+solverTimeSAFALeft+solverTimeSAFARight;
+				subTimeSAFA = Timers.getSubsumption()+subTimeSAFALeft+subTimeSAFARight;
+			}
+			
 		} catch (Exception e) {
 			fullTimeSAFA = timeOut;
 			solverTimeSAFA = timeOut;
@@ -397,10 +410,18 @@ public class RunEquivalenceExp {
 		}
 		
 		try {
-			long startDatetemp = System.currentTimeMillis();
-			SFA.areHopcroftKarpEquivalent(IntersectedSFA(sfaLHS, timeOut), IntersectedSFA(sfaRHS, timeOut), solver);
-			long endDatetemp = System.currentTimeMillis();
-			totalTimeSFA = endDatetemp - startDatetemp;
+			long startDate = System.currentTimeMillis();
+			SFA<CharPred, Character> tempLeftSFA = IntersectedSFA(sfaLHS, timeOut);
+			long endDate = System.currentTimeMillis();
+			long totalTimeLeft = endDate - startDate;
+			startDate = System.currentTimeMillis();
+			SFA<CharPred, Character> tempRightSFA = IntersectedSFA(sfaRHS, timeOut-totalTimeLeft);
+			endDate = System.currentTimeMillis();
+			long totalTimeRight = endDate - startDate;
+			long startDateEquiv = System.currentTimeMillis();
+			SFA.areHopcroftKarpEquivalent(tempLeftSFA, tempRightSFA, solver);
+			long endDateEquiv = System.currentTimeMillis();
+			totalTimeSFA = endDateEquiv - startDateEquiv + totalTimeLeft+totalTimeRight;
 		} catch (Exception e) {
 			totalTimeSFA = timeOut;
 		}
