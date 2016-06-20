@@ -274,7 +274,8 @@ public class RunEquivalenceExp {
 				equivalentTest(splited, timeOut);
 				equivalence2to3.print(possiblePair+"="+str+"   ");
 				equivalence2to3.print(safa1Size+"   "+ safa2Size+"   "+ sfa1Size+"   "+ sfa2Size+"   ");
-				equivalence2to3.print(fullTimeSAFA+"   "+solverTimeSAFA+"   "+subTimeSAFA+"   "+totalTimeSFA +"\n");
+				long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
+				equivalence2to3.print(fullTimeSAFA+"   "+solverTimeSAFA+"   "+subTimeSAFA+"   "+totalTimeSFA +"   "+sfaMinussafa+"\n");
 			}
 		}
 		
@@ -301,7 +302,8 @@ public class RunEquivalenceExp {
 				equivalentTest(splited, timeOut);
 				equivalence3to4.print(possiblePair+"="+str+"   ");
 				equivalence3to4.print(safa1Size+"   "+ safa2Size+"   "+ sfa1Size+"   "+ sfa2Size+"   ");
-				equivalence3to4.print(fullTimeSAFA+"   "+solverTimeSAFA+"   "+subTimeSAFA+"   "+totalTimeSFA +"\n");
+				long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
+				equivalence3to4.print(fullTimeSAFA+"   "+solverTimeSAFA+"   "+subTimeSAFA+"   "+totalTimeSFA +"   "+sfaMinussafa+"\n");
 			}
 		}
 		
@@ -326,7 +328,8 @@ public class RunEquivalenceExp {
 				equivalentTest(splited, timeOut);
 				equivalence4to5.print(possiblePair+"="+str+"   ");
 				equivalence4to5.print(safa1Size+"   "+ safa2Size+"   "+ sfa1Size+"   "+ sfa2Size+"   ");
-				equivalence4to5.print(fullTimeSAFA+"   "+solverTimeSAFA+"   "+subTimeSAFA+"   "+totalTimeSFA +"\n");
+				long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
+				equivalence4to5.print(fullTimeSAFA+"   "+solverTimeSAFA+"   "+subTimeSAFA+"   "+totalTimeSFA +"   "+sfaMinussafa+"\n");
 			}
 		}
 		
