@@ -1,4 +1,4 @@
-package Z3Pred;
+package theory.Z3Pred;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,6 +8,7 @@ import theory.BooleanAlgebraSubst;
 import utilities.Pair;
 
 import com.microsoft.z3.*;
+
 public class Z3BooleanAlgebra extends BooleanAlgebraSubst<BoolExpr, Expr, Expr>{
 	Context ctx;
 	public Z3BooleanAlgebra (Context c){
@@ -22,7 +23,6 @@ public class Z3BooleanAlgebra extends BooleanAlgebraSubst<BoolExpr, Expr, Expr>{
     boolean prove(Context ctx, BoolExpr f, boolean useMBQI,
             BoolExpr... assumptions)
     {
-        System.out.println("Proving: " + f);
         Solver s = ctx.mkSolver();
         Params p = ctx.mkParams();
         p.add("mbqi", useMBQI);
@@ -132,11 +132,15 @@ public class Z3BooleanAlgebra extends BooleanAlgebraSubst<BoolExpr, Expr, Expr>{
 
 	@Override
 	public Expr generateWitness(BoolExpr p1) {
-		//TODO 
 		Solver solver = ctx.mkSolver();
 		solver.add(p1);
-		Model m = solver.getModel();
-		return m.getConstInterp(m.getConstDecls()[0]);
+		solver.check(); 
+		Model m;
+		if (solver.check() == Status.SATISFIABLE){
+			m = solver.getModel();
+			return m.getConstInterp(m.getConstDecls()[0]);}
+		else
+			return null;
 	}
 	
 
