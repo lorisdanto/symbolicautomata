@@ -113,9 +113,9 @@ public class RunSelfEquivalenceExp {
 			String line;
 			while ((line = br.readLine()) != null) {
 				String[] splited = line.split(";");
-				
-				tripleList.add(line+";"+splited[0]);
-				tripleList.add(line+";"+splited[1]);
+
+				tripleList.add(line + ";" + splited[0]);
+				tripleList.add(line + ";" + splited[1]);
 			}
 			br.close();
 		} catch (IOException e) {
@@ -148,10 +148,10 @@ public class RunSelfEquivalenceExp {
 			String line;
 			while ((line = br.readLine()) != null) {
 				String[] splited = line.split(";");
-				
-				quadraList.add(line+";"+splited[0]);
-				quadraList.add(line+";"+splited[1]);
-				quadraList.add(line+";"+splited[2]);
+
+				quadraList.add(line + ";" + splited[0]);
+				quadraList.add(line + ";" + splited[1]);
+				quadraList.add(line + ";" + splited[2]);
 			}
 			br.close();
 		} catch (IOException e) {
@@ -185,10 +185,10 @@ public class RunSelfEquivalenceExp {
 			String line;
 			while ((line = br.readLine()) != null) {
 				String[] splited = line.split(";");
-				pentaList.add(line+";"+splited[0]);
-				pentaList.add(line+";"+splited[1]);
-				pentaList.add(line+";"+splited[2]);
-				pentaList.add(line+";"+splited[3]);
+				pentaList.add(line + ";" + splited[0]);
+				pentaList.add(line + ";" + splited[1]);
+				pentaList.add(line + ";" + splited[2]);
+				pentaList.add(line + ";" + splited[3]);
 			}
 			br.close();
 		} catch (IOException e) {
@@ -220,8 +220,8 @@ public class RunSelfEquivalenceExp {
 			long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
 			equivalence2to3.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
 					+ "   " + sfaMinussafa + "\n");
-			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
-					+ "   " + sfaMinussafa + "\n");
+			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA + "   "
+					+ sfaMinussafa + "\n");
 		}
 
 	}
@@ -244,8 +244,8 @@ public class RunSelfEquivalenceExp {
 			long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
 			equivalence3to4.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
 					+ "   " + sfaMinussafa + "\n");
-			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
-					+ "   " + sfaMinussafa + "\n");
+			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA + "   "
+					+ sfaMinussafa + "\n");
 
 		}
 
@@ -270,8 +270,8 @@ public class RunSelfEquivalenceExp {
 			long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
 			equivalence4to5.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
 					+ "   " + sfaMinussafa + "\n");
-			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
-					+ "   " + sfaMinussafa + "\n");
+			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA + "   "
+					+ sfaMinussafa + "\n");
 		}
 
 	}
@@ -331,16 +331,15 @@ public class RunSelfEquivalenceExp {
 			long start = System.currentTimeMillis();
 			Triple<SAFA<CharPred, Character>, PositiveBooleanExpression, PositiveBooleanExpression> tempTriple = IntersectedSAFA(
 					safaRHS);
-			long totalTime = System.currentTimeMillis()-start;
+			long totalTime = System.currentTimeMillis() - start;
 			long fullTimeSAFAIntersect = totalTime;
 			long solverTimeSAFAIntersect = 0;
 			long subTimeSAFAIntersect = 0;
 
-			
 			SAFA<CharPred, Character> tempSAFA = tempTriple.getLeft();
 			Timers.setTimeout(Long.MAX_VALUE);
 			SAFA.checkEquivalenceOfTwoConfigurations(tempSAFA, tempTriple.getMiddle(), tempSAFA.getInitialState(),
-					solver, SumOfProductsFactory.getInstance(), timeOut - fullTimeSAFAIntersect);
+					solver, SAFA.getBooleanExpressionFactory(), timeOut - fullTimeSAFAIntersect);
 			fullTimeSAFA = Timers.getFull() + fullTimeSAFAIntersect;
 			solverTimeSAFA = Timers.getSolver() + solverTimeSAFAIntersect;
 			subTimeSAFA = Timers.getSubsumption() + subTimeSAFAIntersect;
@@ -349,8 +348,7 @@ public class RunSelfEquivalenceExp {
 			fullTimeSAFA = timeOut;
 			solverTimeSAFA = timeOut;
 			subTimeSAFA = timeOut;
-		}
-		catch (NullPointerException e) {
+		} catch (NullPointerException e) {
 			fullTimeSAFA = timeOut;
 			solverTimeSAFA = timeOut;
 			subTimeSAFA = timeOut;

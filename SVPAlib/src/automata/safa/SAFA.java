@@ -549,7 +549,7 @@ public class SAFA<P, S> {
 			int rsize = yRel.first.getSize() + yRel.second.getSize();
 			if (lsize < rsize)
 				return -1;
-			if (lsize < rsize)
+			if (rsize < lsize)
 				return 1;
 			return xWitness.size() - yWitness.size();
 		}
