@@ -640,7 +640,41 @@ public class SFA<P, S> extends Automaton<P, S> {
 	public Pair<Boolean, List<S>> isHopcroftKarpEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba)
 			throws TimeoutException {
 		return areHopcroftKarpEquivalent(this.determinize(ba).mkTotal(ba).normalize(ba),
-				aut.determinize(ba).mkTotal(ba).normalize(ba), ba);
+				aut.determinize(ba).mkTotal(ba).normalize(ba), ba, Long.MAX_VALUE);
+	}
+	
+	/**
+	 * checks whether the aut accepts the same language
+	 * 
+	 * @throws TimeoutException
+	 */
+	public Pair<Boolean, List<S>> isHopcroftKarpEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba, long timeout)
+			throws TimeoutException {
+		long startTime = System.currentTimeMillis();
+		SFA<P,S> tmp1 =this.determinize(ba,timeout);
+		
+		long leftover = timeout-(System.currentTimeMillis() - startTime);
+		startTime = System.currentTimeMillis();
+		
+		tmp1 =tmp1.mkTotal(ba,leftover);
+		
+		leftover = leftover-(System.currentTimeMillis() - startTime);
+		startTime = System.currentTimeMillis();
+		tmp1=tmp1.normalize(ba);
+		
+		leftover = leftover-(System.currentTimeMillis() - startTime);
+		startTime = System.currentTimeMillis();
+		SFA<P,S> tmp2 =aut.determinize(ba,leftover);		
+		
+		leftover = leftover-(System.currentTimeMillis() - startTime);
+		startTime = System.currentTimeMillis();
+		
+		tmp2 =tmp2.mkTotal(ba,leftover);		
+		tmp2=tmp2.normalize(ba);
+		
+		leftover = leftover-(System.currentTimeMillis() - startTime);				
+		
+		return areHopcroftKarpEquivalent(tmp1, tmp2, ba, leftover);
 	}
 
 	/**
@@ -648,9 +682,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 * 
 	 * @throws TimeoutException
 	 */
-	public static <A, B> Pair<Boolean, List<B>> areHopcroftKarpEquivalent(SFA<A, B> aut1, SFA<A, B> aut2,
-			BooleanAlgebra<A, B> ba) throws TimeoutException {
+	private static <A, B> Pair<Boolean, List<B>> areHopcroftKarpEquivalent(SFA<A, B> aut1, SFA<A, B> aut2,
+			BooleanAlgebra<A, B> ba, long timeout) throws TimeoutException {
 
+		long startTime = System.currentTimeMillis();
 		UnionFindHopKarp<B> ds = new UnionFindHopKarp<>();
 		int offset = aut1.stateCount();
 
@@ -661,6 +696,9 @@ public class SFA<P, S> extends Automaton<P, S> {
 		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<>();
 		toVisit.add(new Pair<Integer, Integer>(aut1.initialState, aut2.initialState));
 		while (!toVisit.isEmpty()) {
+			if(System.currentTimeMillis()-startTime>timeout)
+				throw new TimeoutException();
+			
 			Pair<Integer, Integer> curr = toVisit.removeFirst();
 			for (SFAInputMove<A, B> move1 : aut1.getInputMovesFrom(curr.first))
 				for (SFAInputMove<A, B> move2 : aut2.getInputMovesFrom(curr.second)) {

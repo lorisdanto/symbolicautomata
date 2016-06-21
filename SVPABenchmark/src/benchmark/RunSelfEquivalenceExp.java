@@ -19,6 +19,7 @@ import automata.safa.SAFA;
 import automata.safa.booleanexpression.BDDExpression;
 import automata.safa.booleanexpression.BDDExpressionFactory;
 import automata.safa.booleanexpression.PositiveBooleanExpression;
+import automata.safa.booleanexpression.SumOfProductsFactory;
 import automata.sfa.SFA;
 import theory.characters.CharPred;
 import theory.intervals.UnaryCharIntervalSolver;
@@ -338,15 +339,18 @@ public class RunSelfEquivalenceExp {
 			
 			SAFA<CharPred, Character> tempSAFA = tempTriple.getLeft();
 			Timers.setTimeout(Long.MAX_VALUE);
-			BooleanExpressionFactory<BDDExpression> bef = new BDDExpressionFactory(
-					tempSAFA.stateCount() + 1);
 			SAFA.checkEquivalenceOfTwoConfigurations(tempSAFA, tempTriple.getMiddle(), tempSAFA.getInitialState(),
-					solver, bef, timeOut - fullTimeSAFAIntersect);
+					solver, SumOfProductsFactory.getInstance(), timeOut - fullTimeSAFAIntersect);
 			fullTimeSAFA = Timers.getFull() + fullTimeSAFAIntersect;
 			solverTimeSAFA = Timers.getSolver() + solverTimeSAFAIntersect;
 			subTimeSAFA = Timers.getSubsumption() + subTimeSAFAIntersect;
 
-		} catch (Exception e) {
+		} catch (TimeoutException e) {
+			fullTimeSAFA = timeOut;
+			solverTimeSAFA = timeOut;
+			subTimeSAFA = timeOut;
+		}
+		catch (NullPointerException e) {
 			fullTimeSAFA = timeOut;
 			solverTimeSAFA = timeOut;
 			subTimeSAFA = timeOut;
@@ -362,7 +366,7 @@ public class RunSelfEquivalenceExp {
 			endDate = System.currentTimeMillis();
 			long totalTimeRight = endDate - startDate;
 			long startDateEquiv = System.currentTimeMillis();
-			SFA.areHopcroftKarpEquivalent(tempLeftSFA, tempRightSFA, solver);
+			tempLeftSFA.isHopcroftKarpEquivalentTo(tempRightSFA, solver, timeOut);
 			long endDateEquiv = System.currentTimeMillis();
 			totalTimeSFA = endDateEquiv - startDateEquiv + totalTimeLeft + totalTimeRight;
 		} catch (Exception e) {

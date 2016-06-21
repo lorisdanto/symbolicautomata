@@ -425,7 +425,7 @@ public class RunEquivalenceExp {
 			endDate = System.currentTimeMillis();
 			long totalTimeRight = endDate - startDate;
 			long startDateEquiv = System.currentTimeMillis();
-			SFA.areHopcroftKarpEquivalent(tempLeftSFA, tempRightSFA, solver);
+			tempLeftSFA.isHopcroftKarpEquivalentTo(tempRightSFA, solver, timeOut);
 			long endDateEquiv = System.currentTimeMillis();
 			totalTimeSFA = endDateEquiv - startDateEquiv + totalTimeLeft+totalTimeRight;
 		} catch (Exception e) {

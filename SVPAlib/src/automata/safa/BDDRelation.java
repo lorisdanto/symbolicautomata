@@ -26,7 +26,9 @@ public class BDDRelation extends SAFARelation {
 	@Override
 	public boolean isMember(BooleanExpression p, BooleanExpression q) throws TimeoutException {
 		BDD pair = leftCoerce.apply(p).bdd.biimp(rightCoerce.apply(q).bdd);
-		return similar.and(pair.not()).isZero();
+		BDD pnot =pair.not();
+		BDD and = similar.and(pnot);
+		return and.isZero();
 	}
 
 	@Override
