@@ -136,13 +136,11 @@ public class SATRelation extends SAFARelation {
 	}
 
 	SATFactory factory;
-	BooleanExpressionMorphism<Integer> mkLeft;
-	BooleanExpressionMorphism<Integer> mkRight;
+	BooleanExpressionMorphism<Integer> coerce;
 
 	public SATRelation(ISolver s) {
 		factory = new SATFactory(s);
-		mkLeft = new BooleanExpressionMorphism<>((state) -> 4 * state + 2, factory);
-		mkRight = new BooleanExpressionMorphism<>((state) -> 4 * state + 4, factory);
+		coerce = new BooleanExpressionMorphism<>((state) -> 2 * state + 2, factory);
 	}
 
 	public SATRelation() {
@@ -150,10 +148,8 @@ public class SATRelation extends SAFARelation {
 	}
 	
 	private int mkIff(BooleanExpression p, BooleanExpression q) throws TimeoutException {
-		// p and q are drawn from different vocabularies (0 in p is not the same as 0 in q), so
-		// rename them apart.
-		int pname = mkLeft.apply(p);
-		int qname = mkRight.apply(q);
+		int pname = coerce.apply(p);
+		int qname = coerce.apply(q);
 		
 		return factory.MkOr(factory.MkAnd(pname, qname), factory.MkAnd(-pname, -qname));
 	}

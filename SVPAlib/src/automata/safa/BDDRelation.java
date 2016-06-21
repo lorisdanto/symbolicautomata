@@ -8,30 +8,26 @@ import theory.bdd.BDD;
 import theory.bddalgebra.BDDSolver;
 
 public class BDDRelation extends SAFARelation {
-	int left;
-	int right;
+	int size;
 	public BDD similar;
 	public BDDExpressionFactory factory;
-	BooleanExpressionMorphism<BDDExpression> leftCoerce;
-	BooleanExpressionMorphism<BDDExpression> rightCoerce;
-	public BDDRelation(int left, int right) {
-		this.left = left;
-		this.right = right;
-		this.factory = new BDDExpressionFactory(left + right);
+	BooleanExpressionMorphism<BDDExpression> coerce;
+	public BDDRelation(int size) {
+		this.size = size;
+		this.factory = new BDDExpressionFactory(size);
 		similar = factory.True().bdd;
-		leftCoerce = new BooleanExpressionMorphism<>((x) -> factory.MkState(x), factory);
-		rightCoerce = new BooleanExpressionMorphism<>((x) -> factory.MkState(x + left + 1), factory);
+		coerce = new BooleanExpressionMorphism<>((x) -> factory.MkState(x), factory);
 	}
 
 	@Override
 	public boolean isMember(BooleanExpression p, BooleanExpression q) throws TimeoutException {
-		BDD pair = leftCoerce.apply(p).bdd.biimp(rightCoerce.apply(q).bdd);
+		BDD pair = coerce.apply(p).bdd.biimp(coerce.apply(q).bdd);
 		return similar.and(pair.not()).isZero();
 	}
 
 	@Override
 	public boolean add(BooleanExpression p, BooleanExpression q) throws TimeoutException {
-		BDD pair = leftCoerce.apply(p).bdd.biimp(rightCoerce.apply(q).bdd);
+		BDD pair = coerce.apply(p).bdd.biimp(coerce.apply(q).bdd);
 		similar = similar.and(pair);
 		return !similar.isZero();
 	}

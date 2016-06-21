@@ -428,7 +428,7 @@ public class SAFA<P, S> {
 		Timers.startFull();
 		Timers.setTimeout(timeout);
 
-		SAFARelation similar = new BDDRelation(aut.maxStateId, aut.maxStateId);
+		SAFARelation similar = new SATRelation();
 
 		PriorityQueue<Pair<Pair<E, E>, List<S>>> worklist = new PriorityQueue<>(new RelationComparator<>());
 
@@ -457,10 +457,12 @@ public class SAFA<P, S> {
 				Timers.stopSolver();
 
 				P implicant = ba.True();
-				Map<Integer, E> leftMove = new HashMap<>();
-				Map<Integer, E> rightMove = new HashMap<>();
+				Map<Integer, E> move = new HashMap<>();
+				Set<Integer> states = new HashSet<>();
+				states.addAll(left.getStates());
+				states.addAll(right.getStates());
 
-				for (Integer s : left.getStates()) {
+				for (Integer s : states) {
 					E succ = boolexpr.False();
 					for (SAFAInputMove<P, S> tr : aut.getInputMovesFrom(s)) {
 						Timers.assertFullTO(timeout);
@@ -483,38 +485,12 @@ public class SAFA<P, S> {
 							Timers.stopSolver();
 						}
 					}
-					leftMove.put(s, succ);
-				}
-
-				for (Integer s : right.getStates()) {
-					E succ = boolexpr.False();
-					for (SAFAInputMove<P, S> tr : aut.getInputMovesFrom(s)) {
-						Timers.assertFullTO(timeout);
-
-						Timers.startSolver();
-						boolean hm = ba.HasModel(tr.guard, model);
-						Timers.stopSolver();
-
-						if (hm) {
-							Timers.startSubsumption();
-							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
-							Timers.stopSubsumption();
-
-							Timers.startSolver();
-							implicant = ba.MkAnd(implicant, tr.guard);
-							Timers.stopSolver();
-						} else {
-							Timers.startSolver();
-							implicant = ba.MkAnd(implicant, ba.MkNot(tr.guard));
-							Timers.stopSolver();
-						}
-					}
-					rightMove.put(s, succ);
+					move.put(s, succ);
 				}
 
 				Timers.startSubsumption();
-				E leftSucc = boolexpr.substitute((lit) -> leftMove.get(lit)).apply(left);
-				E rightSucc = boolexpr.substitute((lit) -> rightMove.get(lit)).apply(right);
+				E leftSucc = boolexpr.substitute((lit) -> move.get(lit)).apply(left);
+				E rightSucc = boolexpr.substitute((lit) -> move.get(lit)).apply(right);
 				List<S> succWitness = new LinkedList<>();
 				succWitness.addAll(witness);
 				succWitness.add(model);
@@ -557,131 +533,8 @@ public class SAFA<P, S> {
 	public static <P, S, E extends BooleanExpression> Pair<Boolean, List<S>> isEquivalent(SAFA<P, S> laut,
 			SAFA<P, S> raut, BooleanAlgebra<P, S> ba, BooleanExpressionFactory<E> boolexpr, long timeout)
 					throws TimeoutException {
-
-		Timers.setForCongruence();
-		Timers.startFull();
-		Timers.setTimeout(timeout);
-
-		SAFARelation similar = new BDDRelation(laut.maxStateId, raut.maxStateId);
-
-		PriorityQueue<Pair<Pair<E, E>, List<S>>> worklist = new PriorityQueue<>(new RelationComparator<>());
-
-		BooleanExpressionMorphism<E> coerce = new BooleanExpressionMorphism<>((x) -> boolexpr.MkState(x), boolexpr);
-		E leftInitial = coerce.apply(laut.initialState);
-		E rightInitial = coerce.apply(raut.initialState);
-
-		similar.add(leftInitial, rightInitial);
-		worklist.add(new Pair<>(new Pair<>(leftInitial, rightInitial), new LinkedList<>()));
-		while (!worklist.isEmpty()) {
-			Timers.assertFullTO(timeout);
-
-			Pair<Pair<E, E>, List<S>> next = worklist.remove();
-
-			E left = next.getFirst().getFirst();
-			E right = next.getFirst().getSecond();
-			List<S> witness = next.getSecond();
-
-			P guard = ba.True();
-			boolean isSat = true;
-			do {
-				Timers.assertFullTO(timeout);
-
-				Timers.startSolver();
-				S model = ba.generateWitness(guard);
-				Timers.stopSolver();
-
-				P implicant = ba.True();
-				Map<Integer, E> leftMove = new HashMap<>();
-				Map<Integer, E> rightMove = new HashMap<>();
-
-				for (Integer s : left.getStates()) {
-					E succ = boolexpr.False();
-					for (SAFAInputMove<P, S> tr : laut.getInputMovesFrom(s)) {
-						Timers.assertFullTO(timeout);
-
-						Timers.startSolver();
-						boolean hm = ba.HasModel(tr.guard, model);
-						Timers.stopSolver();
-
-						if (hm) {
-							Timers.startSubsumption();
-							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
-							Timers.stopSubsumption();
-
-							Timers.startSolver();
-							implicant = ba.MkAnd(implicant, tr.guard);
-							Timers.stopSolver();
-						} else {
-							Timers.startSolver();
-							implicant = ba.MkAnd(implicant, ba.MkNot(tr.guard));
-							Timers.stopSolver();
-						}
-					}
-					leftMove.put(s, succ);
-				}
-
-				for (Integer s : right.getStates()) {
-					E succ = boolexpr.False();
-					for (SAFAInputMove<P, S> tr : raut.getInputMovesFrom(s)) {
-						Timers.assertFullTO(timeout);
-
-						Timers.startSolver();
-						boolean hm = ba.HasModel(tr.guard, model);
-						Timers.stopSolver();
-
-						if (hm) {
-							Timers.startSubsumption();
-							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
-							Timers.stopSubsumption();
-
-							Timers.startSolver();
-							implicant = ba.MkAnd(implicant, tr.guard);
-							Timers.stopSolver();
-						} else {
-							Timers.startSolver();
-							implicant = ba.MkAnd(implicant, ba.MkNot(tr.guard));
-							Timers.stopSolver();
-						}
-					}
-					rightMove.put(s, succ);
-				}
-
-				Timers.startSubsumption();
-				E leftSucc = boolexpr.substitute((lit) -> leftMove.get(lit)).apply(left);
-				E rightSucc = boolexpr.substitute((lit) -> rightMove.get(lit)).apply(right);
-				List<S> succWitness = new LinkedList<>();
-				succWitness.addAll(witness);
-				succWitness.add(model);
-				
-				boolean checkIfDiff = leftSucc.hasModel(laut.finalStates) != rightSucc.hasModel(raut.finalStates);
-				Timers.stopSubsumption();
-
-				if (checkIfDiff) {
-					// leftSucc is accepting and rightSucc is rejecting or
-					// vice versa
-					Timers.stopFull();
-					return new Pair<>(false, succWitness);
-				} else{ 
-					Timers.startSubsumption();
-					if (!similar.isMember(leftSucc, rightSucc)) {
-						if (!similar.add(leftSucc, rightSucc)) {
-							Timers.stopSubsumption();
-							Timers.stopFull();
-							return new Pair<>(false, succWitness);
-						}
-						worklist.add(new Pair<>(new Pair<>(leftSucc, rightSucc), succWitness));
-					}
-					Timers.stopSubsumption();
-				}
-				Timers.startSolver();
-				guard = ba.MkAnd(guard, ba.MkNot(implicant));
-				
-				isSat =  ba.IsSatisfiable(guard);
-				Timers.stopSolver();
-			} while (isSat);
-		}
-		Timers.stopFull();
-		return new Pair<>(true, null);
+		Triple<SAFA<P, S>, PositiveBooleanExpression,PositiveBooleanExpression> triple = binaryOp(laut, raut, ba, BoolOp.Union);
+		return checkEquivalenceOfTwoConfigurations(triple.getLeft(), triple.getMiddle(), triple.getRight(), ba, boolexpr, timeout);
 	}
 
 	static class RelationComparator<E extends BooleanExpression, A> implements Comparator<Pair<Pair<E, E>, List<A>>> {
