@@ -89,8 +89,8 @@ public class RunConjuncEquivalenceExp {
 		}
 
 		runEquivalenceOf2to3(5000);
-		// runEquivalenceOf3to4(5000);
-		// runEquivalenceOf4to5(5000);
+		runEquivalenceOf3to4(5000);
+		runEquivalenceOf4to5(5000);
 
 	}
 
@@ -240,6 +240,10 @@ public class RunConjuncEquivalenceExp {
 
 			System.out.println("Building " + possiblePair + "=" + str);
 			equivalentTest(splited, timeOut);
+			if(fullTimeSAFA == timeOut && totalTimeSFA == timeOut){
+				System.out.println("Both timeout");
+				continue;
+			}
 			equivalence2to3.print(possiblePair + "=" + str + "   ");
 			equivalence2to3.print(safa1Size + "   " + safa2Size + "   " + sfa1Size + "   " + sfa2Size + "   ");
 			long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
@@ -265,6 +269,10 @@ public class RunConjuncEquivalenceExp {
 
 			System.out.println("Building " + possiblePair + "=" + str);
 			equivalentTest(splited, timeOut);
+			if(fullTimeSAFA == timeOut && totalTimeSFA == timeOut){
+				System.out.println("Both timeout");
+				continue;
+			}
 			equivalence3to4.print(possiblePair + "=" + str + "   ");
 			equivalence3to4.print(safa1Size + "   " + safa2Size + "   " + sfa1Size + "   " + sfa2Size + "   ");
 			long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
@@ -289,6 +297,10 @@ public class RunConjuncEquivalenceExp {
 
 			System.out.println("Building " + possiblePair + "=" + str);
 			equivalentTest(splited, timeOut);
+			if(fullTimeSAFA == timeOut && totalTimeSFA == timeOut){
+				System.out.println("Both timeout");
+				continue;
+			}
 			equivalence4to5.print(possiblePair + "=" + str + "   ");
 			equivalence4to5.print(safa1Size + "   " + safa2Size + "   " + sfa1Size + "   " + sfa2Size + "   ");
 			long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
