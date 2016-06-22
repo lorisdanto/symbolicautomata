@@ -98,7 +98,7 @@ public class RunSelfEquivalenceExp {
 
 	private static void runEquivalenceOf2to3(long timeOut) throws TimeoutException {
 		try {
-			equivalence2to3 = new PrintWriter("src/benchmark/regexconverter/EquivalenceOf2to3Self.txt");
+			equivalence2to3 = new PrintWriter("src/benchmark/regexconverter/EquivalenceOf2to3Selfnew.txt");
 		} catch (FileNotFoundException ex) {
 			System.err.println("File could not be opened for writing.");
 			System.exit(-1);
@@ -131,7 +131,7 @@ public class RunSelfEquivalenceExp {
 
 	private static void runEquivalenceOf3to4(long timeOut) throws TimeoutException {
 		try {
-			equivalence3to4 = new PrintWriter("src/benchmark/regexconverter/EquivalenceOf3to4.txt");
+			equivalence3to4 = new PrintWriter("src/benchmark/regexconverter/EquivalenceOf3to4Selfnew.txt");
 		} catch (FileNotFoundException ex) {
 			System.err.println("File could not be opened for writing.");
 			System.exit(-1);
@@ -168,7 +168,7 @@ public class RunSelfEquivalenceExp {
 
 	private static void runEquivalenceOf4to5(long timeOut) throws TimeoutException {
 		try {
-			equivalence4to5 = new PrintWriter("src/benchmark/regexconverter/EquivalenceOf4to5.txt");
+			equivalence4to5 = new PrintWriter("src/benchmark/regexconverter/EquivalenceOf4to5Selfnew.txt");
 		} catch (FileNotFoundException ex) {
 			System.err.println("File could not be opened for writing.");
 			System.exit(-1);

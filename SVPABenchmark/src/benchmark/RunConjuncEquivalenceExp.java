@@ -97,7 +97,7 @@ public class RunConjuncEquivalenceExp {
 	private static void runEquivalenceOf2to3(long timeOut) throws TimeoutException {
 
 		try {
-			equivalence2to3 = new PrintWriter("src/benchmark/regexconverter/EquivalenceOf2to3.txt");
+			equivalence2to3 = new PrintWriter("src/benchmark/regexconverter/EquivalenceOf2to3new.txt");
 		} catch (FileNotFoundException ex) {
 			System.err.println("File could not be opened for writing.");
 			System.exit(-1);
@@ -113,7 +113,18 @@ public class RunConjuncEquivalenceExp {
 		try (BufferedReader br = new BufferedReader(tripleFile)) {
 			String line;
 			while ((line = br.readLine()) != null) {
-				tripleList.add(line);
+				// first run the first pair then the third
+				//tripleList.add(line);
+				//another two possibility are choosing first element with the last,
+				//and choosing second and third.
+				// e,g 0;1;2 => 0;1=0;1;2, 0;2=0;2;1 and 1;2=1;2;0
+				String[] splited = line.split(";");
+				StringBuilder builder = new StringBuilder();
+				builder.append(splited[0] + ";" + splited[2]+";"+splited[1]);
+				tripleList.add(builder.toString());
+				builder = new StringBuilder();
+				builder.append(splited[1] + ";" + splited[2]+";"+splited[0]);
+				tripleList.add(builder.toString());
 			}
 			br.close();
 		} catch (IOException e) {
@@ -130,7 +141,7 @@ public class RunConjuncEquivalenceExp {
 
 	private static void runEquivalenceOf3to4(long timeOut) throws TimeoutException {
 		try {
-			equivalence3to4 = new PrintWriter("src/benchmark/regexconverter/EquivalenceOf3to4.txt");
+			equivalence3to4 = new PrintWriter("src/benchmark/regexconverter/EquivalenceOf3to4new.txt");
 		} catch (FileNotFoundException ex) {
 			System.err.println("File could not be opened for writing.");
 			System.exit(-1);
@@ -146,7 +157,17 @@ public class RunConjuncEquivalenceExp {
 		try (BufferedReader br = new BufferedReader(quadraFile)) {
 			String line;
 			while ((line = br.readLine()) != null) {
-				quadraList.add(line);
+				//quadraList.add(line);
+				String[] splited = line.split(";");
+				StringBuilder builder = new StringBuilder();
+				builder.append(splited[0] + ";" + splited[1]+";"+splited[3]+";"+splited[2]);
+				quadraList.add(builder.toString());
+				builder = new StringBuilder();
+				builder.append(splited[0] + ";" + splited[2]+";"+splited[3]+";"+splited[1]);
+				quadraList.add(builder.toString());
+				builder = new StringBuilder();
+				builder.append(splited[1] + ";" + splited[2]+";"+splited[3]+";"+splited[0]);
+				quadraList.add(builder.toString());
 			}
 			br.close();
 		} catch (IOException e) {
@@ -163,7 +184,7 @@ public class RunConjuncEquivalenceExp {
 
 	private static void runEquivalenceOf4to5(long timeOut) throws TimeoutException {
 		try {
-			equivalence4to5 = new PrintWriter("src/benchmark/regexconverter/EquivalenceOf4to5.txt");
+			equivalence4to5 = new PrintWriter("src/benchmark/regexconverter/EquivalenceOf4to5new.txt");
 		} catch (FileNotFoundException ex) {
 			System.err.println("File could not be opened for writing.");
 			System.exit(-1);
@@ -179,7 +200,20 @@ public class RunConjuncEquivalenceExp {
 		try (BufferedReader br = new BufferedReader(pentaFile)) {
 			String line;
 			while ((line = br.readLine()) != null) {
-				pentaList.add(line);
+				//pentaList.add(line);
+				String[] splited = line.split(";");
+				StringBuilder builder = new StringBuilder();
+				builder.append(splited[0] + ";" + splited[1]+";"+splited[2]+";"+splited[4]+";"+splited[3]);
+				pentaList.add(builder.toString());
+				builder = new StringBuilder();
+				builder.append(splited[0] + ";" + splited[1]+";"+splited[3]+";"+splited[4]+";"+splited[2]);
+				pentaList.add(builder.toString());
+				builder = new StringBuilder();
+				builder.append(splited[0] + ";" + splited[2]+";"+splited[3]+";"+splited[4]+";"+splited[1]);
+				pentaList.add(builder.toString());
+				builder = new StringBuilder();
+				builder.append(splited[1] + ";" + splited[2]+";"+splited[3]+";"+splited[4]+";"+splited[0]);
+				pentaList.add(builder.toString());
 			}
 			br.close();
 		} catch (IOException e) {
