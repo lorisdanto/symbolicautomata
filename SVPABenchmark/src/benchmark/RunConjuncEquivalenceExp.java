@@ -328,10 +328,9 @@ public class RunConjuncEquivalenceExp {
 			
 			SAFA<CharPred, Character> tempSAFA = tempTriple.getLeft();
 			Timers.setTimeout(Long.MAX_VALUE);
-			BooleanExpressionFactory<BDDExpression> bef = new BDDExpressionFactory(
-					tempSAFA.stateCount() + 1);
+			
 			SAFA.checkEquivalenceOfTwoConfigurations(tempSAFA, tempTriple.getMiddle(), tempSAFA.getInitialState(),
-					solver, bef, timeOut - fullTimeSAFAIntersect);
+					solver, SAFA.getBooleanExpressionFactory(), timeOut - fullTimeSAFAIntersect);
 			fullTimeSAFA = Timers.getFull() + fullTimeSAFAIntersect;
 			solverTimeSAFA = Timers.getSolver() + solverTimeSAFAIntersect;
 			subTimeSAFA = Timers.getSubsumption() + subTimeSAFAIntersect;

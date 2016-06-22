@@ -24,7 +24,7 @@ import theory.bddalgebra.BDDSolver;
 import utilities.Pair;
 import utilities.Timers;
 
-public class RunExperiments {
+public class RunLTLExp {
 	static long timeout = 5000;
 
 	static int fromCounter = 0;
@@ -41,13 +41,13 @@ public class RunExperiments {
 		useBDDs = false;
 		skipRev = false;
 		RunLTLEmptiness();
-		RunLTLSelfEquiv();
+		//RunLTLSelfEquiv();
 		RunLTLEquivChangeState();
 
 		skipRev = true;
 		useBDDs = true;
 		RunLTLEmptiness();
-		RunLTLSelfEquiv();
+		//RunLTLSelfEquiv();
 		RunLTLEquivChangeState();
 	}
 
@@ -57,12 +57,17 @@ public class RunExperiments {
 			fw.append("formula, size, total, solver, subsumption, reverse\n");
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
 				if (Files.isRegularFile(filePath) && filePath.toString().contains(containedString)
-						&& !filePath.toString().contains(notContainedString)) {
+						&& !filePath.toString().contains(notContainedString)
+						&& (filePath.toString().endsWith(".ltl")
+								|| filePath.toString().endsWith(".form"))
+						) {
 					try {
+						System.out.println(filePath);
+						
 						List<LTLNode> nodes = LTLParserProvider.parse(new FileReader(filePath.toFile()));
 
-						System.out.println(filePath);
-
+						
+						
 						int counter = 0;
 						for (LTLNode ltl : nodes) {
 							fw.append(filePath.getFileName().toString());
@@ -164,7 +169,10 @@ public class RunExperiments {
 			fw.append("formula, size, total, solver, subsumption, reverse\n");
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
 				if (Files.isRegularFile(filePath) && filePath.toString().contains(containedString)
-						&& !filePath.toString().contains(notContainedString)) {
+						&& !filePath.toString().contains(notContainedString)
+						&& (filePath.toString().endsWith(".ltl")
+								|| filePath.toString().endsWith(".form"))
+						) {
 					try {
 						List<LTLNode> nodes = LTLParserProvider.parse(new FileReader(filePath.toFile()));
 
@@ -280,7 +288,10 @@ public class RunExperiments {
 			fw.append("formula, size, total, solver, subsumption\n");
 			Files.walk(Paths.get("../automatark/LTL/")).forEach(filePath -> {
 				if (Files.isRegularFile(filePath) && filePath.toString().contains(containedString)
-						&& !filePath.toString().contains(notContainedString)) {
+						&& !filePath.toString().contains(notContainedString)
+						&& (filePath.toString().endsWith(".ltl")
+								|| filePath.toString().endsWith(".form"))
+						) {
 					try {
 						List<LTLNode> nodes = LTLParserProvider.parse(new FileReader(filePath.toFile()));
 
