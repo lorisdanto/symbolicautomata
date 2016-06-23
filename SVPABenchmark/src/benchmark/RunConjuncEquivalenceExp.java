@@ -88,6 +88,7 @@ public class RunConjuncEquivalenceExp {
 			safaList.add(sfa.getSAFA(solver));
 		}
 
+		// run 6000 tuples for each, roughly 18000 total
 		runEquivalenceOf2to3(5000);
 		runEquivalenceOf3to4(5000);
 		runEquivalenceOf4to5(5000);
@@ -114,7 +115,7 @@ public class RunConjuncEquivalenceExp {
 			String line;
 			while ((line = br.readLine()) != null) {
 				// first run the first pair then the third
-				//tripleList.add(line);
+				tripleList.add(line);
 				//another two possibility are choosing first element with the last,
 				//and choosing second and third.
 				// e,g 0;1;2 => 0;1=0;1;2, 0;2=0;2;1 and 1;2=1;2;0
@@ -130,6 +131,8 @@ public class RunConjuncEquivalenceExp {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+	
 
 		equivalence2to3
 				.print("name   |SAFA1|   |SAFA2|   |SFA1|   |SFA2|   FullTime   SolverTime   subsTime   SFAtime   SFA-SAFAfull"
@@ -157,7 +160,7 @@ public class RunConjuncEquivalenceExp {
 		try (BufferedReader br = new BufferedReader(quadraFile)) {
 			String line;
 			while ((line = br.readLine()) != null) {
-				//quadraList.add(line);
+				quadraList.add(line);
 				String[] splited = line.split(";");
 				StringBuilder builder = new StringBuilder();
 				builder.append(splited[0] + ";" + splited[1]+";"+splited[3]+";"+splited[2]);
@@ -165,14 +168,16 @@ public class RunConjuncEquivalenceExp {
 				builder = new StringBuilder();
 				builder.append(splited[0] + ";" + splited[2]+";"+splited[3]+";"+splited[1]);
 				quadraList.add(builder.toString());
-				builder = new StringBuilder();
-				builder.append(splited[1] + ";" + splited[2]+";"+splited[3]+";"+splited[0]);
-				quadraList.add(builder.toString());
+//				builder = new StringBuilder();
+//				builder.append(splited[1] + ";" + splited[2]+";"+splited[3]+";"+splited[0]);
+//				quadraList.add(builder.toString());
 			}
 			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		
 
 		equivalence3to4
 				.print("name   |SAFA1|   |SAFA2|   |SFA1|   |SFA2|   FullTime   SolverTime   subsTime   SFAtime   SFA-SAFAfull"
@@ -200,7 +205,7 @@ public class RunConjuncEquivalenceExp {
 		try (BufferedReader br = new BufferedReader(pentaFile)) {
 			String line;
 			while ((line = br.readLine()) != null) {
-				//pentaList.add(line);
+				pentaList.add(line);
 				String[] splited = line.split(";");
 				StringBuilder builder = new StringBuilder();
 				builder.append(splited[0] + ";" + splited[1]+";"+splited[2]+";"+splited[4]+";"+splited[3]);
@@ -208,18 +213,20 @@ public class RunConjuncEquivalenceExp {
 				builder = new StringBuilder();
 				builder.append(splited[0] + ";" + splited[1]+";"+splited[3]+";"+splited[4]+";"+splited[2]);
 				pentaList.add(builder.toString());
-				builder = new StringBuilder();
-				builder.append(splited[0] + ";" + splited[2]+";"+splited[3]+";"+splited[4]+";"+splited[1]);
-				pentaList.add(builder.toString());
-				builder = new StringBuilder();
-				builder.append(splited[1] + ";" + splited[2]+";"+splited[3]+";"+splited[4]+";"+splited[0]);
-				pentaList.add(builder.toString());
+//				builder = new StringBuilder();
+//				builder.append(splited[0] + ";" + splited[2]+";"+splited[3]+";"+splited[4]+";"+splited[1]);
+//				pentaList.add(builder.toString());
+//				builder = new StringBuilder();
+//				builder.append(splited[1] + ";" + splited[2]+";"+splited[3]+";"+splited[4]+";"+splited[0]);
+//				pentaList.add(builder.toString());
 			}
 			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
+	
+		
 		equivalence4to5
 				.print("name   |SAFA1|   |SAFA2|   |SFA1|   |SFA2|   FullTime   SolverTime   subsTime   SFAtime   SFA-SAFAfull"
 						+ "\n");
