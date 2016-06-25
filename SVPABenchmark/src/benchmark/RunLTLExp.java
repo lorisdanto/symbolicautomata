@@ -25,15 +25,15 @@ import utilities.Pair;
 import utilities.Timers;
 
 public class RunLTLExp {
-	static long timeout = 5000;
+	static long timeout = 60000;
 
 	static int fromCounter = 0;
 	static String emptinessOutputFile = "results/emptiness";
 	static String equivalenceOutputFile = "results/selfEquivalence";
 	static String ranEquivalenceOutputFile = "results/ranEquivalence";
-	static String containedString = "";
-	static String notContainedString = "aposijfwo";
-	static boolean skipRev = false;
+	static String containedString = "counter";
+	static String notContainedString = "random";
+	static boolean skipRev = true;
 	static boolean useBDDs = true;
 
 	public static void main(String[] args) throws InterruptedException {
@@ -42,13 +42,13 @@ public class RunLTLExp {
 		skipRev = false;
 		RunLTLEmptiness();
 		//RunLTLSelfEquiv();
-		RunLTLEquivChangeState();
+		//RunLTLEquivChangeState();
 
 		skipRev = true;
 		useBDDs = true;
-		RunLTLEmptiness();
+		//RunLTLEmptiness();
 		//RunLTLSelfEquiv();
-		RunLTLEquivChangeState();
+		//RunLTLEquivChangeState();
 	}
 
 	public static void RunLTLEmptiness() {
