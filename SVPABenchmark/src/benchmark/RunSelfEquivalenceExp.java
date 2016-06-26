@@ -49,6 +49,9 @@ public class RunSelfEquivalenceExp {
 	private static long solverTimeSAFA;
 	private static long subTimeSAFA;
 	private static long totalTimeSFA;
+	private static long exploredStatesSAFA;
+	private static long exploredStatesSFA;
+	private static long successfulSubsumptionsSAFA;
 	private static int safa1Size = 0;
 	private static int safa2Size = 0;
 	private static int sfa1Size = 0;
@@ -196,7 +199,8 @@ public class RunSelfEquivalenceExp {
 		}
 
 		equivalence4to5
-				.print("name   |SAFA1|   |SAFA2|   |SFA1|   |SFA2|   FullTime   SolverTime   subsTime   SFAtime   SFA-SAFAfull"
+				.print("name   |SAFA1|   |SAFA2|   |SFA1|   |SFA2|   FullTime   SolverTime   subsTime   exploredStatesSAFA   "
+						+ "successfulSubs   SFAtime   exploredStatesSFA   SFA-SAFAfull"
 						+ "\n");
 		generate4to5(timeOut);
 		equivalence4to5.close();
@@ -222,9 +226,15 @@ public class RunSelfEquivalenceExp {
 			equivalence2to3.print(possiblePair + "=" + str + "   ");
 			equivalence2to3.print(safa1Size + "   " + safa2Size + "   " + sfa1Size + "   " + sfa2Size + "   ");
 			long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
-			equivalence2to3.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
-					+ "   " + sfaMinussafa + "\n");
-			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA + "   "
+			equivalence2to3.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " 
+					+ exploredStatesSAFA + "   " + successfulSubsumptionsSAFA + "   "				
+					+ totalTimeSFA+ "   " 
+					+ exploredStatesSFA+ "   " 
+					+ sfaMinussafa + "\n");
+			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " 
+					+ exploredStatesSAFA + "   " + successfulSubsumptionsSAFA + "   "				
+					+ totalTimeSFA+ "   " 
+					+ exploredStatesSFA+ "   " 
 					+ sfaMinussafa + "\n");
 		}
 
@@ -250,9 +260,15 @@ public class RunSelfEquivalenceExp {
 			equivalence3to4.print(possiblePair + "=" + str + "   ");
 			equivalence3to4.print(safa1Size + "   " + safa2Size + "   " + sfa1Size + "   " + sfa2Size + "   ");
 			long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
-			equivalence3to4.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
-					+ "   " + sfaMinussafa + "\n");
-			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA + "   "
+			equivalence3to4.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " 
+					+ exploredStatesSAFA + "   " + successfulSubsumptionsSAFA + "   "				
+					+ totalTimeSFA+ "   " 
+					+ exploredStatesSFA+ "   " 
+					+ sfaMinussafa + "\n");
+			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " 
+					+ exploredStatesSAFA + "   " + successfulSubsumptionsSAFA + "   "				
+					+ totalTimeSFA+ "   " 
+					+ exploredStatesSFA+ "   " 
 					+ sfaMinussafa + "\n");
 
 		}
@@ -280,9 +296,15 @@ public class RunSelfEquivalenceExp {
 			equivalence4to5.print(possiblePair + "=" + str + "   ");
 			equivalence4to5.print(safa1Size + "   " + safa2Size + "   " + sfa1Size + "   " + sfa2Size + "   ");
 			long sfaMinussafa = totalTimeSFA - fullTimeSAFA;
-			equivalence4to5.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA
-					+ "   " + sfaMinussafa + "\n");
-			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " + totalTimeSFA + "   "
+			equivalence4to5.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " 
+					+ exploredStatesSAFA + "   " + successfulSubsumptionsSAFA + "   "				
+					+ totalTimeSFA+ "   " 
+					+ exploredStatesSFA+ "   " 
+					+ sfaMinussafa + "\n");
+			System.out.print(fullTimeSAFA + "   " + solverTimeSAFA + "   " + subTimeSAFA + "   " 
+					+ exploredStatesSAFA + "   " + successfulSubsumptionsSAFA + "   "				
+					+ totalTimeSFA+ "   " 
+					+ exploredStatesSFA+ "   " 
 					+ sfaMinussafa + "\n");
 		}
 
@@ -355,15 +377,22 @@ public class RunSelfEquivalenceExp {
 			fullTimeSAFA = Timers.getFull() + fullTimeSAFAIntersect;
 			solverTimeSAFA = Timers.getSolver() + solverTimeSAFAIntersect;
 			subTimeSAFA = Timers.getSubsumption() + subTimeSAFAIntersect;
+			
+			exploredStatesSAFA = Timers.exploredStates;
+			successfulSubsumptionsSAFA = Timers.successfulSubs;
 
 		} catch (TimeoutException e) {
 			fullTimeSAFA = timeOut;
 			solverTimeSAFA = timeOut;
 			subTimeSAFA = timeOut;
+			exploredStatesSAFA = -1;
+			successfulSubsumptionsSAFA = -1;
 		} catch (NullPointerException e) {
 			fullTimeSAFA = timeOut;
 			solverTimeSAFA = timeOut;
 			subTimeSAFA = timeOut;
+			exploredStatesSAFA = -1;
+			successfulSubsumptionsSAFA = -1;
 		}
 
 		try {
@@ -379,8 +408,10 @@ public class RunSelfEquivalenceExp {
 			tempLeftSFA.isHopcroftKarpEquivalentTo(tempRightSFA, solver, timeOut);
 			long endDateEquiv = System.currentTimeMillis();
 			totalTimeSFA = endDateEquiv - startDateEquiv + totalTimeLeft + totalTimeRight;
+			exploredStatesSFA = Timers.exploredStates;
 		} catch (Exception e) {
 			totalTimeSFA = timeOut;
+			exploredStatesSFA = -1;
 		}
 
 	}

@@ -27,6 +27,7 @@ import automata.safa.booleanexpression.PositiveBooleanExpression;
 import theory.BooleanAlgebra;
 import utilities.Block;
 import utilities.Pair;
+import utilities.Timers;
 import utilities.UnionFindHopKarp;
 
 /**
@@ -685,6 +686,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 	private static <A, B> Pair<Boolean, List<B>> areHopcroftKarpEquivalent(SFA<A, B> aut1, SFA<A, B> aut2,
 			BooleanAlgebra<A, B> ba, long timeout) throws TimeoutException {
 
+		Timers.setForCongruence();
+		
 		long startTime = System.currentTimeMillis();
 		UnionFindHopKarp<B> ds = new UnionFindHopKarp<>();
 		int offset = aut1.stateCount();
@@ -696,6 +699,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<>();
 		toVisit.add(new Pair<Integer, Integer>(aut1.initialState, aut2.initialState));
 		while (!toVisit.isEmpty()) {
+			Timers.oneMoreState();
+			
 			if(System.currentTimeMillis()-startTime>timeout)
 				throw new TimeoutException();
 			

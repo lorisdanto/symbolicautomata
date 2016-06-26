@@ -11,6 +11,8 @@ public class Timers {
 	private static long[] startTime = new long[3];
 	private static long[] total = new long[3];
 	private static boolean[] isRunning = new boolean[3];
+	public static int exploredStates;
+	public static int successfulSubs;
 	
 	
 	public static void setNumberOfTimers(int n) {
@@ -21,6 +23,16 @@ public class Timers {
 			total[i] = 0;
 			isRunning[i] = false;
 		}
+		exploredStates=0;
+		successfulSubs=0;
+	}
+	
+	public static void oneMoreState(){
+		exploredStates++;
+	}
+	
+	public static void oneMoreSub(){
+		successfulSubs++;
 	}
 	
 	public static void setTimeout(long to){

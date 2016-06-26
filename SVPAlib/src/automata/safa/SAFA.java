@@ -440,6 +440,7 @@ public class SAFA<P, S> {
 		worklist.add(new Pair<>(new Pair<>(leftInitial, rightInitial), new LinkedList<>()));
 		while (!worklist.isEmpty()) {
 			Timers.assertFullTO(timeout);
+			Timers.oneMoreState();
 
 			Pair<Pair<E, E>, List<S>> next = worklist.remove();
 
@@ -472,10 +473,7 @@ public class SAFA<P, S> {
 						Timers.stopSolver();
 
 						if (hm) {
-							Timers.startSubsumption();
 							succ = boolexpr.MkOr(succ, coerce.apply(tr.to));
-							Timers.stopSubsumption();
-
 							Timers.startSolver();
 							implicant = ba.MkAnd(implicant, tr.guard);
 							Timers.stopSolver();
@@ -512,6 +510,8 @@ public class SAFA<P, S> {
 							return new Pair<>(false, succWitness);
 						}
 						worklist.add(new Pair<>(new Pair<>(leftSucc, rightSucc), succWitness));
+					}else{
+						Timers.oneMoreSub();
 					}
 					Timers.stopSubsumption();
 				}
