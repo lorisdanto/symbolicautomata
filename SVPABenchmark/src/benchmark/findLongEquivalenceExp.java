@@ -99,10 +99,10 @@ public class findLongEquivalenceExp {
 		temp.add("9;10;0");
 		temp.add("0;10;9");
 		temp.add("0;9;10");
-//		temp.add("0;30;9");
-//		temp.add("0;9;67");
-//		temp.add("0;9;68");
-//		temp.add("9;69;0");
+		temp.add("0;30;9");
+		temp.add("0;9;67");
+		temp.add("0;9;68");
+		temp.add("9;69;0");
 //		temp.add();
 //		temp.add();
 //		temp.add();
@@ -436,18 +436,20 @@ public class findLongEquivalenceExp {
 		}
 
 		try {
+			long totalTimeLeft = timeOut;
 			long startDate = System.currentTimeMillis();
-			SFA<CharPred, Character> tempLeftSFA = IntersectedSFA(sfaLHS, timeOut);
+			SFA<CharPred, Character> tempLeftSFA = IntersectedSFA(sfaLHS, totalTimeLeft);
 			long endDate = System.currentTimeMillis();
-			long totalTimeLeft = endDate - startDate;
+			totalTimeLeft -= endDate - startDate;
 			startDate = System.currentTimeMillis();
-			SFA<CharPred, Character> tempRightSFA = IntersectedSFA(sfaRHS, timeOut - totalTimeLeft);
+			SFA<CharPred, Character> tempRightSFA = IntersectedSFA(sfaRHS, totalTimeLeft);
 			endDate = System.currentTimeMillis();
-			long totalTimeRight = endDate - startDate;
-			long startDateEquiv = System.currentTimeMillis();
-			tempLeftSFA.isHopcroftKarpEquivalentTo(tempRightSFA, solver, timeOut);
-			long endDateEquiv = System.currentTimeMillis();
-			totalTimeSFA = endDateEquiv - startDateEquiv + totalTimeLeft + totalTimeRight;
+			totalTimeLeft -= endDate - startDate;
+			startDate = System.currentTimeMillis();
+			tempLeftSFA.isHopcroftKarpEquivalentTo(tempRightSFA, solver, totalTimeLeft);
+			endDate = System.currentTimeMillis();
+			totalTimeLeft -= endDate - startDate;
+			totalTimeSFA = timeOut-totalTimeLeft;
 			exploredStatesSFA = Timers.exploredStates;
 		} 
 		catch (TimeoutException e) {
