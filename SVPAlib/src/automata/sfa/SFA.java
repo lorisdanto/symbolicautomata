@@ -18,6 +18,7 @@ import java.util.Stack;
 
 import org.sat4j.specs.TimeoutException;
 
+import automata.AutomataException;
 import automata.Automaton;
 import automata.Move;
 import automata.safa.BooleanExpressionFactory;
@@ -859,9 +860,16 @@ public class SFA<P, S> extends Automaton<P, S> {
 		reachedStates.put(detInitialState, 0);
 		toVisitStates.add(detInitialState);
 
+		long availableMemory = Runtime.getRuntime().totalMemory();
+		
 		// Explore the automaton until no new subset states can be reached
 		while (!toVisitStates.isEmpty()) {
 
+			
+			long freeMemory = Runtime.getRuntime().freeMemory();
+			if(freeMemory < 0.1*availableMemory)
+				throw new TimeoutException("Out of memory");
+			
 			if(System.currentTimeMillis()-startTime>timeout)
 				throw new TimeoutException();
 			
