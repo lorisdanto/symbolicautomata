@@ -426,14 +426,14 @@ public class findLongEquivalenceExp {
 			subTimeSAFA = timeOut;
 			exploredStatesSAFA = -1;
 			successfulSubsumptionsSAFA = -1;
+		
+		} catch (NullPointerException e) {
+			fullTimeSAFA = timeOut;
+			solverTimeSAFA = timeOut;
+			subTimeSAFA = timeOut;
+			exploredStatesSAFA = -1;
+			successfulSubsumptionsSAFA = -1;
 		}
-//		} catch (NullPointerException e) {
-//			fullTimeSAFA = timeOut;
-//			solverTimeSAFA = timeOut;
-//			subTimeSAFA = timeOut;
-//			exploredStatesSAFA = -1;
-//			successfulSubsumptionsSAFA = -1;
-//		}
 
 		try {
 			long startDate = System.currentTimeMillis();
