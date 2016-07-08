@@ -14,8 +14,9 @@
 	import java.util.List;
 
 	import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.sat4j.specs.TimeoutException;
 
-	import utilities.Pair;
+import utilities.Pair;
 
 	import com.google.common.collect.ImmutableList;
 
@@ -190,6 +191,11 @@
 				sb.append(c);
 			}
 			return sb.toString();
+		}
+
+		@Override
+		public CharPred MkAtom(Character s) throws TimeoutException {
+			return new CharPred(s);
 		}
 
 	}

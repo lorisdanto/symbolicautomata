@@ -373,4 +373,9 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 		return sb.toString();
 	}
 
+	@Override
+	public ICharPred MkAtom(Character s) throws TimeoutException {
+		return new CharPred(s);
+	}
+
 }

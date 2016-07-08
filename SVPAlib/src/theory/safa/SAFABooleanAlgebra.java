@@ -1,6 +1,8 @@
 package theory.safa;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.sat4j.specs.TimeoutException;
@@ -8,6 +10,9 @@ import org.sat4j.specs.TimeoutException;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.booleanexpression.PositiveBooleanExpression;
+import automata.sfa.SFA;
+import automata.sfa.SFAInputMove;
+import automata.sfa.SFAMove;
 import theory.BooleanAlgebra;
 import utilities.Pair;
 
@@ -111,5 +116,17 @@ public class SAFABooleanAlgebra<P,S> extends BooleanAlgebra<SAFA<P,S>, List<S>> 
 	@Override
 	public Pair<List<S>, List<S>> generateWitnesses(SAFA<P, S> p1) {
 		throw new IllegalArgumentException("SAFABooleanAlgebra.generateWitnesses");
+	}
+
+	@Override
+	public SAFA<P, S> MkAtom(List<S> s) throws TimeoutException {
+		LinkedList<SFAMove<P, S>> moves = new LinkedList<>(); 
+		for(int i=0;i<s.size();i++){
+			moves.add(new SFAInputMove<P,S>(i, i+1, ba.MkAtom(s.get(i))));
+		}
+		HashSet<Integer> finStates =  new HashSet<>();
+		finStates.add(s.size());
+		SFA<P,S> sfa = SFA.MkSFA(moves, 0, finStates, ba);
+		return sfa.getSAFA(ba);
 	}
 }

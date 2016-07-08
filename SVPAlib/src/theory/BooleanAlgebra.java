@@ -22,6 +22,12 @@ import utilities.Pair;
 public abstract class BooleanAlgebra<P, S> {
 
 	/**
+	 * @return the predicate accepting only <code>s</code>
+	 * @throws TimeoutException 
+	 */
+	public abstract P MkAtom(S s) throws TimeoutException;
+	
+	/**
 	 * @return the complement of <code>p</code>
 	 * @throws TimeoutException 
 	 */
@@ -156,5 +162,56 @@ public abstract class BooleanAlgebra<P, S> {
 					MkAnd(currPred, MkNot(pn)), negList,
 					minterms, startime, timeout);
 		}
+	}
+	
+	/**
+	 * Given a set of <code>predicates</code>, returns all the satisfiable
+	 * Boolean combinations
+	 * 
+	 * @return a set of pairs (p,{i1,..,in}) where p is and ij is 0 or 1 base on
+	 *         whether pij is used positively or negatively
+	 * @throws TimeoutException 
+	 */
+	public ArrayList<P> GetSeparatingPredicates(
+			ArrayList<Collection<S>> groups, long timeout) throws TimeoutException {
+		ArrayList<P> out = new ArrayList<>();
+		if(groups.size()<=1){
+			out.add(True());
+			return out;
+		}
+		
+		//Find largest group
+		int maxGroup = 0;
+		int maxSize = groups.get(0).size();
+		for(int i=1;i<groups.size();i++){
+			int ithSize = groups.get(i).size();
+			if(ithSize>maxSize){
+				maxSize=ithSize;
+				maxGroup=i;
+			}
+		}
+		
+		//Build negated predicate
+		P largePred = False(); 
+		for(int i=0;i<groups.size();i++){			
+			if(i!=maxGroup)
+				for(S s: groups.get(i))
+					largePred = MkOr(largePred, MkAtom(s));
+		}
+		largePred = MkNot(largePred);
+		
+		//Build list of predicates
+		for(int i=0;i<groups.size();i++){			
+			if(i!=maxGroup){
+				P ithPred = False();
+				for(S s: groups.get(i))
+					ithPred = MkOr(ithPred, MkAtom(s));
+				out.add(ithPred);
+			}
+			else
+				out.add(largePred);
+		}
+		
+		return out;		
 	}
 }

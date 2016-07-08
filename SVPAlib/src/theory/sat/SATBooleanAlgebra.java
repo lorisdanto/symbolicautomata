@@ -2,8 +2,6 @@ package theory.sat;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -18,10 +16,11 @@ import utilities.Pair;
 
 public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 	private ISolver solver;
-	private int maxid;  // next fresh variable starting with universe + 2.  {1, ..., universe} correspond to members of the
+	private int maxid; // next fresh variable starting with universe + 2. {1,
+						// ..., universe} correspond to members of the
 						// universe, and universe+1 is an always-true variable.
 	private int universe; // size of the universe
-	
+
 	// Hash consing
 	private HashMap<Set<Integer>, Integer> andCache;
 	private HashMap<Set<Integer>, Integer> orCache;
@@ -64,7 +63,7 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 			} else {
 				return singleton;
 			}
-		} else if (reverseCache.containsKey(-p)){
+		} else if (reverseCache.containsKey(-p)) {
 			Pair<Boolean, TreeSet<Integer>> cached = reverseCache.get(-p);
 			if (!cached.getFirst()) {
 				TreeSet<Integer> result = new TreeSet<>();
@@ -90,7 +89,7 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 			} else {
 				return singleton;
 			}
-		} else if (reverseCache.containsKey(-p)){
+		} else if (reverseCache.containsKey(-p)) {
 			Pair<Boolean, TreeSet<Integer>> cached = reverseCache.get(-p);
 			if (cached.getFirst()) {
 				TreeSet<Integer> result = new TreeSet<>();
@@ -109,7 +108,7 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 	private void unsafeAddClause(VecInt clause) {
 		try {
 			solver.addClause(clause);
-			//System.out.println("Add clause: " + clause.toString());
+			// System.out.println("Add clause: " + clause.toString());
 		} catch (ContradictionException ex) {
 			// should never happen
 			ex.printStackTrace();
@@ -117,7 +116,7 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 			System.exit(-1);
 		}
 	}
-	
+
 	private boolean unsafeIsSatisfiable(VecInt assumptions) {
 		try {
 			return solver.isSatisfiable(assumptions, false);
@@ -148,9 +147,9 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 			return andCache.get(cube);
 		} else {
 			int cubeName = fresh();
-			//System.out.println(cubeName + " = And " + cube.toString());
+			// System.out.println(cubeName + " = And " + cube.toString());
 			VecInt cubeImpliesCubeName = new VecInt();
-		
+
 			cubeImpliesCubeName.push(cubeName);
 			for (Integer literal : cube) {
 				// cubeName => literal
@@ -196,7 +195,7 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 			return orCache.get(clause);
 		} else {
 			int clauseName = fresh();
-			//System.out.println(clauseName + " = Or " + clause.toString());
+			// System.out.println(clauseName + " = Or " + clause.toString());
 			// clauseName => clause
 			VecInt clauseNameImpliesClause = new VecInt();
 			clauseNameImpliesClause.push(-clauseName);
@@ -230,7 +229,7 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 	public Integer True() {
 		return universe + 1;
 	}
-	
+
 	public ISolver getSolver() {
 		return solver;
 	}
@@ -259,7 +258,7 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 		if (model.length != universe) {
 			throw new IllegalArgumentException("Model size not equal to universe size");
 		}
-		for(int i = 0; i < model.length; i++) {
+		for (int i = 0; i < model.length; i++) {
 			if (model[i]) {
 				assumption.push(i + 1);
 			} else {
@@ -288,7 +287,15 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 	}
 
 	@Override
-	public Pair<boolean[],boolean[]> generateWitnesses(Integer p) {
+	public Pair<boolean[], boolean[]> generateWitnesses(Integer p) {
 		throw new UnsupportedOperationException("SATBooleanAlgebra.generateWitnesses is not implemented");
+	}
+
+	@Override
+	public Integer MkAtom(boolean[] s) throws TimeoutException {
+		Integer phi = True();
+		for (int i = 0; i < s.length; i++)
+			phi = MkAnd(phi, i + 1);
+		return phi;
 	}
 }
