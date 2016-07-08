@@ -2,11 +2,12 @@ package logic.ltl;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
-import automata.safa.BooleanExpression;
-import automata.safa.BooleanExpressionFactory;
-import automata.safa.SAFA;
+import org.sat4j.specs.TimeoutException;
+
 import automata.safa.SAFAInputMove;
+import automata.safa.booleanexpression.PositiveBooleanExpression;
 import theory.BooleanAlgebra;
 
 public class Not<P, S> extends LTLFormula<P, S> {
@@ -45,31 +46,31 @@ public class Not<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
+			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, HashSet<Integer> states) {
 
-		throw new UnsupportedOperationException("At this point the formula should be in negation normal form.");
-	}
-
-	@Override
-	protected boolean isFinalState() {
+		// If I already visited avoid recomputing
+		if (formulaToState.containsKey(this))
+			return formulaToState.get(this);
+		
 		throw new UnsupportedOperationException("At this point the formula should be in negation normal form.");
 	}
 	
 	@Override
-	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
-		return phi.pushNegations(!isPositive,ba);	
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba,
+			HashMap<String, LTLFormula<P, S>> posHash, HashMap<String, LTLFormula<P, S>> negHash) throws TimeoutException {
+		return phi.pushNegations(!isPositive, ba, posHash, negHash);
 	}
-	
+
 	@Override
 	public void toString(StringBuilder sb) {
 		sb.append("!");
-		phi.toString(sb);	
+		phi.toString(sb);
 	}
 	
 	@Override
-	public SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba) {
-		throw new UnsupportedOperationException();
+	public int getSize() {
+		return 1+phi.getSize();
 	}
 }

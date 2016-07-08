@@ -4,9 +4,12 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.safa.BooleanExpression;
 import automata.safa.LatticeMorphism;
 import theory.bdd.BDD;
+import utilities.Timers;
 
 public class BDDExpression extends BooleanExpression {
 
@@ -15,7 +18,7 @@ public class BDDExpression extends BooleanExpression {
 	public BDDExpression(BDD me) {
 		bdd = me;
 	}
-	
+		
 	@Override
 	public Set<Integer> getStates() {
 		Set<Integer> states = new TreeSet<Integer>();
@@ -26,21 +29,17 @@ public class BDDExpression extends BooleanExpression {
 		}
 		return states;
 	}
-
-	private static <R> R apply(LatticeMorphism<BooleanExpression, R> f, BDD bdd) {
+	
+	@Override
+	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) {
 		if (bdd.isOne()) {
 			return f.True();
 		} else if (bdd.isZero()) {
 			return f.False();
 		} else {
-			return f.MkOr(f.MkAnd(f.apply(bdd.var()), apply(f, bdd.high())),
-						apply(f, bdd.low()));
+			return f.MkOr(f.MkAnd(f.apply(bdd.var()), f.apply(new BDDExpression(bdd.high()))),
+						f.apply(new BDDExpression(bdd.low())));
 		}
-	}
-	
-	@Override
-	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) {
-		return apply(f, this.bdd);
 	}
 
 	@Override
@@ -67,4 +66,22 @@ public class BDDExpression extends BooleanExpression {
 		return hasModel(elements, bdd);
 	}
 
+	@Override
+	public int getSize() {
+		return bdd.nodeCount();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof BDDExpression) {
+			return this.bdd.equals(((BDDExpression) o).bdd);
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return this.bdd.hashCode();
+	}
 }

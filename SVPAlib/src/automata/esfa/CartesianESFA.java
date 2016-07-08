@@ -13,11 +13,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.ExtendedAutomaton;
 import automata.ExtendedMove;
-import automata.sfa.SFA;
-import automata.sfa.SFAEpsilon;
-import automata.sfa.SFAMove;
 import theory.BooleanAlgebra;
 import utilities.Pair;
 
@@ -199,15 +198,16 @@ public class CartesianESFA<P,S> extends ExtendedAutomaton<P, S> {
 	 * 
 	 * @return an ambiguous input if the automaton is ambiguous,
 	 *         <code>null</code> otherwise
+	 * @throws TimeoutException 
 	 */
-	public List<S> getAmbiguousInput(BooleanAlgebra<P, S> ba) {
+	public List<S> getAmbiguousInput(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return getAmbiguousInput(this, ba);
 	}
 
 	
 	@SuppressWarnings("unchecked")
 	public static <A, B> List<B> getAmbiguousInput(CartesianESFA<A, B> aut,
-			BooleanAlgebra<A, B> ba) {
+			BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		CartesianESFA<A, B> aut1 = (CartesianESFA<A, B>) aut.clone();
 		CartesianESFA<A, B> aut2 = (CartesianESFA<A, B>) aut.clone();

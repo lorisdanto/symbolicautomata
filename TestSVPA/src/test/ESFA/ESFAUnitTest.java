@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Test;
+import org.sat4j.specs.TimeoutException;
 
 import automata.esfa.CartesianESFA;
 import automata.esfa.CartesianESFAInputMove;
@@ -21,7 +22,7 @@ public class ESFAUnitTest {
 
 	
 	@Test
-	public void testMkESFA() {
+	public void testMkESFA() throws TimeoutException {
 		assertTrue(autA.stateCount() == 5);
 		assertTrue(autA.getTransitionCount() == 5);
 

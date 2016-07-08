@@ -2,13 +2,10 @@ package automata.safa.booleanexpression;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
-import java.util.function.Function;
 
 import automata.safa.BooleanExpression;
-import automata.safa.BooleanExpressionFactory;
 import automata.safa.LatticeMorphism;
 
 public class SumOfProducts extends BooleanExpression {
@@ -109,5 +106,11 @@ public class SumOfProducts extends BooleanExpression {
 			result = f.MkOr(result, cubeImage);
 		}
 		return result;
+	}
+	
+	@Override
+	public int getSize() {
+		// TODO maybe should keep it more complex
+		return dnf.size();
 	}
 }

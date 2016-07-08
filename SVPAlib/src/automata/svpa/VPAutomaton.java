@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.svpa.TaggedSymbol.SymbolTag;
 import theory.BooleanAlgebra;
 import utilities.Pair;
@@ -284,8 +286,9 @@ public abstract class VPAutomaton<P, S> {
 	 * 
 	 * @param ba
 	 * @return
+	 * @throws TimeoutException 
 	 */
-	public LinkedList<TaggedSymbol<S>> getWitness(BooleanAlgebra<P, S> ba) {
+	public LinkedList<TaggedSymbol<S>> getWitness(BooleanAlgebra<P, S> ba) throws TimeoutException {
 
 		Collection<Integer> states = getStates();
 		Map<Integer, Integer> stateToId = new HashMap<Integer, Integer>();
@@ -580,7 +583,7 @@ public abstract class VPAutomaton<P, S> {
 
 	// Compute reachability relations between states (wm, ucall, uret, unm)
 	protected Quadruple<Map<Integer, Collection<Integer>>, Map<Integer, Collection<Integer>>, Map<Integer, Collection<Integer>>, Map<Integer, Collection<Integer>>> getReachRel(
-			BooleanAlgebra<P, S> ba) {
+			BooleanAlgebra<P, S> ba) throws TimeoutException {
 
 		Collection<Integer> states = getStates();
 		Map<Integer, Integer> stateToId = new HashMap<Integer, Integer>();

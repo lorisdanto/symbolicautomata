@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.svpa.TaggedSymbol.SymbolTag;
 
 import theory.BooleanAlgebra;
@@ -28,7 +30,7 @@ public class Return<U, S> extends SVPAMove<U, S> {
 		this.stackState = stackState;
 	}
 
-	public boolean isDisjointFrom(SVPAMove<U, S> t, BooleanAlgebra<U, S> ba) {
+	public boolean isDisjointFrom(SVPAMove<U, S> t, BooleanAlgebra<U, S> ba) throws TimeoutException {
 		if (t instanceof Return)
 			if (from.equals(t.from) && stackState == ((Return<U, S>) t).stackState){
 				List<U> conjuncts = new ArrayList<U>();

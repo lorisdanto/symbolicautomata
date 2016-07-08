@@ -12,12 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.hamcrest.core.IsEqual;
+import org.sat4j.specs.TimeoutException;
 
+import automata.AutomataException;
 import theory.BooleanAlgebra;
 import utilities.BitVecUtil;
 import utilities.Pair;
-import automata.AutomataException;
 
 public class SVPA<U, S> extends VPAutomaton<U, S> {
 
@@ -120,7 +120,7 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 	public static <T, S1> SVPA<T, S1> MkSVPA(
 			Collection<SVPAMove<T, S1>> transitions,
 			Collection<Integer> initialStates, Collection<Integer> finalStates,
-			BooleanAlgebra<T, S1> ba) throws AutomataException {
+			BooleanAlgebra<T, S1> ba) throws AutomataException, TimeoutException {
 
 		// Sanity checks
 		if (initialStates.size() == 0)
@@ -232,17 +232,19 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 
 	/**
 	 * return an equivalent copy without epsilon moves
+	 * @throws TimeoutException 
 	 */
-	public SVPA<U, S> removeEpsilonMoves(BooleanAlgebra<U, S> ba) {
+	public SVPA<U, S> removeEpsilonMoves(BooleanAlgebra<U, S> ba) throws TimeoutException {
 		return removeEpsilonMovesFrom(this, ba);
 	}
 
 	/**
 	 * return an equivalent copy without epsilon moves
+	 * @throws TimeoutException 
 	 */
 	@SuppressWarnings("unchecked")
 	public static <A, B> SVPA<A, B> removeEpsilonMovesFrom(SVPA<A, B> aut,
-			BooleanAlgebra<A, B> ba) {
+			BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		if (aut.isEpsilonFree)
 			return (SVPA<A, B>) aut.clone();
@@ -300,16 +302,18 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 
 	/**
 	 * Computes the intersection with <code>aut</code> as a new SVPA
+	 * @throws TimeoutException 
 	 */
-	public SVPA<U, S> intersectionWith(SVPA<U, S> aut, BooleanAlgebra<U, S> ba) {
+	public SVPA<U, S> intersectionWith(SVPA<U, S> aut, BooleanAlgebra<U, S> ba) throws TimeoutException {
 		return intersection(this, aut, ba);
 	}
 
 	/**
 	 * Computes the intersection with <code>aut</code> as a new SVPA
+	 * @throws TimeoutException 
 	 */
 	public static <A, B> SVPA<A, B> intersection(SVPA<A, B> aut1,
-			SVPA<A, B> aut2, BooleanAlgebra<A, B> ba) {
+			SVPA<A, B> aut2, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		SVPA<A, B> inters = new SVPA<A, B>();
 
@@ -535,16 +539,18 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 
 	/**
 	 * Computes <code>this</code> minus <code>aut2</code>
+	 * @throws TimeoutException 
 	 */
-	public SVPA<U, S> minus(SVPA<U, S> aut, BooleanAlgebra<U, S> ba) {
+	public SVPA<U, S> minus(SVPA<U, S> aut, BooleanAlgebra<U, S> ba) throws TimeoutException {
 		return differnce(this, aut, ba);
 	}
 
 	/**
 	 * Computes <code>aut1</code> minus <code>aut2</code>
+	 * @throws TimeoutException 
 	 */
 	public static <A, B> SVPA<A, B> differnce(SVPA<A, B> aut1, SVPA<A, B> aut2,
-			BooleanAlgebra<A, B> ba) {
+			BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		SVPA<A, B> diff = aut1.intersectionWith(aut2.complement(ba), ba);
 		return removeUnreachableStates(diff, ba);
@@ -552,16 +558,18 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 
 	/**
 	 * return the complement of the current SVPA
+	 * @throws TimeoutException 
 	 */
-	public SVPA<U, S> complement(BooleanAlgebra<U, S> ba) {
+	public SVPA<U, S> complement(BooleanAlgebra<U, S> ba) throws TimeoutException {
 		return complementOf(this, ba);
 	}
 
 	/**
 	 * return the complement of the current SVPA
+	 * @throws TimeoutException 
 	 */
 	public static <A, B> SVPA<A, B> complementOf(SVPA<A, B> aut,
-			BooleanAlgebra<A, B> ba) {
+			BooleanAlgebra<A, B> ba) throws TimeoutException {
 		SVPA<A, B> comp = aut.mkTotal(ba);
 
 		Collection<Integer> finStateCopy = new HashSet<Integer>(
@@ -577,17 +585,19 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 
 	/**
 	 * return the total version of the current SVPA
+	 * @throws TimeoutException 
 	 */
-	public SVPA<U, S> mkTotal(BooleanAlgebra<U, S> ba) {
+	public SVPA<U, S> mkTotal(BooleanAlgebra<U, S> ba) throws TimeoutException {
 		return mkTotal(this, ba);
 	}
 
 	/**
 	 * return the total version of aut
+	 * @throws TimeoutException 
 	 */
 	@SuppressWarnings("unchecked")
 	public static <A, B> SVPA<A, B> mkTotal(SVPA<A, B> aut,
-			BooleanAlgebra<A, B> ba) {
+			BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		if (aut.isTotal)
 			return (SVPA<A, B>) aut.clone();
@@ -691,16 +701,18 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 
 	/**
 	 * return the complement of the current SVPA
+	 * @throws TimeoutException 
 	 */
-	public boolean isEquivalentTo(SVPA<U, S> aut, BooleanAlgebra<U, S> ba) {
+	public boolean isEquivalentTo(SVPA<U, S> aut, BooleanAlgebra<U, S> ba) throws TimeoutException {
 		return areEquivalent(this, aut, ba);
 	}
 
 	/**
 	 * return the complement of the current SVPA
+	 * @throws TimeoutException 
 	 */
 	public static <A, B> boolean areEquivalent(SVPA<A, B> aut1,
-			SVPA<A, B> aut2, BooleanAlgebra<A, B> ba) {
+			SVPA<A, B> aut2, BooleanAlgebra<A, B> ba) throws TimeoutException {
 		if (!differnce(aut1, aut2, ba).isEmpty)
 			return false;
 		return differnce(aut2, aut1, ba).isEmpty;
@@ -708,16 +720,18 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 
 	/**
 	 * return the determinization of the current SVPA
+	 * @throws TimeoutException 
 	 */
-	public SVPA<U, S> determinize(BooleanAlgebra<U, S> ba) {
+	public SVPA<U, S> determinize(BooleanAlgebra<U, S> ba) throws TimeoutException {
 		return determinize(this, ba);
 	}
 
 	/**
 	 * return the determinization of aut
+	 * @throws TimeoutException 
 	 */
 	public static <A, B> SVPA<A, B> determinize(SVPA<A, B> aut1,
-			BooleanAlgebra<A, B> ba) {
+			BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		// Remove epsilon before starting		
 		SVPA<A, B> aut = aut1;
@@ -1011,7 +1025,7 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 	}
 
 	private static <A, B> A intersectGuards(A guard, A conjunct,
-			BooleanAlgebra<A, B> ba) {
+			BooleanAlgebra<A, B> ba) throws TimeoutException {
 		if (guard == null)
 			return conjunct;
 		else
@@ -1059,7 +1073,7 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 
 	@SuppressWarnings("unchecked")
 	private static <A, B> SVPA<A, B> removeUnreachableStates(SVPA<A, B> aut,
-			BooleanAlgebra<A, B> ba) {
+			BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		Map<Integer, Collection<Integer>> reachRel = aut.getReachRel(ba).fourth;
 
@@ -1106,8 +1120,9 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 	 * Checks whether the automaton is deterministic
 	 * 
 	 * @return true iff the automaton is deterministic
+	 * @throws TimeoutException 
 	 */
-	public boolean isDeterministic(BooleanAlgebra<U, S> ba) {
+	public boolean isDeterministic(BooleanAlgebra<U, S> ba) throws TimeoutException {
 
 		// Check if we set it before
 		if (isDeterministic)

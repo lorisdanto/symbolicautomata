@@ -1,3 +1,4 @@
+
 /**
  * BooleanAlgebras
  * theory
@@ -13,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.sat4j.specs.TimeoutException;
 
 import theory.BooleanAlgebra;
 import utilities.Pair;
@@ -43,7 +46,7 @@ public class BinaryCharPred extends ICharPred {
 		
 	}
 	
-	public void normalize(BooleanAlgebra<CharPred, Character> ba){
+	public void normalize(BooleanAlgebra<CharPred, Character> ba) throws TimeoutException{
 		ArrayList<Pair<CharPred,CharPred>> newNotEqual = new ArrayList<Pair<CharPred,CharPred>>();
 		
 		ArrayList<CharPred> firstProj = new ArrayList<>();
@@ -73,8 +76,9 @@ public class BinaryCharPred extends ICharPred {
 	
 	/**
 	 * c and r without caring about equality
+	 * @throws TimeoutException 
 	 */
-	public BinaryCharPred(CharPred c, CharPred r, BooleanAlgebra<CharPred, Character> ba) {
+	public BinaryCharPred(CharPred c, CharPred r, BooleanAlgebra<CharPred, Character> ba) throws TimeoutException {
 		this();
 		checkArgument(c != null && r!=null);
 		notEqual = new ArrayList<Pair<CharPred,CharPred>>();

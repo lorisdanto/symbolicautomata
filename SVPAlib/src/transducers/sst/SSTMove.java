@@ -8,6 +8,9 @@
 package transducers.sst;
 
 import theory.BooleanAlgebra;
+
+import org.sat4j.specs.TimeoutException;
+
 import automata.Move;
 
 /**
@@ -33,9 +36,10 @@ public abstract class SSTMove<P, F, S> extends Move<P, S> {
 	/**
 	 * Checks if the move is disjoint from the move <code>t</code> (they are not
 	 * from same state on same predicate)
+	 * @throws TimeoutException 
 	 */
 	public abstract boolean isDisjointFrom(SSTMove<P, F, S> t,
-			BooleanAlgebra<P, S> ba);
+			BooleanAlgebra<P, S> ba) throws TimeoutException;
 
 	@Override
 	public abstract Object clone();

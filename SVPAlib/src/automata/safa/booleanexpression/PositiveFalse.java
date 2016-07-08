@@ -44,4 +44,9 @@ public class PositiveFalse extends PositiveBooleanExpression {
 	public Object clone() {
 		return getInstance();
 	}
+	
+	@Override
+	public int getSize() {
+		return 1;
+	}
 }

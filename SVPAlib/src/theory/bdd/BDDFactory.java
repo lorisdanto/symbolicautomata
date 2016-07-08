@@ -1036,21 +1036,22 @@ public abstract class BDDFactory {
          * @see java.lang.Object#toString()
          */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
-            sb.append("Garbage collection #");
-            sb.append(num);
-            sb.append(": ");
-            sb.append(nodes);
-            sb.append(" nodes / ");
-            sb.append(freenodes);
-            sb.append(" free");
-            
-            sb.append(" / ");
-            sb.append((float) time / (float) 1000);
-            sb.append("s / ");
-            sb.append((float) sumtime / (float) 1000);
-            sb.append("s total");
-            return sb.toString();
+        	return "";
+//            StringBuffer sb = new StringBuffer();
+//            sb.append("Garbage collection #");
+//            sb.append(num);
+//            sb.append(": ");
+//            sb.append(nodes);
+//            sb.append(" nodes / ");
+//            sb.append(freenodes);
+//            sb.append(" free");
+//            
+//            sb.append(" / ");
+//            sb.append((float) time / (float) 1000);
+//            sb.append("s / ");
+//            sb.append((float) sumtime / (float) 1000);
+//            sb.append("s total");
+//            return sb.toString();
         }
     }
     
@@ -1089,17 +1090,19 @@ public abstract class BDDFactory {
         }
         
         public String toString() {
-            StringBuffer sb = new StringBuffer();
-            sb.append("Went from ");
-            sb.append(usednum_before);
-            sb.append(" to ");
-            sb.append(usednum_after);
-            sb.append(" nodes, gain = ");
-            sb.append(gain());
-            sb.append("% (");
-            sb.append((float) time / 1000f);
-            sb.append(" sec)");
-            return sb.toString();
+            return "";
+//            StringBuffer sb = new StringBuffer();
+//            sb.append("Went from ");
+//            sb.append(usednum_before);
+//            sb.append(" to ");
+//            sb.append(usednum_after);
+//            sb.append(" nodes, gain = ");
+//            sb.append(gain());
+//            sb.append("% (");
+//            sb.append((float) time / 1000f);
+//            sb.append(" sec)");
+//            return sb.toString();
+
         }
     }
     
@@ -1695,7 +1698,7 @@ public abstract class BDDFactory {
     
     protected static void bdd_default_gbchandler(boolean pre, GCStats s) {
         if (!pre) {
-            System.err.println(s.toString());
+//            System.err.println(s.toString());
         }
     }
     
@@ -1738,7 +1741,7 @@ public abstract class BDDFactory {
     }
 
     protected static void bdd_default_reshandler(int oldsize, int newsize) {
-        int verbose = 1;
+        int verbose = 0;
         if (verbose > 0) {
             System.out.println("Resizing node table from "+oldsize+" to "+newsize);
         }

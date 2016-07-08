@@ -16,6 +16,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.sat4j.specs.TimeoutException;
+
 import theory.BooleanAlgebra;
 import theory.BooleanAlgebraSubst;
 import utilities.Pair;
@@ -248,18 +250,20 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * Computes the combination with <code>sst</code> as a new SST
 	 * combine(w)=f1(w)f2(w)
+	 * @throws TimeoutException 
 	 */
 	public SST<P, F, S> combineWith(SST<P, F, S> sst,
-			BooleanAlgebraSubst<P, F, S> ba) {
+			BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		return combine(this, sst, ba);
 	}
 
 	/**
 	 * Computes the combination of <code>sst1</code> and <code>sst2</code>
+	 * @throws TimeoutException 
 	 */
 	public static <P1, F1, S1> SST<P1, F1, S1> combine(
 			SST<P1, F1, S1> sst1withEps, SST<P1, F1, S1> sst2withEps,
-			BooleanAlgebraSubst<P1, F1, S1> ba) {
+			BooleanAlgebraSubst<P1, F1, S1> ba) throws TimeoutException {
 
 		// Remove epsilons
 		SST<P1, F1, S1> sst1 = sst1withEps.removeEpsilonMoves(ba);
@@ -332,18 +336,20 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * Computes the combination with <code>sst</code> as a new SST
 	 * combine(w)=f1(w)f2(w)
+	 * @throws TimeoutException 
 	 */
 	public SST<P, F, S> restrictInput(SFA<P, S> aut,
-			BooleanAlgebraSubst<P, F, S> ba) {
+			BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		return restrictInput(this, aut, ba);
 	}
 
 	/**
 	 * Computes the combination of <code>sst1</code> and <code>sst2</code>
+	 * @throws TimeoutException 
 	 */
 	public static <P1, F1, S1> SST<P1, F1, S1> restrictInput(
 			SST<P1, F1, S1> sst1withEps, SFA<P1, S1> inputSfa,
-			BooleanAlgebraSubst<P1, F1, S1> ba) {
+			BooleanAlgebraSubst<P1, F1, S1> ba) throws TimeoutException {
 
 		// Remove epsilons
 		SST<P1, F1, S1> sst = sst1withEps.removeEpsilonMoves(ba);
@@ -833,11 +839,12 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * shuffles pairs of ssts (li,ri) such that every li (ri) has domain equal
 	 * to sfa
+	 * @throws TimeoutException 
 	 */
 	@SuppressWarnings("unchecked")
 	public static <P1, F1, S1> SST<P1, F1, S1> computeShuffle(
 			Collection<Pair<SST<P1, F1, S1>, SST<P1, F1, S1>>> combinedSstPairsWitEps,
-			BooleanAlgebraSubst<P1, F1, S1> ba, boolean isLeftShuffle) {
+			BooleanAlgebraSubst<P1, F1, S1> ba, boolean isLeftShuffle) throws TimeoutException {
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
 		Integer initialState;
@@ -1042,7 +1049,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			P1 currPred,
 			FunctionalVariableUpdate<P1, F1, S1> currVaribleUpdate,
 			List<Integer> currNextState,
-			List<Pair<Pair<P1, FunctionalVariableUpdate<P1, F1, S1>>, List<Integer>>> transitions) {
+			List<Pair<Pair<P1, FunctionalVariableUpdate<P1, F1, S1>>, List<Integer>>> transitions) throws TimeoutException {
 
 		if (!ba.IsSatisfiable(currPred))
 			return;
@@ -1074,11 +1081,12 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 	/**
 	 * shuffle
+	 * @throws TimeoutException 
 	 */
 	@SuppressWarnings("unchecked")
 	public static <P1, F1, S1> SST<P1, F1, S1> computeShuffle(
 			SST<P1, F1, S1> sstUnchecked, SFA<P1, S1> autUnchecked,
-			BooleanAlgebraSubst<P1, F1, S1> ba, boolean isLeftShuffle) {
+			BooleanAlgebraSubst<P1, F1, S1> ba, boolean isLeftShuffle) throws TimeoutException {
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
 		Integer initialState;
@@ -1406,8 +1414,9 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 	/**
 	 * Computes the domain automaton of the sst
+	 * @throws TimeoutException 
 	 */
-	public SFA<P, S> getDomain(BooleanAlgebraSubst<P, F, S> ba) {
+	public SFA<P, S> getDomain(BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		Collection<SFAMove<P, S>> transitions = new ArrayList<SFAMove<P, S>>();
 
 		for (SSTInputMove<P, F, S> t : getInputMovesFrom(states))
@@ -1423,9 +1432,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 	/**
 	 * Computes the pre-image on the set outputNonMin
+	 * @throws TimeoutException 
 	 */
 	public boolean typeCheck(SFA<P, S> inputNonMin, SFA<P, S> outputNonMin,
-			BooleanAlgebraSubst<P, F, S> ba) {
+			BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		SFA<P, S> complement = outputNonMin.complement(ba);
 		SFA<P,S> preim = SST.preImage(this, complement, ba);
 		SFA<P,S> inters = preim.intersectionWith(inputNonMin, ba);
@@ -1435,17 +1445,19 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	
 	/**
 	 * Computes the pre-image on the set outputNonMin
+	 * @throws TimeoutException 
 	 */
 	public SFA<P, S> getPreImage(SFA<P, S> outputNonMin,
-			BooleanAlgebraSubst<P, F, S> ba) {
+			BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		return SST.preImage(this, outputNonMin, ba);
 	}
 
 	/**
 	 * Computes the pre-image of sst on the set outputNonMin
+	 * @throws TimeoutException 
 	 */
 	public static <A, B, C> SFA<A, C> preImage(SST<A, B, C> sstWithEps,
-			SFA<A, C> outputNonMin, BooleanAlgebraSubst<A, B, C> ba) {
+			SFA<A, C> outputNonMin, BooleanAlgebraSubst<A, B, C> ba) throws TimeoutException {
 		SFA<A, C> output = outputNonMin.minimize(ba);
 		SST<A, B, C> sst = sstWithEps.removeEpsilonMoves(ba);
 
