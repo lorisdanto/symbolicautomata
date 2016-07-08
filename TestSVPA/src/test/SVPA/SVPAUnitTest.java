@@ -558,7 +558,7 @@ public class SVPAUnitTest {
 			return null;
 		} catch (TimeoutException e) {
 			return null;
-		}
+		} 
 	}
 
 	// Test from Peter Ohman
