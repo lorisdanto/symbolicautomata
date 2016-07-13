@@ -165,12 +165,7 @@ public abstract class BooleanAlgebra<P, S> {
 	}
 	
 	/**
-	 * Given a set of <code>predicates</code>, returns all the satisfiable
-	 * Boolean combinations
-	 * 
-	 * @return a set of pairs (p,{i1,..,in}) where p is and ij is 0 or 1 base on
-	 *         whether pij is used positively or negatively
-	 * @throws TimeoutException 
+	 * Returns a list of disjoint predicates [p1,...,pn] that accepts the elements [S1...SN] and that has union equal to true.
 	 */
 	public ArrayList<P> GetSeparatingPredicates(
 			ArrayList<Collection<S>> groups, long timeout) throws TimeoutException {
