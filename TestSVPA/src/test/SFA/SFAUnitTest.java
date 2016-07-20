@@ -92,12 +92,19 @@ public class SFAUnitTest {
 	public void testAmbiguity() throws TimeoutException {
 		SFA<CharPred, Character> autAmb = getAmbSFA(ba);
 		SFA<CharPred, Character> autUnamb = getUnambSFA(ba);
+		SFA<CharPred, Character> epsAmb = getEpsAmbSFA(ba);
+		SFA<CharPred, Character> epsUnamb = getEpsUnambSFA(ba);
 
 		List<Character> a = autAmb.getAmbiguousInput(ba);
-
 		List<Character> u = autUnamb.getAmbiguousInput(ba);
+		
+		List<Character> aeps = epsAmb.getAmbiguousInput(ba);
+		List<Character> ueps = epsUnamb.getAmbiguousInput(ba);
+		
 		assertTrue(a != null);
 		assertTrue(u == null);
+		assertTrue(aeps != null);
+		assertTrue(ueps == null);
 	}
 
 	@Test
@@ -340,12 +347,41 @@ public class SFAUnitTest {
 		return null;
 	}
 
+	// [a-z]+ ambiguous
+	private SFA<CharPred, Character> getEpsAmbSFA(UnaryCharIntervalSolver ba) {
+
+		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
+		transitionsA.add(new SFAEpsilon<CharPred, Character>(0, 1));
+		transitionsA.add(new SFAEpsilon<CharPred, Character>(0, 2));
+		try {
+			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1, 2), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	// [a-z]+ unambiguos
 	private SFA<CharPred, Character> getUnambSFA(UnaryCharIntervalSolver ba) {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 0, alpha));
 		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));
+		try {
+			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	// [a-z]+ ambiguous
+	private SFA<CharPred, Character> getEpsUnambSFA(UnaryCharIntervalSolver ba) {
+
+		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
+		transitionsA.add(new SFAEpsilon<CharPred, Character>(0, 1));
 		try {
 			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
 		} catch (TimeoutException e) {
@@ -398,7 +434,7 @@ public class SFAUnitTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;		
+		return null;
 	}
 
 	// [a-z][0-9]*

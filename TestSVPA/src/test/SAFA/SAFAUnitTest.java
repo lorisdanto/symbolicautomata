@@ -159,26 +159,26 @@ public class SAFAUnitTest {
 		return SAFA.MkSAFA(transitions, initialState, finalStates, ba);
 	}
 
-    @Test
-    public void testSATRelation() throws TimeoutException {
-    	SATRelation rel = new SATRelation();
-    	PositiveBooleanExpression sp0 = boolexpr.MkState(0);
-    	PositiveBooleanExpression sp1 = boolexpr.MkState(1);
-        assertFalse(rel.isMember(sp0, sp0));
-        rel.add(sp0, sp0);
-        assertTrue(rel.isMember(sp0, sp0));
-        assertFalse(rel.isMember(sp1, sp1));
-        rel.add(sp1, sp1);
-
-        assertFalse(rel.isMember(sp0, sp1));
-
-        assertTrue(rel.isMember(boolexpr.MkAnd(sp0, sp1), boolexpr.MkAnd(sp1, sp0)));
-        assertTrue(rel.isMember(boolexpr.MkOr(sp0, sp1), boolexpr.MkOr(sp1, sp0)));
-        assertFalse(rel.isMember(boolexpr.MkOr(sp0, sp1), boolexpr.MkAnd(sp0, sp1)));
-        assertFalse(rel.isMember(boolexpr.MkOr(sp0, sp1), sp1));
-        rel.add(sp0, sp1);
-        assertTrue(rel.isMember(boolexpr.MkOr(sp0, sp1), sp1));
-    }
+//    @Test
+//    public void testSATRelation() throws TimeoutException {
+//    	SATRelation rel = new SATRelation();
+//    	PositiveBooleanExpression sp0 = boolexpr.MkState(0);
+//    	PositiveBooleanExpression sp1 = boolexpr.MkState(1);
+//        assertFalse(rel.isMember(sp0, sp0));
+//        rel.add(sp0, sp0);
+//        assertTrue(rel.isMember(sp0, sp0));
+//        assertFalse(rel.isMember(sp1, sp1));
+//        rel.add(sp1, sp1);
+//
+//        assertFalse(rel.isMember(sp0, sp1));
+//
+//        assertTrue(rel.isMember(boolexpr.MkAnd(sp0, sp1), boolexpr.MkAnd(sp1, sp0)));
+//        assertTrue(rel.isMember(boolexpr.MkOr(sp0, sp1), boolexpr.MkOr(sp1, sp0)));
+//        assertFalse(rel.isMember(boolexpr.MkOr(sp0, sp1), boolexpr.MkAnd(sp0, sp1)));
+//        assertFalse(rel.isMember(boolexpr.MkOr(sp0, sp1), sp1));
+//        rel.add(sp0, sp1);
+//        assertTrue(rel.isMember(boolexpr.MkOr(sp0, sp1), sp1));
+//    }
 
 	@Test
 	public void testForwardEquivalence() throws TimeoutException {
