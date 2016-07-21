@@ -1191,21 +1191,23 @@ public class SFA<P, S> extends Automaton<P, S> {
 	@SuppressWarnings("unchecked")
 	public static <A, B> List<B> getAmbiguousInput(SFA<A, B> aut, BooleanAlgebra<A, B> ba) throws TimeoutException {
 
-		SFA<A, B> aut1 = (SFA<A, B>) aut.clone();
-		SFA<A, B> aut2 = (SFA<A, B>) aut.clone();
+		SFA<A, B> aut1 = aut;
+		SFA<A, B> aut2 = aut;
 
 		SFA<A, B> product = new SFA<A, B>();
 
 		// maps a product state to its id
-		HashMap<Pair<Integer, Integer>, Integer> reached = new HashMap<Pair<Integer, Integer>, Integer>();
+		HashMap<Pair<Pair<Integer, Integer>, Boolean>, Integer> reached = new HashMap<Pair<Pair<Integer, Integer>, Boolean>, Integer>();
 		// maps and id to its product state
-		HashMap<Integer, Pair<Integer, Integer>> reachedRev = new HashMap<Integer, Pair<Integer, Integer>>();
+		HashMap<Integer, Pair<Pair<Integer, Integer>, Boolean>> reachedRev = new HashMap<Integer, Pair<Pair<Integer, Integer>, Boolean>>();
 		// list on unexplored product states
-		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<Pair<Integer, Integer>>();
+		LinkedList<Pair<Pair<Integer, Integer>, Boolean>> toVisit = new LinkedList<Pair<Pair<Integer, Integer>, Boolean>>();
 
 		// The initial state is the pair consisting of the initial
-		// states of aut1 and aut2
-		Pair<Integer, Integer> initStatePair = new Pair<Integer, Integer>(aut1.initialState, aut2.initialState);
+		// states of aut1 and aut2, true states whether the state was reached by
+		// input moves (false for epsilon)
+		Pair<Pair<Integer, Integer>, Boolean> initStatePair = new Pair<Pair<Integer, Integer>, Boolean>(
+				new Pair<Integer, Integer>(aut1.initialState, aut2.initialState), true);
 		product.initialState = 0;
 		product.states.add(0);
 
@@ -1216,89 +1218,90 @@ public class SFA<P, S> extends Automaton<P, S> {
 		int totStates = 1;
 
 		while (!toVisit.isEmpty()) {
-			Pair<Integer, Integer> currState = toVisit.removeFirst();
+			Pair<Pair<Integer, Integer>, Boolean> currState = toVisit.removeFirst();
+			int st1 = currState.first.first;
+			int st2 = currState.first.second;
+			boolean isInputReached = currState.second;
 			int currStateId = reached.get(currState);
 
-			// get the set of states reachable from currentState via epsilon
-			// moves
-			Collection<Integer> epsilonClosure1 = aut1.getEpsClosure(currState.first, ba);
-			Collection<Integer> epsilonClosure2 = aut2.getEpsClosure(currState.second, ba);
+			// Set final states
+			// if both the epsilon closures contain a final state
+			// currentStateID
+			// is final
+			if (aut1.isFinalState(st1) && aut2.isFinalState(st2))
+				product.finalStates.add(currStateId);
 
-			// Add epsilon moves to the closure
-			for (Integer st1 : epsilonClosure1)
-				for (Integer st2 : epsilonClosure2) {
+			// Try to pair transitions out of both automata
+			for (SFAInputMove<A, B> t1 : aut1.getInputMovesFrom(st1))
+				for (SFAInputMove<A, B> t2 : aut2.getInputMovesFrom(st2)) {
 
-					Pair<Integer, Integer> currEpsState = new Pair<Integer, Integer>(st1, st2);
+					if (t1.to >= t2.to) {
+						// create conjunction of the two guards and
+						// create
+						// transition only if the conjunction is
+						// satisfiable
+						A intersGuard = ba.MkAnd(t1.guard, t2.guard);
+						if (ba.IsSatisfiable(intersGuard)) {
 
-					// Find all epsilon configs and visit them in this same
-					// loop.
-					// This way we do not do epsilon twice in a row
-					// After we discover a state using epsilon moves
-					int currEpsStateId = 0;
-					//Only explore current state and the new ones in the eps closure
-					boolean shouldExploreState = st1==currState.first && st1==currState.first;
-					if (!reached.containsKey(currEpsState)) {
-						product.inputMovesTo.put(totStates, new HashSet<SFAInputMove<A, B>>());
+							// Create new product transition and add it
+							// to
+							// transitions
+							Pair<Pair<Integer, Integer>, Boolean> nextState = new Pair<Pair<Integer, Integer>, Boolean>(
+									new Pair<Integer, Integer>(t1.to, t2.to), true);
+							int nextStateId = 0;
 
-						reached.put(currEpsState, totStates);
-						reachedRev.put(totStates, currEpsState);
+							if (!reached.containsKey(nextState)) {
+								product.inputMovesTo.put(totStates, new HashSet<SFAInputMove<A, B>>());
 
-						product.states.add(totStates);
-						currEpsStateId = totStates;
-						totStates++;
-						shouldExploreState=true;
-					} else {
-						currEpsStateId = reached.get(currEpsState);
-					}
+								reached.put(nextState, totStates);
+								reachedRev.put(totStates, nextState);
 
-					SFAEpsilon<A, B> newTrans = new SFAEpsilon<A, B>(currStateId, currEpsStateId);
-					product.addTransition(newTrans, ba, true);
+								toVisit.add(nextState);
+								product.states.add(totStates);
+								nextStateId = totStates;
+								totStates++;
+							} else
+								nextStateId = reached.get(nextState);
 
-					if (shouldExploreState) {
-						// Set final states
-						// if both the epsilon closures contain a final state
-						// currentStateID
-						// is final
-						if (aut1.isFinalState(st1) && aut2.isFinalState(st2))
-							product.finalStates.add(currEpsStateId);
-
-						// Try to pair transitions out of both automata
-						for (SFAInputMove<A, B> t1 : aut1.getInputMovesFrom(st1))
-							for (SFAInputMove<A, B> t2 : aut2.getInputMovesFrom(st2)) {
-
-								// create conjunction of the two guards and
-								// create
-								// transition only if the conjunction is
-								// satisfiable
-								A intersGuard = ba.MkAnd(t1.guard, t2.guard);
-								if (ba.IsSatisfiable(intersGuard)) {
-
-									// Create new product transition and add it
-									// to
-									// transitions
-									Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(t1.to, t2.to);
-									int nextStateId = 0;
-
-									if (!reached.containsKey(nextState)) {
-										product.inputMovesTo.put(totStates, new HashSet<SFAInputMove<A, B>>());
-
-										reached.put(nextState, totStates);
-										reachedRev.put(totStates, nextState);
-
-										toVisit.add(nextState);
-										product.states.add(totStates);
-										nextStateId = totStates;
-										totStates++;
-									} else
-										nextStateId = reached.get(nextState);
-
-									product.addTransition(new SFAInputMove<A, B>(currStateId, nextStateId, intersGuard),
-											ba, true);
-								}
-
-							}
+							product.addTransition(new SFAInputMove<A, B>(currStateId, nextStateId, intersGuard), ba,
+									true);
+						}
 					}
 				}
+
+			if (isInputReached) {
+				// get the set of states reachable from currentState via epsilon
+				// moves
+				Collection<Integer> epsilonClosure1 = aut1.getEpsClosure(st1, ba);
+				Collection<Integer> epsilonClosure2 = aut2.getEpsClosure(st2, ba);
+
+				// Add epsilon moves to the closure
+				for (Integer state1 : epsilonClosure1)
+					for (Integer state2 : epsilonClosure2) {
+						// Avoid self epsilon loop
+						if ((state1 != st1 || state2 != st2) && state1>=state2) {
+
+							Pair<Pair<Integer, Integer>, Boolean> nextState = new Pair<Pair<Integer, Integer>, Boolean>(
+									new Pair<Integer, Integer>(state1, state2), false);
+							int nextStateId = 0;
+
+							if (!reached.containsKey(nextState)) {
+								product.inputMovesTo.put(totStates, new HashSet<SFAInputMove<A, B>>());
+
+								reached.put(nextState, totStates);
+								reachedRev.put(totStates, nextState);
+
+								toVisit.add(nextState);
+								product.states.add(totStates);
+								nextStateId = totStates;
+								totStates++;
+							} else
+								nextStateId = reached.get(nextState);
+
+							product.addTransition(new SFAEpsilon<A, B>(currStateId, nextStateId), ba, true);
+						}
+					}
+			}
 		}
 
 		product = removeDeadOrUnreachableStates(product, ba);
@@ -1306,8 +1309,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 		// Check if a state that of the form (s1,s2) such that s1!=s2 is still
 		// alive, if so any string passing to it is ambiguous
 		for (Integer aliveSt : product.states) {
-			Pair<Integer, Integer> stP = reachedRev.get(aliveSt);
-			if (stP.first != stP.second) {
+			Pair<Pair<Integer, Integer>, Boolean> stP = reachedRev.get(aliveSt);
+			if (stP.first.first != stP.first.second) {
 				SFA<A, B> left = (SFA<A, B>) product.clone();
 				SFA<A, B> right = (SFA<A, B>) product.clone();
 				left.finalStates = new HashSet<Integer>();
