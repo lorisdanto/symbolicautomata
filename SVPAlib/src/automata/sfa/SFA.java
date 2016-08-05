@@ -693,8 +693,13 @@ public class SFA<P, S> extends Automaton<P, S> {
 		UnionFindHopKarp<B> ds = new UnionFindHopKarp<>();
 		int offset = aut1.stateCount();
 
-		ds.add(aut1.initialState, aut1.isFinalState(aut1.initialState), new LinkedList<>());
-		ds.add(aut2.initialState + offset, aut2.isFinalState(aut2.initialState), new LinkedList<>());
+		boolean isF1=aut1.isFinalState(aut1.initialState);
+		boolean isF2=aut2.isFinalState(aut2.initialState);
+		if(isF1!=isF2)
+			return new Pair<Boolean, List<B>>(false, new LinkedList<>());
+		
+		ds.add(aut1.initialState, isF1, new LinkedList<>());
+		ds.add(aut2.initialState + offset, isF2, new LinkedList<>());
 		ds.mergeSets(aut1.initialState, aut2.initialState + offset);
 
 		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<>();
