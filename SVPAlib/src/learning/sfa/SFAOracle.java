@@ -20,7 +20,7 @@ public class SFAOracle<P, S> extends Oracle<P, S> {
 	}
 	
 	@Override
-	public List<S> checkEquivalence(SFA<P, S> compareTo) throws TimeoutException {
+	protected List<S> checkEquivalenceImpl(SFA<P, S> compareTo) throws TimeoutException {
 		SFA<P, S> sdiff = SFA.union(SFA.difference(toLearn, compareTo, ba, Long.MAX_VALUE),
 									SFA.difference(compareTo, toLearn, ba, Long.MAX_VALUE), 
 									ba);
@@ -28,7 +28,7 @@ public class SFAOracle<P, S> extends Oracle<P, S> {
 	}
 	
 	@Override
-	public boolean checkMembership(List<S> w) {
+	protected boolean checkMembershipImpl(List<S> w) {
 		return toLearn.accepts(w, ba);
 	}
 }

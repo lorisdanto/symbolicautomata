@@ -18,7 +18,7 @@ public class IOOracle extends Oracle<IntPred, Integer> {
 	}
 
 	@Override
-	public List<Integer> checkEquivalence(SFA<IntPred, Integer> compareTo) throws TimeoutException {
+	public List<Integer> checkEquivalenceImpl(SFA<IntPred, Integer> compareTo) throws TimeoutException {
 		List<Integer> ret = new ArrayList<Integer>();
 		System.out.println(compareTo);
 		System.out.println("Is that your automaton? (y/n):");
@@ -33,7 +33,7 @@ public class IOOracle extends Oracle<IntPred, Integer> {
 	}
 
 	@Override
-	public boolean checkMembership(List<Integer> w) {
+	public boolean checkMembershipImpl(List<Integer> w) {
 		System.out.println("Does your automaton accept " + w + " ? (y/n):");
 		char in = sc.nextLine().charAt(0);
 		return in == 'y';

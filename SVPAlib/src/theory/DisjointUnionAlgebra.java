@@ -9,20 +9,26 @@ import org.sat4j.specs.TimeoutException;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import utilities.Pair;
+import utilities.choice.Choice;
+import utilities.choice.InL;
+import utilities.choice.InR;
 
-public class DisjointUnion<P1, S1, P2, S2> extends BooleanAlgebra<Pair<P1,P2>, Pair<S1,S2>> {
+public class DisjointUnionAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<Pair<P1,P2>, Choice<S1,S2>> {
 
 	private BooleanAlgebra<P1,S1> ba1;
 	private BooleanAlgebra<P2,S2> ba2;
 	
-	public DisjointUnion(BooleanAlgebra<P1,S1> ba1, BooleanAlgebra<P2,S2> ba2) {
+	public DisjointUnionAlgebra(BooleanAlgebra<P1,S1> ba1, BooleanAlgebra<P2,S2> ba2) {
 		this.ba1 = ba1;
 		this.ba2 = ba2;
 	}
 	
 	@Override
-	public Pair<P1, P2> MkAtom(Pair<S1, S2> s) throws TimeoutException {
-		return new Pair<P1, P2>(ba1.MkAtom(s.first), ba2.MkAtom(s.second));
+	public Pair<P1, P2> MkAtom(Choice<S1, S2> s) throws TimeoutException {
+		if (s.isLeft())
+			return new Pair<P1, P2>(ba1.MkAtom(s.left), ba2.False());
+		else //s.isRight()
+			return new Pair<P1, P2>(ba1.False(), ba2.MkAtom(s.right));
 	}
 
 	@Override
@@ -79,42 +85,54 @@ public class DisjointUnion<P1, S1, P2, S2> extends BooleanAlgebra<Pair<P1,P2>, P
 
 	@Override
 	public boolean IsSatisfiable(Pair<P1, P2> p) {
-		return ba1.IsSatisfiable(p.first) && ba2.IsSatisfiable(p.second); 
+		return ba1.IsSatisfiable(p.first) || ba2.IsSatisfiable(p.second); 
 	}
 
 	@Override
-	public boolean HasModel(Pair<P1, P2> p, Pair<S1, S2> s) {
-		return ba1.HasModel(p.first, s.first) && ba2.HasModel(p.second, s.second);
+	public boolean HasModel(Pair<P1, P2> p, Choice<S1, S2> s) {
+		if (s.isLeft()) 
+			return ba1.HasModel(p.first, s.left);
+		else //s.isRight()
+			return ba2.HasModel(p.second, s.right);
 	}
 
 	@Override
-	public boolean HasModel(Pair<P1, P2> p, Pair<S1, S2> s1, Pair<S1, S2> s2) {
-		return ba1.HasModel(p.first, s1.first, s2.first) && ba2.HasModel(p.second, s1.second, s2.second);
+	public boolean HasModel(Pair<P1, P2> p, Choice<S1, S2> s1, Choice<S1, S2> s2) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/*
+	 * currently prioritizes the first algebra
+	 */
+	@Override
+	public Choice<S1, S2> generateWitness(Pair<P1, P2> p) {
+		S1 witL = ba1.generateWitness(p.first);
+		if (witL != null) 
+			return new InL<S1, S2>(witL);
+		S2 witR = ba2.generateWitness(p.second);
+		if (witR != null)
+			return new InR<S1, S2>(witR);
+		return null;
 	}
 
 	@Override
-	public Pair<S1, S2> generateWitness(Pair<P1, P2> p) {
-		return new Pair<S1, S2>(ba1.generateWitness(p.first), ba2.generateWitness(p.second));
-	}
-
-	@Override
-	public Pair<Pair<S1, S2>, Pair<S1, S2>> generateWitnesses(Pair<P1, P2> p) {
-		Pair<S1, S1> ret1 = ba1.generateWitnesses(p.first);
-		Pair<S2, S2> ret2 = ba2.generateWitnesses(p.second);
-		return new Pair<Pair<S1, S2>, Pair<S1, S2>>(new Pair<S1, S2>(ret1.first, ret2.first), new Pair<S1, S2>(ret1.second, ret2.second));
+	public Pair<Choice<S1, S2>, Choice<S1, S2>> generateWitnesses(Pair<P1, P2> p) {
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 	@Override
 	public ArrayList<Pair<P1, P2>> GetSeparatingPredicates(
-			ArrayList<Collection<Pair<S1, S2>>> groups, long timeout) throws TimeoutException {
+			ArrayList<Collection<Choice<S1, S2>>> groups, long timeout) throws TimeoutException {
 		ArrayList<Collection<S1>> g1 = new ArrayList<Collection<S1>>();
 		ArrayList<Collection<S2>> g2 = new ArrayList<Collection<S2>>();
-		for (Collection<Pair<S1, S2>> c : groups) {
+		for (Collection<Choice<S1, S2>> c : groups) {
 			Collection<S1> s1set = new HashSet<S1>();
 			Collection<S2> s2set = new HashSet<S2>();
-			for(Pair<S1, S2> p : c) {
-				s1set.add(p.first);
-				s2set.add(p.second);
+			for(Choice<S1, S2> p : c) {
+				if (p.isLeft())
+					s1set.add(p.left);
+				else //p.isRight()
+					s2set.add(p.right);
 			}
 			g1.add(s1set);
 			g2.add(s2set);

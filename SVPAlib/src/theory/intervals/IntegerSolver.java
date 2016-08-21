@@ -177,8 +177,8 @@ public class IntegerSolver extends BooleanAlgebra<IntPred, Integer> {
 		for(int i = 0; i < arr.size() - 1; i++) {
 			if (index.get(arr.get(i)).equals(index.get(arr.get(i+1))))
 				continue;
-			//right = (int)Math.floor((double)(arr.get(i) + arr.get(i+1)) / 2.0); //this binary searches
-			right = arr.get(i+1) - 1; //this is optimal if you assume lexicographically minimal counterexamples
+			right = (int)Math.floor((double)(arr.get(i) + arr.get(i+1)) / 2.0); //this binary searches
+			//right = arr.get(i+1) - 1; //this is optimal if you assume lexicographically minimal counterexamples
 			int ind = index.get(arr.get(i));
 			out.set(ind, MkOr(out.get(ind), new IntPred(left, right)));
 			left = right + 1;
