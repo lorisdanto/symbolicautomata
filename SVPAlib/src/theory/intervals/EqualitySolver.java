@@ -234,7 +234,7 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 						CharPred newFirst = usolver.MkAnd(pair1.first, pair2.first);
 						if (usolver.IsSatisfiable(newFirst)) {
 							CharPred newSecond = usolver.MkAnd(pair1.second, pair2.second);
-							if (usolver.IsSatisfiable(newFirst))
+							if (usolver.IsSatisfiable(newSecond))
 								newUneq.add(new Pair<CharPred, CharPred>(newFirst, newSecond));
 						}
 					}

@@ -25,10 +25,14 @@ public class DisjointUnionAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<Pair<P1
 	
 	@Override
 	public Pair<P1, P2> MkAtom(Choice<S1, S2> s) throws TimeoutException {
-		if (s.isLeft())
-			return new Pair<P1, P2>(ba1.MkAtom(s.left), ba2.False());
-		else //s.isRight()
-			return new Pair<P1, P2>(ba1.False(), ba2.MkAtom(s.right));
+		if (s.isLeft()){
+			InL<S1, S2> cast = (InL<S1, S2>)s; 
+			return new Pair<P1, P2>(ba1.MkAtom(cast.left), ba2.False());
+		}
+		else{ //s.isRight()
+			InR<S1, S2> cast = (InR<S1, S2>)s; 		
+			return new Pair<P1, P2>(ba1.False(), ba2.MkAtom(cast.right));
+		}
 	}
 
 	@Override
@@ -79,7 +83,7 @@ public class DisjointUnionAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<Pair<P1
 	}
 
 	@Override
-	public boolean AreEquivalent(Pair<P1, P2> p1, Pair<P1, P2> p2) {
+	public boolean AreEquivalent(Pair<P1, P2> p1, Pair<P1, P2> p2) throws TimeoutException {
 		return ba1.AreEquivalent(p1.first, p2.first) && ba2.AreEquivalent(p1.second, p2.second);
 	}
 
@@ -90,10 +94,14 @@ public class DisjointUnionAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<Pair<P1
 
 	@Override
 	public boolean HasModel(Pair<P1, P2> p, Choice<S1, S2> s) {
-		if (s.isLeft()) 
-			return ba1.HasModel(p.first, s.left);
-		else //s.isRight()
-			return ba2.HasModel(p.second, s.right);
+		if (s.isLeft()){
+			InL<S1, S2> cast = (InL<S1, S2>)s; 
+			return ba1.HasModel(p.first, cast.left);
+		}
+		else{ //s.isRight()
+			InR<S1, S2> cast = (InR<S1, S2>)s; 		
+			return ba2.HasModel(p.second, cast.right);
+		}
 	}
 
 	@Override
@@ -129,10 +137,14 @@ public class DisjointUnionAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<Pair<P1
 			Collection<S1> s1set = new HashSet<S1>();
 			Collection<S2> s2set = new HashSet<S2>();
 			for(Choice<S1, S2> p : c) {
-				if (p.isLeft())
-					s1set.add(p.left);
-				else //p.isRight()
-					s2set.add(p.right);
+				if (p.isLeft()){
+					InL<S1, S2> cast = (InL<S1, S2>)p; 
+					s1set.add(cast.left);
+				}
+				else{ //s.isRight()
+					InR<S1, S2> cast = (InR<S1, S2>)p; 		
+					s2set.add(cast.right);
+				}	
 			}
 			g1.add(s1set);
 			g2.add(s2set);

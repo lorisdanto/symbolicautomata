@@ -59,7 +59,7 @@ public class BinaryCharPred extends ICharPred {
 			CharPred currB = ba.False();
 			for (int bit = 0; bit < notEqual.size(); bit++) 					
 				if (minterm.second.get(bit) == 1)
-					currB = ba.MkOr(notEqual.get(bit).second, notEqual.get(bit).second);
+					currB = ba.MkOr(currB, notEqual.get(bit).second);
 				
 			newNotEqual.add(new Pair<>(currA, currB));
 		}

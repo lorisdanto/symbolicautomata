@@ -69,8 +69,9 @@ public abstract class BooleanAlgebra<P, S> {
 
 	/**
 	 * @return true iff <code>p1</code> and <code>p2</code> are equivalent
+	 * @throws TimeoutException 
 	 */
-	public abstract boolean AreEquivalent(P p1, P p2);
+	public abstract boolean AreEquivalent(P p1, P p2) throws TimeoutException;
 
 	/**
 	 * @return true iff <code>p1</code> is satisfiable

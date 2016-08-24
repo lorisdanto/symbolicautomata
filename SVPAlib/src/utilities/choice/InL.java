@@ -2,6 +2,8 @@ package utilities.choice;
 
 public class InL<L, R> extends Choice<L, R> {
 
+	public L left;	
+	
 	public InL(L val) {
 		left = val;
 	}

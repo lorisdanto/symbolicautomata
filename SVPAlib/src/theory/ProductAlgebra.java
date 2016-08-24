@@ -1,12 +1,14 @@
 package theory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.sat4j.specs.TimeoutException;
 
+import theory.cartesian.CartesianProduct;
 import utilities.Pair;
 
-public class ProductAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<Pair<P1, P2>, Pair<S1, S2>> {
+public class ProductAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<CartesianProduct<P1, P2>, Pair<S1, S2>> {
 
 	private BooleanAlgebra<P1,S1> ba1;
 	private BooleanAlgebra<P2,S2> ba2;
@@ -15,86 +17,139 @@ public class ProductAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<Pair<P1, P2>,
 		this.ba1 = ba1;
 		this.ba2 = ba2;
 	}
-	
+
 	@Override
-	public Pair<P1, P2> MkAtom(Pair<S1, S2> s) throws TimeoutException {
-		return new Pair<P1, P2>(ba1.MkAtom(s.first), ba2.MkAtom(s.second));
+	public CartesianProduct<P1, P2> MkAtom(Pair<S1, S2> s) throws TimeoutException {
+		return new CartesianProduct<>(ba1.MkAtom(s.first), ba2.MkAtom(s.second));
 	}
 
 	@Override
-	public Pair<P1, P2> MkNot(Pair<P1, P2> p) throws TimeoutException {
-		// TODO Auto-generated method stub
-		return null;
+	public CartesianProduct<P1, P2> MkNot(CartesianProduct<P1, P2> p) throws TimeoutException {						
+		ArrayList<Pair<P1, P2>> newProducts = new ArrayList<>();													
+		P1 leftover = ba1.True();
+		for (Pair<P1, P2> pair : p.getProducts()) {
+			leftover = ba1.MkAnd(leftover, ba1.MkNot(pair.first));
+			
+			P2 newRight = ba2.MkNot(pair.second);
+			if(ba2.IsSatisfiable(newRight))
+				newProducts.add(new Pair<P1, P2>(pair.first, newRight));
+		}
+		if(ba1.IsSatisfiable(leftover))
+			newProducts.add(new Pair<P1, P2>(leftover, ba2.True()));				
+		
+		return new CartesianProduct<>(newProducts);		
 	}
 
 	@Override
-	public Pair<P1, P2> MkOr(Collection<Pair<P1, P2>> pset) throws TimeoutException {
-		// TODO Auto-generated method stub
-		return null;
+	public CartesianProduct<P1, P2> MkOr(Collection<CartesianProduct<P1, P2>> pset) throws TimeoutException {
+		CartesianProduct<P1, P2> or = False();
+		for (CartesianProduct<P1, P2> a : pset) {
+			or = MkOr(or, a);
+		}
+		return or;
 	}
 
 	@Override
-	public Pair<P1, P2> MkOr(Pair<P1, P2> p1, Pair<P1, P2> p2) throws TimeoutException {
-		// TODO Auto-generated method stub
-		return null;
+	public CartesianProduct<P1, P2> MkOr(CartesianProduct<P1, P2> p1, CartesianProduct<P1, P2> p2)
+			throws TimeoutException {
+			
+		ArrayList<Pair<P1, P2>> newProducts = new ArrayList<>(p1.getProducts());
+		newProducts.addAll(p2.getProducts());
+		CartesianProduct<P1, P2> pp= new CartesianProduct<>(newProducts);
+		pp.normalize(ba1, ba2);
+		return pp;
 	}
 
 	@Override
-	public Pair<P1, P2> MkAnd(Collection<Pair<P1, P2>> pset) throws TimeoutException {
-		// TODO Auto-generated method stub
-		return null;
+	public CartesianProduct<P1, P2> MkAnd(Collection<CartesianProduct<P1, P2>> pset) throws TimeoutException {
+		CartesianProduct<P1, P2> and = True();
+		for (CartesianProduct<P1, P2> a : pset) {
+			and = MkAnd(and, a);
+		}
+		return and;
 	}
 
 	@Override
-	public Pair<P1, P2> MkAnd(Pair<P1, P2> p1, Pair<P1, P2> p2) throws TimeoutException {
-		// TODO Auto-generated method stub
-		return null;
+	public CartesianProduct<P1, P2> MkAnd(CartesianProduct<P1, P2> p1, CartesianProduct<P1, P2> p2)
+			throws TimeoutException {
+
+		ArrayList<Pair<P1, P2>> newProducts = new ArrayList<>();
+		for (Pair<P1, P2> pair1 : p1.getProducts()) 
+			for (Pair<P1, P2> pair2 : p2.getProducts()) {
+				P1 newFirst = ba1.MkAnd(pair1.first, pair2.first);
+				if (ba1.IsSatisfiable(newFirst)) {
+					P2 newSecond = ba2.MkAnd(pair1.second, pair2.second);
+					if (ba2.IsSatisfiable(newSecond))
+						newProducts.add(new Pair<P1, P2>(newFirst, newSecond));
+				}
+			}
+
+		return new CartesianProduct<>(newProducts);
 	}
 
 	@Override
-	public Pair<P1, P2> True() {
-		return new Pair<P1, P2>(ba1.True(), ba2.True());
+	public CartesianProduct<P1, P2> True() {
+		return new CartesianProduct<>(ba1.True(),ba2.True());
 	}
 
 	@Override
-	public Pair<P1, P2> False() {
-		return new Pair<P1, P2>(ba1.False(), ba2.False());
+	public CartesianProduct<P1, P2> False() {
+		return new CartesianProduct<>();
 	}
 
 	@Override
-	public boolean AreEquivalent(Pair<P1, P2> p1, Pair<P1, P2> p2) {
-		return ba1.AreEquivalent(p1.first, p2.first) && ba2.AreEquivalent(p1.second, p2.second);
+	public boolean AreEquivalent(CartesianProduct<P1, P2> p1, CartesianProduct<P1, P2> p2) throws TimeoutException {
+		return IsSatisfiable(MkAnd(p1, MkNot(p2))) || IsSatisfiable(MkAnd(MkNot(p1), p2));
 	}
 
 	@Override
-	public boolean IsSatisfiable(Pair<P1, P2> p1) {
-		return ba1.IsSatisfiable(p1.first) && ba2.IsSatisfiable(p1.second);
-	}
-
-	@Override
-	public boolean HasModel(Pair<P1, P2> p1, Pair<S1, S2> el) {
-		return ba1.HasModel(p1.first, el.first) && ba2.HasModel(p1.second, el.second); 
-	}
-
-	@Override
-	public boolean HasModel(Pair<P1, P2> p1, Pair<S1, S2> el1, Pair<S1, S2> el2) {
-		// TODO Auto-generated method stub
+	public boolean IsSatisfiable(CartesianProduct<P1, P2> p1) {
+		for(Pair<P1,P2> p: p1.getProducts())
+			if(ba1.IsSatisfiable(p.first) && ba2.IsSatisfiable(p.second))
+				return true;
+		
 		return false;
 	}
 
 	@Override
-	public Pair<S1, S2> generateWitness(Pair<P1, P2> p1) {
-		S1 wit1 = ba1.generateWitness(p1.first);
-		S2 wit2 = ba2.generateWitness(p1.second);
-		if (wit1 == null || wit2 == null)
-			return null;
-		return new Pair<S1, S2>(wit1, wit2);
+	public boolean HasModel(CartesianProduct<P1, P2> p1, Pair<S1, S2> el) {
+		for(Pair<P1,P2> p: p1.getProducts())
+			if(ba1.HasModel(p.first,el.first) && ba2.HasModel(p.second,el.second))
+				return true;
+		
+		return false;
 	}
 
 	@Override
-	public Pair<Pair<S1, S2>, Pair<S1, S2>> generateWitnesses(Pair<P1, P2> p1) {
-		// TODO Auto-generated method stub
+	public boolean HasModel(CartesianProduct<P1, P2> p1, Pair<S1, S2> el1, Pair<S1, S2> el2) {
+		for(Pair<P1,P2> p: p1.getProducts())
+			if(ba1.HasModel(p.first,el1.first,el2.first) && ba2.HasModel(p.second,el1.second,el2.second))
+				return true;
+		
+		return false;
+	}
+
+	@Override
+	public Pair<S1, S2> generateWitness(CartesianProduct<P1, P2> p1) {
+		for(Pair<P1,P2> p: p1.getProducts())
+			if(ba1.IsSatisfiable(p.first) && ba2.IsSatisfiable(p.second))
+				return new Pair<>(ba1.generateWitness(p.first), ba2.generateWitness(p.second));
+		
 		return null;
 	}
+
+	@Override
+	public Pair<Pair<S1, S2>, Pair<S1, S2>> generateWitnesses(CartesianProduct<P1, P2> p1) {
+		for(Pair<P1,P2> p: p1.getProducts())
+			if(ba1.IsSatisfiable(p.first) && ba2.IsSatisfiable(p.second)){
+				Pair<S1, S1> w1 = ba1.generateWitnesses(p.first);
+				Pair<S2, S2> w2 = ba2.generateWitnesses(p.second);
+				return new Pair<>(new Pair<>(w1.first, w2.first),new Pair<>(w1.second, w2.second));
+			}
+		
+		return null;
+	}
+	
+	
 
 }
