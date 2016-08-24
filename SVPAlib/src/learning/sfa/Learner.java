@@ -278,7 +278,7 @@ public class Learner<P, S> {
 			 * u.b ... u.b.v are added to the boundary
 			 * 
 			 * if u is in the boundary AND
-			 *   there is a character c in u for which
+			 *   there is a character c in u.b for which
 			 *   the corresponding group has characters only in the boundary
 			 * then b.v and all suffixes are added to diff
 			 * (when the table is next filled and closed, u will be promoted to a state)
