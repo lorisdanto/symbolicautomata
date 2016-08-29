@@ -90,7 +90,7 @@ public class SAFABooleanAlgebra<P,S> extends BooleanAlgebra<SAFA<P,S>, List<S>> 
 	}
 
 	@Override
-	public boolean HasModel(SAFA<P, S> p1, List<S> el) {
+	public boolean HasModel(SAFA<P, S> p1, List<S> el) throws TimeoutException {
 		return p1.accepts(el, ba);
 	}
 
@@ -119,14 +119,21 @@ public class SAFABooleanAlgebra<P,S> extends BooleanAlgebra<SAFA<P,S>, List<S>> 
 	}
 
 	@Override
-	public SAFA<P, S> MkAtom(List<S> s) throws TimeoutException {
+	public SAFA<P, S> MkAtom(List<S> s)  {
 		LinkedList<SFAMove<P, S>> moves = new LinkedList<>(); 
 		for(int i=0;i<s.size();i++){
 			moves.add(new SFAInputMove<P,S>(i, i+1, ba.MkAtom(s.get(i))));
 		}
 		HashSet<Integer> finStates =  new HashSet<>();
 		finStates.add(s.size());
-		SFA<P,S> sfa = SFA.MkSFA(moves, 0, finStates, ba);
-		return sfa.getSAFA(ba);
+		SFA<P, S> sfa;
+		try {
+			sfa = SFA.MkSFA(moves, 0, finStates, ba);
+			return sfa.getSAFA(ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

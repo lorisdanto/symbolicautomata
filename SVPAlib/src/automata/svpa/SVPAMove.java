@@ -24,19 +24,19 @@ public abstract class SVPAMove<U,S> implements Cloneable{
 		this.type = type;
 	}
 
-	public abstract boolean isSatisfiable(BooleanAlgebra<U,S> boolal);
+	public abstract boolean isSatisfiable(BooleanAlgebra<U,S> boolal) throws TimeoutException;
 	
 	public abstract boolean isDisjointFrom(SVPAMove<U,S> t, BooleanAlgebra<U,S> ba) throws TimeoutException;		
 	
 	public abstract Pair<Integer, Stack<Pair<Integer, S>>> getNextState(Pair<Integer, Stack<Pair<Integer, S>>> state,
-			TaggedSymbol<S> input, BooleanAlgebra<U, S> ba);	
+			TaggedSymbol<S> input, BooleanAlgebra<U, S> ba) throws TimeoutException;	
 
 	
 	public abstract Object clone();
 
 	public abstract String toDotString();
 
-	public abstract S getWitness(BooleanAlgebra<U, S> ba);
+	public abstract S getWitness(BooleanAlgebra<U, S> ba) throws TimeoutException;
 
 	public abstract boolean isEpsilonTransition();
 	

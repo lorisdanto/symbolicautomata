@@ -61,7 +61,7 @@ public class SFAUnitTest {
 	}
 
 	@Test
-	public void testEmptyFull() {
+	public void testEmptyFull() throws TimeoutException {
 		SFA<CharPred, Character> empty = SFA.getEmptySFA(ba);
 		SFA<CharPred, Character> full = SFA.getFullSFA(ba);
 

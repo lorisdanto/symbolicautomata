@@ -57,7 +57,7 @@ public class SVPAUnitTest {
 	}
 
 	@Test
-	public void testAccept() {
+	public void testAccept() throws TimeoutException {
 		assertTrue(autA.accepts(ab, ba));
 		assertTrue(autA.accepts(anotb, ba));
 		assertFalse(autA.accepts(notab, ba));
@@ -82,7 +82,7 @@ public class SVPAUnitTest {
 	}
 
 	@Test
-	public void testUnion() {
+	public void testUnion() throws TimeoutException {
 
 		// Compute union
 		SVPA<ICharPred, Character> inters = autA.unionWith(autB, ba);

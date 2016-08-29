@@ -28,7 +28,7 @@ public class SFAOracle<P, S> extends Oracle<P, S> {
 	}
 	
 	@Override
-	protected boolean checkMembershipImpl(List<S> w) {
+	protected boolean checkMembershipImpl(List<S> w) throws TimeoutException {
 		return toLearn.accepts(w, ba);
 	}
 }

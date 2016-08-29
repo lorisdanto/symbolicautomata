@@ -9,8 +9,6 @@ package theory.bddalgebra;
 
 import java.util.Collection;
 
-import org.sat4j.specs.TimeoutException;
-
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import theory.BooleanAlgebra;
 import theory.bdd.BDD;
@@ -110,7 +108,7 @@ public class BDDSolver extends BooleanAlgebra<BDD, BDD> {
 	}
 
 	@Override
-	public BDD MkAtom(BDD s) throws TimeoutException {
+	public BDD MkAtom(BDD s) {
 		return s;
 	}
     

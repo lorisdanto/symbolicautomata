@@ -48,8 +48,9 @@ public class CartesianESFA<P,S> extends ExtendedAutomaton<P, S> {
 	 * @param input
 	 * @param ba
 	 * @return true if accepted false otherwise
+	 * @throws TimeoutException 
 	 */
-	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba,Collection<Integer> departConf) {
+	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba,Collection<Integer> departConf) throws TimeoutException {
 		if(input.size()==0&& isFinalConfiguration(departConf)) return true;
 
 
@@ -70,7 +71,7 @@ public class CartesianESFA<P,S> extends ExtendedAutomaton<P, S> {
 		return false;
 	}
 	
-	public boolean accepts(List<S> input, BooleanAlgebra<P, S>ba){
+	public boolean accepts(List<S> input, BooleanAlgebra<P, S>ba) throws TimeoutException{
 		Collection<Integer> currConf = getEpsClosure(getInitialState(), ba);
 		return accepts(input,ba,currConf);
 	}

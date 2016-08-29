@@ -24,7 +24,7 @@ public class DisjointUnionAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<Pair<P1
 	}
 	
 	@Override
-	public Pair<P1, P2> MkAtom(Choice<S1, S2> s) throws TimeoutException {
+	public Pair<P1, P2> MkAtom(Choice<S1, S2> s) {
 		if (s.isLeft()){
 			InL<S1, S2> cast = (InL<S1, S2>)s; 
 			return new Pair<P1, P2>(ba1.MkAtom(cast.left), ba2.False());
@@ -88,12 +88,12 @@ public class DisjointUnionAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<Pair<P1
 	}
 
 	@Override
-	public boolean IsSatisfiable(Pair<P1, P2> p) {
+	public boolean IsSatisfiable(Pair<P1, P2> p) throws TimeoutException {
 		return ba1.IsSatisfiable(p.first) || ba2.IsSatisfiable(p.second); 
 	}
 
 	@Override
-	public boolean HasModel(Pair<P1, P2> p, Choice<S1, S2> s) {
+	public boolean HasModel(Pair<P1, P2> p, Choice<S1, S2> s) throws TimeoutException {
 		if (s.isLeft()){
 			InL<S1, S2> cast = (InL<S1, S2>)s; 
 			return ba1.HasModel(p.first, cast.left);
@@ -113,7 +113,7 @@ public class DisjointUnionAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<Pair<P1
 	 * currently prioritizes the first algebra
 	 */
 	@Override
-	public Choice<S1, S2> generateWitness(Pair<P1, P2> p) {
+	public Choice<S1, S2> generateWitness(Pair<P1, P2> p) throws TimeoutException {
 		S1 witL = ba1.generateWitness(p.first);
 		if (witL != null) 
 			return new InL<S1, S2>(witL);

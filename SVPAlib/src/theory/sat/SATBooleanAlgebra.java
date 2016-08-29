@@ -292,7 +292,7 @@ public class SATBooleanAlgebra extends BooleanAlgebra<Integer, boolean[]> {
 	}
 
 	@Override
-	public Integer MkAtom(boolean[] s) throws TimeoutException {
+	public Integer MkAtom(boolean[] s) {
 		Integer phi = True();
 		for (int i = 0; i < s.length; i++)
 			phi = MkAnd(phi, i + 1);

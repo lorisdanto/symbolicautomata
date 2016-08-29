@@ -59,7 +59,7 @@ public class SSTUnitTest {
 	}
 
 	@Test
-	public void testAccept() {
+	public void testAccept() throws TimeoutException {
 
 		try {
 			UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
@@ -79,7 +79,7 @@ public class SSTUnitTest {
 	}
 
 	@Test
-	public void testOutput() {
+	public void testOutput() throws TimeoutException {
 
 		try {
 			UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
@@ -102,7 +102,7 @@ public class SSTUnitTest {
 	}
 
 	@Test
-	public void testEpsilonRemoval() {
+	public void testEpsilonRemoval() throws TimeoutException {
 
 		try {
 			UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
@@ -128,7 +128,7 @@ public class SSTUnitTest {
 	}
 
 	@Test
-	public void testEpsilonAndBaseSST() {
+	public void testEpsilonAndBaseSST() throws TimeoutException {
 
 		UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sstEps = getEpsToSemicolon(ba);
@@ -274,7 +274,7 @@ public class SSTUnitTest {
 	}
 
 	@Test
-	public void testConcatenation() {
+	public void testConcatenation() throws TimeoutException {
 
 		try {
 			UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
@@ -307,7 +307,7 @@ public class SSTUnitTest {
 	}
 
 	@Test
-	public void testUnion() {
+	public void testUnion() throws TimeoutException {
 
 		try {
 			UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
@@ -339,7 +339,7 @@ public class SSTUnitTest {
 	}
 
 	@Test
-	public void testStar() {
+	public void testStar() throws TimeoutException {
 
 		try {
 			UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();

@@ -14,7 +14,7 @@ public abstract class Oracle<P, S> {
 	
 	protected abstract List<S> checkEquivalenceImpl(SFA<P, S> compareTo) throws TimeoutException;
 	
-	protected abstract boolean checkMembershipImpl(List<S> w);
+	protected abstract boolean checkMembershipImpl(List<S> w) throws TimeoutException;
 	
 	/**
 	 * 
@@ -27,7 +27,7 @@ public abstract class Oracle<P, S> {
 		return checkEquivalenceImpl(compareTo);
 	}
 	
-	public final boolean checkMembership(List<S> w) {
+	public final boolean checkMembership(List<S> w) throws TimeoutException {
 		numMembership++;
 		return checkMembershipImpl(w);
 	}

@@ -16,6 +16,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.sat4j.specs.TimeoutException;
+
 import theory.BooleanAlgebra;
 
 /**
@@ -104,8 +106,9 @@ public abstract class Automaton<P, S> {
 	 * Returns a sequence in the input domain that is accepted by the automaton
 	 * 
 	 * @return a list in the domain language, null if empty
+	 * @throws TimeoutException 
 	 */
-	public List<S> getWitness(BooleanAlgebra<P, S> ba) {
+	public List<S> getWitness(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		if (isEmpty)
 			return null;
 
@@ -150,8 +153,9 @@ public abstract class Automaton<P, S> {
 	 * @param input
 	 * @param ba
 	 * @return true if accepted false otherwise
+	 * @throws TimeoutException 
 	 */
-	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba) {
+	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		Collection<Integer> currConf = getEpsClosure(getInitialState(), ba);
 		for (S el : input) {
 			currConf = getNextState(currConf, el, ba);
@@ -285,7 +289,7 @@ public abstract class Automaton<P, S> {
 	}
 
 	protected Collection<Integer> getNextState(Collection<Integer> currState,
-			S inputElement, BooleanAlgebra<P, S> ba) {
+			S inputElement, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		Collection<Integer> nextState = new HashSet<Integer>();
 		for (Move<P, S> t : getMovesFrom(currState)) {
 			if (!t.isEpsilonTransition()) {

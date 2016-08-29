@@ -25,7 +25,7 @@ public abstract class BooleanAlgebra<P, S> {
 	 * @return the predicate accepting only <code>s</code>
 	 * @throws TimeoutException 
 	 */
-	public abstract P MkAtom(S s) throws TimeoutException;
+	public abstract P MkAtom(S s);
 	
 	/**
 	 * @return the complement of <code>p</code>
@@ -76,27 +76,27 @@ public abstract class BooleanAlgebra<P, S> {
 	/**
 	 * @return true iff <code>p1</code> is satisfiable
 	 */
-	public abstract boolean IsSatisfiable(P p1);
+	public abstract boolean IsSatisfiable(P p1)  throws TimeoutException;
 
 	/**
 	 * @return true iff <code>el</code> is a model of <code>p1</code>
 	 */
-	public abstract boolean HasModel(P p1, S el);
+	public abstract boolean HasModel(P p1, S el) throws TimeoutException;
 
 	/**
 	 * @return true iff <code>(el1,el2)</code> is a model of a binary predicate <code>p1</code> (used for SVPA)
 	 */
-	public abstract boolean HasModel(P p1, S el1, S el2);
+	public abstract boolean HasModel(P p1, S el1, S el2) throws TimeoutException;
 
 	/**
 	 * @return a witness of the predicate <code>p1</code> if satisfiable, null otherwise
 	 */
-	public abstract S generateWitness(P p1);
+	public abstract S generateWitness(P p1) throws TimeoutException;
 
 	/**
 	 * @return a pair witness of the binary predicate <code>p1</code> if satisfiable, null otherwise
 	 */
-	public abstract Pair<S, S> generateWitnesses(P p1);
+	public abstract Pair<S, S> generateWitnesses(P p1) throws TimeoutException;
 
 	/**
 	 * Given a set of <code>predicates</code>, returns all the satisfiable

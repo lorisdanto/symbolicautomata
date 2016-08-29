@@ -58,10 +58,15 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 		aut.maxStateId = 0;
 		aut.maxStackStateId = 0;
 		aut.isTotal = true;
-		aut.addTransition(new Internal<A, B>(0, 0, ba.True()), ba, true);
-		aut.addTransition(new Call<A, B>(0, 0, 0, ba.True()), ba, true);
-		aut.addTransition(new Return<A, B>(0, 0, 0, ba.True()), ba, true);
-		aut.addTransition(new ReturnBS<A, B>(0, 0, ba.True()), ba, true);
+		try {
+			aut.addTransition(new Internal<A, B>(0, 0, ba.True()), ba, true);	
+			aut.addTransition(new Call<A, B>(0, 0, 0, ba.True()), ba, true);
+			aut.addTransition(new Return<A, B>(0, 0, 0, ba.True()), ba, true);
+			aut.addTransition(new ReturnBS<A, B>(0, 0, ba.True()), ba, true);		
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return aut;
 	}
 
@@ -141,7 +146,7 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 		return removeUnreachableStates(aut, ba);
 	}
 
-	public boolean accepts(List<TaggedSymbol<S>> input, BooleanAlgebra<U, S> ba) {
+	public boolean accepts(List<TaggedSymbol<S>> input, BooleanAlgebra<U, S> ba) throws TimeoutException {
 
 		Collection<Pair<Integer, Stack<Pair<Integer, S>>>> currConf = new HashSet<Pair<Integer, Stack<Pair<Integer, S>>>>();
 
@@ -214,7 +219,7 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 
 	public Collection<Pair<Integer, Stack<Pair<Integer, S>>>> getNextState(
 			Collection<Pair<Integer, Stack<Pair<Integer, S>>>> currConf,
-			TaggedSymbol<S> input, BooleanAlgebra<U, S> ba) {
+			TaggedSymbol<S> input, BooleanAlgebra<U, S> ba) throws TimeoutException {
 
 		Collection<Pair<Integer, Stack<Pair<Integer, S>>>> nextState = new HashSet<Pair<Integer, Stack<Pair<Integer, S>>>>();
 
@@ -478,16 +483,18 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 
 	/**
 	 * Computes the union with <code>aut</code> as a new SVPA
+	 * @throws TimeoutException 
 	 */
-	public SVPA<U, S> unionWith(SVPA<U, S> aut1, BooleanAlgebra<U, S> ba) {
+	public SVPA<U, S> unionWith(SVPA<U, S> aut1, BooleanAlgebra<U, S> ba) throws TimeoutException {
 		return union(this, aut1, ba);
 	}
 
 	/**
 	 * Computes the union with <code>aut</code> as a new SVPA
+	 * @throws TimeoutException 
 	 */
 	public static <A, B> SVPA<A, B> union(SVPA<A, B> aut1, SVPA<A, B> aut2,
-			BooleanAlgebra<A, B> ba) {
+			BooleanAlgebra<A, B> ba) throws TimeoutException {
 
 		if (aut1.isEmpty && aut2.isEmpty)
 			return getEmptySVPA(ba);
@@ -1608,9 +1615,10 @@ public class SVPA<U, S> extends VPAutomaton<U, S> {
 
 	/**
 	 * Add Transition
+	 * @throws TimeoutException 
 	 */
 	private void addTransition(SVPAMove<U, S> transition,
-			BooleanAlgebra<U, S> ba, boolean skipSatCheck) {
+			BooleanAlgebra<U, S> ba, boolean skipSatCheck) throws TimeoutException {
 
 		if (transition.isEpsilonTransition()) {
 			if (transition.to == transition.from)

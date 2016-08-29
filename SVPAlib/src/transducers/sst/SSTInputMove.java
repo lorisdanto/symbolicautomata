@@ -39,7 +39,7 @@ public class SSTInputMove<P, F, S> extends SSTMove<P, F, S>{
 	}
 	
 	@Override
-	public boolean isSatisfiable(BooleanAlgebra<P,S> ba){
+	public boolean isSatisfiable(BooleanAlgebra<P,S> ba) throws TimeoutException{
 		return ba.IsSatisfiable(guard);
 	}
 	
@@ -92,12 +92,12 @@ public class SSTInputMove<P, F, S> extends SSTMove<P, F, S>{
 	}
 
 	@Override
-	public S getWitness(BooleanAlgebra<P, S> ba) {		
+	public S getWitness(BooleanAlgebra<P, S> ba) throws TimeoutException {		
 		return ba.generateWitness(guard);
 	}
 
 	@Override
-	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) {
+	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return ba.HasModel(guard, el);
 	}
 	

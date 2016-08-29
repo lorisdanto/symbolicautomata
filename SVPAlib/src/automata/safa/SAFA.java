@@ -165,7 +165,7 @@ public class SAFA<P, S> {
 	}
 
 	// Adds a transition to the SFA
-	private void addTransition(SAFAInputMove<P, S> transition, BooleanAlgebra<P, S> ba, boolean skipSatCheck) {
+	private void addTransition(SAFAInputMove<P, S> transition, BooleanAlgebra<P, S> ba, boolean skipSatCheck) throws TimeoutException {
 
 		if (skipSatCheck || transition.isSatisfiable(ba)) {
 
@@ -217,8 +217,9 @@ public class SAFA<P, S> {
 	 * @param input
 	 * @param ba
 	 * @return true if accepted false otherwise
+	 * @throws TimeoutException 
 	 */
-	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba) {
+	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		List<S> revInput = Lists.reverse(input);
 
 		Collection<Integer> currConf = finalStates;
@@ -555,7 +556,7 @@ public class SAFA<P, S> {
 		}
 	}
 
-	protected Collection<Integer> getPrevState(Collection<Integer> currState, S inputElement, BooleanAlgebra<P, S> ba) {
+	protected Collection<Integer> getPrevState(Collection<Integer> currState, S inputElement, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		Collection<Integer> prevState = new HashSet<Integer>();
 		for (SAFAInputMove<P, S> t : getInputMoves()) {
 			BooleanExpression b = t.to;

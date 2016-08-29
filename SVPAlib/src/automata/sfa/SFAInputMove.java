@@ -29,7 +29,7 @@ public class SFAInputMove<P,S> extends SFAMove<P, S>{
 	}
 	
 	@Override
-	public boolean isSatisfiable(BooleanAlgebra<P,S> boolal){
+	public boolean isSatisfiable(BooleanAlgebra<P,S> boolal) throws TimeoutException{
 		return boolal.IsSatisfiable(guard);
 	}
 	
@@ -76,12 +76,12 @@ public class SFAInputMove<P,S> extends SFAMove<P, S>{
 	}
 
 	@Override
-	public S getWitness(BooleanAlgebra<P, S> ba) {
+	public S getWitness(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return ba.generateWitness(guard);
 	}
 
 	@Override
-	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) {
+	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return ba.HasModel(guard, el);
 	}
 	

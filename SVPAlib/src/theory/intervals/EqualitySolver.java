@@ -374,7 +374,7 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 	}
 
 	@Override
-	public ICharPred MkAtom(Character s) throws TimeoutException {
+	public ICharPred MkAtom(Character s){
 		return new CharPred(s);
 	}
 

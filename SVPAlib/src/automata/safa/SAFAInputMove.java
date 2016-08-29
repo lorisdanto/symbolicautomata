@@ -9,6 +9,8 @@ package automata.safa;
 import java.util.Collections;
 import java.util.Set;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.safa.booleanexpression.PositiveBooleanExpression;
 import theory.BooleanAlgebra;
 
@@ -42,15 +44,15 @@ public class SAFAInputMove<P,S> {
 		this.guard = guard;
 	}
 
-	public boolean isSatisfiable(BooleanAlgebra<P,S> boolal){
+	public boolean isSatisfiable(BooleanAlgebra<P,S> boolal) throws TimeoutException{
 		return boolal.IsSatisfiable(guard);
 	}
 	
-	public S getWitness(BooleanAlgebra<P, S> ba) {
+	public S getWitness(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return ba.generateWitness(guard);
 	}
 	
-	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) {
+	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return ba.HasModel(guard, el);
 	}
 

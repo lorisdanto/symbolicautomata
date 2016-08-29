@@ -50,8 +50,9 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 	/**
 	 * Returns the empty SFA for the Boolean algebra <code>ba</code>
+	 * @throws TimeoutException 
 	 */
-	public static <A, B> SFA<A, B> getEmptySFA(BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> getEmptySFA(BooleanAlgebra<A, B> ba) throws TimeoutException {
 		SFA<A, B> aut = new SFA<A, B>();
 		aut.states = new HashSet<Integer>();
 		aut.states.add(0);
@@ -68,8 +69,9 @@ public class SFA<P, S> extends Automaton<P, S> {
 	/**
 	 * Returns the SFA accepting every string in the Boolean algebra
 	 * <code>ba</code>
+	 * @throws TimeoutException 
 	 */
-	public static <A, B> SFA<A, B> getFullSFA(BooleanAlgebra<A, B> ba) {
+	public static <A, B> SFA<A, B> getFullSFA(BooleanAlgebra<A, B> ba) throws TimeoutException {
 		SFA<A, B> aut = new SFA<A, B>();
 		aut.states = new HashSet<Integer>();
 		aut.states.add(0);
@@ -197,7 +199,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	}
 
 	// Adds a transition to the SFA
-	private void addTransition(SFAMove<P, S> transition, BooleanAlgebra<P, S> ba, boolean skipSatCheck) {
+	private void addTransition(SFAMove<P, S> transition, BooleanAlgebra<P, S> ba, boolean skipSatCheck) throws TimeoutException {
 
 		if (transition.isEpsilonTransition()) {
 			if (transition.to == transition.from)

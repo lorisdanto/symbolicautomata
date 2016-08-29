@@ -19,7 +19,7 @@ public class ProductAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<CartesianProd
 	}
 
 	@Override
-	public CartesianProduct<P1, P2> MkAtom(Pair<S1, S2> s) throws TimeoutException {
+	public CartesianProduct<P1, P2> MkAtom(Pair<S1, S2> s) {
 		return new CartesianProduct<>(ba1.MkAtom(s.first), ba2.MkAtom(s.second));
 	}
 
@@ -103,7 +103,7 @@ public class ProductAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<CartesianProd
 	}
 
 	@Override
-	public boolean IsSatisfiable(CartesianProduct<P1, P2> p1) {
+	public boolean IsSatisfiable(CartesianProduct<P1, P2> p1) throws TimeoutException {
 		for(Pair<P1,P2> p: p1.getProducts())
 			if(ba1.IsSatisfiable(p.first) && ba2.IsSatisfiable(p.second))
 				return true;
@@ -112,7 +112,7 @@ public class ProductAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<CartesianProd
 	}
 
 	@Override
-	public boolean HasModel(CartesianProduct<P1, P2> p1, Pair<S1, S2> el) {
+	public boolean HasModel(CartesianProduct<P1, P2> p1, Pair<S1, S2> el) throws TimeoutException {
 		for(Pair<P1,P2> p: p1.getProducts())
 			if(ba1.HasModel(p.first,el.first) && ba2.HasModel(p.second,el.second))
 				return true;
@@ -121,7 +121,7 @@ public class ProductAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<CartesianProd
 	}
 
 	@Override
-	public boolean HasModel(CartesianProduct<P1, P2> p1, Pair<S1, S2> el1, Pair<S1, S2> el2) {
+	public boolean HasModel(CartesianProduct<P1, P2> p1, Pair<S1, S2> el1, Pair<S1, S2> el2) throws TimeoutException {
 		for(Pair<P1,P2> p: p1.getProducts())
 			if(ba1.HasModel(p.first,el1.first,el2.first) && ba2.HasModel(p.second,el1.second,el2.second))
 				return true;
@@ -130,7 +130,7 @@ public class ProductAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<CartesianProd
 	}
 
 	@Override
-	public Pair<S1, S2> generateWitness(CartesianProduct<P1, P2> p1) {
+	public Pair<S1, S2> generateWitness(CartesianProduct<P1, P2> p1) throws TimeoutException {
 		for(Pair<P1,P2> p: p1.getProducts())
 			if(ba1.IsSatisfiable(p.first) && ba2.IsSatisfiable(p.second))
 				return new Pair<>(ba1.generateWitness(p.first), ba2.generateWitness(p.second));
@@ -139,7 +139,7 @@ public class ProductAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<CartesianProd
 	}
 
 	@Override
-	public Pair<Pair<S1, S2>, Pair<S1, S2>> generateWitnesses(CartesianProduct<P1, P2> p1) {
+	public Pair<Pair<S1, S2>, Pair<S1, S2>> generateWitnesses(CartesianProduct<P1, P2> p1) throws TimeoutException {
 		for(Pair<P1,P2> p: p1.getProducts())
 			if(ba1.IsSatisfiable(p.first) && ba2.IsSatisfiable(p.second)){
 				Pair<S1, S1> w1 = ba1.generateWitnesses(p.first);

@@ -1,9 +1,6 @@
 package learning.sfa;
 
-import automata.sfa.SFA;
-import automata.sfa.SFAInputMove;
-import automata.sfa.SFAMove;
-import theory.BooleanAlgebra;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,12 +9,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import org.sat4j.specs.TimeoutException;
+
+import automata.sfa.SFA;
+import automata.sfa.SFAInputMove;
+import automata.sfa.SFAMove;
+import theory.BooleanAlgebra;
 
 
 public class Learner<P, S> {
@@ -81,12 +80,12 @@ public class Learner<P, S> {
 	
 		
 	
-	private void fill(ObsTable table, Oracle<P, S> o) {
+	private void fill(ObsTable table, Oracle<P, S> o) throws TimeoutException {
 		fillAux(table.states, table, o);
 		fillAux(table.boundary, table, o);
 	}
 	
-	private void fillAux(List<List<S>> ws, ObsTable table, Oracle<P, S> o) {
+	private void fillAux(List<List<S>> ws, ObsTable table, Oracle<P, S> o) throws TimeoutException {
 		for (List<S> w : ws) {
 			for (int i = table.rows.get(w).size(); i < table.diff.size(); i++) {
 				List<S> w_ext = new ArrayList<S>(w);
@@ -233,11 +232,11 @@ public class Learner<P, S> {
 		/*
 		 * moves from the boundary to the states and potentially adds a successor to the boundary
 		 */
-		public void promote(List<S> w, BooleanAlgebra<P, S> ba) {
+		public void promote(List<S> w, BooleanAlgebra<P, S> ba) throws TimeoutException {
 			promote(w, ba, false);
 		}
 		
-		public void promote(List<S> w, BooleanAlgebra<P, S> ba, boolean suppressCheck) {
+		public void promote(List<S> w, BooleanAlgebra<P, S> ba, boolean suppressCheck) throws TimeoutException {
 			checkArgument(boundary.contains(w) && !states.contains(w));
 			boundary.remove(w);
 			states.add(w);
@@ -269,7 +268,7 @@ public class Learner<P, S> {
 		}
 		
 		//assumes the table has not been modified since the last call to buildTrans()
-		public void process(List<S> cx, BooleanAlgebra<P, S> ba) {
+		public void process(List<S> cx, BooleanAlgebra<P, S> ba) throws TimeoutException {
 			/*
 			 * find a factorization u.b.v (u,v strings, b char) such that
 			 * > we have concrete evidence for u in the table

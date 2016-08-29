@@ -39,13 +39,13 @@ public class Internal<U, S> extends SVPAMove<U, S> {
 		return true;
 	}
 
-	public boolean isSatisfiable(BooleanAlgebra<U, S> boolal) {
+	public boolean isSatisfiable(BooleanAlgebra<U, S> boolal) throws TimeoutException {
 		return boolal.IsSatisfiable(guard);
 	}
 
 	public Pair<Integer, Stack<Pair<Integer, S>>> getNextState(
 			Pair<Integer, Stack<Pair<Integer, S>>> state,
-			TaggedSymbol<S> input, BooleanAlgebra<U, S> ba) {
+			TaggedSymbol<S> input, BooleanAlgebra<U, S> ba) throws TimeoutException {
 
 		if (input.tag == SymbolTag.Internal) {
 			Integer currState = state.first;
@@ -101,7 +101,7 @@ public class Internal<U, S> extends SVPAMove<U, S> {
 	}
 	
 	@Override
-	public S getWitness(BooleanAlgebra<U, S> ba) {
+	public S getWitness(BooleanAlgebra<U, S> ba) throws TimeoutException {
 		return ba.generateWitness(guard);
 	}
 }
