@@ -159,7 +159,7 @@ public class IntPred {
 		}
 		String ret = retArr.get(0);
 		for(int i = 1; i < retArr.size(); i++)
-			ret += " U " + retArr.get(i);
+			ret += "U" + retArr.get(i);
 		return ret;
 	}
 	

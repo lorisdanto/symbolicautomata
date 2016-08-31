@@ -52,8 +52,13 @@ public class Learner<P, S> {
 			
 			conjecture = table.buildSFA(ba).mkTotal(ba);
 			
+			//System.out.println("trans:\n" + table.trans);
+			//System.out.println("preds:\n" + table.preds);
+
 			System.out.println("========SFA guess========");
 			System.out.println(conjecture);
+
+			checkArgument(table.consistent(conjecture, ba));
 
 			cx = o.checkEquivalence(conjecture);
 			if (cx == null) {
@@ -66,8 +71,8 @@ public class Learner<P, S> {
 			System.out.println((cx == null ? "none" : cx));
 			
 			//process the counterexample
-			table.process(cx, ba);
-			table.rows.get(cx).add(!conjecture.accepts(cx, ba)); //save a membership query
+			process(table, o, cx, ba);
+			//table.rows.get(cx).add(!conjecture.accepts(cx, ba)); //save a membership query
 			
 			System.out.println("========TBLpostCX========");
 			System.out.println(table);
@@ -77,7 +82,94 @@ public class Learner<P, S> {
 		}
 	}
 	
-	
+	private void process(ObsTable table, Oracle<P, S> o, List<S> cx, BooleanAlgebra<P, S> ba) throws TimeoutException {
+		//add the counterexample and all its prefixes to the boundary
+		List<List<S>> prefixes = new ArrayList<List<S>>();
+		for (int i = 1; i <= cx.size(); i++) {
+			List<S> prefix = new ArrayList<S>();
+			for (int j = 0; j < i; j++)
+				prefix.add(cx.get(j));
+			prefixes.add(prefix);
+		}
+
+		List<List<S>> SUR = new ArrayList<List<S>>(table.states);
+		SUR.addAll(table.boundary);
+
+		for (List<S> p : prefixes) {
+			if (!SUR.contains(p)) {
+				table.boundary.add(p);
+				table.rows.put(p, new ArrayList<Boolean>());
+			}
+		}
+
+		//perform appropriate membership queries
+		fill(table, o);
+		//if this is sufficient to show some elements of the boundary should be states, take care of that
+		List<List<S>> newstates = table.checkClosed();
+		if (newstates.size() > 0) {
+			while(newstates.size() > 0) {
+				for (List<S> w : newstates)
+					table.promote(w, ba);
+				fill(table, o);
+				newstates = table.checkClosed();
+			}
+			SUR = new ArrayList<List<S>>(table.states);
+			SUR.addAll(table.boundary);
+		}
+
+		//decompose the counterexample into all possible configurations of
+		//u.b.v where u and v are strings and b is a character
+		//we will check if u needs to be a new state
+		for (int i = 0; i < cx.size(); i++) {
+			List<S> u = new ArrayList<S>();
+			for (int j = 0; j < i; j++)
+				u.add(cx.get(j));
+			S b = cx.get(i);
+			List<S> ub = new ArrayList<S>(u);
+			ub.add(b);
+			List<S> v = new ArrayList<S>();
+			for (int j = i + 1; j < cx.size(); j++)
+				v.add(cx.get(j));
+			List<S> bv = new ArrayList<S>();
+			bv.add(b);
+			bv.addAll(v);
+
+			if (!table.boundary.contains(u))
+				continue;
+
+			//for loop just to find the state to which the hypothesis says u is equivalent
+			for (List<S> state : table.states) {
+				if (table.rows.get(state).equals(table.rows.get(u))) {
+					//verify that the state equivalent to u behaves the same way upon b as does u
+					List<S> sb = new ArrayList<S>(state);
+					sb.add(b);
+					if (!SUR.contains(sb)) {
+						table.boundary.add(sb);
+						SUR.add(sb);
+						table.rows.put(sb, new ArrayList<Boolean>());
+						table.rows.get(sb).add(o.checkMembership(sb));
+					}
+					//if it doesn't, u needs to be a state
+					if (!table.rows.get(sb).get(0).equals(table.rows.get(ub).get(0))) {
+						table.diff.add(bv);
+						fill(table, o);
+						newstates = table.checkClosed();
+						if (newstates.size() > 0) {
+							while(newstates.size() > 0) {
+								for (List<S> w : newstates)
+									table.promote(w, ba);
+								fill(table, o);
+								newstates = table.checkClosed();
+							}
+							SUR = new ArrayList<List<S>>(table.states);
+							SUR.addAll(table.boundary);
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
 		
 	
 	private void fill(ObsTable table, Oracle<P, S> o) throws TimeoutException {
@@ -136,6 +228,23 @@ public class Learner<P, S> {
 					trans.get(rows.get(w)).get(rows.get(w_ext)).add(evid);
 				}
 			}
+		}
+
+		//sanity check to verify a conjectured automaton is consistent with all the table's evidence
+		public boolean consistent(SFA<P, S> sfa, BooleanAlgebra<P, S> ba) throws TimeoutException {
+			List<List<S>> SUR = new ArrayList<List<S>>(states);
+			SUR.addAll(boundary);
+			for (List<S> w : SUR) {
+				for (int i = 0; i < 1; i++) { //diff.size(); i++) {
+					List<S> w_ext = new ArrayList<S>(w);
+					w_ext.addAll(diff.get(i));
+					if (!rows.get(w).get(i).equals(sfa.accepts(w_ext, ba))) {
+						System.out.println("inconsistent on " + w_ext);
+						return false;
+					}
+				}
+			}
+			return true;
 		}
 
 		public SFA<P, S> buildSFA(BooleanAlgebra<P, S> ba) throws TimeoutException {
@@ -266,93 +375,6 @@ public class Learner<P, S> {
 				}
 			}
 		}
-		
-		//assumes the table has not been modified since the last call to buildTrans()
-		public void process(List<S> cx, BooleanAlgebra<P, S> ba) throws TimeoutException {
-			/*
-			 * find a factorization u.b.v (u,v strings, b char) such that
-			 * > we have concrete evidence for u in the table
-			 * > we don't have concrete evidence for u.b in the table
-			 * 
-			 * u.b ... u.b.v are added to the boundary
-			 * 
-			 * if u is in the boundary AND
-			 *   there is a character c in u.b for which
-			 *   the corresponding group has characters only in the boundary
-			 * then b.v and all suffixes are added to diff
-			 * (when the table is next filled and closed, u will be promoted to a state)
-			 */
-			
-			List<List<S>> SUR = new ArrayList<List<S>>(states);
-			SUR.addAll(boundary);
-			List<S> cand = new ArrayList<S>();
-			for (int i = 0; i < cx.size(); i++) {
-				List<S> curr = new ArrayList<S>();
-				for (int j = 0; j <= i; j++)
-					curr.add(cx.get(j));
-				
-				if (SUR.contains(curr))
-					cand = curr;
-				else
-					break;
-			}
-			
-			//add u.b ... u.b.v to the boundary
-			List<S> addToBoundary = cand;
-			for (int i = cand.size(); i < cx.size(); i++) {
-				addToBoundary = new ArrayList<S>(addToBoundary);
-				addToBoundary.add(cx.get(i));
-				boundary.add(addToBoundary);
-				rows.put(addToBoundary, new ArrayList<Boolean>());
-			}
-			
-			//find if u.b takes us to a new state
-			//first follow u
-			boolean makeState = false;
-			List<Boolean> curr = rows.get(states.get(0));
-			for (S c : cand) {
-				boolean check = false;
-				for (List<Boolean> to : trans.get(curr).keySet()) {
-					if (trans.get(curr).get(to).contains(c)) {
-						check = true;
-						List<List<S>> temp = new ArrayList<List<S>>();
-						for (S evid : trans.get(curr).get(to)) 
-							temp.add(Arrays.asList(evid));
-						if (boundary.containsAll(temp)) {
-							makeState = true;
-						}
-						break;
-					}
-				}
-				checkArgument(check);
-				if (makeState)
-					break;
-			}
-			//check b here
-			if (!makeState) { 
-				boolean check = false;
-				for (List<Boolean> to : preds.get(curr).keySet()) {
-					if (ba.HasModel(preds.get(curr).get(to), cx.get(cand.size()))) {
-						check = true;
-						if (boundary.containsAll(trans.get(curr).get(to)))
-							makeState = true;
-						break;
-					}
-				}
-				checkArgument(check);
-			}
-			//if there is a new state, add b.v and all its suffixes to diff
-			if (makeState) {
-				List<S> suffix = new ArrayList<S>();
-				for (int i = cand.size(); i < cx.size(); i++) 
-					suffix.add(cx.get(i));
-				while (suffix.size() > 0) {
-					diff.add(suffix);
-					suffix = new ArrayList<S>(suffix);
-					suffix.remove(0);
-				}
-			}
-		}
-		
+
 	}
 }

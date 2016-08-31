@@ -3,8 +3,6 @@ package automata.safa.booleanexpression;
 import java.util.Collection;
 import java.util.Set;
 
-import org.sat4j.specs.TimeoutException;
-
 import automata.safa.BooleanExpression;
 import automata.safa.LatticeMorphism;
 
