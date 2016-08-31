@@ -1,7 +1,13 @@
 package theory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.sat4j.specs.TimeoutException;
 
@@ -131,9 +137,24 @@ public class ProductAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<CartesianProd
 
 	@Override
 	public Pair<S1, S2> generateWitness(CartesianProduct<P1, P2> p1) {
-		for(Pair<P1,P2> p: p1.getProducts())
-			if(ba1.IsSatisfiable(p.first) && ba2.IsSatisfiable(p.second))
-				return new Pair<>(ba1.generateWitness(p.first), ba2.generateWitness(p.second));
+		List<P1> proj1 = new ArrayList<P1>();
+		for (Pair<P1, P2> p : p1.getProducts())
+			proj1.add(p.first);
+		try {
+			P1 union1 = ba1.MkOr(proj1);
+			S1 x = ba1.generateWitness(union1);
+			List<P2> proj2 = new ArrayList<P2>();
+			for (int i = 0; i < proj1.size(); i++)
+				if (ba1.HasModel(proj1.get(i), x))
+					proj2.add(p1.getProducts().get(i).second);
+			P2 union2 = ba2.MkOr(proj2);
+			S2 y = ba2.generateWitness(union2);
+			return new Pair<>(x, y);
+		} catch (TimeoutException e) {
+			for(Pair<P1,P2> p: p1.getProducts())
+				if(ba1.IsSatisfiable(p.first) && ba2.IsSatisfiable(p.second))
+					return new Pair<>(ba1.generateWitness(p.first), ba2.generateWitness(p.second));
+		}
 		
 		return null;
 	}
@@ -150,6 +171,69 @@ public class ProductAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<CartesianProd
 		return null;
 	}
 	
-	
+	@Override
+	public ArrayList<CartesianProduct<P1, P2>> GetSeparatingPredicates(
+			ArrayList<Collection<Pair<S1, S2>>> groups, long timeout) throws TimeoutException {
+
+		//compile all the concrete evidence we have for the x-values
+		List<S1> xevid = new ArrayList<S1>();
+		Map<S1, Set<Integer>> groupmap = new HashMap<S1, Set<Integer>>();
+		for (int i = 0; i < groups.size(); i++) {
+			for (Pair<S1, S2> p : groups.get(i)) {
+				if (!xevid.contains(p.first))
+					xevid.add(p.first);
+				if (groupmap.get(p.first) == null)
+					groupmap.put(p.first, new HashSet<Integer>());
+				groupmap.get(p.first).add(i);
+			}
+		}
+
+		ArrayList<Collection<S1>> xgroups = new ArrayList<Collection<S1>>();
+		for (S1 s : xevid)
+			xgroups.add(Arrays.asList(s));
+		ArrayList<P1> xpreds = ba1.GetSeparatingPredicates(xgroups, timeout);
+
+		ArrayList<Pair<P1, P2>> xypreds = new ArrayList<Pair<P1, P2>>();
+		ArrayList<Integer> belongs = new ArrayList<Integer>();
+		for (int i = 0; i < xpreds.size(); i++) {
+			//if the evidence was from a single group then this predicate needs no y-component
+			if (groupmap.get(xevid.get(i)).size() == 1) {
+				xypreds.add(new Pair<P1, P2>(xpreds.get(i), ba2.True()));
+				belongs.addAll(groupmap.get(xevid.get(i))); //add all in a set of size 1
+			}
+			//otherwise you have to split along the y-values in those groups that correspond to this x-evidence
+			if (groupmap.get(xevid.get(i)).size() > 1) {
+				ArrayList<Collection<S2>> ygroups = new ArrayList<Collection<S2>>();
+				ArrayList<Integer> source = new ArrayList<Integer>();
+				for (int index : groupmap.get(xevid.get(i))) {
+					Set<S2> yevid = new HashSet<S2>();
+					for (Pair<S1, S2> p : groups.get(index)) {
+						if (p.first.equals(xevid.get(i))) {
+							yevid.add(p.second);
+						}
+					}
+					ygroups.add(yevid);
+					source.add(index);
+				}
+				ArrayList<P2> ypreds = ba2.GetSeparatingPredicates(ygroups, timeout);
+				for(int j = 0; j < ypreds.size(); j++) {
+					xypreds.add(new Pair<P1, P2>(xpreds.get(i), ypreds.get(j)));
+					belongs.add(source.get(j));
+				}
+			}
+		}
+
+		ArrayList<ArrayList<Pair<P1, P2>>> prods = new ArrayList<ArrayList<Pair<P1, P2>>>();
+		ArrayList<CartesianProduct<P1, P2>> ret = new ArrayList<CartesianProduct<P1, P2>>();
+		for (int i = 0; i < groups.size(); i++)
+			prods.add(new ArrayList<Pair<P1, P2>>());
+		for (int i = 0; i < xypreds.size(); i++)
+			prods.get(belongs.get(i)).add(xypreds.get(i));
+		for (int i = 0; i < prods.size(); i++)
+			ret.add(new CartesianProduct<P1, P2>(prods.get(i)));
+		for (CartesianProduct<P1, P2> region : ret)
+			region.normalize(ba1, ba2);
+		return ret;
+	}
 
 }
