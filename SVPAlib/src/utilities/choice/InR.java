@@ -17,5 +17,10 @@ public class InR<L, R> extends Choice<L, R> {
 	public boolean isRight() {
 		return true;
 	}
+	
+	@Override 
+	public String toString() { 
+		return "R:" + right.toString();
+	}
 
 }

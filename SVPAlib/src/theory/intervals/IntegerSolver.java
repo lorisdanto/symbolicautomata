@@ -160,6 +160,19 @@ public class IntegerSolver extends BooleanAlgebra<IntPred, Integer> {
 			out.add(True());
 			return out;
 		}
+		boolean empty = true;
+		for(Collection<Integer> g : groups) {
+			if (g.size() > 0) {
+				empty = false;
+				break;
+			}
+		}
+		if (empty) { 
+			out.add(True());
+			for (int i = 1; i < groups.size(); i++)
+				out.add(False());
+			return out;
+		}
 		
 		Map<Integer, Integer> index = new HashMap<Integer, Integer>();
 		List<Integer> arr = new ArrayList<Integer>(); //the sorted evidence
