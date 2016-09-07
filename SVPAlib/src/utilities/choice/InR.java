@@ -1,5 +1,7 @@
 package utilities.choice;
 
+import java.util.Objects;
+
 public class InR<L, R> extends Choice<L, R> {
 	
 	public R right;
@@ -23,4 +25,15 @@ public class InR<L, R> extends Choice<L, R> {
 		return "R:" + right.toString();
 	}
 
+	@Override
+	public boolean equals(Object o) { 
+		if (!(o instanceof InR<?, ?>))
+			return false;
+		return right.equals(((InR<?, ?>)o).right);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(InR.class, right);
+	}
 }
