@@ -38,6 +38,7 @@ public class Learner<P, S> {
 		List<S> cx = null;
 		
 		while(true) {
+			evidClose(table, o);
 			fill(table, o);
 			List<List<S>> newstates = table.checkClosed();
 			while(newstates.size() > 0) {
@@ -79,6 +80,23 @@ public class Learner<P, S> {
 
 			//Scanner scanner = new Scanner(System.in);
 			//scanner.nextLine();
+		}
+	}
+	
+	private void evidClose(ObsTable table, Oracle<P, S> o) {
+		//for all states s and suffixes e, s.e must be in the table
+		List<List<S>> SUR = new ArrayList<List<S>>(table.states);
+		SUR.addAll(table.boundary);
+		for (List<S> suffix : table.diff) {
+			for (List<S> s : table.states) { 
+				List<S> se = new ArrayList<S>(s);
+				se.addAll(suffix);
+				if (!SUR.contains(se)) {
+					SUR.add(se);
+					table.boundary.add(se);
+					table.rows.put(se, new ArrayList<Boolean>());
+				}
+			}
 		}
 	}
 	
@@ -139,58 +157,31 @@ public class Learner<P, S> {
 
 			//for loop just to find the state to which the hypothesis says u is equivalent
 			for (List<S> state : table.states) {
-				if (table.rows.get(state).equals(table.rows.get(u))) {
-					//verify that the state equivalent to u behaves the same way upon b as does u
-					List<S> sb = new ArrayList<S>(state);
-					sb.add(b);
-					if (!SUR.contains(sb)) {
-						table.boundary.add(sb);
-						SUR.add(sb);
-						table.rows.put(sb, new ArrayList<Boolean>());
-						table.rows.get(sb).add(o.checkMembership(sb));
-					}
-					//if it doesn't, u needs to be a state
-					if (!table.rows.get(sb).get(0).equals(table.rows.get(ub).get(0))) {
-						table.diff.add(bv);
-						fill(table, o);
-						newstates = table.checkClosed();
-						if (newstates.size() > 0) {
-							while(newstates.size() > 0) {
-								for (List<S> w : newstates)
-									table.promote(w, ba);
-								fill(table, o);
-								newstates = table.checkClosed();
-							}
-							SUR = new ArrayList<List<S>>(table.states);
-							SUR.addAll(table.boundary);
+				if (!table.rows.get(state).equals(table.rows.get(u)))
+					continue;
+				//verify that the state equivalent to u behaves the same way upon b as does u
+				List<S> sb = new ArrayList<S>(state);
+				sb.add(b);
+				if (!SUR.contains(sb)) {
+					table.boundary.add(sb);
+					SUR.add(sb);
+					table.rows.put(sb, new ArrayList<Boolean>());
+					table.rows.get(sb).add(o.checkMembership(sb));
+				}
+				//if it doesn't, u needs to be a state
+				if (!table.rows.get(sb).get(0).equals(table.rows.get(ub).get(0))) {
+					table.diff.add(bv);
+					fill(table, o);
+					newstates = table.checkClosed();
+					if (newstates.size() > 0) {
+						while(newstates.size() > 0) {
+							for (List<S> w : newstates)
+								table.promote(w, ba);
+							fill(table, o);
+							newstates = table.checkClosed();
 						}
-						//if there isn't a state with suffix bv, then all s.bv must be in the boundary
-						boolean flag = false;
-						for (List<S> s : table.states) {
-							if (s.size() < bv.size())
-								continue;
-							boolean suffix = true;
-							for (int j = 0; j < bv.size(); j++) {
-								if (!bv.get(j).equals(s.get(s.size() - bv.size() + j))) {
-									suffix = false;
-									break;
-								}
-							}
-							if (suffix) {
-								flag = true;
-								break;
-							}
-						}
-						if (!flag) { 
-							for (List<S> s : table.states) { 
-								List<S> sbv = new ArrayList<S>(s);
-								sbv.addAll(bv);
-								if (!table.boundary.contains(sbv)) {
-									table.boundary.add(sbv);
-									table.rows.put(sbv, new ArrayList<Boolean>());
-								}
-							}
-						}
+						SUR = new ArrayList<List<S>>(table.states);
+						SUR.addAll(table.boundary);
 					}
 					break;
 				}
