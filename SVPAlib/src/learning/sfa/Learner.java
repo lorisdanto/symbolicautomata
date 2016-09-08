@@ -164,6 +164,33 @@ public class Learner<P, S> {
 							SUR = new ArrayList<List<S>>(table.states);
 							SUR.addAll(table.boundary);
 						}
+						//if there isn't a state with suffix bv, then all s.bv must be in the boundary
+						boolean flag = false;
+						for (List<S> s : table.states) {
+							if (s.size() < bv.size())
+								continue;
+							boolean suffix = true;
+							for (int j = 0; j < bv.size(); j++) {
+								if (!bv.get(j).equals(s.get(s.size() - bv.size() + j))) {
+									suffix = false;
+									break;
+								}
+							}
+							if (suffix) {
+								flag = true;
+								break;
+							}
+						}
+						if (!flag) { 
+							for (List<S> s : table.states) { 
+								List<S> sbv = new ArrayList<S>(s);
+								sbv.addAll(bv);
+								if (!table.boundary.contains(sbv)) {
+									table.boundary.add(sbv);
+									table.rows.put(sbv, new ArrayList<Boolean>());
+								}
+							}
+						}
 					}
 					break;
 				}
@@ -235,7 +262,7 @@ public class Learner<P, S> {
 			List<List<S>> SUR = new ArrayList<List<S>>(states);
 			SUR.addAll(boundary);
 			for (List<S> w : SUR) {
-				for (int i = 0; i < 1; i++) { //diff.size(); i++) {
+				for (int i = 0; i < diff.size(); i++) {
 					List<S> w_ext = new ArrayList<S>(w);
 					w_ext.addAll(diff.get(i));
 					if (!rows.get(w).get(i).equals(sfa.accepts(w_ext, ba))) {
