@@ -643,8 +643,12 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 */
 	public Pair<Boolean, List<S>> isHopcroftKarpEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba)
 			throws TimeoutException {
-		return areHopcroftKarpEquivalent(this.determinize(ba).mkTotal(ba).normalize(ba),
-				aut.determinize(ba).mkTotal(ba).normalize(ba), ba, Long.MAX_VALUE);
+		
+		return areHKEquivalentNondet(this.removeEpsilonMoves(ba).mkTotal(ba).normalize(ba),
+				aut.removeEpsilonMoves(ba).mkTotal(ba).normalize(ba), ba, Long.MAX_VALUE);
+		
+//		return areHopcroftKarpEquivalent(this.determinize(ba).mkTotal(ba).normalize(ba),
+//				aut.determinize(ba).mkTotal(ba).normalize(ba), ba, Long.MAX_VALUE);
 	}
 
 	/**
@@ -739,6 +743,165 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 		return new Pair<Boolean, List<B>>(true, null);
 	}
+	
+	 /**
+     * Lazy Hopcroft-Karp plus determinization 
+	 * @throws TimeoutException 
+    */
+    public static <A, B> Pair<Boolean, List<B>> areHKEquivalentNondet(SFA<A,B> aut1, SFA<A,B> aut2,
+    		BooleanAlgebra<A, B> ba, long timeout) throws TimeoutException
+    {
+    	Timers.setForCongruence();
+    	long startTime = System.currentTimeMillis();
+    	
+    	UnionFindHopKarp<B> ds = new UnionFindHopKarp<>();
+
+    	HashMap<Integer, Integer> reached1 = new HashMap<Integer, Integer>();
+    	HashMap<Integer, Integer> reached2 = new HashMap<Integer, Integer>();
+
+    	LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<Pair<Integer, Integer>>();
+
+    	LinkedList<Integer> aut1States = new LinkedList<Integer>();
+    	aut1States.addAll(aut1.getStates());
+        //PowerSetStateBuilder dfaStateBuilderForAut1 = PowerSetStateBuilder.Create(aut1States.ToArray());
+        
+        LinkedList<Integer> aut2States = new LinkedList<Integer>();
+    	aut2States.addAll(aut2.getStates());
+        //PowerSetStateBuilder dfaStateBuilderForAut2 = PowerSetStateBuilder.Create(aut2States.ToArray());
+        
+
+    	HashMap<HashSet<Integer>, Integer> reachedStates1 = new HashMap<HashSet<Integer>, Integer>();
+    	HashMap<Integer, HashSet<Integer>> idToStates1 = new HashMap<Integer, HashSet<Integer>>();
+    	
+    	HashMap<HashSet<Integer>, Integer> reachedStates2 = new HashMap<HashSet<Integer>, Integer>();
+    	HashMap<Integer, HashSet<Integer>> idToStates2 = new HashMap<Integer, HashSet<Integer>>();
+    	
+    	HashSet<Integer> detInitialState1 = new HashSet<Integer>();
+		detInitialState1.add(aut1.getInitialState());
+		reachedStates1.put(detInitialState1, 0);		
+		idToStates1.put(0, detInitialState1);
+		
+		HashSet<Integer> detInitialState2 = new HashSet<Integer>();
+		detInitialState2.add(aut2.getInitialState());
+		reachedStates2.put(detInitialState2, 0);		
+		idToStates2.put(0, detInitialState2);
+		
+        int st1 = 0;
+        int st2 = 0;
+
+        reached1.put(st1, 0);
+        reached2.put(st2, 1);
+
+        toVisit.add(new Pair<Integer, Integer>(st1, st2));
+
+        boolean isIn1Final = aut1.isFinalConfiguration(detInitialState1);
+        boolean isIn2Final = aut2.isFinalConfiguration(detInitialState2);
+        
+        if (isIn1Final != isIn2Final)
+            return new Pair<Boolean, List<B>>(false, new LinkedList<B>());
+
+        ds.add(0, isIn1Final, new LinkedList<B>());
+        ds.add(1, isIn2Final, new LinkedList<B>());
+        ds.mergeSets(0, 1);
+
+        while (toVisit.size() > 0)
+        {
+        	Timers.oneMoreState();
+
+			if (System.currentTimeMillis() - startTime > timeout)
+				throw new TimeoutException();
+
+            Pair<Integer,Integer> curr = toVisit.get(0);
+            toVisit.removeFirst();
+
+            HashSet<Integer> curr1 = idToStates1.get(curr.first);
+            HashSet<Integer> curr2 = idToStates2.get(curr.second);
+
+            ArrayList<SFAInputMove<A, B>> movesFromCurr1 = new ArrayList<>(); 
+            movesFromCurr1.addAll(aut1.getInputMovesFrom(curr1));
+            ArrayList<SFAInputMove<A, B>> movesFromCurr2 = new ArrayList<>(); 
+            movesFromCurr2.addAll(aut2.getInputMovesFrom(curr2));
+            
+            
+            
+            ArrayList<A> predicates1 = new ArrayList<>(); 
+            for(SFAInputMove<A, B> m: movesFromCurr1)
+            	predicates1.add(m.guard);
+
+            ArrayList<A> predicates2 = new ArrayList<>(); 
+            for(SFAInputMove<A, B> m: movesFromCurr2)
+            	predicates2.add(m.guard);
+
+            Collection<Pair<A, ArrayList<Integer>>> minterms1 = ba.GetMinterms(predicates1);
+            Collection<Pair<A, ArrayList<Integer>>> minterms2 = ba.GetMinterms(predicates2);
+
+
+            for (Pair<A, ArrayList<Integer>> minterm1: minterms1)
+            {                    
+            	for (Pair<A, ArrayList<Integer>> minterm2: minterms2)
+                {
+                    A conj = ba.MkAnd(minterm1.first, minterm2.first);
+                    if (ba.IsSatisfiable(conj))
+                    {
+                        HashSet<Integer> to1 = new HashSet<Integer>();
+                        for (int i = 0; i < minterm1.second.size(); i++)
+                            if (minterm1.second.get(i)==1)
+                                to1.add(movesFromCurr1.get(i).to);
+                        
+                        LinkedList<HashSet<Integer>> l1 = new LinkedList<HashSet<Integer>>();
+                        int to1st = getStateId(to1, reachedStates1, l1);  
+                        if(!l1.isEmpty())
+                        	idToStates1.put(reachedStates1.size()-1,to1);
+                        
+                        HashSet<Integer> to2 = new HashSet<Integer>();
+                        for (int i = 0; i < minterm2.second.size(); i++)
+                            if (minterm2.second.get(i)==1)
+                                to2.add(movesFromCurr2.get(i).to);
+                                                
+                        LinkedList<HashSet<Integer>> l2 = new LinkedList<HashSet<Integer>>();
+                        int to2st = getStateId(to2, reachedStates2, l2);
+                        if(!l2.isEmpty())
+                        	idToStates2.put(reachedStates2.size()-1,to2);
+                        
+                        List<B> wit = ds.getWitness(reached1.get(curr.first));
+                        LinkedList<B> pref = new LinkedList<B>(wit);
+                        pref.add(ba.generateWitness(conj));
+
+                        // If not in union find add them
+                        int r1 = 0, r2 = 0;
+                        if (!reached1.containsKey(to1st))
+                        {
+                            r1 = ds.getNumberOfElements();
+                            reached1.put(to1st, r1);
+                            ds.add(r1, aut1.isFinalConfiguration(to1), pref);
+                        }
+                        else
+                            r1 = reached1.get(to1st);
+
+                        if (!reached2.containsKey(to2st))
+                        {
+                            r2 = ds.getNumberOfElements();
+                            reached2.put(to2st, r2);
+                            ds.add(r2, aut2.isFinalConfiguration(to2), pref);
+                        }
+                        else
+                            r2 = reached2.get(to2st);                        
+
+                        // Check whether are in simulation relation
+                        if (!ds.areInSameSet(r1, r2))
+                        {
+                            if (!ds.mergeSets(r1, r2))
+                                return new Pair<Boolean, List<B>>(false, pref);
+
+                            toVisit.add(new Pair<Integer, Integer>(to1st, to2st));
+                        }
+                    }
+                }
+            }
+        }
+        return new Pair<Boolean, List<B>>(true, null);
+    }
+
 
 	/**
 	 * concatenation with aut

@@ -238,9 +238,7 @@ public class SFAUnitTest {
 		boolean res = autB.isHopcroftKarpEquivalentTo(ccB, ba).first;
 
 		assertTrue(res);
-
 		assertTrue(cUcA.isHopcroftKarpEquivalentTo(SFA.getFullSFA(ba), ba).first);
-
 		assertTrue(cUcB.isHopcroftKarpEquivalentTo(SFA.getFullSFA(ba), ba).first);
 		assertTrue(cUcB.isHopcroftKarpEquivalentTo(cUcA, ba).first);
 	}
