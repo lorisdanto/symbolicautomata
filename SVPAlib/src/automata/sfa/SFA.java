@@ -659,7 +659,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	public Pair<Boolean, List<S>> isHopcroftKarpEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba, long timeout)
 			throws TimeoutException {
 		long startTime = System.currentTimeMillis();
-		SFA<P, S> tmp1 = this.determinize(ba, timeout);
+		SFA<P, S> tmp1 = this.removeEpsilonMoves(ba);
 
 		long leftover = timeout - (System.currentTimeMillis() - startTime);
 		startTime = System.currentTimeMillis();
@@ -672,7 +672,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 		leftover = leftover - (System.currentTimeMillis() - startTime);
 		startTime = System.currentTimeMillis();
-		SFA<P, S> tmp2 = aut.determinize(ba, leftover);
+		SFA<P, S> tmp2 = aut.removeEpsilonMoves(ba);
 
 		leftover = leftover - (System.currentTimeMillis() - startTime);
 		startTime = System.currentTimeMillis();
@@ -682,7 +682,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 		leftover = leftover - (System.currentTimeMillis() - startTime);
 
-		return areHopcroftKarpEquivalent(tmp1, tmp2, ba, leftover);
+		return areHKEquivalentNondet(tmp1, tmp2, ba, leftover);
+//		return areHopcroftKarpEquivalent(tmp1, tmp2, ba, leftover);
 	}
 
 	/**
