@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.sat4j.specs.TimeoutException;
 
 import com.google.common.collect.ImmutableList;
 
@@ -57,7 +58,7 @@ public class SlowExample {
                                          returnPred));
   }
 
-  public static void main(String[] args){
+  public static void main(String[] args) throws TimeoutException{
     EqualitySolver ba = new EqualitySolver();
 
     Collection<SVPAMove<ICharPred, Character>> transitions1 = new LinkedList<SVPAMove<ICharPred, Character>>();

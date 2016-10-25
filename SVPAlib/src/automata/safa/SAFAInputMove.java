@@ -9,6 +9,8 @@ package automata.safa;
 import java.util.Collections;
 import java.util.Set;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.safa.booleanexpression.PositiveBooleanExpression;
 import theory.BooleanAlgebra;
 
@@ -31,19 +33,26 @@ public class SAFAInputMove<P,S> {
 		this.from = from;
 		this.to = to;
 		toStates = to.getStates();
-		maxState = Collections.max(toStates);
+		if (toStates.isEmpty()) {
+			maxState = -1;
+		} else {
+			maxState = Collections.max(toStates);
+		}
+		if (maxState < from) {
+			maxState = from;
+		}
 		this.guard = guard;
 	}
 
-	public boolean isSatisfiable(BooleanAlgebra<P,S> boolal){
+	public boolean isSatisfiable(BooleanAlgebra<P,S> boolal) throws TimeoutException{
 		return boolal.IsSatisfiable(guard);
 	}
 	
-	public S getWitness(BooleanAlgebra<P, S> ba) {
+	public S getWitness(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return ba.generateWitness(guard);
 	}
 	
-	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) {
+	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return ba.HasModel(guard, el);
 	}
 

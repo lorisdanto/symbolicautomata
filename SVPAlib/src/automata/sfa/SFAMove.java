@@ -7,6 +7,9 @@
 package automata.sfa;
 
 import theory.BooleanAlgebra;
+
+import org.sat4j.specs.TimeoutException;
+
 import automata.Move;
 
 /**
@@ -26,9 +29,10 @@ public abstract class SFAMove<P, S> extends Move<P, S> {
 
 	/**
 	 * Checks if the move is disjoint from the move <code>t</code> (they are not from same state on same predicate)
+	 * @throws TimeoutException 
 	 */
 	public abstract boolean isDisjointFrom(SFAMove<P, S> t,
-			BooleanAlgebra<P, S> ba);
+			BooleanAlgebra<P, S> ba) throws TimeoutException;
 
 	@Override
 	public abstract Object clone();

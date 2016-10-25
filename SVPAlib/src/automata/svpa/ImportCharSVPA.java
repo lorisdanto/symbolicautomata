@@ -4,28 +4,24 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.sat4j.specs.TimeoutException;
+
+import com.google.common.collect.ImmutableList;
 
 import automata.AutomataException;
-import automata.svpa.Call;
-import automata.svpa.Internal;
-import automata.svpa.Return;
-import automata.svpa.SVPA;
-import automata.svpa.SVPAMove;
 import theory.characters.BinaryCharPred;
 import theory.characters.CharPred;
 import theory.characters.ICharPred;
-import theory.characters.StdCharPred;
 import theory.intervals.EqualitySolver;
 import utilities.Pair;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import com.google.common.collect.ImmutableList;
 
 
 public class ImportCharSVPA {
@@ -106,10 +102,10 @@ public class ImportCharSVPA {
 		if(!firstMatcher.find())
 			throw new AutomataException("Invalid first line encountered");
 		int transitionsCount = -1;
-		int statesCount = -1;
+		//int statesCount = -1;
 		try {
 			transitionsCount = Integer.parseInt(firstMatcher.group("transitions"));
-			statesCount = Integer.parseInt(firstMatcher.group("states"));
+			//statesCount = Integer.parseInt(firstMatcher.group("states"));
 		} catch (NumberFormatException e) {
 			throw new AutomataException("Invalid number of states or transitions " +
 					"for line:\n" + firstLine);
@@ -168,6 +164,9 @@ public class ImportCharSVPA {
 			System.err.println("Unable to create imported SVPA");
 			e.printStackTrace();
 			System.exit(1);
+		} catch (TimeoutException e) {
+			System.out.println("Timeout in SVPA creation");
+			e.printStackTrace();
 		}
 
 		// unreachable

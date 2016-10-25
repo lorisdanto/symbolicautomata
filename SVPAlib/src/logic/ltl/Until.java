@@ -2,9 +2,10 @@ package logic.ltl;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
 
-import automata.safa.BooleanExpression;
+import org.sat4j.specs.TimeoutException;
+
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
@@ -54,57 +55,58 @@ public class Until<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
+			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, HashSet<Integer> states) {
 		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
-		if (formulaToStateId.containsKey(this))
-			return;
-
-		// Update hash tables
-		int id = formulaToStateId.size();
-		formulaToStateId.put(this, id);
+		if (formulaToState.containsKey(this))
+			return formulaToState.get(this);
 
 		// Compute transitions for children
-		left.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
-		right.accumulateSAFAStatesTransitions(formulaToStateId, moves, finalStates, ba);
+		PositiveBooleanExpression leftState = left.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba, states);
+		PositiveBooleanExpression rightState =right.accumulateSAFAStatesTransitions(formulaToState, moves, finalStates, ba, states);
 
+		// initialState (l /\ (l U r)) \/ r		
+		int id =states.size();
+		states.add(id);
+		PositiveBooleanExpression initialState = boolexpr.MkOr(boolexpr.MkAnd(leftState, boolexpr.MkState(id)), rightState);
+		formulaToState.put(this, initialState);
+
+		// delta(l U r, true) = (l /\ (l U r)) \/ r	
+		moves.add(new SAFAInputMove<P, S>(id, initialState, ba.True()));
 		
-		// delta(l U r, p) = delta(l, p) and lUr
-		// delta(l U r, p) = delta(r, p)
-		int leftId = formulaToStateId.get(left);
-		int rightId = formulaToStateId.get(right);
-		Collection<SAFAInputMove<P, S>> leftMoves = moves.get(leftId);
-		Collection<SAFAInputMove<P, S>> rightMoves = moves.get(rightId);
-		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
-		for (SAFAInputMove<P, S> leftMove : leftMoves)
-			newMoves.add(new SAFAInputMove<>(id, boolexpr.MkAnd(leftMove.to, boolexpr.MkState(id)), leftMove.guard));
-
-		for (SAFAInputMove<P, S> rightMove : rightMoves)
-			newMoves.add(new SAFAInputMove<>(id, rightMove.to, rightMove.guard));
-
-		moves.put(id, newMoves);
-		throw new IllegalArgumentException("Not finished this yet");
+		return initialState;
 	}
 
 	@Override
-	protected boolean isFinalState() {
-		return false;
-	}
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba,
+			HashMap<String, LTLFormula<P, S>> posHash, HashMap<String, LTLFormula<P, S>> negHash) throws TimeoutException {
+		String key = this.toString();
 
-	@Override
-	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
-		if(isPositive)
-			return new Until<>(left.pushNegations(isPositive,ba), right.pushNegations(isPositive,ba));
-		else{
-			LTLFormula<P, S> rightNeg =right.pushNegations(isPositive,ba); 
-			return new WeakUntil<>(rightNeg, 
-					new And<>(left.pushNegations(isPositive,ba), rightNeg));
+		LTLFormula<P, S> out = new False<>();
+
+		if (isPositive) {
+			if (posHash.containsKey(key)) {
+				return posHash.get(key);
+			}
+			out = new Until<>(left.pushNegations(isPositive, ba, posHash, negHash),
+					right.pushNegations(isPositive, ba, posHash, negHash));
+			posHash.put(key, out);
+			return out;
+		} else {
+			if (negHash.containsKey(key))
+				return negHash.get(key);
+			
+			// not (A U B) == (not B) W (not A /\ not B) 
+			LTLFormula<P, S> rightNeg = right.pushNegations(isPositive, ba, posHash, negHash);
+			out = new WeakUntil<>(rightNeg, new And<>(left.pushNegations(isPositive, ba, posHash, negHash), rightNeg));
+			negHash.put(key, out);
+			return out;
 		}
 	}
-	
+
 	@Override
 	public void toString(StringBuilder sb) {
 		sb.append("(");
@@ -115,8 +117,7 @@ public class Until<P, S> extends LTLFormula<P, S> {
 	}
 
 	@Override
-	public  SAFA<P, S> getSAFANew(BooleanAlgebra<P, S> ba) {
-		// TODO Auto-generated method stub
-		return null;
+	public int getSize() {
+		return 1 + left.getSize() + right.getSize();
 	}
 }

@@ -2,13 +2,13 @@ package automata;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import org.sat4j.specs.TimeoutException;
 
 import theory.BooleanAlgebra;
 /**
@@ -139,8 +139,9 @@ public abstract class ExtendedAutomaton<P, S> {
 	 * @param input
 	 * @param ba
 	 * @return true if accepted false otherwise
+	 * @throws TimeoutException 
 	 */
-	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba) {
+	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba) throws TimeoutException {
 	/*	Collection<Integer> currConf = getEpsClosure(getInitialState(), ba);
 		for (S el : input) {
 			currConf = getNextState(currConf, el, ba);
@@ -275,7 +276,7 @@ public abstract class ExtendedAutomaton<P, S> {
 	}
 
 	protected Collection<Integer> getNextState(Collection<Integer> currState,
-			List<S> inputElement, BooleanAlgebra<P, S> ba) {
+			List<S> inputElement, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		Collection<Integer> nextState = new HashSet<Integer>();
 		for (ExtendedMove<P, S> t : getMovesFrom(currState)) {
 			if (!t.isEpsilonTransition()) {

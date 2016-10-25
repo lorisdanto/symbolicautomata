@@ -6,6 +6,8 @@
  */
 package automata.sfa;
 
+import org.sat4j.specs.TimeoutException;
+
 import theory.BooleanAlgebra;
 
 /**
@@ -27,12 +29,12 @@ public class SFAInputMove<P,S> extends SFAMove<P, S>{
 	}
 	
 	@Override
-	public boolean isSatisfiable(BooleanAlgebra<P,S> boolal){
+	public boolean isSatisfiable(BooleanAlgebra<P,S> boolal) throws TimeoutException{
 		return boolal.IsSatisfiable(guard);
 	}
 	
 	@Override
-	public boolean isDisjointFrom(SFAMove<P,S> t, BooleanAlgebra<P,S> ba){
+	public boolean isDisjointFrom(SFAMove<P,S> t, BooleanAlgebra<P,S> ba) throws TimeoutException{
 		if(t.isEpsilonTransition())
 			return true;
 		if (from.equals(t.from)){			
@@ -74,12 +76,12 @@ public class SFAInputMove<P,S> extends SFAMove<P, S>{
 	}
 
 	@Override
-	public S getWitness(BooleanAlgebra<P, S> ba) {
+	public S getWitness(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return ba.generateWitness(guard);
 	}
 
 	@Override
-	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) {
+	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return ba.HasModel(guard, el);
 	}
 	

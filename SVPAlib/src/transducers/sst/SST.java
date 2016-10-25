@@ -16,6 +16,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.sat4j.specs.TimeoutException;
+
 import theory.BooleanAlgebra;
 import theory.BooleanAlgebraSubst;
 import utilities.Pair;
@@ -28,10 +30,15 @@ import automata.sfa.SFAMove;
 
 /**
  * A symbolic streaming string transducer
- * @param <P> The type of predicates forming the Boolean algebra
- * @param <F> The type of functions S->S in the Boolean Algebra 
- * @param <S> The domain of the Boolean algebra
-*/
+ * 
+ * @param
+ * 			<P>
+ *            The type of predicates forming the Boolean algebra
+ * @param <F>
+ *            The type of functions S->S in the Boolean Algebra
+ * @param <S>
+ *            The domain of the Boolean algebra
+ */
 public class SST<P, F, S> extends Automaton<P, S> {
 
 	// SST properties
@@ -77,8 +84,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			identityVariableUpdate.add(varup);
 		}
 
-		cachedIdentityVarUp = new SimpleVariableUpdate<P, F, S>(
-				identityVariableUpdate);
+		cachedIdentityVarUp = new SimpleVariableUpdate<P, F, S>(identityVariableUpdate);
 		return cachedIdentityVarUp;
 	}
 
@@ -97,10 +103,8 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/*
 	 * Create an automaton (removes unreachable states)
 	 */
-	public static <P1, F1, S1> SST<P1, F1, S1> MkSST(
-			Collection<SSTMove<P1, F1, S1>> transitions, Integer initialState,
-			int numberOfVariables,
-			Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction,
+	public static <P1, F1, S1> SST<P1, F1, S1> MkSST(Collection<SSTMove<P1, F1, S1>> transitions, Integer initialState,
+			int numberOfVariables, Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction,
 			BooleanAlgebraSubst<P1, F1, S1> ba) {
 
 		SST<P1, F1, S1> aut = new SST<P1, F1, S1>();
@@ -114,29 +118,27 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		aut.variableCount = numberOfVariables;
 
 		aut.outputFunction = outputFunction;
+		try {
+			for (SSTMove<P1, F1, S1> t : transitions)
+				aut.addTransition(t, ba, false);
 
-		for (SSTMove<P1, F1, S1> t : transitions)
-			aut.addTransition(t, ba, false);
-
-		// cleanup set isEmpty
-		// TODO
-		// aut = removeUnreachableStates(aut, ba);
-
-		return aut;
+			return aut;
+		} catch (TimeoutException toe) {
+			return null;
+		}
 	}
 
 	/**
 	 * Returns the empty SST
 	 */
-	public static <P1, F1, S1> SST<P1, F1, S1> getEmptySST(
-			BooleanAlgebraSubst<P1, F1, S1> ba) {
+	public static <P1, F1, S1> SST<P1, F1, S1> getEmptySST(BooleanAlgebraSubst<P1, F1, S1> ba) {
 		SST<P1, F1, S1> aut = new SST<P1, F1, S1>();
 		aut.states = new HashSet<Integer>();
 		aut.states.add(0);
 		aut.initialState = 0;
 		aut.isDeterministic = true;
 		aut.isEmpty = true;
-		aut.variableCount=0;
+		aut.variableCount = 0;
 		aut.isEpsilonFree = true;
 		aut.maxStateId = 1;
 		return aut;
@@ -145,8 +147,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * Returns the SST only defined on epsilon that outputs output
 	 */
-	public static <P1, F1, S1> SST<P1, F1, S1> getEpsilonSST(
-			List<ConstantToken<P1, F1, S1>> output,
+	public static <P1, F1, S1> SST<P1, F1, S1> getEpsilonSST(List<ConstantToken<P1, F1, S1>> output,
 			BooleanAlgebraSubst<P1, F1, S1> ba) {
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
 		Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, OutputUpdate<P1, F1, S1>>();
@@ -158,11 +159,11 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * Returns the SST only defined on predicate that outputs output
 	 */
-	public static <P1, F1, S1> SST<P1, F1, S1> getBaseSST(P1 predicate,
-			List<Token<P1, F1, S1>> output, BooleanAlgebraSubst<P1, F1, S1> ba) {
+	public static <P1, F1, S1> SST<P1, F1, S1> getBaseSST(P1 predicate, List<Token<P1, F1, S1>> output,
+			BooleanAlgebraSubst<P1, F1, S1> ba) {
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
-		transitions.add(new SSTInputMove<P1, F1, S1>(0, 1, predicate,
-				new FunctionalVariableUpdate<P1, F1, S1>(output)));
+		transitions
+				.add(new SSTInputMove<P1, F1, S1>(0, 1, predicate, new FunctionalVariableUpdate<P1, F1, S1>(output)));
 
 		Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, OutputUpdate<P1, F1, S1>>();
 
@@ -173,7 +174,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		return MkSST(transitions, 0, 1, outputFunction, ba);
 	}
 
-	public List<S> outputOn(List<S> input, BooleanAlgebraSubst<P, F, S> ba) {
+	public List<S> outputOn(List<S> input, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		return outputOn(this, input, ba);
 	}
 
@@ -184,9 +185,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	 * @param input
 	 * @param ba
 	 * @return one output sequence, null if undefined
+	 * @throws TimeoutException 
 	 */
-	public static <P1, F1, S1> List<S1> outputOn(SST<P1, F1, S1> sstWithEps,
-			List<S1> input, BooleanAlgebraSubst<P1, F1, S1> ba) {
+	public static <P1, F1, S1> List<S1> outputOn(SST<P1, F1, S1> sstWithEps, List<S1> input,
+			BooleanAlgebraSubst<P1, F1, S1> ba) throws TimeoutException {
 
 		// composition
 		SST<P1, F1, S1> sst = sstWithEps.removeEpsilonMoves(ba);
@@ -195,8 +197,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		Map<Integer, Collection<VariableAssignment<S1>>> currConf = new HashMap<Integer, Collection<VariableAssignment<S1>>>();
 
 		List<VariableAssignment<S1>> initialVariableAssignment = new ArrayList<VariableAssignment<S1>>();
-		initialVariableAssignment.add(VariableAssignment.MkInitialValue(
-				sst.variableCount, ba));
+		initialVariableAssignment.add(VariableAssignment.MkInitialValue(sst.variableCount, ba));
 		currConf.put(sst.initialState, initialVariableAssignment);
 
 		for (S1 el : input)
@@ -204,12 +205,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		for (int state : currConf.keySet()) {
 			if (sst.isFinalState(state)) {
-				Collection<VariableAssignment<S1>> varVals = currConf
-						.get(state);
+				Collection<VariableAssignment<S1>> varVals = currConf.get(state);
 				for (VariableAssignment<S1> assignment : varVals) {
 					// apply outputFunction
-					OutputUpdate<P1, F1, S1> outputUpdate = sst.outputFunction
-							.get(state);
+					OutputUpdate<P1, F1, S1> outputUpdate = sst.outputFunction.get(state);
 
 					return outputUpdate.applyTo(assignment, ba);
 				}
@@ -221,14 +220,12 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 	// Makes one step on the current config and symbol in the sst
 	private Map<Integer, Collection<VariableAssignment<S>>> getNextConfig(
-			Map<Integer, Collection<VariableAssignment<S>>> currConfig,
-			S input, BooleanAlgebraSubst<P, F, S> ba) {
+			Map<Integer, Collection<VariableAssignment<S>>> currConfig, S input, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 
 		Map<Integer, Collection<VariableAssignment<S>>> newConfig = new HashMap<Integer, Collection<VariableAssignment<S>>>();
 
 		for (int state : currConfig.keySet()) {
-			Collection<VariableAssignment<S>> sourceAssignments = currConfig
-					.get(state);
+			Collection<VariableAssignment<S>> sourceAssignments = currConfig.get(state);
 			for (SSTInputMove<P, F, S> move : getInputMovesFrom(state))
 				if (move.hasModel(input, ba)) {
 					Collection<VariableAssignment<S>> targetAssignments = new ArrayList<VariableAssignment<S>>();
@@ -238,8 +235,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 						newConfig.put(move.to, targetAssignments);
 
 					for (VariableAssignment<S> assig : sourceAssignments)
-						targetAssignments.add(move.variableUpdate.applyTo(
-								assig, input, ba));
+						targetAssignments.add(move.variableUpdate.applyTo(assig, input, ba));
 				}
 		}
 		return newConfig;
@@ -248,18 +244,20 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * Computes the combination with <code>sst</code> as a new SST
 	 * combine(w)=f1(w)f2(w)
+	 * 
+	 * @throws TimeoutException
 	 */
-	public SST<P, F, S> combineWith(SST<P, F, S> sst,
-			BooleanAlgebraSubst<P, F, S> ba) {
+	public SST<P, F, S> combineWith(SST<P, F, S> sst, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		return combine(this, sst, ba);
 	}
 
 	/**
 	 * Computes the combination of <code>sst1</code> and <code>sst2</code>
+	 * 
+	 * @throws TimeoutException
 	 */
-	public static <P1, F1, S1> SST<P1, F1, S1> combine(
-			SST<P1, F1, S1> sst1withEps, SST<P1, F1, S1> sst2withEps,
-			BooleanAlgebraSubst<P1, F1, S1> ba) {
+	public static <P1, F1, S1> SST<P1, F1, S1> combine(SST<P1, F1, S1> sst1withEps, SST<P1, F1, S1> sst2withEps,
+			BooleanAlgebraSubst<P1, F1, S1> ba) throws TimeoutException {
 
 		// Remove epsilons
 		SST<P1, F1, S1> sst1 = sst1withEps.removeEpsilonMoves(ba);
@@ -273,8 +271,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<Pair<Integer, Integer>>();
 
 		// Add initial state
-		Pair<Integer, Integer> p = new Pair<Integer, Integer>(
-				sst1.initialState, sst2.initialState);
+		Pair<Integer, Integer> p = new Pair<Integer, Integer>(sst1.initialState, sst2.initialState);
 
 		initialState = 0;
 
@@ -287,37 +284,28 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			int currStateId = reached.get(currState);
 
 			// If both states are final, combine is final
-			if (sst1.isFinalState(currState.first)
-					&& sst2.isFinalState(currState.second)) {
+			if (sst1.isFinalState(currState.first) && sst2.isFinalState(currState.second)) {
 
 				// new output function x = x1x2
-				OutputUpdate<P1, F1, S1> outputUpdate = OutputUpdate
-						.combineOutputUpdates(0, 1,
-								sst1.outputFunction.get(currState.first),
-								sst2.outputFunction.get(currState.second));
+				OutputUpdate<P1, F1, S1> outputUpdate = OutputUpdate.combineOutputUpdates(0, 1,
+						sst1.outputFunction.get(currState.first), sst2.outputFunction.get(currState.second));
 				outputFunction.put(currStateId, outputUpdate);
 			}
 
-			for (SSTInputMove<P1, F1, S1> t1 : sst1
-					.getInputMovesFrom(currState.first))
-				for (SSTInputMove<P1, F1, S1> t2 : sst2
-						.getInputMovesFrom(currState.second)) {
+			for (SSTInputMove<P1, F1, S1> t1 : sst1.getInputMovesFrom(currState.first))
+				for (SSTInputMove<P1, F1, S1> t2 : sst2.getInputMovesFrom(currState.second)) {
 					P1 intersGuard = ba.MkAnd(t1.guard, t2.guard);
 					if (ba.IsSatisfiable(intersGuard)) {
 
-						Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(
-								t1.to, t2.to);
+						Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(t1.to, t2.to);
 
-						int nextStateId = getStateId(nextState, reached,
-								toVisit);
+						int nextStateId = getStateId(nextState, reached, toVisit);
 
 						// combines two updadate by taking the disjoint union
 						FunctionalVariableUpdate<P1, F1, S1> combinedUpdate = FunctionalVariableUpdate
-								.combineUpdates(t1.variableUpdate,
-										t2.variableUpdate);
-						SSTInputMove<P1, F1, S1> newTrans = new SSTInputMove<P1, F1, S1>(
-								currStateId, nextStateId, intersGuard,
-								combinedUpdate);
+								.combineUpdates(t1.variableUpdate, t2.variableUpdate);
+						SSTInputMove<P1, F1, S1> newTrans = new SSTInputMove<P1, F1, S1>(currStateId, nextStateId,
+								intersGuard, combinedUpdate);
 
 						transitions.add(newTrans);
 					}
@@ -332,18 +320,20 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * Computes the combination with <code>sst</code> as a new SST
 	 * combine(w)=f1(w)f2(w)
+	 * 
+	 * @throws TimeoutException
 	 */
-	public SST<P, F, S> restrictInput(SFA<P, S> aut,
-			BooleanAlgebraSubst<P, F, S> ba) {
+	public SST<P, F, S> restrictInput(SFA<P, S> aut, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		return restrictInput(this, aut, ba);
 	}
 
 	/**
 	 * Computes the combination of <code>sst1</code> and <code>sst2</code>
+	 * 
+	 * @throws TimeoutException
 	 */
-	public static <P1, F1, S1> SST<P1, F1, S1> restrictInput(
-			SST<P1, F1, S1> sst1withEps, SFA<P1, S1> inputSfa,
-			BooleanAlgebraSubst<P1, F1, S1> ba) {
+	public static <P1, F1, S1> SST<P1, F1, S1> restrictInput(SST<P1, F1, S1> sst1withEps, SFA<P1, S1> inputSfa,
+			BooleanAlgebraSubst<P1, F1, S1> ba) throws TimeoutException {
 
 		// Remove epsilons
 		SST<P1, F1, S1> sst = sst1withEps.removeEpsilonMoves(ba);
@@ -353,13 +343,12 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		Integer initialState = 0;
 		Map<Integer, OutputUpdate<P1, F1, S1>> outputFunction = new HashMap<Integer, OutputUpdate<P1, F1, S1>>();
 		Integer variableCount = sst.variableCount;
-		
+
 		HashMap<Pair<Integer, Integer>, Integer> reached = new HashMap<Pair<Integer, Integer>, Integer>();
 		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<Pair<Integer, Integer>>();
 
 		// Add initial state
-		Pair<Integer, Integer> p = new Pair<Integer, Integer>(
-				sst.initialState, aut.getInitialState());
+		Pair<Integer, Integer> p = new Pair<Integer, Integer>(sst.initialState, aut.getInitialState());
 
 		initialState = 0;
 
@@ -372,27 +361,21 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			int currStateId = reached.get(currState);
 
 			// If both states are final, restrict is final
-			if (sst.isFinalState(currState.first)
-					&& aut.getFinalStates().contains(currState.second)) {
+			if (sst.isFinalState(currState.first) && aut.getFinalStates().contains(currState.second)) {
 				outputFunction.put(currStateId, sst.outputFunction.get(currState.first));
 			}
 
-			for (SSTInputMove<P1, F1, S1> t1 : sst
-					.getInputMovesFrom(currState.first))
-				for (SFAInputMove<P1, S1> t2 : aut
-						.getInputMovesFrom(currState.second)) {
+			for (SSTInputMove<P1, F1, S1> t1 : sst.getInputMovesFrom(currState.first))
+				for (SFAInputMove<P1, S1> t2 : aut.getInputMovesFrom(currState.second)) {
 					P1 intersGuard = ba.MkAnd(t1.guard, t2.guard);
 					if (ba.IsSatisfiable(intersGuard)) {
 
-						Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(
-								t1.to, t2.to);
+						Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(t1.to, t2.to);
 
-						int nextStateId = getStateId(nextState, reached,
-								toVisit);
+						int nextStateId = getStateId(nextState, reached, toVisit);
 
-						SSTInputMove<P1, F1, S1> newTrans = new SSTInputMove<P1, F1, S1>(
-								currStateId, nextStateId, intersGuard,
-								t1.variableUpdate);
+						SSTInputMove<P1, F1, S1> newTrans = new SSTInputMove<P1, F1, S1>(currStateId, nextStateId,
+								intersGuard, t1.variableUpdate);
 
 						transitions.add(newTrans);
 					}
@@ -402,7 +385,6 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		return MkSST(transitions, initialState, variableCount, outputFunction, ba);
 	}
 
-	
 	/**
 	 * return an equivalent copy without epsilon moves
 	 */
@@ -413,8 +395,8 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * return an equivalent copy without epsilon moves
 	 */
-	protected static <P1, F1, S1> SST<P1, F1, S1> removeEpsilonMovesFrom(
-			SST<P1, F1, S1> sst, BooleanAlgebraSubst<P1, F1, S1> ba) {
+	protected static <P1, F1, S1> SST<P1, F1, S1> removeEpsilonMovesFrom(SST<P1, F1, S1> sst,
+			BooleanAlgebraSubst<P1, F1, S1> ba) {
 
 		if (sst.isEpsilonFree)
 			return sst;
@@ -429,8 +411,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		LinkedList<Collection<Integer>> toVisitStates = new LinkedList<Collection<Integer>>();
 
 		// Add initial state
-		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> epsclInitial = sst
-				.getSSTEpsClosure(sst.initialState, ba);
+		Map<Integer, SimpleVariableUpdate<P1, F1, S1>> epsclInitial = sst.getSSTEpsClosure(sst.initialState, ba);
 		Collection<Integer> p = epsclInitial.keySet();
 		initialState = 0;
 		statesAss.put(initialState, epsclInitial);
@@ -441,30 +422,26 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		while (!toVisitStates.isEmpty()) {
 			Collection<Integer> currState = toVisitStates.removeFirst();
 			int currStateId = reachedStates.get(currState);
-			Map<Integer, SimpleVariableUpdate<P1, F1, S1>> stateToAss = statesAss
-					.get(currStateId);
+			Map<Integer, SimpleVariableUpdate<P1, F1, S1>> stateToAss = statesAss.get(currStateId);
 
 			// set final state
 			Integer fin = null;
 			for (Integer st : currState) {
 				if (sst.isFinalState(st))
 					if (fin != null) {
-						throw new IllegalArgumentException(
-								"two different final states are reachable via epsilon;");
+						throw new IllegalArgumentException("two different final states are reachable via epsilon;");
 					} else {
 						fin = st;
 					}
 			}
 			// set output state if one of the esp closure state is final
 			if (fin != null) {
-				outputFunction.put(currStateId, stateToAss.get(fin)
-						.composeWith(sst.outputFunction.get(fin)));
+				outputFunction.put(currStateId, stateToAss.get(fin).composeWith(sst.outputFunction.get(fin)));
 			}
 
 			for (SSTInputMove<P1, F1, S1> t1 : sst.getInputMovesFrom(currState)) {
 
-				Map<Integer, SimpleVariableUpdate<P1, F1, S1>> epsClosure = sst
-						.getSSTEpsClosure(t1.to, ba);
+				Map<Integer, SimpleVariableUpdate<P1, F1, S1>> epsClosure = sst.getSSTEpsClosure(t1.to, ba);
 				Collection<Integer> nextState = epsClosure.keySet();
 
 				int nextStateId = 0;
@@ -479,36 +456,31 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				}
 
 				@SuppressWarnings("unchecked")
-				SSTInputMove<P1, F1, S1> tnew = (SSTInputMove<P1, F1, S1>) t1
-						.clone();
+				SSTInputMove<P1, F1, S1> tnew = (SSTInputMove<P1, F1, S1>) t1.clone();
 				tnew.from = currStateId;
 				tnew.to = nextStateId;
 
-				tnew.variableUpdate = stateToAss.get(t1.from).composeWith(
-						t1.variableUpdate);
+				tnew.variableUpdate = stateToAss.get(t1.from).composeWith(t1.variableUpdate);
 
 				transitions.add(tnew);
 			}
 
 		}
 
-		return MkSST(transitions, initialState, numberOfVariables,
-				outputFunction, ba);
+		return MkSST(transitions, initialState, numberOfVariables, outputFunction, ba);
 	}
 
 	/**
 	 * concatenate with sst
 	 */
-	public SST<P, F, S> concatenateWith(SST<P, F, S> sst,
-			BooleanAlgebraSubst<P, F, S> ba) {
+	public SST<P, F, S> concatenateWith(SST<P, F, S> sst, BooleanAlgebraSubst<P, F, S> ba) {
 		return concatenate(this, sst, ba);
 	}
 
 	/**
 	 * concatenates sst1 with sst2
 	 */
-	public static <P1, F1, S1> SST<P1, F1, S1> concatenate(
-			SST<P1, F1, S1> sst1, SST<P1, F1, S1> sst2,
+	public static <P1, F1, S1> SST<P1, F1, S1> concatenate(SST<P1, F1, S1> sst1, SST<P1, F1, S1> sst2,
 			BooleanAlgebraSubst<P1, F1, S1> ba) {
 
 		if (sst1.isEmpty || sst2.isEmpty)
@@ -534,39 +506,36 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		// every transition must have maxId variable Updates
 		for (SSTInputMove<P1, F1, S1> t : sst1.getInputMovesFrom(sst1.states)) {
-			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst1).liftToNVars(numberOfVariables);
-			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(
-					t.from, t.to, t.guard, variableUpdate);
+			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate.renameVars(varRenameSst1)
+					.liftToNVars(numberOfVariables);
+			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(t.from, t.to, t.guard, variableUpdate);
 			transitions.add(newMove);
 		}
 		for (SSTEpsilon<P1, F1, S1> t : sst1.getEpsilonMovesFrom(sst1.states)) {
-			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst1).liftToNVars(numberOfVariables);
-			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from,
-					t.to, variableUpdate);
+			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate.renameVars(varRenameSst1)
+					.liftToNVars(numberOfVariables);
+			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from, t.to, variableUpdate);
 			transitions.add(newMove);
 		}
 
 		// Moreover transitions in sst2 should perform the update xAcc:=xAcc
 		// Each state should also take into account the offset
 		for (SSTInputMove<P1, F1, S1> t : sst2.getInputMovesFrom(sst2.states)) {
-			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst2).liftToNVars(numberOfVariables);
+			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate.renameVars(varRenameSst2)
+					.liftToNVars(numberOfVariables);
 			// For last variable set xAcc := xAcc
 			variableUpdate.variableUpdate.get(accId).add(accVar);
-			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(
-					t.from + offSet, t.to + offSet, t.guard, variableUpdate);
+			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(t.from + offSet, t.to + offSet, t.guard,
+					variableUpdate);
 			transitions.add(newMove);
 		}
 		for (SSTEpsilon<P1, F1, S1> t : sst2.getEpsilonMovesFrom(sst2.states)) {
-			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst2).liftToNVars(numberOfVariables);
+			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate.renameVars(varRenameSst2)
+					.liftToNVars(numberOfVariables);
 			// For last variable set xAcc := xAcc
 			variableUpdate.variableUpdate.get(accId).add(accVar);
 
-			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from
-					+ offSet, t.to + offSet, variableUpdate);
+			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from + offSet, t.to + offSet, variableUpdate);
 
 			transitions.add(newMove);
 		}
@@ -581,13 +550,11 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				List<ConstantToken<P1, F1, S1>> updateList = new ArrayList<ConstantToken<P1, F1, S1>>();
 				// For last variable set xAcc := F(q)
 				if (i == accId)
-					updateList = sst1.outputFunction.get(finStateSst1)
-							.renameVars(varRenameSst1).update;
+					updateList = sst1.outputFunction.get(finStateSst1).renameVars(varRenameSst1).update;
 				resUpdate.add(updateList);
 			}
 
-			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(
-					finStateSst1, sst2.initialState + offSet,
+			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(finStateSst1, sst2.initialState + offSet,
 					new SimpleVariableUpdate<P1, F1, S1>(resUpdate));
 
 			transitions.add(newMove);
@@ -599,22 +566,18 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 			List<ConstantToken<P1, F1, S1>> outUpdateExpr = new ArrayList<ConstantToken<P1, F1, S1>>();
 			outUpdateExpr.add(accVar);
-			outUpdateExpr.addAll(sst2.outputFunction.get(finStateSst2)
-					.renameVars(varRenameSst2).update);
+			outUpdateExpr.addAll(sst2.outputFunction.get(finStateSst2).renameVars(varRenameSst2).update);
 
-			outputFunction.put(finStateSst2 + offSet,
-					new OutputUpdate<P1, F1, S1>(outUpdateExpr));
+			outputFunction.put(finStateSst2 + offSet, new OutputUpdate<P1, F1, S1>(outUpdateExpr));
 		}
 
-		return MkSST(transitions, initialState, numberOfVariables,
-				outputFunction, ba);
+		return MkSST(transitions, initialState, numberOfVariables, outputFunction, ba);
 	}
 
 	/**
 	 * Computes the union with <code>sst1</code> as a new SST
 	 */
-	public SST<P, F, S> unionWith(SST<P, F, S> sst1,
-			BooleanAlgebraSubst<P, F, S> ba) {
+	public SST<P, F, S> unionWith(SST<P, F, S> sst1, BooleanAlgebraSubst<P, F, S> ba) {
 		return union(this, sst1, ba);
 	}
 
@@ -623,8 +586,8 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	 * SST
 	 */
 	@SuppressWarnings("unchecked")
-	public static <P1, F1, S1> SST<P1, F1, S1> union(SST<P1, F1, S1> sst1,
-			SST<P1, F1, S1> sst2, BooleanAlgebraSubst<P1, F1, S1> ba) {
+	public static <P1, F1, S1> SST<P1, F1, S1> union(SST<P1, F1, S1> sst1, SST<P1, F1, S1> sst2,
+			BooleanAlgebraSubst<P1, F1, S1> ba) {
 
 		if (sst1.isEmpty && sst2.isEmpty)
 			return getEmptySST(ba);
@@ -651,36 +614,33 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		// every transition must have maxId variable Updates
 		for (SSTInputMove<P1, F1, S1> t : sst1.getInputMovesFrom(sst1.states)) {
-			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst1).liftToNVars(numberOfVariables);
-			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(
-					t.from, t.to, t.guard, variableUpdate);
+			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate.renameVars(varRenameSst1)
+					.liftToNVars(numberOfVariables);
+			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(t.from, t.to, t.guard, variableUpdate);
 
 			transitions.add(newMove);
 		}
 		for (SSTEpsilon<P1, F1, S1> t : sst1.getEpsilonMovesFrom(sst1.states)) {
-			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst1).liftToNVars(numberOfVariables);
-			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from,
-					t.to, variableUpdate);
+			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate.renameVars(varRenameSst1)
+					.liftToNVars(numberOfVariables);
+			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from, t.to, variableUpdate);
 
 			transitions.add(newMove);
 		}
 		// Moreover transitions in sst2 should perform the update xAcc:=xAcc
 		// Each state should also take into account the offset
 		for (SSTInputMove<P1, F1, S1> t : sst2.getInputMovesFrom(sst2.states)) {
-			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst2).liftToNVars(numberOfVariables);
-			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(
-					t.from + offSet, t.to + offSet, t.guard, variableUpdate);
+			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate.renameVars(varRenameSst2)
+					.liftToNVars(numberOfVariables);
+			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(t.from + offSet, t.to + offSet, t.guard,
+					variableUpdate);
 
 			transitions.add(newMove);
 		}
 		for (SSTEpsilon<P1, F1, S1> t : sst2.getEpsilonMovesFrom(sst2.states)) {
-			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.renameVars(varRenameSst2).liftToNVars(numberOfVariables);
-			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from
-					+ offSet, t.to + offSet, variableUpdate);
+			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate.renameVars(varRenameSst2)
+					.liftToNVars(numberOfVariables);
+			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from + offSet, t.to + offSet, variableUpdate);
 
 			transitions.add(newMove);
 		}
@@ -691,27 +651,22 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		for (int i = 0; i < numberOfVariables; i++)
 			resUpdate.add(new ArrayList<ConstantToken<P1, F1, S1>>());
 
-		SSTEpsilon<P1, F1, S1> newMove1 = new SSTEpsilon<P1, F1, S1>(
-				initialState, sst1.initialState,
+		SSTEpsilon<P1, F1, S1> newMove1 = new SSTEpsilon<P1, F1, S1>(initialState, sst1.initialState,
 				new SimpleVariableUpdate<P1, F1, S1>(resUpdate));
 		transitions.add(newMove1);
 
-		SSTEpsilon<P1, F1, S1> newMove2 = new SSTEpsilon<P1, F1, S1>(
-				initialState, sst2.initialState + offSet,
+		SSTEpsilon<P1, F1, S1> newMove2 = new SSTEpsilon<P1, F1, S1>(initialState, sst2.initialState + offSet,
 				new SimpleVariableUpdate<P1, F1, S1>(resUpdate));
 		transitions.add(newMove2);
 
 		// Make all states of the two machines final
 		for (Integer state : sst1.getFinalStates())
-			outputFunction.put(state, sst1.outputFunction.get(state)
-					.renameVars(varRenameSst1));
+			outputFunction.put(state, sst1.outputFunction.get(state).renameVars(varRenameSst1));
 
 		for (Integer state : sst2.getFinalStates())
-			outputFunction.put(state + offSet, sst2.outputFunction.get(state)
-					.renameVars(varRenameSst2));
+			outputFunction.put(state + offSet, sst2.outputFunction.get(state).renameVars(varRenameSst2));
 
-		return MkSST(transitions, initialState, numberOfVariables,
-				outputFunction, ba);
+		return MkSST(transitions, initialState, numberOfVariables, outputFunction, ba);
 	}
 
 	/**
@@ -731,12 +686,12 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * iterate of the sst
 	 */
-	public static <P1, F1, S1> SST<P1, F1, S1> computeStar(SST<P1, F1, S1> sst,
-			BooleanAlgebraSubst<P1, F1, S1> ba, boolean isLeftIter) {
+	public static <P1, F1, S1> SST<P1, F1, S1> computeStar(SST<P1, F1, S1> sst, BooleanAlgebraSubst<P1, F1, S1> ba,
+			boolean isLeftIter) {
 
-		if (sst.isEmpty){
-			return getEpsilonSST(new LinkedList<ConstantToken<P1,F1,S1>>(), ba);
-			//return getEmptySST(ba);
+		if (sst.isEmpty) {
+			return getEpsilonSST(new LinkedList<ConstantToken<P1, F1, S1>>(), ba);
+			// return getEmptySST(ba);
 		}
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
@@ -754,27 +709,24 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		// every transition must have maxId variable Updates
 		for (SSTInputMove<P1, F1, S1> t : sst.getInputMovesFrom(sst.states)) {
-			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.liftToNVars(numberOfVariables);
+			FunctionalVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate.liftToNVars(numberOfVariables);
 			// For last variable set xAcc := xAcc
 			variableUpdate.variableUpdate.get(accId).add(xAcc);
 
-			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(
-					t.from, t.to, t.guard, variableUpdate);
+			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(t.from, t.to, t.guard, variableUpdate);
 			transitions.add(newMove);
 		}
 		for (SSTEpsilon<P1, F1, S1> t : sst.getEpsilonMovesFrom(sst.states)) {
-			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate
-					.liftToNVars(numberOfVariables);
+			SimpleVariableUpdate<P1, F1, S1> variableUpdate = t.variableUpdate.liftToNVars(numberOfVariables);
 			// For last variable set xAcc := xAcc
 			variableUpdate.variableUpdate.get(accId).add(xAcc);
 
-			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from,
-					t.to, variableUpdate);
+			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(t.from, t.to, variableUpdate);
 			transitions.add(newMove);
 		}
 
-		// add a transition from every final state q of sst to the new initial state
+		// add a transition from every final state q of sst to the new initial
+		// state
 		// state of sst2
 		// with the update xAcc = xAcc F(q), and x=epsilon for everyone else
 		for (Integer finStateSst : sst.getFinalStates()) {
@@ -787,19 +739,16 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				// iter)
 				if (i == accId)
 					if (isLeftIter) {
-						updateList
-								.addAll(sst.outputFunction.get(finStateSst).update);
+						updateList.addAll(sst.outputFunction.get(finStateSst).update);
 						updateList.add(xAcc);
 					} else {
 						updateList.add(xAcc);
-						updateList
-								.addAll(sst.outputFunction.get(finStateSst).update);
+						updateList.addAll(sst.outputFunction.get(finStateSst).update);
 					}
 				resUpdate.add(updateList);
 			}
 
-			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(
-					finStateSst, initialState,
+			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(finStateSst, initialState,
 					new SimpleVariableUpdate<P1, F1, S1>(resUpdate));
 			transitions.add(newMove);
 		}
@@ -814,8 +763,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			initUpdate.add(updateList);
 		}
 
-		SSTEpsilon<P1, F1, S1> initMove = new SSTEpsilon<P1, F1, S1>(
-				initialState, sst.initialState,
+		SSTEpsilon<P1, F1, S1> initMove = new SSTEpsilon<P1, F1, S1>(initialState, sst.initialState,
 				new SimpleVariableUpdate<P1, F1, S1>(initUpdate));
 		transitions.add(initMove);
 
@@ -823,21 +771,21 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		List<ConstantToken<P1, F1, S1>> outUpdate = new ArrayList<ConstantToken<P1, F1, S1>>();
 		outUpdate.add(xAcc);
 
-		outputFunction.put(initialState,
-				new OutputUpdate<P1, F1, S1>(outUpdate));
+		outputFunction.put(initialState, new OutputUpdate<P1, F1, S1>(outUpdate));
 
-		return MkSST(transitions, initialState, numberOfVariables,
-				outputFunction, ba);
+		return MkSST(transitions, initialState, numberOfVariables, outputFunction, ba);
 	}
 
 	/**
 	 * shuffles pairs of ssts (li,ri) such that every li (ri) has domain equal
 	 * to sfa
+	 * 
+	 * @throws TimeoutException
 	 */
 	@SuppressWarnings("unchecked")
 	public static <P1, F1, S1> SST<P1, F1, S1> computeShuffle(
 			Collection<Pair<SST<P1, F1, S1>, SST<P1, F1, S1>>> combinedSstPairsWitEps,
-			BooleanAlgebraSubst<P1, F1, S1> ba, boolean isLeftShuffle) {
+			BooleanAlgebraSubst<P1, F1, S1> ba, boolean isLeftShuffle) throws TimeoutException {
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
 		Integer initialState;
@@ -889,34 +837,29 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 			// Assume that all ssts have same domain so check only state type of
 			// first one
-			boolean isFinalState = combinedSsts.get(0).isFinalState(
-					currState.get(0));
+			boolean isFinalState = combinedSsts.get(0).isFinalState(currState.get(0));
 			if (isFinalState) {
 				finalStatesMod.add(currStateId);
 				stateToId.put(currStateId, currState);
 			}
 
 			List<Pair<Pair<P1, FunctionalVariableUpdate<P1, F1, S1>>, List<Integer>>> triples = new ArrayList<Pair<Pair<P1, FunctionalVariableUpdate<P1, F1, S1>>, List<Integer>>>();
-			accumulateMovesFromMultiSST(currState, combinedSsts, varRenames, 0,
-					ba, ba.True(), new FunctionalVariableUpdate<P1, F1, S1>(),
-					new ArrayList<Integer>(), triples);
+			accumulateMovesFromMultiSST(currState, combinedSsts, varRenames, 0, ba, ba.True(),
+					new FunctionalVariableUpdate<P1, F1, S1>(), new ArrayList<Integer>(), triples);
 			for (Pair<Pair<P1, FunctionalVariableUpdate<P1, F1, S1>>, List<Integer>> triple : triples) {
 
 				List<Integer> nextState = triple.second;
 				int nextStateId = getStateId(nextState, reached, toVisit);
 
 				// add buff:=buff and acc:=acc to updates
-				FunctionalVariableUpdate<P1, F1, S1> finalUpdate = triple.first.second
-						.liftToNVars(numberOfVariables);
+				FunctionalVariableUpdate<P1, F1, S1> finalUpdate = triple.first.second.liftToNVars(numberOfVariables);
 				for (int i = 0; i < combinedSstPairsWitEps.size(); i++) {
-					finalUpdate.variableUpdate.get(buffId).add(
-							new SSTVariable<P1, F1, S1>(buffId + i));
+					finalUpdate.variableUpdate.get(buffId).add(new SSTVariable<P1, F1, S1>(buffId + i));
 				}
 				finalUpdate.variableUpdate.get(accId).add(xAcc);
 
-				SSTInputMove<P1, F1, S1> newTrans = new SSTInputMove<P1, F1, S1>(
-						currStateId, nextStateId, triple.first.first,
-						finalUpdate);
+				SSTInputMove<P1, F1, S1> newTrans = new SSTInputMove<P1, F1, S1>(currStateId, nextStateId,
+						triple.first.first, finalUpdate);
 
 				transitionFirstStretch.add(newTrans);
 
@@ -950,14 +893,12 @@ public class SST<P, F, S> extends Automaton<P, S> {
 					int sstIndex = (i - buffId) * 2;
 					OutputUpdate<P1, F1, S1> out = combinedSsts.get(sstIndex).outputFunction
 							.get(sstStates.get(sstIndex));
-					updateList
-							.addAll(out.renameVars(varRenames.get(sstIndex)).update);
+					updateList.addAll(out.renameVars(varRenames.get(sstIndex)).update);
 				}
 				resUpdate1.add(updateList);
 			}
 
-			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(
-					finState, initialState + offset,
+			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(finState, initialState + offset,
 					new SimpleVariableUpdate<P1, F1, S1>(resUpdate1));
 			transitions.add(newMove);
 
@@ -972,22 +913,17 @@ public class SST<P, F, S> extends Automaton<P, S> {
 					int sstIndex = (i - buffId) * 2;
 					OutputUpdate<P1, F1, S1> out = combinedSsts.get(sstIndex).outputFunction
 							.get(sstStates.get(sstIndex));
-					updateList
-							.addAll(out.renameVars(varRenames.get(sstIndex)).update);
+					updateList.addAll(out.renameVars(varRenames.get(sstIndex)).update);
 				} else {
 					if (i == accId) {
 						if (!isLeftShuffle)
 							updateList.add(xAcc);
-						for (int sstIndex = 0; sstIndex < combinedSstPairsWitEps
-								.size(); sstIndex++) {
+						for (int sstIndex = 0; sstIndex < combinedSstPairsWitEps.size(); sstIndex++) {
 							int secondEl = sstIndex * 2 + 1;
-							updateList.add(new SSTVariable<P1, F1, S1>(buffId
-									+ sstIndex));
-							OutputUpdate<P1, F1, S1> out = combinedSsts
-									.get(secondEl).outputFunction.get(sstStates
-									.get(secondEl));
-							updateList.addAll(out.renameVars(varRenames
-									.get(secondEl)).update);
+							updateList.add(new SSTVariable<P1, F1, S1>(buffId + sstIndex));
+							OutputUpdate<P1, F1, S1> out = combinedSsts.get(secondEl).outputFunction
+									.get(sstStates.get(secondEl));
+							updateList.addAll(out.renameVars(varRenames.get(secondEl)).update);
 						}
 						if (isLeftShuffle)
 							updateList.add(xAcc);
@@ -996,12 +932,10 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				resUpdate2.add(updateList);
 			}
 
-			newMove = new SSTEpsilon<P1, F1, S1>(finState + offset,
-					initialState + 2 * offset,
+			newMove = new SSTEpsilon<P1, F1, S1>(finState + offset, initialState + 2 * offset,
 					new SimpleVariableUpdate<P1, F1, S1>(resUpdate2));
 			transitions.add(newMove);
-			newMove = new SSTEpsilon<P1, F1, S1>(finState + 2 * offset,
-					initialState + 2 * offset,
+			newMove = new SSTEpsilon<P1, F1, S1>(finState + 2 * offset, initialState + 2 * offset,
 					new SimpleVariableUpdate<P1, F1, S1>(resUpdate2));
 			transitions.add(newMove);
 
@@ -1012,37 +946,27 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			for (int sstIndex = 0; sstIndex < combinedSstPairsWitEps.size(); sstIndex++) {
 				int secondEl = sstIndex * 2 + 1;
 				outputExpr.add(new SSTVariable<P1, F1, S1>(buffId + sstIndex));
-				OutputUpdate<P1, F1, S1> out = combinedSsts.get(secondEl).outputFunction
-						.get(sstStates.get(secondEl));
-				outputExpr
-						.addAll(out.renameVars(varRenames.get(secondEl)).update);
+				OutputUpdate<P1, F1, S1> out = combinedSsts.get(secondEl).outputFunction.get(sstStates.get(secondEl));
+				outputExpr.addAll(out.renameVars(varRenames.get(secondEl)).update);
 			}
 			if (isLeftShuffle)
 				outputExpr.add(xAcc);
 
-			outputFunction.put(finState + offset * 1,
-					new OutputUpdate<P1, F1, S1>(outputExpr));
-			outputFunction.put(finState + offset * 2,
-					new OutputUpdate<P1, F1, S1>(outputExpr));
+			outputFunction.put(finState + offset * 1, new OutputUpdate<P1, F1, S1>(outputExpr));
+			outputFunction.put(finState + offset * 2, new OutputUpdate<P1, F1, S1>(outputExpr));
 		}
 
-		return MkSST(transitions, initialState, numberOfVariables,
-				outputFunction, ba);
+		return MkSST(transitions, initialState, numberOfVariables, outputFunction, ba);
 
 	}
 
 	// Given the states of multiple ssts computes all the combined moves in
 	// transitions
-	private static <P1, F1, S1> void accumulateMovesFromMultiSST(
-			List<Integer> currState,
-			List<SST<P1, F1, S1>> ssts,
-			List<Integer> varRenames,
-			int currIndex,
-			BooleanAlgebraSubst<P1, F1, S1> ba,
-			P1 currPred,
-			FunctionalVariableUpdate<P1, F1, S1> currVaribleUpdate,
-			List<Integer> currNextState,
-			List<Pair<Pair<P1, FunctionalVariableUpdate<P1, F1, S1>>, List<Integer>>> transitions) {
+	private static <P1, F1, S1> void accumulateMovesFromMultiSST(List<Integer> currState, List<SST<P1, F1, S1>> ssts,
+			List<Integer> varRenames, int currIndex, BooleanAlgebraSubst<P1, F1, S1> ba, P1 currPred,
+			FunctionalVariableUpdate<P1, F1, S1> currVaribleUpdate, List<Integer> currNextState,
+			List<Pair<Pair<P1, FunctionalVariableUpdate<P1, F1, S1>>, List<Integer>>> transitions)
+					throws TimeoutException {
 
 		if (!ba.IsSatisfiable(currPred))
 			return;
@@ -1057,28 +981,26 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		}
 
 		int currVarRen = varRenames.get(currIndex);
-		for (SSTInputMove<P1, F1, S1> move : ssts.get(currIndex)
-				.getInputMovesFrom(currState.get(currIndex))) {
+		for (SSTInputMove<P1, F1, S1> move : ssts.get(currIndex).getInputMovesFrom(currState.get(currIndex))) {
 			P1 newPred = ba.MkAnd(currPred, move.guard);
-			FunctionalVariableUpdate<P1, F1, S1> newVaribleUpdate = FunctionalVariableUpdate
-					.addUpdate(currVarRen, currVaribleUpdate,
-							move.variableUpdate);
+			FunctionalVariableUpdate<P1, F1, S1> newVaribleUpdate = FunctionalVariableUpdate.addUpdate(currVarRen,
+					currVaribleUpdate, move.variableUpdate);
 
 			List<Integer> newNextState = new ArrayList<Integer>(currNextState);
 			newNextState.add(move.to);
-			accumulateMovesFromMultiSST(currState, ssts, varRenames,
-					currIndex + 1, ba, newPred, newVaribleUpdate, newNextState,
-					transitions);
+			accumulateMovesFromMultiSST(currState, ssts, varRenames, currIndex + 1, ba, newPred, newVaribleUpdate,
+					newNextState, transitions);
 		}
 	}
 
 	/**
 	 * shuffle
+	 * 
+	 * @throws TimeoutException
 	 */
 	@SuppressWarnings("unchecked")
-	public static <P1, F1, S1> SST<P1, F1, S1> computeShuffle(
-			SST<P1, F1, S1> sstUnchecked, SFA<P1, S1> autUnchecked,
-			BooleanAlgebraSubst<P1, F1, S1> ba, boolean isLeftShuffle) {
+	public static <P1, F1, S1> SST<P1, F1, S1> computeShuffle(SST<P1, F1, S1> sstUnchecked, SFA<P1, S1> autUnchecked,
+			BooleanAlgebraSubst<P1, F1, S1> ba, boolean isLeftShuffle) throws TimeoutException {
 
 		Collection<SSTMove<P1, F1, S1>> transitions = new ArrayList<SSTMove<P1, F1, S1>>();
 		Integer initialState;
@@ -1094,8 +1016,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		LinkedList<List<Integer>> toVisit = new LinkedList<List<Integer>>();
 
 		// state is a triple (sst1 sst2 aut), sst is -1 if it hasn't started yet
-		List<Integer> firstState = Arrays.asList(sst.initialState, -1,
-				aut.getInitialState());
+		List<Integer> firstState = Arrays.asList(sst.initialState, -1, aut.getInitialState());
 
 		initialState = 0;
 		int initialStateMod = 0;
@@ -1136,71 +1057,60 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 					// Create an initial state in the second machine so that I
 					// will explore it later
-					List<Integer> initStateStart = Arrays.asList(sst1state,
-							sst.initialState, aut.getInitialState());
+					List<Integer> initStateStart = Arrays.asList(sst1state, sst.initialState, aut.getInitialState());
 					getStateId(initStateStart, reached, toVisit);
 				} else {
 					if (sst.isFinalState(sst1state)) {
 						finalStatesOtherStretches1.add(currStateId);
-						List<Integer> initStateStart = Arrays.asList(
-								sst.initialState, sst2state, aut.getInitialState());
+						List<Integer> initStateStart = Arrays.asList(sst.initialState, sst2state,
+								aut.getInitialState());
 						getStateId(initStateStart, reached, toVisit);
 					} else {
 						finalStatesOtherStretches2.add(currStateId);
-						List<Integer> initStateStart = Arrays.asList(sst1state,
-								sst.initialState, aut.getInitialState());
+						List<Integer> initStateStart = Arrays.asList(sst1state, sst.initialState,
+								aut.getInitialState());
 						getStateId(initStateStart, reached, toVisit);
 					}
 				}
 
 			// Find product moves
-			for (SSTInputMove<P1, F1, S1> sst1move : sst
-					.getInputMovesFrom(sst1state))
-				for (SFAInputMove<P1, S1> autmove : aut
-						.getInputMovesFrom(autstate)) {
+			for (SSTInputMove<P1, F1, S1> sst1move : sst.getInputMovesFrom(sst1state))
+				for (SFAInputMove<P1, S1> autmove : aut.getInputMovesFrom(autstate)) {
 
 					P1 guard = ba.MkAnd(autmove.guard, sst1move.guard);
 					if (ba.IsSatisfiable(guard)) {
 
 						if (sst2state == -1) {
 							// continue only with first machine
-							List<Integer> nextState = Arrays.asList(
-									sst1move.to, -1, autmove.to);
+							List<Integer> nextState = Arrays.asList(sst1move.to, -1, autmove.to);
 
-							int nextStateId = getStateId(nextState, reached,
-									toVisit);
+							int nextStateId = getStateId(nextState, reached, toVisit);
 
 							// only update first vars
 							FunctionalVariableUpdate<P1, F1, S1> newUpdate = sst1move.variableUpdate
 									.liftToNVars(numberOfVariables);
 
-							SSTInputMove<P1, F1, S1> newTrans = new SSTInputMove<P1, F1, S1>(
-									currStateId, nextStateId, guard, newUpdate);
+							SSTInputMove<P1, F1, S1> newTrans = new SSTInputMove<P1, F1, S1>(currStateId, nextStateId,
+									guard, newUpdate);
 
 							transitionFirstStretch.add(newTrans);
 
 						} else {
 							// continue with both sst1 and sst2
-							for (SSTInputMove<P1, F1, S1> sst2move : sst
-									.getInputMovesFrom(sst2state)) {
+							for (SSTInputMove<P1, F1, S1> sst2move : sst.getInputMovesFrom(sst2state)) {
 
-								List<Integer> nextState = Arrays.asList(
-										sst1move.to, sst2move.to, autmove.to);
+								List<Integer> nextState = Arrays.asList(sst1move.to, sst2move.to, autmove.to);
 
-								int nextStateId = getStateId(nextState,
-										reached, toVisit);
+								int nextStateId = getStateId(nextState, reached, toVisit);
 
 								// add buff:=buff and acc:=acc to updates
 								FunctionalVariableUpdate<P1, F1, S1> newUpdate = FunctionalVariableUpdate
-										.combineUpdates(
-												sst1move.variableUpdate,
-												sst2move.variableUpdate)
+										.combineUpdates(sst1move.variableUpdate, sst2move.variableUpdate)
 										.liftToNVars(numberOfVariables);
 								newUpdate.variableUpdate.get(accId).add(xAcc);
 
-								SSTInputMove<P1, F1, S1> newTrans = new SSTInputMove<P1, F1, S1>(
-										currStateId, nextStateId, guard,
-										newUpdate);
+								SSTInputMove<P1, F1, S1> newTrans = new SSTInputMove<P1, F1, S1>(currStateId,
+										nextStateId, guard, newUpdate);
 
 								transitionOtherStretches.add(newTrans);
 							}
@@ -1229,18 +1139,15 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		// from 0 to 1 add epsilon from all final states of first machine
 		// create identity update
 		{
-			SimpleVariableUpdate<P1, F1, S1> idUpdate = SimpleVariableUpdate
-					.identity(numberOfVariables);
+			SimpleVariableUpdate<P1, F1, S1> idUpdate = SimpleVariableUpdate.identity(numberOfVariables);
 			for (Integer finState : finalStatesFirstStretch) {
 				List<Integer> listOfStates = idToState.get(finState);
 				int sst1state = listOfStates.get(0);
 
-				List<Integer> nextState = Arrays.asList(sst1state,
-						sst.initialState,aut.getInitialState());
+				List<Integer> nextState = Arrays.asList(sst1state, sst.initialState, aut.getInitialState());
 				int nextStateId = reached.get(nextState);
 
-				SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(
-						finState, nextStateId + offset, idUpdate);
+				SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(finState, nextStateId + offset, idUpdate);
 				transitions.add(newMove);
 			}
 		}
@@ -1275,27 +1182,22 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				}
 				update1to2and3to2.add(updateList);
 			}
-			SimpleVariableUpdate<P1, F1, S1> svu1to2and3to2 = new SimpleVariableUpdate<P1, F1, S1>(
-					update1to2and3to2);
+			SimpleVariableUpdate<P1, F1, S1> svu1to2and3to2 = new SimpleVariableUpdate<P1, F1, S1>(update1to2and3to2);
 
 			// next state
-			List<Integer> nextState = Arrays.asList(sst.initialState,
-					sst2state, aut.getInitialState());
+			List<Integer> nextState = Arrays.asList(sst.initialState, sst2state, aut.getInitialState());
 			int nextStateId = reached.get(nextState);
 
-			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(
-					finState + offset, nextStateId + 2 * offset, svu1to2and3to2);
+			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(finState + offset, nextStateId + 2 * offset,
+					svu1to2and3to2);
 			transitions.add(newMove);
 
-			newMove = new SSTEpsilon<P1, F1, S1>(finState + 3 * offset,
-					nextStateId + 2 * offset, svu1to2and3to2);
+			newMove = new SSTEpsilon<P1, F1, S1>(finState + 3 * offset, nextStateId + 2 * offset, svu1to2and3to2);
 			transitions.add(newMove);
 
 			// Output function on X1
-			outputFunction.put(finState + offset, new OutputUpdate<P1, F1, S1>(
-					outputExprFirst));
-			outputFunction.put(finState + offset * 3,
-					new OutputUpdate<P1, F1, S1>(outputExprFirst));
+			outputFunction.put(finState + offset, new OutputUpdate<P1, F1, S1>(outputExprFirst));
+			outputFunction.put(finState + offset * 3, new OutputUpdate<P1, F1, S1>(outputExprFirst));
 		}
 
 		// case in which sst2 is in a final state
@@ -1309,8 +1211,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			if (!isLeftShuffle)
 				outputExprSecond.add(xAcc);
 			// Output function on X2 (done via renaming vars)
-			outputExprSecond.addAll(sst.outputFunction.get(sst2state)
-					.renameVars(sst.variableCount).update);
+			outputExprSecond.addAll(sst.outputFunction.get(sst2state).renameVars(sst.variableCount).update);
 			if (isLeftShuffle)
 				outputExprSecond.add(xAcc);
 
@@ -1329,25 +1230,21 @@ public class SST<P, F, S> extends Automaton<P, S> {
 				}
 				update2to3.add(updateList);
 			}
-			SimpleVariableUpdate<P1, F1, S1> svu2to3 = new SimpleVariableUpdate<P1, F1, S1>(
-					update2to3);
+			SimpleVariableUpdate<P1, F1, S1> svu2to3 = new SimpleVariableUpdate<P1, F1, S1>(update2to3);
 
 			// next state
-			List<Integer> nextState = Arrays.asList(sst1state,
-					sst.initialState, aut.getInitialState());
+			List<Integer> nextState = Arrays.asList(sst1state, sst.initialState, aut.getInitialState());
 			int nextStateId = reached.get(nextState);
 
-			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(
-					finState + 2 * offset, nextStateId + 3 * offset, svu2to3);
+			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(finState + 2 * offset, nextStateId + 3 * offset,
+					svu2to3);
 			transitions.add(newMove);
 
 			// Output function on X2
-			outputFunction.put(finState + offset * 2,
-					new OutputUpdate<P1, F1, S1>(outputExprSecond));
+			outputFunction.put(finState + offset * 2, new OutputUpdate<P1, F1, S1>(outputExprSecond));
 		}
 
-		return MkSST(transitions, initialState, numberOfVariables,
-				outputFunction, ba);
+		return MkSST(transitions, initialState, numberOfVariables, outputFunction, ba);
 
 	}
 
@@ -1364,8 +1261,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * Normalizes sst state names
 	 */
-	public static <P1, F1, S1> SST<P1, F1, S1> normalize(SST<P1, F1, S1> sst,
-			BooleanAlgebraSubst<P1, F1, S1> ba) {
+	public static <P1, F1, S1> SST<P1, F1, S1> normalize(SST<P1, F1, S1> sst, BooleanAlgebraSubst<P1, F1, S1> ba) {
 
 		if (sst.isEmpty)
 			return getEmptySST(ba);
@@ -1384,30 +1280,29 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		// rename transitions
 		for (SSTInputMove<P1, F1, S1> t : sst.getInputMovesFrom(sst.states)) {
-			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(
-					stateRen.get(t.from), stateRen.get(t.to), t.guard,
-					t.variableUpdate);
+			SSTInputMove<P1, F1, S1> newMove = new SSTInputMove<P1, F1, S1>(stateRen.get(t.from), stateRen.get(t.to),
+					t.guard, t.variableUpdate);
 			transitions.add(newMove);
 		}
 		for (SSTEpsilon<P1, F1, S1> t : sst.getEpsilonMovesFrom(sst.states)) {
-			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(
-					stateRen.get(t.from), stateRen.get(t.to), t.variableUpdate);
+			SSTEpsilon<P1, F1, S1> newMove = new SSTEpsilon<P1, F1, S1>(stateRen.get(t.from), stateRen.get(t.to),
+					t.variableUpdate);
 			transitions.add(newMove);
 		}
 
 		// Rename output function
 		for (int state : sst.getFinalStates())
-			outputFunction.put(stateRen.get(state),
-					sst.outputFunction.get(state));
+			outputFunction.put(stateRen.get(state), sst.outputFunction.get(state));
 
-		return MkSST(transitions, initialState, numberOfVariables,
-				outputFunction, ba);
+		return MkSST(transitions, initialState, numberOfVariables, outputFunction, ba);
 	}
 
 	/**
 	 * Computes the domain automaton of the sst
+	 * 
+	 * @throws TimeoutException
 	 */
-	public SFA<P, S> getDomain(BooleanAlgebraSubst<P, F, S> ba) {
+	public SFA<P, S> getDomain(BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		Collection<SFAMove<P, S>> transitions = new ArrayList<SFAMove<P, S>>();
 
 		for (SSTInputMove<P, F, S> t : getInputMovesFrom(states))
@@ -1423,29 +1318,34 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 	/**
 	 * Computes the pre-image on the set outputNonMin
+	 * 
+	 * @throws TimeoutException
 	 */
-	public boolean typeCheck(SFA<P, S> inputNonMin, SFA<P, S> outputNonMin,
-			BooleanAlgebraSubst<P, F, S> ba) {
+	public boolean typeCheck(SFA<P, S> inputNonMin, SFA<P, S> outputNonMin, BooleanAlgebraSubst<P, F, S> ba)
+			throws TimeoutException {
 		SFA<P, S> complement = outputNonMin.complement(ba);
-		SFA<P,S> preim = SST.preImage(this, complement, ba);
-		SFA<P,S> inters = preim.intersectionWith(inputNonMin, ba);
-	
+		SFA<P, S> preim = SST.preImage(this, complement, ba);
+		SFA<P, S> inters = preim.intersectionWith(inputNonMin, ba);
+
 		return inters.isEmpty();
 	}
-	
+
 	/**
 	 * Computes the pre-image on the set outputNonMin
+	 * 
+	 * @throws TimeoutException
 	 */
-	public SFA<P, S> getPreImage(SFA<P, S> outputNonMin,
-			BooleanAlgebraSubst<P, F, S> ba) {
+	public SFA<P, S> getPreImage(SFA<P, S> outputNonMin, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		return SST.preImage(this, outputNonMin, ba);
 	}
 
 	/**
 	 * Computes the pre-image of sst on the set outputNonMin
+	 * 
+	 * @throws TimeoutException
 	 */
-	public static <A, B, C> SFA<A, C> preImage(SST<A, B, C> sstWithEps,
-			SFA<A, C> outputNonMin, BooleanAlgebraSubst<A, B, C> ba) {
+	public static <A, B, C> SFA<A, C> preImage(SST<A, B, C> sstWithEps, SFA<A, C> outputNonMin,
+			BooleanAlgebraSubst<A, B, C> ba) throws TimeoutException {
 		SFA<A, C> output = outputNonMin.minimize(ba);
 		SST<A, B, C> sst = sstWithEps.removeEpsilonMoves(ba);
 
@@ -1475,17 +1375,18 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		// do a DFS and look for reachable states
 		while (!toVisit.isEmpty()) {
-			Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>> currState = toVisit
-					.removeFirst();
+			Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>> currState = toVisit.removeFirst();
 			int currStateId = reached.get(currState);
 
 			int sstState = currState.first;
 			HashMap<Integer, HashMap<Integer, Integer>> currFun = currState.second;
 
-			// set final states to those for which the output func summarized on initial state gives a final state of O
-			if(sst.isFinalState(sstState)){
-				Integer fromqoOnOutputFunction = sst.outputFunction.get(sstState).getInitStateSummary(currFun, output, ba);
-				if(fromqoOnOutputFunction!= null && output.getFinalStates().contains(fromqoOnOutputFunction))
+			// set final states to those for which the output func summarized on
+			// initial state gives a final state of O
+			if (sst.isFinalState(sstState)) {
+				Integer fromqoOnOutputFunction = sst.outputFunction.get(sstState).getInitStateSummary(currFun, output,
+						ba);
+				if (fromqoOnOutputFunction != null && output.getFinalStates().contains(fromqoOnOutputFunction))
 					finalStates.add(currStateId);
 			}
 
@@ -1494,15 +1395,14 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 				Collection<Pair<HashMap<Integer, HashMap<Integer, Integer>>, A>> nextFuns = t.variableUpdate
 						.getNextSummary(currFun, t.guard, output, ba);
-				for(Pair<HashMap<Integer, HashMap<Integer, Integer>>, A> pair: nextFuns){	
-					
-					Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>> nextState = 
-							new Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>>(
+				for (Pair<HashMap<Integer, HashMap<Integer, Integer>>, A> pair : nextFuns) {
+
+					Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>> nextState = new Pair<Integer, HashMap<Integer, HashMap<Integer, Integer>>>(
 							t.to, pair.first);
 
 					int nextStateId = getStateId(nextState, reached, toVisit);
-					
-					transitions.add(new SFAInputMove<A,C>(currStateId, nextStateId, pair.second));
+
+					transitions.add(new SFAInputMove<A, C>(currStateId, nextStateId, pair.second));
 				}
 			}
 
@@ -1513,8 +1413,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 	// non-public methods
 
-	protected Map<Integer, SimpleVariableUpdate<P, F, S>> getSSTEpsClosure(
-			Integer fronteer, BooleanAlgebra<P, S> ba) {
+	protected Map<Integer, SimpleVariableUpdate<P, F, S>> getSSTEpsClosure(Integer fronteer, BooleanAlgebra<P, S> ba) {
 
 		Map<Integer, SimpleVariableUpdate<P, F, S>> stateToAss = new HashMap<Integer, SimpleVariableUpdate<P, F, S>>();
 		Collection<Integer> reached = new HashSet<Integer>(fronteer);
@@ -1524,19 +1423,16 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 		while (toVisit.size() > 0) {
 			int fromState = toVisit.removeFirst();
-			SimpleVariableUpdate<P, F, S> fromUpdate = stateToAss
-					.get(fromState);
+			SimpleVariableUpdate<P, F, S> fromUpdate = stateToAss.get(fromState);
 			for (SSTEpsilon<P, F, S> t : getEpsilonMovesFrom(fromState)) {
 				if (!reached.contains(t.to)) {
 					reached.add(t.to);
 					toVisit.add(t.to);
 					// this should be compose fromUpdate t.variableUpdate
-					stateToAss.put(t.to,
-							fromUpdate.composeWith(t.variableUpdate));
+					stateToAss.put(t.to, fromUpdate.composeWith(t.variableUpdate));
 				} else {
 					throw new IllegalArgumentException(
-							"the epsilon transitions cause ambiguity ("
-									+ "their relation not a tree)");
+							"the epsilon transitions cause ambiguity (" + "their relation not a tree)");
 				}
 			}
 		}
@@ -1545,9 +1441,11 @@ public class SST<P, F, S> extends Automaton<P, S> {
 
 	/**
 	 * Add Transition
+	 * 
+	 * @throws TimeoutException
 	 */
-	private void addTransition(SSTMove<P, F, S> transition,
-			BooleanAlgebraSubst<P, F, S> ba, boolean skipSatCheck) {
+	private void addTransition(SSTMove<P, F, S> transition, BooleanAlgebraSubst<P, F, S> ba, boolean skipSatCheck)
+			throws TimeoutException {
 
 		if (transition.isEpsilonTransition()) {
 			if (transition.to == transition.from)
@@ -1566,15 +1464,11 @@ public class SST<P, F, S> extends Automaton<P, S> {
 			states.add(transition.to);
 
 			if (transition.isEpsilonTransition()) {
-				getEpsilonMovesFrom(transition.from).add(
-						(SSTEpsilon<P, F, S>) transition);
-				getEpsilonMovesTo(transition.to).add(
-						(SSTEpsilon<P, F, S>) transition);
+				getEpsilonMovesFrom(transition.from).add((SSTEpsilon<P, F, S>) transition);
+				getEpsilonMovesTo(transition.to).add((SSTEpsilon<P, F, S>) transition);
 			} else {
-				getInputMovesFrom(transition.from).add(
-						(SSTInputMove<P, F, S>) transition);
-				getInputMovesTo(transition.to).add(
-						(SSTInputMove<P, F, S>) transition);
+				getInputMovesFrom(transition.from).add((SSTInputMove<P, F, S>) transition);
+				getInputMovesTo(transition.to).add((SSTInputMove<P, F, S>) transition);
 			}
 		}
 	}
@@ -1598,8 +1492,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<SSTInputMove<P, F, S>> getInputMovesFrom(
-			Collection<Integer> stateSet) {
+	public Collection<SSTInputMove<P, F, S>> getInputMovesFrom(Collection<Integer> stateSet) {
 		Collection<SSTInputMove<P, F, S>> transitions = new LinkedList<SSTInputMove<P, F, S>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getInputMovesFrom(state));
@@ -1621,8 +1514,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions to set of states
 	 */
-	public Collection<SSTInputMove<P, F, S>> getInputMovesTo(
-			Collection<Integer> stateSet) {
+	public Collection<SSTInputMove<P, F, S>> getInputMovesTo(Collection<Integer> stateSet) {
 		Collection<SSTInputMove<P, F, S>> transitions = new LinkedList<SSTInputMove<P, F, S>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getInputMovesTo(state));
@@ -1646,8 +1538,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<SSTEpsilon<P, F, S>> getEpsilonMovesFrom(
-			Collection<Integer> stateSet) {
+	public Collection<SSTEpsilon<P, F, S>> getEpsilonMovesFrom(Collection<Integer> stateSet) {
 		Collection<SSTEpsilon<P, F, S>> transitions = new LinkedList<SSTEpsilon<P, F, S>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getEpsilonMovesFrom(state));
@@ -1669,8 +1560,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions starting set of states
 	 */
-	public Collection<SSTEpsilon<P, F, S>> getEpsilonMovesTo(
-			Collection<Integer> stateSet) {
+	public Collection<SSTEpsilon<P, F, S>> getEpsilonMovesTo(Collection<Integer> stateSet) {
 		Collection<SSTEpsilon<P, F, S>> transitions = new LinkedList<SSTEpsilon<P, F, S>>();
 		for (Integer state : stateSet)
 			transitions.addAll(getEpsilonMovesTo(state));
@@ -1691,8 +1581,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions starting at a set of states
 	 */
-	public Collection<SSTMove<P, F, S>> getTransitionsFrom(
-			Collection<Integer> stateSet) {
+	public Collection<SSTMove<P, F, S>> getTransitionsFrom(Collection<Integer> stateSet) {
 		Collection<SSTMove<P, F, S>> trset = new HashSet<SSTMove<P, F, S>>();
 		trset.addAll(getInputMovesFrom(stateSet));
 		trset.addAll(getEpsilonMovesFrom(stateSet));
@@ -1712,8 +1601,7 @@ public class SST<P, F, S> extends Automaton<P, S> {
 	/**
 	 * Returns the set of transitions to a set of states
 	 */
-	public Collection<SSTMove<P, F, S>> getTransitionsTo(
-			Collection<Integer> stateSet) {
+	public Collection<SSTMove<P, F, S>> getTransitionsTo(Collection<Integer> stateSet) {
 		Collection<SSTMove<P, F, S>> trset = new HashSet<SSTMove<P, F, S>>();
 		trset.addAll(getInputMovesTo(stateSet));
 		trset.addAll(getEpsilonMovesTo(stateSet));
@@ -1778,18 +1666,13 @@ public class SST<P, F, S> extends Automaton<P, S> {
 		cl.states = new HashSet<Integer>(states);
 		cl.initialState = initialState;
 
-		cl.transitionsFrom = new HashMap<Integer, Collection<SSTInputMove<P, F, S>>>(
-				transitionsFrom);
-		cl.transitionsTo = new HashMap<Integer, Collection<SSTInputMove<P, F, S>>>(
-				transitionsTo);
+		cl.transitionsFrom = new HashMap<Integer, Collection<SSTInputMove<P, F, S>>>(transitionsFrom);
+		cl.transitionsTo = new HashMap<Integer, Collection<SSTInputMove<P, F, S>>>(transitionsTo);
 
-		cl.epsTransitionsFrom = new HashMap<Integer, Collection<SSTEpsilon<P, F, S>>>(
-				epsTransitionsFrom);
-		cl.epsTransitionsTo = new HashMap<Integer, Collection<SSTEpsilon<P, F, S>>>(
-				epsTransitionsTo);
+		cl.epsTransitionsFrom = new HashMap<Integer, Collection<SSTEpsilon<P, F, S>>>(epsTransitionsFrom);
+		cl.epsTransitionsTo = new HashMap<Integer, Collection<SSTEpsilon<P, F, S>>>(epsTransitionsTo);
 
-		cl.outputFunction = new HashMap<Integer, OutputUpdate<P, F, S>>(
-				outputFunction);
+		cl.outputFunction = new HashMap<Integer, OutputUpdate<P, F, S>>(outputFunction);
 
 		return cl;
 	}

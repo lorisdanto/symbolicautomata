@@ -1,3 +1,4 @@
+
 /**
  * BooleanAlgebras
  * theory
@@ -13,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.sat4j.specs.TimeoutException;
 
 import theory.BooleanAlgebra;
 import theory.characters.BinaryCharPred;
@@ -63,7 +65,7 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 	}
 
 	@Override
-	public ICharPred MkOr(Collection<ICharPred> clctn) {
+	public ICharPred MkOr(Collection<ICharPred> clctn) throws TimeoutException {
 		ICharPred or = StdCharPred.FALSE;
 		for (ICharPred a : clctn) {
 			or = MkOr(or, a);
@@ -72,7 +74,7 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 	}
 
 	@Override
-	public ICharPred MkOr(ICharPred u1, ICharPred u2) {
+	public ICharPred MkOr(ICharPred u1, ICharPred u2) throws TimeoutException {
 		if (u1 instanceof CharPred) {
 			CharPred u1c = (CharPred) u1;
 			if (u2 instanceof CharPred) {
@@ -232,7 +234,7 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 						CharPred newFirst = usolver.MkAnd(pair1.first, pair2.first);
 						if (usolver.IsSatisfiable(newFirst)) {
 							CharPred newSecond = usolver.MkAnd(pair1.second, pair2.second);
-							if (usolver.IsSatisfiable(newFirst))
+							if (usolver.IsSatisfiable(newSecond))
 								newUneq.add(new Pair<CharPred, CharPred>(newFirst, newSecond));
 						}
 					}
@@ -369,6 +371,11 @@ public class EqualitySolver extends BooleanAlgebra<ICharPred, Character> {
 			sb.append(c);
 		}
 		return sb.toString();
+	}
+
+	@Override
+	public ICharPred MkAtom(Character s){
+		return new CharPred(s);
 	}
 
 }
