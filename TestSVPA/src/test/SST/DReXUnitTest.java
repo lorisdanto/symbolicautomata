@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.sat4j.specs.TimeoutException;
 
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
@@ -44,7 +45,7 @@ import transducers.sst.Token;
 public class DReXUnitTest {
 
 	@Test
-	public void testPrePost() {
+	public void testPrePost() throws TimeoutException {
 		UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sstID = getID(ba).star(ba);
 
@@ -104,7 +105,7 @@ public class DReXUnitTest {
 //	(Generate SST by e.getSST(solver))
 	
 	@Test
-	public void testPrePostArjunEmail() {
+	public void testPrePostArjunEmail() throws TimeoutException {
 		UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 		SST<CharPred, CharFunc, Character> sst = getSTTArjun(ba);
 
@@ -191,7 +192,13 @@ public class DReXUnitTest {
 
 		// Output function just outputs x
 
-		return SFA.MkSFA(transitionsA, 0, Arrays.asList(0), ba);
+		try {
+			return SFA.MkSFA(transitionsA, 0, Arrays.asList(0), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	// SFA that accepts strings contatining at least two as
@@ -214,7 +221,13 @@ public class DReXUnitTest {
 		transitionsA.add(new SFAInputMove<CharPred, Character>(4, 4, ba.True()));
 		
 
-		return SFA.MkSFA(transitionsA, 0, Arrays.asList(0,2,4), ba);
+		try {
+			return SFA.MkSFA(transitionsA, 0, Arrays.asList(0,2,4), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	

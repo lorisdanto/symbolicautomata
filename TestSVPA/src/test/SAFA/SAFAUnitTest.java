@@ -19,15 +19,15 @@ import automata.safa.SATRelation;
 import automata.safa.booleanexpression.PositiveBooleanExpression;
 import automata.safa.booleanexpression.SumOfProducts;
 import automata.safa.booleanexpression.SumOfProductsFactory;
-import theory.characters.CharPred;
+import theory.BooleanAlgebra;
 import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 import theory.intervals.UnaryCharIntervalSolver;
+import theory.safa.SAFABooleanAlgebra;
 
 public class SAFAUnitTest {
-
 	@Test
-	public void testIntersection() {
+	public void testIntersection() throws TimeoutException {
 		SAFA<CharPred, Character> intersection = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
 
 		assertTrue(atLeastOneAlpha.accepts(la, ba));
@@ -48,7 +48,7 @@ public class SAFAUnitTest {
 	
 	
 	@Test
-	public void testUnion() {
+	public void testUnion() throws TimeoutException {
 		SAFA<CharPred, Character> union = atLeastOneAlpha.unionWith(atLeastOneNum, ba);
 
 		assertTrue(atLeastOneAlpha.accepts(la, ba));
@@ -68,7 +68,7 @@ public class SAFAUnitTest {
 	}
 	
 	@Test
-	public void testEquivalence() {
+	public void testEquivalence() throws TimeoutException {
 		SAFA<CharPred, Character> intersection1 = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
 		SAFA<CharPred, Character> intersection2 = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba);
 
@@ -84,6 +84,18 @@ public class SAFAUnitTest {
 		assertFalse(SAFA.areReverseEquivalent(intersection2, atLeastOneNum, ba).first);
 		assertTrue(SAFA.areReverseEquivalent(intersection2, intersection1, ba).first);
 		assertTrue(SAFA.areReverseEquivalent(intersection1, intersection2, ba).first);
+	}
+
+	@Test
+	public void testListOfLists() throws TimeoutException {
+		System.out.println("lists of lists");
+		BooleanAlgebra<SAFA<CharPred,Character>,List<Character>> lol = new SAFABooleanAlgebra<>(ba, boolexpr);
+		CharPred a = new CharPred('a');
+		CharPred z = new CharPred('z');
+		SAFA<SAFA<CharPred,Character>,List<Character>> evAandZ = eventually(lol, eventually(ba, a).intersectionWith(eventually(ba, z), ba));
+		SAFA<SAFA<CharPred,Character>,List<Character>> evAandEvZ = eventually(lol, eventually(ba, a)).intersectionWith(eventually(lol, eventually(ba, z)), lol);
+		assertFalse(SAFA.isEquivalent(evAandZ, evAandEvZ, lol, boolexpr).first);
+		assertTrue(SAFA.isEquivalent(evAandZ.unionWith(evAandEvZ, lol), evAandEvZ, lol, boolexpr).first);
 	}
 
 	// ---------------------------------------
@@ -118,7 +130,13 @@ public class SAFAUnitTest {
 		transitionsA.add(new SAFAInputMove<CharPred, Character>(0, sp0, ba.True()));
 		transitionsA.add(new SAFAInputMove<CharPred, Character>(0, sp1, p));
 		transitionsA.add(new SAFAInputMove<CharPred, Character>(1, sp1, ba.True()));
-		return SAFA.MkSAFA(transitionsA, boolexpr.MkState(0), Arrays.asList(1), ba);
+		try {
+			return SAFA.MkSAFA(transitionsA, boolexpr.MkState(0), Arrays.asList(1), ba);
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}	
 
 	// -------------------------
@@ -132,45 +150,53 @@ public class SAFAUnitTest {
 		return l;
 	}
 
+	private <P,S> SAFA<P,S> eventually(BooleanAlgebra<P,S> ba, P predicate) throws TimeoutException {
+		PositiveBooleanExpression initialState = boolexpr.MkState(0);
+		Collection<Integer> finalStates = new LinkedList<>();
+		Collection<SAFAInputMove<P,S>> transitions = new LinkedList<>();
+		transitions.add(new SAFAInputMove<P,S>(0, boolexpr.True(), predicate));
+		transitions.add(new SAFAInputMove<P,S>(0, boolexpr.MkState(0), ba.MkNot(predicate)));
+		return SAFA.MkSAFA(transitions, initialState, finalStates, ba);
+	}
 
-    @Test
-    public void testSATRelation() throws TimeoutException {
-    	SATRelation rel = new SATRelation();
-    	PositiveBooleanExpression sp0 = boolexpr.MkState(0);
-    	PositiveBooleanExpression sp1 = boolexpr.MkState(1);
-        assertFalse(rel.isMember(sp0, sp0));
-        rel.add(sp0, sp0);
-        assertTrue(rel.isMember(sp0, sp0));
-        assertFalse(rel.isMember(sp1, sp1));
-        rel.add(sp1, sp1);
-
-        assertFalse(rel.isMember(sp0, sp1));
-
-        assertTrue(rel.isMember(boolexpr.MkAnd(sp0, sp1), boolexpr.MkAnd(sp1, sp0)));
-        assertTrue(rel.isMember(boolexpr.MkOr(sp0, sp1), boolexpr.MkOr(sp1, sp0)));
-        assertFalse(rel.isMember(boolexpr.MkOr(sp0, sp1), boolexpr.MkAnd(sp0, sp1)));
-        assertFalse(rel.isMember(boolexpr.MkOr(sp0, sp1), sp1));
-        rel.add(sp0, sp1);
-        assertTrue(rel.isMember(boolexpr.MkOr(sp0, sp1), sp1));
-    }
+//    @Test
+//    public void testSATRelation() throws TimeoutException {
+//    	SATRelation rel = new SATRelation();
+//    	PositiveBooleanExpression sp0 = boolexpr.MkState(0);
+//    	PositiveBooleanExpression sp1 = boolexpr.MkState(1);
+//        assertFalse(rel.isMember(sp0, sp0));
+//        rel.add(sp0, sp0);
+//        assertTrue(rel.isMember(sp0, sp0));
+//        assertFalse(rel.isMember(sp1, sp1));
+//        rel.add(sp1, sp1);
+//
+//        assertFalse(rel.isMember(sp0, sp1));
+//
+//        assertTrue(rel.isMember(boolexpr.MkAnd(sp0, sp1), boolexpr.MkAnd(sp1, sp0)));
+//        assertTrue(rel.isMember(boolexpr.MkOr(sp0, sp1), boolexpr.MkOr(sp1, sp0)));
+//        assertFalse(rel.isMember(boolexpr.MkOr(sp0, sp1), boolexpr.MkAnd(sp0, sp1)));
+//        assertFalse(rel.isMember(boolexpr.MkOr(sp0, sp1), sp1));
+//        rel.add(sp0, sp1);
+//        assertTrue(rel.isMember(boolexpr.MkOr(sp0, sp1), sp1));
+//    }
 
 	@Test
 	public void testForwardEquivalence() throws TimeoutException {
 		BooleanExpressionFactory<SumOfProducts> pos = SumOfProductsFactory.getInstance();
 		SAFA<CharPred, Character> intersection1 = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
 		SAFA<CharPred, Character> intersection2 = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba);
-		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, atLeastOneNum, ba, pos));
-		assertFalse(SAFA.isEquivalent(atLeastOneNum, atLeastOneAlpha, ba, pos));
-		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, intersection1, ba, pos));
-		assertFalse(SAFA.isEquivalent(intersection1, atLeastOneAlpha, ba, pos));
-		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, intersection2, ba, pos));
-		assertFalse(SAFA.isEquivalent(intersection2, atLeastOneAlpha, ba, pos));
-		assertFalse(SAFA.isEquivalent(atLeastOneNum, intersection1, ba, pos));
-		assertFalse(SAFA.isEquivalent(intersection1, atLeastOneNum, ba, pos));
-		assertFalse(SAFA.isEquivalent(atLeastOneNum, intersection2, ba, pos));
-		assertFalse(SAFA.isEquivalent(intersection2, atLeastOneNum, ba, pos));
-		assertTrue(SAFA.isEquivalent(intersection2, intersection1, ba, pos));
-		assertTrue(SAFA.isEquivalent(intersection1, intersection2, ba, pos));
+		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, atLeastOneNum, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(atLeastOneNum, atLeastOneAlpha, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, intersection1, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(intersection1, atLeastOneAlpha, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(atLeastOneAlpha, intersection2, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(intersection2, atLeastOneAlpha, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(atLeastOneNum, intersection1, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(intersection1, atLeastOneNum, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(atLeastOneNum, intersection2, ba, pos).first);
+		assertFalse(SAFA.isEquivalent(intersection2, atLeastOneNum, ba, pos).first);
+		assertTrue(SAFA.isEquivalent(intersection2, intersection1, ba, pos).first);
+		assertTrue(SAFA.isEquivalent(intersection1, intersection2, ba, pos).first);
 	}
 
 	@Test
@@ -183,7 +209,7 @@ public class SAFAUnitTest {
 
 		assertTrue(SAFA.isEmpty(a.intersectionWith(notA, ba), ba));
 		assertTrue(SAFA.isEmpty(b.intersectionWith(notB, ba), ba));
-		assertTrue(SAFA.isEquivalent(a, notA.negate(ba), ba, boolexpr));
-		assertTrue(SAFA.isEquivalent(a, notB.negate(ba), ba, boolexpr));
+		assertTrue(SAFA.isEquivalent(a, notA.negate(ba), ba, boolexpr).first);
+		assertTrue(SAFA.isEquivalent(a, notB.negate(ba), ba, boolexpr).first);
 	}
 }

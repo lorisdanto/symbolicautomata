@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.sat4j.specs.TimeoutException;
+
 import theory.BooleanAlgebraSubst;
 import utilities.Pair;
 import automata.sfa.SFA;
@@ -153,7 +155,7 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 	// compute all possible summaries by all possible guards of output automaton
 	protected Collection<Pair<HashMap<Integer, HashMap<Integer, Integer>>, P>> getNextSummary(
 			HashMap<Integer, HashMap<Integer, Integer>> f, P guard,
-			SFA<P, S> aut, BooleanAlgebraSubst<P, F, S> ba) {
+			SFA<P, S> aut, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 
 		// Ordered of collections of tuples (phi, s->s).
 		// The i-th elem contains all possible summaries matching the i-th variable
@@ -203,7 +205,7 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 			Collection<Pair<P, HashMap<Integer, Integer>>> funcs,
 			HashMap<Integer, HashMap<Integer, P>> stateToSetOfPairs,
 			int currStateId, P p, HashMap<Integer, Integer> currFunc,
-			ArrayList<Integer> states, BooleanAlgebraSubst<P, F, S> ba) {
+			ArrayList<Integer> states, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 
 		if (!ba.IsSatisfiable(p))
 			return;
@@ -236,7 +238,7 @@ public class FunctionalVariableUpdate<P, F, S> extends VariableUpdate<P, F, S> {
 			Collection<Pair<HashMap<Integer, HashMap<Integer, Integer>>, P>> output,
 			ArrayList<Collection<Pair<P, HashMap<Integer, Integer>>>> variableToFunsCrossPred,
 			int varId, P p, HashMap<Integer, HashMap<Integer, Integer>> fun,
-			BooleanAlgebraSubst<P, F, S> ba) {
+			BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		if (!ba.IsSatisfiable(p))
 			return;
 

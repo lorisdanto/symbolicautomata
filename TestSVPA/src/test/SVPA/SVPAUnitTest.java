@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import org.junit.Test;
+import org.sat4j.specs.TimeoutException;
 
 import automata.AutomataException;
 import automata.svpa.Call;
@@ -40,7 +41,7 @@ public class SVPAUnitTest {
 	}
 
 	@Test
-	public void testPropertiesAccessors() {
+	public void testPropertiesAccessors() throws TimeoutException {
 		assertTrue(autA.isDeterministic(ba));
 		assertTrue(autA.stateCount == 2);
 		assertTrue(autA.transitionCount == 6);
@@ -57,7 +58,7 @@ public class SVPAUnitTest {
 	}
 
 	@Test
-	public void testAccept() {
+	public void testAccept() throws TimeoutException {
 		assertTrue(autA.accepts(ab, ba));
 		assertTrue(autA.accepts(anotb, ba));
 		assertFalse(autA.accepts(notab, ba));
@@ -70,7 +71,7 @@ public class SVPAUnitTest {
 	}
 
 	@Test
-	public void testIntersectionWith() {
+	public void testIntersectionWith() throws TimeoutException {
 
 		// Compute intersection
 		SVPA<ICharPred, Character> inters = autA.intersectionWith(autB, ba);
@@ -82,7 +83,7 @@ public class SVPAUnitTest {
 	}
 
 	@Test
-	public void testUnion() {
+	public void testUnion() throws TimeoutException {
 
 		// Compute union
 		SVPA<ICharPred, Character> inters = autA.unionWith(autB, ba);
@@ -94,7 +95,7 @@ public class SVPAUnitTest {
 	}
 
 	@Test
-	public void testMkTotal() {
+	public void testMkTotal() throws TimeoutException {
 
 		SVPA<ICharPred, Character> totA = autA.mkTotal(ba);
 
@@ -533,12 +534,14 @@ public class SVPAUnitTest {
 			return SVPA.MkSVPA(transitions, Arrays.asList(0), Arrays.asList(0), ba);
 		} catch (AutomataException e) {
 			return null;
+		} catch (TimeoutException e) {
+			return null;
 		}
 
 	}
 
 	// Contains a somewhere as internal doesn't care about other symbols
-	private SVPA<ICharPred, Character> getSVPAb(BooleanAlgebra<ICharPred, Character> ba) {
+	private SVPA<ICharPred, Character> getSVPAb(BooleanAlgebra<ICharPred, Character> ba){
 
 		Collection<SVPAMove<ICharPred, Character>> transitions = new LinkedList<SVPAMove<ICharPred, Character>>();
 		transitions.add(new Internal<ICharPred, Character>(0, 0, trueChar));
@@ -554,11 +557,13 @@ public class SVPAUnitTest {
 			return SVPA.MkSVPA(transitions, Arrays.asList(0), Arrays.asList(1), ba);
 		} catch (AutomataException e) {
 			return null;
-		}
+		} catch (TimeoutException e) {
+			return null;
+		} 
 	}
 
 	// Test from Peter Ohman
-	private SVPA<ICharPred, Character> getCFGAutomata(BooleanAlgebra<ICharPred, Character> ba){
+	private SVPA<ICharPred, Character> getCFGAutomata(BooleanAlgebra<ICharPred, Character> ba) {
 		Collection<SVPAMove<ICharPred, Character>> transitions = new LinkedList<SVPAMove<ICharPred, Character>>();
 
 		// extra state "0" is prior to the entry of "main"
@@ -581,6 +586,8 @@ public class SVPAUnitTest {
 			//System.out.println(l);
 			return svpa;
 		} catch (AutomataException e) {
+			return null;
+		} catch (TimeoutException e) {
 			return null;
 		}
 	}
@@ -607,7 +614,7 @@ public class SVPAUnitTest {
 
 	// Another test from Peter
 	@Test
-	public void testBigIntersection(){
+	public void testBigIntersection() throws TimeoutException{
 		try {
 			SVPA<ICharPred, Character> svpa = getBigIntersection();
 			assertFalse(svpa.isEmpty);
@@ -617,7 +624,7 @@ public class SVPAUnitTest {
 		}
 	}
 
-	public SVPA<ICharPred, Character> getBigIntersection() throws AutomataException {
+	public SVPA<ICharPred, Character> getBigIntersection() throws AutomataException, TimeoutException {
 		EqualitySolver ba = new EqualitySolver();
 
 		Collection<SVPAMove<ICharPred, Character>> transitions1 = new LinkedList<SVPAMove<ICharPred, Character>>();
@@ -851,7 +858,7 @@ public class SVPAUnitTest {
 
 	// Testing char SVPA importer
 	@Test
-	public void testSmallImport(){
+	public void testSmallImport() throws TimeoutException{
 		EqualitySolver ba = new EqualitySolver();
 		SVPA<ICharPred, Character> cfgAutomaton = getCFGAutomata(ba);
 

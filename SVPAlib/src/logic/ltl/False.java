@@ -2,12 +2,12 @@ package logic.ltl;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
 
-import automata.safa.BooleanExpression;
 import automata.safa.BooleanExpressionFactory;
 import automata.safa.SAFA;
 import automata.safa.SAFAInputMove;
+import automata.safa.booleanexpression.PositiveBooleanExpression;
 import theory.BooleanAlgebra;
 
 public class False<P, S> extends LTLFormula<P, S> {
@@ -33,35 +33,39 @@ public class False<P, S> extends LTLFormula<P, S> {
 	}		
 	
 	@Override
-	protected void accumulateSAFAStatesTransitions(HashMap<LTLFormula<P, S>, Integer> formulaToStateId,
-			HashMap<Integer, Collection<SAFAInputMove<P, S>>> moves,
-			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba) {
+	protected PositiveBooleanExpression accumulateSAFAStatesTransitions(
+			HashMap<LTLFormula<P, S>, PositiveBooleanExpression> formulaToState, Collection<SAFAInputMove<P, S>> moves,
+			Collection<Integer> finalStates, BooleanAlgebra<P, S> ba, HashSet<Integer> states) {
+		BooleanExpressionFactory<PositiveBooleanExpression> boolexpr = SAFA.getBooleanExpressionFactory();
 
 		// If I already visited avoid recomputing
-		if (formulaToStateId.containsKey(this))
-			return;
+		if (formulaToState.containsKey(this))
+			return formulaToState.get(this);
 
 		// Update hash tables
-		int id = formulaToStateId.size();
-		formulaToStateId.put(this, id);
+		int id =states.size();
+		states.add(id);
+		PositiveBooleanExpression initialState = boolexpr.MkState(id);
+		formulaToState.put(this, initialState);		
 		
-		// delta(False, _) = nothing		
-		Collection<SAFAInputMove<P, S>> newMoves = new LinkedList<>();
-		
-		moves.put(id, newMoves);
-	}
-
-	@Override
-	protected boolean isFinalState() {
-		return false;
+		return initialState;
 	}
 	
 	@Override
-	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba) {
-		if(isPositive)
+	protected LTLFormula<P, S> pushNegations(boolean isPositive, BooleanAlgebra<P, S> ba, HashMap<String, LTLFormula<P,S>> posHash, HashMap<String, LTLFormula<P,S>> negHash){
+		if(isPositive){
 			return this;
-		else 
-			return new True<>();
+		}
+		else{ 
+			String key = this.toString();
+			if (negHash.containsKey(key)) {
+				return negHash.get(key);
+			} else {
+				LTLFormula<P, S> out = new True<>();
+				negHash.put(key, out);
+				return out;
+			}			
+		}
 	}
 	
 	@Override
@@ -69,8 +73,13 @@ public class False<P, S> extends LTLFormula<P, S> {
 		sb.append("false");
 	}
 	
+//	@Override
+//	public SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba) {
+//		return SAFA.getEmptySAFA(ba);
+//	}
+	
 	@Override
-	public SAFA<P,S> getSAFANew(BooleanAlgebra<P, S> ba) {
-		return SAFA.getEmptySAFA(ba);
+	public int getSize() {
+		return 1;
 	}
 }

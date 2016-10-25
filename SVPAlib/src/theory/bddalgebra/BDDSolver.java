@@ -1,3 +1,4 @@
+
 /**
  * BooleanAlgebras
  * theory
@@ -104,6 +105,11 @@ public class BDDSolver extends BooleanAlgebra<BDD, BDD> {
 	public Pair<BDD, BDD> generateWitnesses(BDD p1) {
 		// TODO Auto-generated method stub
 		throw new NotImplementedException();
+	}
+
+	@Override
+	public BDD MkAtom(BDD s) {
+		return s;
 	}
     
 	

@@ -2,10 +2,8 @@ package automata.safa.booleanexpression;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.function.Function;
 
 import automata.safa.BooleanExpression;
-import automata.safa.BooleanExpressionFactory;
 import automata.safa.LatticeMorphism;
 
 public class PositiveAnd extends PositiveBooleanExpression {
@@ -44,6 +42,11 @@ public class PositiveAnd extends PositiveBooleanExpression {
 	@Override
 	public <R> R apply(LatticeMorphism<BooleanExpression, R> f) {
 		return f.MkAnd(f.apply(left), f.apply(right));
+	}
+
+	@Override
+	public int getSize() {
+		return 1+left.getSize()+right.getSize();
 	}
 
 }

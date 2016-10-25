@@ -4,6 +4,8 @@ package automata.esfa;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sat4j.specs.TimeoutException;
+
 import automata.esfa.ESFAMove;
 import theory.BooleanAlgebra;
 
@@ -84,7 +86,7 @@ public class CartesianESFAInputMove<P,S> extends ESFAMove<P, S>{
 	}
 
 	@Override
-	public List<S> getWitness(BooleanAlgebra<P, S> ba) {
+	public List<S> getWitness(BooleanAlgebra<P, S> ba) throws TimeoutException {
 		List<S> result = new ArrayList<S>();
 		for(int i=0; i<guard.size();i++){
 			result.add(ba.generateWitness(guard.get(i)));
@@ -93,7 +95,7 @@ public class CartesianESFAInputMove<P,S> extends ESFAMove<P, S>{
 	}
 
 	@Override
-	public boolean hasModel(List<S> el, BooleanAlgebra<P, S> ba) {
+	public boolean hasModel(List<S> el, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		if(el.size() != guard.size()) return false;
 		for(int i = 0; i < el.size(); i++)
 			if(!ba.HasModel(guard.get(i), el.get(i))) return false;

@@ -2,6 +2,10 @@ A symbolic automata library
 ================
 This efficient automata library allows you to represent large (or infinite) alphabets succinctly.
 
+This branch has some git submodule. After cloning run:
+- git submodule init
+- git submodule update
+
 Symbolic automata
 ----------------
 In a *symbolic automaton* transitions carry predicates instead of concrete symbols.

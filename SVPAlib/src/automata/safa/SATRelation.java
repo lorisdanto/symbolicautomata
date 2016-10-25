@@ -1,18 +1,14 @@
 package automata.safa;
 
-import org.sat4j.specs.ContradictionException;
-import org.sat4j.specs.ISolver;
-import org.sat4j.specs.TimeoutException;
-
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Function;
 
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
-import automata.safa.booleanexpression.*;
+import org.sat4j.specs.ContradictionException;
+import org.sat4j.specs.ISolver;
+import org.sat4j.specs.TimeoutException;
 
 public class SATRelation extends SAFARelation {
 	private class SATFactory extends BooleanExpressionFactory<Integer> {
@@ -140,24 +136,20 @@ public class SATRelation extends SAFARelation {
 	}
 
 	SATFactory factory;
-	BooleanExpressionMorphism<Integer> mkLeft;
-	BooleanExpressionMorphism<Integer> mkRight;
+	BooleanExpressionMorphism<Integer> coerce;
 
 	public SATRelation(ISolver s) {
 		factory = new SATFactory(s);
-		mkLeft = new BooleanExpressionMorphism<>((state) -> 4 * state + 2, factory);
-		mkRight = new BooleanExpressionMorphism<>((state) -> 4 * state + 4, factory);
+		coerce = new BooleanExpressionMorphism<>((state) -> 2 * state + 2, factory);
 	}
 
 	public SATRelation() {
 		this(SolverFactory.newDefault());
 	}
 	
-	private int mkIff(BooleanExpression p, BooleanExpression q) {
-		// p and q are drawn from different vocabularies (0 in p is not the same as 0 in q), so
-		// rename them apart.
-		int pname = mkLeft.apply(p);
-		int qname = mkRight.apply(q);
+	private int mkIff(BooleanExpression p, BooleanExpression q) throws TimeoutException {
+		int pname = coerce.apply(p);
+		int qname = coerce.apply(q);
 		
 		return factory.MkOr(factory.MkAnd(pname, qname), factory.MkAnd(-pname, -qname));
 	}
@@ -168,9 +160,14 @@ public class SATRelation extends SAFARelation {
 		return !factory.getSolver().isSatisfiable(mem, false);
 	}
 	
-	public void add(BooleanExpression p, BooleanExpression q) {
+	public boolean add(BooleanExpression p, BooleanExpression q) throws TimeoutException {
 		VecInt pair = new VecInt();
 		pair.push(mkIff(p, q));
-		factory.unsafeAddClause(pair);
+		try {
+			factory.solver.addClause(pair);
+			return true;
+		} catch (ContradictionException e) {
+			return false;
+		}
 	}
 }

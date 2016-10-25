@@ -6,6 +6,8 @@
  */
 package automata;
 
+import org.sat4j.specs.TimeoutException;
+
 import theory.BooleanAlgebra;
 
 /**
@@ -30,19 +32,22 @@ public abstract class Move<P, S> {
 
 	/**
 	 * @return whether the transition can ever be enabled
+	 * @throws TimeoutException 
 	 */
-	public abstract boolean isSatisfiable(BooleanAlgebra<P, S> ba);
+	public abstract boolean isSatisfiable(BooleanAlgebra<P, S> ba) throws TimeoutException;
 
 	/**
 	 * @return an input triggering the transition. Null if it's an epsilon
 	 *         transition
+	 * @throws TimeoutException 
 	 */
-	public abstract S getWitness(BooleanAlgebra<P, S> ba);
+	public abstract S getWitness(BooleanAlgebra<P, S> ba) throws TimeoutException;
 
 	/**
 	 * @return true iff <code>input</code> can trigger the transition
+	 * @throws TimeoutException 
 	 */
-	public abstract boolean hasModel(S input, BooleanAlgebra<P, S> ba);
+	public abstract boolean hasModel(S input, BooleanAlgebra<P, S> ba) throws TimeoutException;
 
 	/**
 	 * @return true iff it is an epsilon transition

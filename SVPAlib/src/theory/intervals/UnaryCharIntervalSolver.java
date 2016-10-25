@@ -9,20 +9,19 @@
 
 	import static com.google.common.base.Preconditions.checkNotNull;
 
-	import java.util.ArrayList;
-	import java.util.Collection;
-	import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-	import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
-	import utilities.Pair;
+import com.google.common.collect.ImmutableList;
 
-	import com.google.common.collect.ImmutableList;
-
-	import theory.BooleanAlgebraSubst;
-	import theory.characters.CharFunc;
-	import theory.characters.CharPred;
-	import theory.characters.StdCharPred;
+import theory.BooleanAlgebraSubst;
+import theory.characters.CharFunc;
+import theory.characters.CharPred;
+import theory.characters.StdCharPred;
+import utilities.Pair;
 
 	/**
 	 * CharSolver: an interval based solver for the theory of characters
@@ -190,6 +189,11 @@
 				sb.append(c);
 			}
 			return sb.toString();
+		}
+
+		@Override
+		public CharPred MkAtom(Character s) {
+			return new CharPred(s);
 		}
 
 	}

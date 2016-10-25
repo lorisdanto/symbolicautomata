@@ -7,6 +7,8 @@
 
 package transducers.sst;
 
+import org.sat4j.specs.TimeoutException;
+
 import theory.BooleanAlgebra;
 
 /**
@@ -37,12 +39,12 @@ public class SSTInputMove<P, F, S> extends SSTMove<P, F, S>{
 	}
 	
 	@Override
-	public boolean isSatisfiable(BooleanAlgebra<P,S> ba){
+	public boolean isSatisfiable(BooleanAlgebra<P,S> ba) throws TimeoutException{
 		return ba.IsSatisfiable(guard);
 	}
 	
 	@Override
-	public boolean isDisjointFrom(SSTMove<P, F, S> t, BooleanAlgebra<P,S> ba){
+	public boolean isDisjointFrom(SSTMove<P, F, S> t, BooleanAlgebra<P,S> ba) throws TimeoutException{
 		if(t.isEpsilonTransition())
 			return true;
 		if (from.equals(t.from)){			
@@ -90,12 +92,12 @@ public class SSTInputMove<P, F, S> extends SSTMove<P, F, S>{
 	}
 
 	@Override
-	public S getWitness(BooleanAlgebra<P, S> ba) {		
+	public S getWitness(BooleanAlgebra<P, S> ba) throws TimeoutException {		
 		return ba.generateWitness(guard);
 	}
 
 	@Override
-	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) {
+	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return ba.HasModel(guard, el);
 	}
 	

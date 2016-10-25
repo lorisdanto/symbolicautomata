@@ -3,7 +3,6 @@ package automata.safa.booleanexpression;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Function;
 
 import automata.safa.BooleanExpression;
 import automata.safa.LatticeMorphism;
@@ -41,5 +40,10 @@ public class PositiveId extends PositiveBooleanExpression {
 
 	public String toString() {
 		return state.toString();
+	}
+	
+	@Override
+	public int getSize() {
+		return 1;
 	}
 }

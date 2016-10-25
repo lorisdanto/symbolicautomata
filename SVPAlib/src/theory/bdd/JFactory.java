@@ -3,6 +3,11 @@
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
 package theory.bdd;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -10,11 +15,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.math.BigInteger;
+
+import org.sat4j.specs.TimeoutException;
+
+import utilities.Timers;
 
 /**
  * <p>This is a 100% Java implementation of the BDD factory.  It is based on
@@ -129,7 +133,11 @@ public class JFactory extends BDDFactory {
          * @see net.sf.javabdd.BDD#not()
          */
         public BDD not() {
-            return makeBDD(bdd_not(_index));
+            try {
+				return makeBDD(bdd_not(_index));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -139,7 +147,11 @@ public class JFactory extends BDDFactory {
             int x = _index;
             int y = ((bdd) thenBDD)._index;
             int z = ((bdd) elseBDD)._index;
-            return makeBDD(bdd_ite(x, y, z));
+            try {
+				return makeBDD(bdd_ite(x, y, z));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -149,7 +161,11 @@ public class JFactory extends BDDFactory {
             int x = _index;
             int y = ((bdd) that)._index;
             int z = ((bdd) var)._index;
-            return makeBDD(bdd_relprod(x, y, z));
+            try {
+				return makeBDD(bdd_relprod(x, y, z));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -158,7 +174,11 @@ public class JFactory extends BDDFactory {
         public BDD compose(BDD g, int var) {
             int x = _index;
             int y = ((bdd) g)._index;
-            return makeBDD(bdd_compose(x, y, var));
+            try {
+				return makeBDD(bdd_compose(x, y, var));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -166,7 +186,11 @@ public class JFactory extends BDDFactory {
          */
         public BDD veccompose(BDDPairing pair) {
             int x = _index;
-            return makeBDD(bdd_veccompose(x, ((bddPair) pair)));
+            try {
+				return makeBDD(bdd_veccompose(x, ((bddPair) pair)));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -184,7 +208,11 @@ public class JFactory extends BDDFactory {
         public BDD exist(BDD var) {
             int x = _index;
             int y = ((bdd) var)._index;
-            return makeBDD(bdd_exist(x, y));
+            try {
+				return makeBDD(bdd_exist(x, y));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -193,7 +221,11 @@ public class JFactory extends BDDFactory {
         public BDD forAll(BDD var) {
             int x = _index;
             int y = ((bdd) var)._index;
-            return makeBDD(bdd_forall(x, y));
+            try {
+				return makeBDD(bdd_forall(x, y));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -253,7 +285,11 @@ public class JFactory extends BDDFactory {
             int x = _index;
             int y = ((bdd) that)._index;
             int z = opr.id;
-            return makeBDD(bdd_apply(x, y, z));
+            try {
+				return makeBDD(bdd_apply(x, y, z));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -263,7 +299,12 @@ public class JFactory extends BDDFactory {
             int x = _index;
             int y = ((bdd) that)._index;
             int z = opr.id;
-            int a = bdd_apply(x, y, z);
+            int a;
+			try {
+				a = bdd_apply(x, y, z);
+			} catch (TimeoutException e) {
+				return null;
+			}
             bdd_delref(x);
             if (this != that)
                 that.free();
@@ -280,7 +321,11 @@ public class JFactory extends BDDFactory {
             int y = ((bdd) that)._index;
             int z = opr.id;
             int a = ((bdd) var)._index;
-            return makeBDD(bdd_appall(x, y, z, a));
+            try {
+				return makeBDD(bdd_appall(x, y, z, a));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -291,7 +336,11 @@ public class JFactory extends BDDFactory {
             int y = ((bdd) that)._index;
             int z = opr.id;
             int a = ((bdd) var)._index;
-            return makeBDD(bdd_appex(x, y, z, a));
+            try {
+				return makeBDD(bdd_appex(x, y, z, a));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -302,7 +351,11 @@ public class JFactory extends BDDFactory {
             int y = ((bdd) that)._index;
             int z = opr.id;
             int a = ((bdd) var)._index;
-            return makeBDD(bdd_appuni(x, y, z, a));
+            try {
+				return makeBDD(bdd_appuni(x, y, z, a));
+			} catch (TimeoutException e) {
+				return null;
+			}
         }
 
         /* (non-Javadoc)
@@ -896,7 +949,7 @@ public class JFactory extends BDDFactory {
     static final int bddop_not = 10;
     static final int bddop_simplify = 11;
 
-    int bdd_not(int r) {
+    int bdd_not(int r) throws TimeoutException {
         int res;
         firstReorder = 1;
         CHECKa(r, bddfalse);
@@ -925,7 +978,10 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int not_rec(int r) {
+    int not_rec(int r) throws TimeoutException {
+    	 if(Timers.fullTO())
+         	throw new TimeoutException("timeout");
+    	
         BddCacheDataI entry;
         int res;
 
@@ -956,7 +1012,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int bdd_ite(int f, int g, int h) {
+    int bdd_ite(int f, int g, int h) throws TimeoutException {
         int res;
         firstReorder = 1;
 
@@ -991,7 +1047,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int ite_rec(int f, int g, int h) {
+    int ite_rec(int f, int g, int h) throws TimeoutException {
         BddCacheDataI entry;
         int res;
 
@@ -1166,7 +1222,7 @@ public class JFactory extends BDDFactory {
         return res; /* FIXME: cache ? */
     }
 
-    int bdd_apply(int l, int r, int op) {
+    int bdd_apply(int l, int r, int op) throws TimeoutException{
         int res;
         firstReorder = 1;
 
@@ -1282,10 +1338,13 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int and_rec(int l, int r) {
+    int and_rec(int l, int r) throws TimeoutException {
         BddCacheDataI entry;
         int res;
 
+        if(Timers.fullTO())
+        	throw new TimeoutException("timeout");
+        
         if (l == r)
             return l;
         if (ISZERO(l) || ISZERO(r))
@@ -1374,7 +1433,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int relprod_rec(int l, int r) {
+    int relprod_rec(int l, int r) throws TimeoutException {
         BddCacheDataI entry;
         int res;
 
@@ -1437,11 +1496,11 @@ public class JFactory extends BDDFactory {
         return res;
     }
     
-    int bdd_relprod(int a, int b, int var) {
+    int bdd_relprod(int a, int b, int var) throws TimeoutException {
         return bdd_appex(a, b, bddop_and, var);
     }
 
-    int bdd_appex(int l, int r, int opr, int var) {
+    int bdd_appex(int l, int r, int opr, int var) throws TimeoutException {
         int res;
         firstReorder = 1;
 
@@ -1548,7 +1607,7 @@ public class JFactory extends BDDFactory {
         return 0;
     }
 
-    int appquant_rec(int l, int r) {
+    int appquant_rec(int l, int r) throws TimeoutException {
         BddCacheDataI entry;
         int res;
 
@@ -1640,7 +1699,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int appuni_rec(int l, int r, int var) {
+    int appuni_rec(int l, int r, int var) throws TimeoutException {
         BddCacheDataI entry;
         int res;
 
@@ -1770,7 +1829,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
     
-    int quant_rec(int r) {
+    int quant_rec(int r) throws TimeoutException {
         BddCacheDataI entry;
         int res;
 
@@ -1902,7 +1961,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int bdd_compose(int f, int g, int var) {
+    int bdd_compose(int f, int g, int var) throws TimeoutException {
         int res;
         firstReorder = 1;
 
@@ -1942,7 +2001,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int compose_rec(int f, int g) {
+    int compose_rec(int f, int g) throws TimeoutException {
         BddCacheDataI entry;
         int res;
 
@@ -1986,7 +2045,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int bdd_veccompose(int f, bddPair pair) {
+    int bdd_veccompose(int f, bddPair pair) throws TimeoutException {
         int res;
         firstReorder = 1;
 
@@ -2023,7 +2082,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int veccompose_rec(int f) {
+    int veccompose_rec(int f) throws TimeoutException {
         BddCacheDataI entry;
         int res;
 
@@ -2051,7 +2110,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int bdd_exist(int r, int var) {
+    int bdd_exist(int r, int var) throws TimeoutException {
         int res;
         firstReorder = 1;
 
@@ -2093,7 +2152,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int bdd_forall(int r, int var) {
+    int bdd_forall(int r, int var) throws TimeoutException {
         int res;
         firstReorder = 1;
 
@@ -2345,7 +2404,7 @@ public class JFactory extends BDDFactory {
             return bddtrue;
 
         /* On-demand allocation of support set */
-        if (supportSize < bddvarnum) {
+        if (supportSet == null || supportSize < bddvarnum) {
             supportSet = new int[bddvarnum];
             //memset(supportSet, 0, bddvarnum*sizeof(int));
             supportSize = bddvarnum;
@@ -2406,7 +2465,7 @@ public class JFactory extends BDDFactory {
         support_rec(HIGH(r), support);
     }
 
-    int bdd_appall(int l, int r, int opr, int var) {
+    int bdd_appall(int l, int r, int opr, int var) throws TimeoutException {
         int res;
         firstReorder = 1;
 
@@ -2456,7 +2515,7 @@ public class JFactory extends BDDFactory {
         return res;
     }
 
-    int bdd_appuni(int l, int r, int opr, int var) {
+    int bdd_appuni(int l, int r, int opr, int var) throws TimeoutException {
         int res;
         firstReorder = 1;
 
@@ -4770,7 +4829,12 @@ public class JFactory extends BDDFactory {
      * @see net.sf.javabdd.BDDFactory#load(java.io.BufferedReader)
      */
     public BDD load(BufferedReader in) throws IOException {
-        int result = bdd_load(in);
+        int result;
+		try {
+			result = bdd_load(in);
+		} catch (TimeoutException e) {
+			return null;
+		}
         return makeBDD(result);
     }
 
@@ -5947,7 +6011,7 @@ public class JFactory extends BDDFactory {
     int[] loadvar2level;
     LoadHash[] lh_table;
 
-    int bdd_load(BufferedReader ifile) throws IOException {
+    int bdd_load(BufferedReader ifile) throws IOException, TimeoutException {
         int n, vnum, tmproot;
         int root;
 
@@ -6000,7 +6064,7 @@ public class JFactory extends BDDFactory {
         int next;
     }
 
-    int bdd_loaddata(BufferedReader ifile) throws IOException {
+    int bdd_loaddata(BufferedReader ifile) throws IOException, TimeoutException {
         int key, var, low, high, root = 0, n;
 
         for (n = 0; n < lh_nodenum; n++) {
