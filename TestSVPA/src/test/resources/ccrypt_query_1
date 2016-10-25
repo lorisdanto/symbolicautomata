@@ -1,0 +1,10 @@
+Automaton: 3 transitions, 1 states
+Transitions 
+I: 0 -[\u0000-\u0001\u0003-\uffff]-> 0
+C: 0 -[\u0000-\u0001\u0003-\uffff], 0-> 0
+R: 0 -[\u0000-\u0001\u0003-\uffff], 0-> 0
+Initial States 
+0
+Final States 
+0
+

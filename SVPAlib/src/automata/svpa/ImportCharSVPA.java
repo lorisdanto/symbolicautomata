@@ -286,15 +286,20 @@ public class ImportCharSVPA {
 		if (neqPart.charAt(0) != '[' || neqPart.charAt(neqPart.length() - 1) != ']')
 			throw new AutomataException("Invalid neq predicate for binary char " +
 					"predicate: '" + predicate + "'");
-		neqPart = neqPart.substring(1, neqPart.length()-1);
-		Matcher neqMatcher = neqPattern.matcher(neqPart);
-		while (neqMatcher.find()) {
-			CharPred firstPred = parseCharPredicate(neqMatcher.group("first"));
-			CharPred secondPred = parseCharPredicate(neqMatcher.group("second"));
-			neqPred.add(new Pair<CharPred, CharPred>(firstPred, secondPred));
+		if (neqPart.length() == 2) {
+			// empty neq part can be empty
+			// OK
+		} else {
+			neqPart = neqPart.substring(1, neqPart.length()-1);
+			Matcher neqMatcher = neqPattern.matcher(neqPart);
+			while (neqMatcher.find()) {
+				CharPred firstPred = parseCharPredicate(neqMatcher.group("first"));
+				CharPred secondPred = parseCharPredicate(neqMatcher.group("second"));
+				neqPred.add(new Pair<CharPred, CharPred>(firstPred, secondPred));
+			}
+			if (neqPred.size() < 1)
+				throw new AutomataException("Invalid empty neq predicate");
 		}
-		if (neqPred.size() < 1)
-			throw new AutomataException("Invalid empty neq predicate");
 
 		return new BinaryCharPred(eqPred, neqPred);
 		//return new BinaryCharPred(new CharPred(CharPred.MIN_CHAR, CharPred.MAX_CHAR, true), false);

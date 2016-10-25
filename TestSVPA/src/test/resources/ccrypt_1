@@ -1,0 +1,46 @@
+Automaton: 39 transitions, 15 states
+Transitions 
+I: 0 -[\u0000-\uffff]-> 0
+C: 0 -[\u0000-\uffff], 0-> 1
+C: 0 -[\u0700-\u0700], 1-> 2
+I: 1 -[\u0000-\uffff]-> 1
+C: 1 -[\u0000-\uffff], 1-> 1
+R: 1 -neq [([\u0000-\uffff], [\u0000-\uffff])], eq [\u0000-\uffff], 1-> 1
+R: 1 -neq [([\u0000-\uffff], [\u0000-\uffff])], eq [\u0000-\uffff], 0-> 0
+I: 2 -[\u0512-\u0512]-> 3
+I: 3 -[\u0000-\uffff]-> 3
+C: 3 -[\u00a1-\u00a1], 1-> 5
+C: 3 -[\u0000-\uffff], 0-> 4
+I: 4 -[\u0000-\uffff]-> 4
+C: 4 -[\u0000-\uffff], 1-> 4
+R: 4 -neq [([\u0000-\uffff], [\u0000-\uffff])], eq [\u0000-\uffff], 0-> 3
+R: 4 -neq [([\u0000-\uffff], [\u0000-\uffff])], eq [\u0000-\uffff], 1-> 4
+I: 5 -[\u06fc-\u06fc]-> 6
+I: 6 -[\u0000-\uffff]-> 6
+C: 6 -[\u05de-\u05de], 1-> 8
+C: 6 -[\u0000-\uffff], 0-> 7
+I: 7 -[\u0000-\uffff]-> 7
+C: 7 -[\u0000-\uffff], 1-> 7
+R: 7 -neq [([\u0000-\uffff], [\u0000-\uffff])], eq [\u0000-\uffff], 1-> 7
+R: 7 -neq [([\u0000-\uffff], [\u0000-\uffff])], eq [\u0000-\uffff], 0-> 6
+I: 8 -[\u05df-\u05df]-> 9
+I: 9 -[\u0000-\uffff]-> 9
+C: 9 -[\u0000-\uffff], 0-> 10
+C: 9 -[\u053f-\u053f], 1-> 11
+I: 10 -[\u0000-\uffff]-> 10
+C: 10 -[\u0000-\uffff], 1-> 10
+R: 10 -neq [([\u0000-\uffff], [\u0000-\uffff])], eq [\u0000-\uffff], 0-> 9
+R: 10 -neq [([\u0000-\uffff], [\u0000-\uffff])], eq [\u0000-\uffff], 1-> 10
+I: 11 -[\u069a-\u069a]-> 12
+I: 12 -[\u0000-\uffff]-> 12
+I: 12 -[\u033b-\u033b]-> 14
+C: 12 -[\u0000-\uffff], 0-> 13
+I: 13 -[\u0000-\uffff]-> 13
+C: 13 -[\u0000-\uffff], 1-> 13
+R: 13 -neq [([\u0000-\uffff], [\u0000-\uffff])], eq [\u0000-\uffff], 0-> 12
+R: 13 -neq [([\u0000-\uffff], [\u0000-\uffff])], eq [\u0000-\uffff], 1-> 13
+Initial States 
+0
+Final States 
+14
+

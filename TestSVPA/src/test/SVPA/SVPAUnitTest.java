@@ -4,6 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -878,16 +879,22 @@ public class SVPAUnitTest {
 		}
 	}
 
+	private SVPA<ICharPred, Character> importFromResourceFile(
+			String file) throws AutomataException, IOException {
+		return ImportCharSVPA.importSVPA(
+			new File(getClass().getClassLoader().getResource(file).getFile()));
+	}
+
 	// slow intersection test (first_svpa_intersect is large)
 	@Test
 	public void testFileIntersectionImport(){
 		try {
 			SVPA<ICharPred, Character> first =
-					ImportCharSVPA.importSVPA(new File(getClass().getClassLoader().getResource("first_svpa_intersect").getFile()));
+					importFromResourceFile("first_svpa_intersect");
 			SVPA<ICharPred, Character> second =
-					ImportCharSVPA.importSVPA(new File(getClass().getClassLoader().getResource("second_svpa_intersect").getFile()));
+					importFromResourceFile("second_svpa_intersect");
 			SVPA<ICharPred, Character> third =
-					ImportCharSVPA.importSVPA(new File(getClass().getClassLoader().getResource("third_svpa_intersect").getFile()));
+					importFromResourceFile("third_svpa_intersect");
 
 			EqualitySolver ba = new EqualitySolver();
 			SVPA<ICharPred, Character> result = first.intersectionWith(second, ba);
@@ -895,6 +902,32 @@ public class SVPAUnitTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertTrue(false);
+		}
+	}
+
+	// test demonstrating the benefit of symbolic automata on large alphabets
+	// but also: slow queries test
+	@Test
+	public void testCcrypt(){
+		try {
+			SVPA<ICharPred, Character> first =
+					importFromResourceFile("ccrypt_0");
+			SVPA<ICharPred, Character> second =
+					importFromResourceFile("ccrypt_1");
+
+			SVPA<ICharPred, Character> firstQuery =
+					importFromResourceFile("ccrypt_query_0");
+			SVPA<ICharPred, Character> secondQuery =
+					importFromResourceFile("ccrypt_query_1");
+
+			EqualitySolver ba = new EqualitySolver();
+			SVPA<ICharPred, Character> result = first.intersectionWith(second, ba);
+
+			result.intersectionWith(firstQuery, ba);
+			result.intersectionWith(secondQuery, ba);
+		} catch(Exception e) {
+			e.printStackTrace();
+			assertTrue("Error message was: " + e.getMessage(), false);
 		}
 	}
 
