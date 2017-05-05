@@ -36,7 +36,7 @@ Instructions with Eclipse
 ----------------
 *Requirements*: Java SE >= 1.8
 
-The easiest way to use the libraries and build them is to open them in Eclipse. You need to use a recent version of Eclipse (> Mars) otherwise you might see some problems.
+The easiest way to use the libraries and build them is to open them in Eclipse. You need to use a recent version of Eclipse (> Mars) otherwise you might see some problems. Import all the libraries in Eclipse as existing maven projects.
 
 The main library resides in the project SVPALib. 
 The character theory of interval resides in the project BooleanAlgebras.
