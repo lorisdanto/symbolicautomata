@@ -2,10 +2,6 @@ A symbolic automata library
 ================
 This efficient automata library allows you to represent large (or infinite) alphabets succinctly.
 
-This branch has some git submodule. After cloning run:
-- git submodule init
-- git submodule update
-
 Symbolic automata
 ----------------
 In a *symbolic automaton* transitions carry predicates instead of concrete symbols.
@@ -25,18 +21,18 @@ The library supports:
 
 Before installing
 ----------------
-If you want to run the benchmarks from 
+Use the following instructions if you want to run the benchmarks from 
 *https://github.com/lorisdanto/automatark*
-you will need to run 
-"git submodule init"
-and then
-"git submodule update"
+
+After cloning run:
+- git submodule init
+- git submodule update
 
 Instructions with Eclipse
 ----------------
 *Requirements*: Java SE >= 1.8
 
-The easiest way to use the libraries and build them is to open them in Eclipse. You need to use a recent version of Eclipse (> Mars) otherwise you might see some problems. Import all the libraries in Eclipse as existing maven projects.
+The easiest way to use the libraries and build them is to open them in Eclipse. You need to use a recent version of Eclipse (> Mars) otherwise you might see some problems. Import all the libraries in Eclipse as existing maven projects (Right click, import, existing maven projects). 
 
 The main library resides in the project SVPALib. 
 The character theory of interval resides in the project BooleanAlgebras.
