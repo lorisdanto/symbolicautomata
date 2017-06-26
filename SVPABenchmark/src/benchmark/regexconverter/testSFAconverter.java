@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.sat4j.specs.TimeoutException;
 
 import automata.sfa.SFA;
 import benchmark.SFAprovider;
@@ -16,7 +17,7 @@ public class testSFAconverter {
 	UnaryCharIntervalSolver solver = new UnaryCharIntervalSolver();
 
 	@Test
-	public void testConcateAndUnion() {
+	public void testConcateAndUnion() throws TimeoutException {
 		String regex = "abc|de";
 		SFAprovider test = new SFAprovider(regex, solver);
 		SFA<CharPred, Character> sfa = test.getSFA();
@@ -26,7 +27,7 @@ public class testSFAconverter {
 	}
 	
 	@Test
-	public void testMetaChar() {
+	public void testMetaChar() throws TimeoutException {
 		String regex = "\\s";
 		SFAprovider test = new SFAprovider(regex, solver);
 		SFA<CharPred, Character> sfa = test.getSFA();
@@ -49,7 +50,7 @@ public class testSFAconverter {
 	}
 	
 	@Test
-	public void testCharacterClass() {
+	public void testCharacterClass() throws TimeoutException {
 		String regex1 = "[\\d]";
 		SFAprovider test1 = new SFAprovider(regex1, solver);
 		SFA<CharPred, Character> sfa1 = test1.getSFA();
@@ -83,7 +84,7 @@ public class testSFAconverter {
 	}
 	
 	@Test
-	public void testNotCharacterClass() {
+	public void testNotCharacterClass() throws TimeoutException {
 		String regex1 = "[^\\d]";
 		SFAprovider test1 = new SFAprovider(regex1, solver);
 		SFA<CharPred, Character> sfa1 = test1.getSFA();
@@ -117,7 +118,7 @@ public class testSFAconverter {
 	}
 	
 	@Test
-	public void testRepetition() {
+	public void testRepetition() throws TimeoutException {
 		String regex1 = "[\\d]{2}";
 		SFAprovider test1 = new SFAprovider(regex1, solver);
 		SFA<CharPred, Character> sfa1 = test1.getSFA();
@@ -146,7 +147,7 @@ public class testSFAconverter {
 	}
 	
 	@Test
-	public void testStarAndPlusAndOptional() {
+	public void testStarAndPlusAndOptional() throws TimeoutException {
 		String regex1 = "[\\d]+";
 		SFAprovider test1 = new SFAprovider(regex1, solver);
 		SFA<CharPred, Character> sfa1 = test1.getSFA();
@@ -187,7 +188,7 @@ public class testSFAconverter {
 	
 	
 	@Test
-	public void testAnchor() {
+	public void testAnchor() throws TimeoutException {
 		String regex1 = "^ab*";
 		SFAprovider test1 = new SFAprovider(regex1, solver);
 		SFA<CharPred, Character> sfa1 = test1.getSFA();
