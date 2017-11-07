@@ -44,6 +44,8 @@ Instructions from command line
 1. Java SE >= 1.8
 2. Apache Maven >= 3.2.1
 
-Just run "mvn clean install" in the symbolicautomata directory. 
+If you have insatlled automatark just run "mvn clean install" in the symbolicautomata directory.
+If you haven't done so run
+"mvn clean install" -pl "!SVPABenchmark" to only install the library and the test cases.
 
 
