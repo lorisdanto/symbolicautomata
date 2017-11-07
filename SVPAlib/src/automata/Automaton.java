@@ -21,9 +21,13 @@ import org.sat4j.specs.TimeoutException;
 import theory.BooleanAlgebra;
 
 /**
- * Automaton abstract class 
- * @param <P> set of predicates over the domain S
- * @param <S> domain of the automaton alphabet
+ * Automaton abstract class
+ * 
+ * @param
+ * 			<P>
+ *            set of predicates over the domain S
+ * @param <S>
+ *            domain of the automaton alphabet
  */
 public abstract class Automaton<P, S> {
 
@@ -49,8 +53,7 @@ public abstract class Automaton<P, S> {
 	 */
 	public boolean createDotFile(String name, String path) {
 		try {
-			FileWriter fw = new FileWriter(path + name
-					+ (name.endsWith(".dot") ? "" : ".dot"));
+			FileWriter fw = new FileWriter(path + name + (name.endsWith(".dot") ? "" : ".dot"));
 			fw.write("digraph " + name + "{\n rankdir=LR;\n");
 			for (Integer state : getStates()) {
 
@@ -63,8 +66,7 @@ public abstract class Automaton<P, S> {
 					fw.write("XX" + state + " [color=white, label=\"\"]");
 			}
 
-			fw.write("XX" + getInitialState() + " -> " + getInitialState()
-					+ "\n");
+			fw.write("XX" + getInitialState() + " -> " + getInitialState() + "\n");
 
 			for (Integer state : getStates()) {
 				for (Move<P, S> t : getMovesFrom(state))
@@ -87,8 +89,7 @@ public abstract class Automaton<P, S> {
 	 */
 	public String toString() {
 		String s = "";
-		s = "Automaton: " + getMoves().size() + " transitions, "
-				+ getStates().size() + " states" + "\n";
+		s = "Automaton: " + getMoves().size() + " transitions, " + getStates().size() + " states" + "\n";
 		s += "Transitions \n";
 		for (Move<P, S> t : getMoves())
 			s = s + t + "\n";
@@ -100,6 +101,59 @@ public abstract class Automaton<P, S> {
 		for (Integer fs : getFinalStates())
 			s = s + fs + "\n";
 		return s;
+	}
+
+	/**
+	 * Returns a sequence in the input domain that is accepted by the automaton
+	 * 
+	 * @return a list in the domain language, null if empty
+	 * @throws TimeoutException 
+	 */
+	public HashSet<List<S>> getWitnesses(BooleanAlgebra<P, S> ba, int howMany) throws TimeoutException {
+		if (isEmpty)
+			return null;
+
+		Map<Integer, HashSet<List<S>>> witMap = new HashMap<>();
+		for (Integer state : getFinalStates()) {
+			HashSet<List<S>> s = new HashSet<>();
+			s.add(new LinkedList<>());
+			witMap.put(state, s);
+		}
+
+		boolean somethingChanged = true;
+		while (somethingChanged && (witMap.get(getInitialState()) == null
+				|| witMap.get(getInitialState()).size() < howMany)) {
+			somethingChanged = false;
+
+			for (Move<P, S> move : getMoves()) {
+				HashSet<List<S>> prevStrings = new HashSet<>();
+
+				if (!witMap.containsKey(move.from)) {
+					witMap.put(move.from, prevStrings);
+				} else {
+					prevStrings = witMap.get(move.from);
+				}
+
+				int size = prevStrings.size();
+				if (witMap.containsKey(move.to)) {
+					HashSet<List<S>> newStrings = new HashSet<List<S>>();
+					for (List<S> str : witMap.get(move.to)) {
+						if (!move.isEpsilonTransition()) {
+							LinkedList<S> newStr = new LinkedList<S>(str);
+							S wit = move.getWitness(ba);
+							newStr.addFirst(wit);
+							newStrings.add(newStr);
+						} else {
+							newStrings.add(str);
+						}
+					}
+					prevStrings.addAll(newStrings);
+					if (prevStrings.size() > size)
+						somethingChanged = true;
+				}
+			}
+		}
+		return witMap.get(getInitialState());
 	}
 
 	/**
@@ -121,8 +175,7 @@ public abstract class Automaton<P, S> {
 
 		while (!barreer.isEmpty()) {
 
-			ArrayList<Move<P, S>> moves = new ArrayList<Move<P, S>>(
-					getMovesTo(barreer));
+			ArrayList<Move<P, S>> moves = new ArrayList<Move<P, S>>(getMovesTo(barreer));
 
 			barreer = new HashSet<Integer>();
 			for (Move<P, S> move : moves) {
@@ -261,16 +314,14 @@ public abstract class Automaton<P, S> {
 	// Auxiliary protected functions
 	// ------------------------------------------------------
 
-	protected Collection<Integer> getEpsClosure(Integer state,
-			BooleanAlgebra<P, S> ba) {
+	protected Collection<Integer> getEpsClosure(Integer state, BooleanAlgebra<P, S> ba) {
 
 		HashSet<Integer> st = new HashSet<Integer>();
 		st.add(state);
 		return getEpsClosure(st, ba);
 	}
 
-	protected Collection<Integer> getEpsClosure(Collection<Integer> fronteer,
-			BooleanAlgebra<P, S> ba) {
+	protected Collection<Integer> getEpsClosure(Collection<Integer> fronteer, BooleanAlgebra<P, S> ba) {
 
 		Collection<Integer> reached = new HashSet<Integer>(fronteer);
 		LinkedList<Integer> toVisit = new LinkedList<Integer>(fronteer);
@@ -288,8 +339,7 @@ public abstract class Automaton<P, S> {
 		return reached;
 	}
 
-	protected Collection<Integer> getNextState(Collection<Integer> currState,
-			S inputElement, BooleanAlgebra<P, S> ba) throws TimeoutException {
+	protected Collection<Integer> getNextState(Collection<Integer> currState, S inputElement, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		Collection<Integer> nextState = new HashSet<Integer>();
 		for (Move<P, S> t : getMovesFrom(currState)) {
 			if (!t.isEpsilonTransition()) {
@@ -302,11 +352,10 @@ public abstract class Automaton<P, S> {
 	}
 
 	/**
-	 * If <code>state<code> belongs to reached returns reached(state)
-	 * otherwise add state to reached and to toVisit and return corresponding id
+	 * If <code>state<code> belongs to reached returns reached(state) otherwise
+	 * add state to reached and to toVisit and return corresponding id
 	 */
-	public static <A, B> int getStateId(A state, Map<A, Integer> reached,
-			LinkedList<A> toVisit) {
+	public static <A, B> int getStateId(A state, Map<A, Integer> reached, LinkedList<A> toVisit) {
 		if (!reached.containsKey(state)) {
 			int newId = reached.size();
 			reached.put(state, newId);
