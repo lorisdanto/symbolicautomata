@@ -12,8 +12,9 @@
 	import java.util.ArrayList;
 	import java.util.Collection;
 	import java.util.List;
+import java.util.Random;
 
-	import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 	import utilities.Pair;
 
@@ -155,7 +156,12 @@
 	        if (checkNotNull(u).intervals.isEmpty()) {
 	            return null;
 	        } else {
-	        	return u.intervals.get(0).left;
+	        	Random r = new Random();
+	        	int whichInterval = r.nextInt(u.intervals.size());
+	        	ImmutablePair<Character, Character> interval = u.intervals.get(whichInterval);
+	        	int diff = interval.right-interval.left;
+	        	Character c= (char)(Character.valueOf(interval.left) + (diff==0?0:r.nextInt(diff+1)));
+	        	return c;
 	        }
 	    }
 

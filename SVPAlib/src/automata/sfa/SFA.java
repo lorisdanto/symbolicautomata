@@ -71,7 +71,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 * <code>ba</code>
 	 */
 	public static <A, B> SFA<A, B> getFullSFA(BooleanAlgebra<A, B> ba) {
-		SFA<A, B> aut = new SFA<A, B>();
+		SFA<A, B> aut = new SFA<>();
 		aut.states = new HashSet<Integer>();
 		aut.states.add(0);
 		aut.finalStates = new HashSet<Integer>(aut.states);
