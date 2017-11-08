@@ -36,9 +36,14 @@
             <version>4.10</version>
         </dependency>
         <dependency>
-            <groupId>edu.upenn.cis</groupId>
+            <groupId>cs.wisc.edu</groupId>
             <artifactId>SVPAlib</artifactId>
             <version>1.0</version>
+        </dependency>
+        <dependency>
+        	<groupId>cs.wisc.edu</groupId>
+        	<artifactId>Parsers</artifactId>
+        	<version>1.0</version>
         </dependency>
   </dependencies>
 </project>

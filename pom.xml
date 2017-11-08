@@ -16,6 +16,7 @@
     </properties>
     
     <modules>
+        <module>automatark</module>
         <module>SVPAlib</module>
         <module>TestSVPA</module>
         <module>SVPABenchmark</module>
