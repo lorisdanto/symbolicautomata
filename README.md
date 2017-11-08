@@ -46,6 +46,6 @@ Instructions from command line
 
 If you have insatlled automatark just run "mvn clean install" in the symbolicautomata directory.
 If you haven't done so run
-"mvn clean install" -pl "!SVPABenchmark" to only install the library and the test cases.
+"mvn clean install -pl "SVPAlib, TestSVPA" " to only install the library and the test cases.
 
 
