@@ -166,21 +166,24 @@ public abstract class BooleanAlgebra<P, S> {
 	}
 	
 	/**
-	 * Returns a list of disjoint predicates [p1,...,pn] that accepts the elements [S1...SN] and that has union equal to true.
+	 * Returns a list of disjoint predicates [p1,...,pn] that has union equal to true that accepts the elements of the predicates [g1...gn] given
+	 * as input.
 	 */
 	public ArrayList<P> GetSeparatingPredicates(
-			ArrayList<Collection<S>> groups, long timeout) throws TimeoutException {
+			ArrayList<Collection<S>> characterGroups, long timeout) throws TimeoutException {
+		
+		//If there is just one bucket return true
 		ArrayList<P> out = new ArrayList<>();
-		if(groups.size()<=1){
+		if(characterGroups.size()<=1){
 			out.add(True());
 			return out;
 		}
 		
 		//Find largest group
 		int maxGroup = 0;
-		int maxSize = groups.get(0).size();
-		for(int i=1;i<groups.size();i++){
-			int ithSize = groups.get(i).size();
+		int maxSize = characterGroups.get(0).size();
+		for(int i=1;i<characterGroups.size();i++){
+			int ithSize = characterGroups.get(i).size();
 			if(ithSize>maxSize){
 				maxSize=ithSize;
 				maxGroup=i;
@@ -189,18 +192,18 @@ public abstract class BooleanAlgebra<P, S> {
 		
 		//Build negated predicate
 		P largePred = False(); 
-		for(int i=0;i<groups.size();i++){			
+		for(int i=0;i<characterGroups.size();i++){			
 			if(i!=maxGroup)
-				for(S s: groups.get(i))
+				for(S s: characterGroups.get(i))
 					largePred = MkOr(largePred, MkAtom(s));
 		}
 		largePred = MkNot(largePred);
 		
 		//Build list of predicates
-		for(int i=0;i<groups.size();i++){			
+		for(int i=0;i<characterGroups.size();i++){			
 			if(i!=maxGroup){
 				P ithPred = False();
-				for(S s: groups.get(i))
+				for(S s: characterGroups.get(i))
 					ithPred = MkOr(ithPred, MkAtom(s));
 				out.add(ithPred);
 			}
@@ -209,5 +212,32 @@ public abstract class BooleanAlgebra<P, S> {
 		}
 		
 		return out;		
+	}
+	
+	/**
+	 * Returns a list of disjoint predicates [p1,...,pn] that has union equal to true that accepts the elements of the predicates [g1...gn] given
+	 * as input. The default method puts all the leftover of the unions of the [g1..gn-1] into gn
+	 */
+	public ArrayList<P> GetSeparatingPredicatesFromPredicates(
+			ArrayList<Collection<P>> predicateGroups, long timeout) throws TimeoutException {
+		//If there is just one bucket return true
+		ArrayList<P> out = new ArrayList<>();
+		if(predicateGroups.size()<=1){
+			out.add(True());
+			return out;
+		}
+		
+		//Add union each group into corresponding predicate up to n-1 and keeptrack of leftover predicates
+		P leftover = True();
+		for(int i=0;i<predicateGroups.size()-1;i++){
+			P ithPred = False();
+			for(P el: predicateGroups.get(i))
+				ithPred = MkOr(ithPred, el);
+			out.add(ithPred);
+			leftover = MkAnd(leftover, MkNot(ithPred));
+		}	
+		
+		out.add(leftover);		
+		return out;
 	}
 }
