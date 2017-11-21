@@ -21,8 +21,21 @@ import theory.BooleanAlgebra;
 
 public class Learner<P, S> {
 
+	public boolean debugOutput; //controls whether to write intermediary steps to System.out
+	
 	public Learner() {
-		
+		this.debugOutput = false;
+	}
+	
+	public Learner(boolean debugOutput) {
+		this.debugOutput = debugOutput;
+	}
+	
+	private void log(String heading, Object value) {
+		if (this.debugOutput) {
+			System.out.println("========" + heading + "========");
+			System.out.println(value);
+		}
 	}
 	
 	public SFA<P, S> learn(Oracle<P, S> o, BooleanAlgebra<P, S> ba) throws TimeoutException {
@@ -34,8 +47,7 @@ public class Learner<P, S> {
 		while (true) {
 			table.fill(o);
 			
-			//System.out.println("========TBL after fill========");
-			//System.out.println(table);
+			//this.log("TBL after fill", table);
 
 			boolean consflag = true, closeflag = true;
 			do {
@@ -48,8 +60,7 @@ public class Learner<P, S> {
 				if (consflag) {
 					table.fill(o);
 					
-					//System.out.println("========TBL after mkcons========");
-					//System.out.println(table);
+					//this.log("TBL after mkcons", table);
 
 					boolean distflag = table.distribute();
 					if (distflag)
@@ -70,16 +81,14 @@ public class Learner<P, S> {
 				//note that evidence-closure is handled by the other subroutines
 			} while (consflag || closeflag);
 			
-			System.out.println("========Obs Table========");
-			System.out.println(table);
+			this.log("Obs Table", table);
 			
 			conjecture = table.buildSFA(ba);
 			//System.out.println("total");
 			conjecture = conjecture.mkTotal(ba);
 			//System.out.println("finished");
 
-			System.out.println("========SFA guess========");
-			System.out.println(conjecture);
+			this.log("SFA guess", conjecture);
 
 			//System.out.println("sanity checking consistency");
 			//checkArgument(table.consistent(conjecture, ba));
@@ -87,19 +96,18 @@ public class Learner<P, S> {
 
 			cx = o.checkEquivalence(conjecture);
 			if (cx == null) {
-				System.out.println("final table\n" + table);
-				System.out.println("# equiv: " + o.getNumEquivalence() + "\n# mem: " + o.getNumMembership());
+				this.log("statistics", 
+						"# equiv: " + o.getNumEquivalence() + 
+						"\n# mem: " + o.getNumMembership());
 				return conjecture;
 			}
 
-			System.out.println("========counterex========");
-			System.out.println((cx == null ? "none" : cx));
+			this.log("counterex", (cx == null ? "none" : cx));
 			
 			//process the counterexample
 			table.process(cx);
 			
-			//System.out.println("========TBLpostCX========");
-			//System.out.println(table);
+			//this.log("TBLpostCX", table);
 
 			//Scanner scanner = new Scanner(System.in);
 			//scanner.nextLine();
@@ -172,7 +180,7 @@ public class Learner<P, S> {
 					List<S> we = new ArrayList<S>(w);
 					we.addAll(e);
 					if (!f.get(we).equals(sfa.accepts(we, ba))) {
-						System.out.println("inconsistent on " + we);
+						//System.out.println("inconsistent on " + we);
 						return false;
 					}
 				}
@@ -220,11 +228,11 @@ public class Learner<P, S> {
 				if (f.get(S.get(i)))
 					fin.add(i);
 			}
-			System.out.println("SFAmoves:" + moves);
-			System.out.println("init:" + init + "\nfin:" + fin);
-			System.out.println("building");
+			//System.out.println("SFAmoves:" + moves);
+			//System.out.println("init:" + init + "\nfin:" + fin);
+			//System.out.println("building");
 			SFA ret = SFA.MkSFA(moves, init, fin, ba);
-			System.out.println("returning");
+			//System.out.println("returning");
 			return ret;
 			
 			//return SFA.MkSFA(moves, init, fin, ba);
@@ -363,7 +371,7 @@ public class Learner<P, S> {
 		//this is called assuming that make_consistent added an element (exactly one element) to E
 		public boolean distribute() {
 			List<S> e = E.get(E.size() - 1);
-			System.out.println("mkcons added: " + e.toString());
+			//System.out.println("mkcons added: " + e.toString());
 			Set<List<S>> toAdd = new HashSet<List<S>>();
 			boolean addFlag;
 			//find pairs u1,u2 in SUR with row(u1) = row(u2) but f(u1e) != f(u2e)
