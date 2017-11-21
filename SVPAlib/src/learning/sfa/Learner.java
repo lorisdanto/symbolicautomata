@@ -18,7 +18,8 @@ import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
 import theory.BooleanAlgebra;
 
-
+//An implementation of the SFA learning algorithm from
+//S. Drews and L. D'Antoni "Learning Symbolic Automata" (TACAS 2017)
 public class Learner<P, S> {
 
 	public boolean debugOutput; //controls whether to write intermediary steps to System.out
