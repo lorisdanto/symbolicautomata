@@ -31,19 +31,14 @@ public class ProductAlgebra<P1, S1, P2, S2> extends BooleanAlgebra<CartesianProd
 
 	@Override
 	public CartesianProduct<P1, P2> MkNot(CartesianProduct<P1, P2> p) throws TimeoutException {						
-		ArrayList<Pair<P1, P2>> newProducts = new ArrayList<>();													
-		P1 leftover = ba1.True();
+		ArrayList<CartesianProduct<P1, P2>> conjuncts = new ArrayList<>();
 		for (Pair<P1, P2> pair : p.getProducts()) {
-			leftover = ba1.MkAnd(leftover, ba1.MkNot(pair.first));
-			
-			P2 newRight = ba2.MkNot(pair.second);
-			if(ba2.IsSatisfiable(newRight))
-				newProducts.add(new Pair<P1, P2>(pair.first, newRight));
+			List<Pair<P1, P2>> temp = new ArrayList<Pair<P1, P2>>();
+			temp.add(new Pair<P1, P2>(ba1.MkNot(pair.first), ba2.True()));
+			temp.add(new Pair<P1, P2>(ba1.True(), ba2.MkNot(pair.second)));
+			conjuncts.add(new CartesianProduct<P1, P2>(temp));
 		}
-		if(ba1.IsSatisfiable(leftover))
-			newProducts.add(new Pair<P1, P2>(leftover, ba2.True()));				
-		
-		return new CartesianProduct<>(newProducts);		
+		return MkAnd(conjuncts);
 	}
 
 	@Override
