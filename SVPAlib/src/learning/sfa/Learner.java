@@ -271,44 +271,59 @@ public class Learner<P, S> {
 			Set<List<Boolean>> sigs = new HashSet<List<Boolean>>();
 			for (List<S> s : S)
 				sigs.add(row(s));
+			List<S> best_r = null;
 			for (List<S> r : R) {
 				if (!sigs.contains(row(r))) {
-					S.add(r);
-					R.remove(r);
-					sigs.add(row(r));
-					
-					//handle evidence-closure
-					for (List<S> e : E) { 
-						List<S> re = new ArrayList<S>(r);
-						re.addAll(e);
-						if (!SUR.contains(re)) {
-							R.add(re);
-							SUR.add(re);
-						}
-					}
-					
-					//in case all the e in E are more than single char,
-					//ensure continuation r.a in SUR
-					boolean cont = false;
-					for (List<S> w : SUR) {
-						if (w.size() != r.size() + 1)
+					//for membership query efficiency,
+					//instead of just moving r to S, move the shortest r' with row(r) = row(r')
+					best_r = r;
+					for (List<S> rp : R) {
+						if (!row(r).equals(row(rp)))
 							continue;
-						if (isPrefix(r, w)) {
-							cont = true;
-							break;
-						}
+						if (r.equals(rp))
+							continue;
+						if (rp.size() < best_r.size())
+							best_r = rp;
 					}
-					if (!cont) {
-						List<S> ra = new ArrayList<S>(r);
-						ra.add(arbchar);
-						R.add(ra);
-						SUR.add(ra);
-					}
-					
-					return true;
+					break;
 				}
 			}
-			return false;
+			if (best_r == null)
+				return false;
+			
+			List<S> r = best_r;
+			S.add(r);
+			R.remove(r);
+			
+			//handle evidence-closure
+			for (List<S> e : E) { 
+				List<S> re = new ArrayList<S>(r);
+				re.addAll(e);
+				if (!SUR.contains(re)) {
+					R.add(re);
+					SUR.add(re);
+				}
+			}
+			
+			//in case all the e in E are more than single char,
+			//ensure continuation r.a in SUR
+			boolean cont = false;
+			for (List<S> w : SUR) {
+				if (w.size() != r.size() + 1)
+					continue;
+				if (isPrefix(r, w)) {
+					cont = true;
+					break;
+				}
+			}
+			if (!cont) {
+				List<S> ra = new ArrayList<S>(r);
+				ra.add(arbchar);
+				R.add(ra);
+				SUR.add(ra);
+			}
+			
+			return true;
 		}
 		
 		//returns true if makes a change, needs to be applied until returns false
