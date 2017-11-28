@@ -16,13 +16,22 @@ import theory.cartesian.CartesianProduct;
 import theory.intervals.IntPred;
 import utilities.Pair;
 
-//this almost definitely has bugs, but works on the example from their paper
+//Implements a separating predicates method following the partial order learning from
+//I. Mens and O. Maler "Learning Regular Languages over Large Ordered Alphabets" (LMCS 2015)
 public class MMConeAlgebra extends ProductAlgebra<IntPred, Integer, IntPred, Integer> {
 	BooleanAlgebra<IntPred, Integer> ba;
 	public MMConeAlgebra(BooleanAlgebra<IntPred, Integer> ba) {
 		super(ba,ba);
 		this.ba = ba;
 	}
+	
+	/*
+	 * This makes a very strong assumption that the predicates (and groups)
+	 * are both monotone and connected; i.e.
+	 * you cannot have a single transition of the form ([0,5]x[0,5]) U ([10,20]x[10,20])
+	 * This assumption comes from their paper and holds on their example automaton,
+	 * but is unsound in general.
+	 */
 	@Override
 	public ArrayList<CartesianProduct<IntPred, IntPred>> GetSeparatingPredicates(
 			ArrayList<Collection<Pair<Integer, Integer>>> groups, long timeout) throws TimeoutException {
