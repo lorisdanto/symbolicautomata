@@ -460,6 +460,33 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 		return MkSFA(autTotal.getTransitions(), autTotal.initialState, newFinalStates, ba, false);
 	}
+	
+	/** Remove epsilon transitions and collapses transitions to same state by taking the union of their predicates
+	 * @throws TimeoutException
+	 */
+	public static <A, B> SFA<A, B> collapseMultipleTransitions(SFA<A, B> aut, BooleanAlgebra<A, B> ba, long timeout)
+			throws TimeoutException {
+
+		// make aut total to make sure it has a sink state
+		SFA<A, B> autTotal = aut.mkTotal(ba, timeout).removeEpsilonMoves(ba);
+
+		Map<Pair<Integer, Integer>, A> newMovesMap = new HashMap<Pair<Integer,Integer>, A>();
+		for(int state1:autTotal.states)
+			for(int state2:autTotal.states)
+				newMovesMap.put(new Pair<Integer, Integer>(state1, state2), ba.False());
+		
+		for(SFAInputMove<A, B> move : autTotal.getInputMovesFrom(autTotal.states)){
+			Pair<Integer, Integer> key = new Pair<>(move.from,move.to);
+			A currentPred = newMovesMap.get(key);
+			newMovesMap.put(key, ba.MkOr(currentPred, move.guard));
+		}
+		
+		Collection<SFAMove<A, B>> newMoves = new HashSet<>();
+		for(Pair<Integer, Integer> key: newMovesMap.keySet())
+			newMoves.add(new SFAInputMove<A, B>(key.first, key.second, newMovesMap.get(key)));
+		
+		return MkSFA(newMoves, autTotal.initialState, autTotal.finalStates, ba, false);
+	}
 
 	// ------------------------------------------------------
 	// Other automata operations
@@ -685,12 +712,87 @@ public class SFA<P, S> extends Automaton<P, S> {
 		return areHKEquivalentNondet(tmp1, tmp2, ba, leftover);
 //		return areHopcroftKarpEquivalent(tmp1, tmp2, ba, leftover);
 	}
+	
+	
+	/**
+	 * checks whether aut1 is equivalent to aut2 using Hopcroft Karp's algorithm, if not returns a symbolic
+	 * sequence of predicates as a witness
+	 * @assume Inputs to be deterministic SFA
+	 * @throws TimeoutException
+	 */
+	public Pair<Boolean, List<P>> isHopcroftKarpEquivalentSymoblicWitnessTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba, long timeout)
+			throws TimeoutException {		
+		
+		if(!this.isDeterministic || !aut.isDeterministic)
+			throw new IllegalArgumentException("The SFAs have to be deterministic");
+		
+		SFA<P, S> tmp1 = collapseMultipleTransitions(this, ba, timeout);
+		SFA<P, S> tmp2 = collapseMultipleTransitions(aut, ba, timeout);
+
+		return areHopcroftKarpEquivalentSymoblicWitness(tmp1, tmp2, ba, timeout);
+	}
+	
+	private static <A, B> Pair<Boolean, List<A>> areHopcroftKarpEquivalentSymoblicWitness(SFA<A, B> aut1, SFA<A, B> aut2,
+			BooleanAlgebra<A, B> ba, long timeout) throws TimeoutException {
+		
+		Timers.setForCongruence();
+
+		long startTime = System.currentTimeMillis();
+		UnionFindHopKarp<A> ds = new UnionFindHopKarp<>();
+		int offset = aut1.stateCount();
+
+		boolean isF1=aut1.isFinalState(aut1.initialState);
+		boolean isF2=aut2.isFinalState(aut2.initialState);
+		if(isF1!=isF2)
+			return new Pair<Boolean, List<A>>(false, new LinkedList<>());
+		
+		ds.add(aut1.initialState, isF1, new LinkedList<>());
+		ds.add(aut2.initialState + offset, isF2, new LinkedList<>());
+		ds.mergeSets(aut1.initialState, aut2.initialState + offset);
+
+		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<>();
+		toVisit.add(new Pair<Integer, Integer>(aut1.initialState, aut2.initialState));
+		while (!toVisit.isEmpty()) {
+			Timers.oneMoreState();
+
+			if (System.currentTimeMillis() - startTime > timeout)
+				throw new TimeoutException();
+
+			Pair<Integer, Integer> curr = toVisit.removeFirst();
+			for (SFAInputMove<A, B> move1 : aut1.getInputMovesFrom(curr.first))
+				for (SFAInputMove<A, B> move2 : aut2.getInputMovesFrom(curr.second)) {
+					A conj = ba.MkAnd(move1.guard, move2.guard);
+					if (ba.IsSatisfiable(conj)) {
+						int r1 = move1.to;
+						int r2 = move2.to + offset;
+
+						List<A> pref = new LinkedList<A>(ds.getWitness(curr.first));
+						pref.add(conj);
+
+						if (!ds.contains(r1))
+							ds.add(r1, aut1.isFinalState(move1.to), pref);
+						if (!ds.contains(r2))
+							ds.add(r2, aut2.isFinalState(move2.to), pref);
+
+						if (!ds.areInSameSet(r1, r2)) {
+							if (!ds.mergeSets(r1, r2))
+								return new Pair<Boolean, List<A>>(false, pref);
+							toVisit.add(new Pair<Integer, Integer>(move1.to, move2.to));
+						}
+					}
+				}
+		}
+
+		return new Pair<Boolean, List<A>>(true, null);
+	}
+	
 
 	/**
 	 * checks whether aut1 is equivalent to aut2 using Hopcroft Karp's algorithm
 	 * 
 	 * @throws TimeoutException
 	 */
+	@SuppressWarnings("unused")
 	private static <A, B> Pair<Boolean, List<B>> areHopcroftKarpEquivalent(SFA<A, B> aut1, SFA<A, B> aut2,
 			BooleanAlgebra<A, B> ba, long timeout) throws TimeoutException {
 
