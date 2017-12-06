@@ -238,12 +238,16 @@ public class SFAUnitTest {
 		assertTrue(cUcB.isHopcroftKarpEquivalentTo(SFA.getFullSFA(ba), ba).first);
 		assertTrue(cUcB.isHopcroftKarpEquivalentTo(cUcA, ba).first);
 		
-		assertFalse(autA.isHopcroftKarpEquivalentSymoblicWitnessTo(autB, ba, 10000).first);
-		List<CharPred> wit = autA.isHopcroftKarpEquivalentSymoblicWitnessTo(autB, ba, 10000).second;
+		autA = autA.determinize(ba);
+		autB = autB.determinize(ba);
+		cUcA = cUcA.determinize(ba);
+		cUcB = cUcB.determinize(ba);
+		assertFalse(autA.isHopcroftKarpEquivalentSymoblicWitnessTo(autB, ba, 10000).first);		
 		assertTrue(cUcA.isHopcroftKarpEquivalentSymoblicWitnessTo(SFA.getFullSFA(ba), ba, 10000).first);
 		assertTrue(cUcB.isHopcroftKarpEquivalentSymoblicWitnessTo(SFA.getFullSFA(ba), ba, 10000).first);
 		assertTrue(cUcB.isHopcroftKarpEquivalentSymoblicWitnessTo(cUcA, ba, 10000).first);
-		System.out.println(wit);
+//		List<CharPred> wit = autA.isHopcroftKarpEquivalentSymoblicWitnessTo(cUcA, ba, 10000).second;
+//		System.out.println(wit);
 	}
 
 	@Test
