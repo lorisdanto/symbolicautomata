@@ -711,7 +711,7 @@ public class SAFA<P, S> {
 			ArrayList<SAFAInputMove<P, S>> movesToCurr = new ArrayList<>();
 			ArrayList<P> predicatesToCurr = new ArrayList<>();
 
-			if (currentState.contains(aut.initialState))
+			if (aut.initialState.hasModel(currentState))
 				finalStates.add(currentStateID);
 
 			for (SAFAInputMove<P, S> t : aut.getInputMoves())
