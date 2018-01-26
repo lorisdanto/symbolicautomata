@@ -65,3 +65,5 @@ EquivalenceOf2to3Self.txt
 .settings/org.eclipse.m2e.core.prefs
 SVPAlib/.settings/org.eclipse.m2e.core.prefs
 TestSVPA/.settings/org.eclipse.m2e.core.prefs
+SVPABenchmark/results/emptiness.csv
+SVPABenchmark/results/emptinessBDD.csv
