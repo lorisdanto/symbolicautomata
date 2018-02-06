@@ -183,6 +183,19 @@ import utilities.Pair;
 		public Character MkSubstFuncConst(CharFunc f, Character c) {
 			return checkNotNull(f).instantiateWith(checkNotNull(c));
 		}
+		
+		/**
+		 * returns a string of a list of CharPred
+		 * @param charPreds
+		 * @return string of a list of CharPred
+		 */
+		public String stringOfListOfCharPred(List<CharPred> charPreds){
+			StringBuilder sb = new StringBuilder();
+			for(CharPred p : checkNotNull(charPreds)) {
+				sb.append(generateWitness(p));
+			}
+			return sb.toString();
+		}
 	    
 		/**
 		 * returns the string of a list of chars
