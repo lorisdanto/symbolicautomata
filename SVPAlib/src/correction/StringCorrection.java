@@ -36,11 +36,26 @@ public class StringCorrection {
 				resultStr = termF.charSet;
 			}
 		}
-		System.out.println(minDist);
-		for (CharPred cp : resultStr) {
-			System.out.print(cp.toString());
-		}
 		return resultStr;
+	}
+	
+	public static int computeEditDistance(SFA<CharPred, Character> inpSFA, String inpStr) {
+		w = inpStr;
+		templ = inpSFA;
+		numStates = inpSFA.stateCount();
+		goalStates = inpSFA.getFinalStates();
+		allStates = inpSFA.getStates();
+		pStore = new HashMap<String, Pair>();
+		lStore = new HashMap<String, Boolean>();
+
+		double minDist = Double.POSITIVE_INFINITY;
+		for (Integer i : goalStates) {
+			Pair termF = F(w.length(), i);
+			if (termF.editDistance < minDist) {
+				minDist = termF.editDistance;
+			}
+		}
+		return (int)minDist;
 	}
 
 	private static Pair F(int j, int S) {
@@ -140,6 +155,16 @@ public class StringCorrection {
 		return result;
 	}
 
+	/**
+	 * L indicates whether or not character c is accepted by some arc
+	 * along a path of shortest length from T to S, passing only through
+	 * states numbered k or less
+	 * 
+	 * @param k max state involved
+	 * @param T origin state
+	 * @param S destination state
+	 * @param c a single character
+	 */
 	private static boolean L(int k, int T, int S, Character c) {
 		String lookUp = String.format("%d$%d$%d$%c", k, T, S, c);
 		// if (lStore.containsKey(lookUp)) {
@@ -176,6 +201,11 @@ public class StringCorrection {
 
 }
 
+
+/**
+ * This is a wrapper class. It contains a double variable representing
+ * edit distance and a linked list representing a string segment
+ */
 class Pair {
 	protected double editDistance;
 	protected LinkedList<CharPred> charSet;
