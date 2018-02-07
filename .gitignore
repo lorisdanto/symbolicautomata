@@ -67,3 +67,15 @@ SVPAlib/.settings/org.eclipse.m2e.core.prefs
 TestSVPA/.settings/org.eclipse.m2e.core.prefs
 SVPABenchmark/results/emptiness.csv
 SVPABenchmark/results/emptinessBDD.csv
+.DS_Store
+.idea/
+SVPABenchmark/.DS_Store
+SVPABenchmark/SVPABenchmark.iml
+SVPAlib/.DS_Store
+SVPAlib/SVPAlib.iml
+TestSVPA/.DS_Store
+TestSVPA/TestSVPA.iml
+TestSVPA/src/.DS_Store
+TestSVPA/src/test/.DS_Store
+TestSVPA/src/test/correction/
+symbolicautomata.iml
