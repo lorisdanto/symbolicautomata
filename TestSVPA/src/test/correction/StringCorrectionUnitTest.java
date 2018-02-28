@@ -8,11 +8,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.LinkedList;
 
-import correction.StringCorrection;
-
 import org.sat4j.specs.TimeoutException;
 
 import automata.sfa.SFAMove;
+import strings.EditDistance;
 import automata.sfa.SFA;
 
 import theory.characters.CharPred;
@@ -194,174 +193,174 @@ public class StringCorrectionUnitTest {
     @Test
     public void testComputeEditDistance() throws TimeoutException {
         int distance;
-        distance = StringCorrection.computeEditDistance(mySA11, "");
+        distance = EditDistance.computeEditDistance(mySA11, "");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA11, "a");
+        distance = EditDistance.computeEditDistance(mySA11, "a");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA11, "aaa");
+        distance = EditDistance.computeEditDistance(mySA11, "aaa");
         assertEquals(3, distance);
-        distance = StringCorrection.computeEditDistance(mySA11, "bc");
+        distance = EditDistance.computeEditDistance(mySA11, "bc");
         assertEquals(2, distance);
-        distance = StringCorrection.computeEditDistance(mySA11, "cab");
-        assertEquals(3, distance);
-
-        distance = StringCorrection.computeEditDistance(mySA12, "");
-        assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA12, "a");
-        assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA12, "aaa");
-        assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA12, "bc");
-        assertEquals(2, distance);
-        distance = StringCorrection.computeEditDistance(mySA12, "cab");
-        assertEquals(2, distance);
-
-        distance = StringCorrection.computeEditDistance(mySA13, "");
-        assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA13, "bc");
-        assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA13, "ab");
-        assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA13, "abba");
-        assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA13, "a");
-        assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA13, "cd");
-        assertEquals(2, distance);
-
-        distance = StringCorrection.computeEditDistance(mySA21, "a");
-        assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA21, "b");
-        assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA21, "abc");
-        assertEquals(2, distance);
-        distance = StringCorrection.computeEditDistance(mySA21, "aaa");
-        assertEquals(2, distance);
-        distance = StringCorrection.computeEditDistance(mySA21, "bcd");
+        distance = EditDistance.computeEditDistance(mySA11, "cab");
         assertEquals(3, distance);
 
-        distance = StringCorrection.computeEditDistance(mySA22, "a");
+        distance = EditDistance.computeEditDistance(mySA12, "");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA22, "ab");
+        distance = EditDistance.computeEditDistance(mySA12, "a");
+        assertEquals(0, distance);
+        distance = EditDistance.computeEditDistance(mySA12, "aaa");
+        assertEquals(0, distance);
+        distance = EditDistance.computeEditDistance(mySA12, "bc");
+        assertEquals(2, distance);
+        distance = EditDistance.computeEditDistance(mySA12, "cab");
+        assertEquals(2, distance);
+
+        distance = EditDistance.computeEditDistance(mySA13, "");
+        assertEquals(0, distance);
+        distance = EditDistance.computeEditDistance(mySA13, "bc");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA22, "bc");
+        distance = EditDistance.computeEditDistance(mySA13, "ab");
+        assertEquals(0, distance);
+        distance = EditDistance.computeEditDistance(mySA13, "abba");
+        assertEquals(0, distance);
+        distance = EditDistance.computeEditDistance(mySA13, "a");
+        assertEquals(0, distance);
+        distance = EditDistance.computeEditDistance(mySA13, "cd");
+        assertEquals(2, distance);
+
+        distance = EditDistance.computeEditDistance(mySA21, "a");
+        assertEquals(0, distance);
+        distance = EditDistance.computeEditDistance(mySA21, "b");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA22, "cde");
+        distance = EditDistance.computeEditDistance(mySA21, "abc");
+        assertEquals(2, distance);
+        distance = EditDistance.computeEditDistance(mySA21, "aaa");
+        assertEquals(2, distance);
+        distance = EditDistance.computeEditDistance(mySA21, "bcd");
         assertEquals(3, distance);
 
-        distance = StringCorrection.computeEditDistance(mySA23, "a");
+        distance = EditDistance.computeEditDistance(mySA22, "a");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA23, "b");
+        distance = EditDistance.computeEditDistance(mySA22, "ab");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA23, "abc");
-        assertEquals(2, distance);
-        distance = StringCorrection.computeEditDistance(mySA23, "aa");
+        distance = EditDistance.computeEditDistance(mySA22, "bc");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA23, "aaa");
-        assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA23, "bcd");
+        distance = EditDistance.computeEditDistance(mySA22, "cde");
         assertEquals(3, distance);
 
-        distance = StringCorrection.computeEditDistance(mySA24, "a");
+        distance = EditDistance.computeEditDistance(mySA23, "a");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA24, "b");
+        distance = EditDistance.computeEditDistance(mySA23, "b");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA24, "abc");
-        assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA24, "acb");
+        distance = EditDistance.computeEditDistance(mySA23, "abc");
         assertEquals(2, distance);
-        distance = StringCorrection.computeEditDistance(mySA24, "aa");
+        distance = EditDistance.computeEditDistance(mySA23, "aa");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA24, "aaa");
-        assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA24, "bcd");
+        distance = EditDistance.computeEditDistance(mySA23, "aaa");
+        assertEquals(0, distance);
+        distance = EditDistance.computeEditDistance(mySA23, "bcd");
         assertEquals(3, distance);
 
-        distance = StringCorrection.computeEditDistance(mySA25, "a");
+        distance = EditDistance.computeEditDistance(mySA24, "a");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA25, "b");
-        assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA25, "abc");
-        assertEquals(2, distance);
-        distance = StringCorrection.computeEditDistance(mySA25, "aa");
+        distance = EditDistance.computeEditDistance(mySA24, "b");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA25, "aaa");
+        distance = EditDistance.computeEditDistance(mySA24, "abc");
+        assertEquals(1, distance);
+        distance = EditDistance.computeEditDistance(mySA24, "acb");
+        assertEquals(2, distance);
+        distance = EditDistance.computeEditDistance(mySA24, "aa");
+        assertEquals(1, distance);
+        distance = EditDistance.computeEditDistance(mySA24, "aaa");
+        assertEquals(1, distance);
+        distance = EditDistance.computeEditDistance(mySA24, "bcd");
+        assertEquals(3, distance);
+
+        distance = EditDistance.computeEditDistance(mySA25, "a");
+        assertEquals(0, distance);
+        distance = EditDistance.computeEditDistance(mySA25, "b");
+        assertEquals(0, distance);
+        distance = EditDistance.computeEditDistance(mySA25, "abc");
+        assertEquals(2, distance);
+        distance = EditDistance.computeEditDistance(mySA25, "aa");
+        assertEquals(1, distance);
+        distance = EditDistance.computeEditDistance(mySA25, "aaa");
         assertEquals(1, distance);
 
-        distance = StringCorrection.computeEditDistance(mySA26, "");
+        distance = EditDistance.computeEditDistance(mySA26, "");
         assertEquals(-1, distance);
-        distance = StringCorrection.computeEditDistance(mySA26, "a");
+        distance = EditDistance.computeEditDistance(mySA26, "a");
         assertEquals(-1, distance);
-        distance = StringCorrection.computeEditDistance(mySA26, "ab");
+        distance = EditDistance.computeEditDistance(mySA26, "ab");
         assertEquals(-1, distance);
         
-        distance = StringCorrection.computeEditDistance(mySA31, "a");
+        distance = EditDistance.computeEditDistance(mySA31, "a");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA31, "aa");
+        distance = EditDistance.computeEditDistance(mySA31, "aa");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA31, "ab");
+        distance = EditDistance.computeEditDistance(mySA31, "ab");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA31, "bce");
+        distance = EditDistance.computeEditDistance(mySA31, "bce");
         assertEquals(3, distance);
-        distance = StringCorrection.computeEditDistance(mySA31, "aaa");
+        distance = EditDistance.computeEditDistance(mySA31, "aaa");
         assertEquals(1, distance);
 
-        distance = StringCorrection.computeEditDistance(mySA32, "a");
+        distance = EditDistance.computeEditDistance(mySA32, "a");
         assertEquals(4, distance);
-        distance = StringCorrection.computeEditDistance(mySA32, "aa");
+        distance = EditDistance.computeEditDistance(mySA32, "aa");
         assertEquals(4, distance);
-        distance = StringCorrection.computeEditDistance(mySA32, "ab");
+        distance = EditDistance.computeEditDistance(mySA32, "ab");
         assertEquals(3, distance);
-        distance = StringCorrection.computeEditDistance(mySA32, "bce");
+        distance = EditDistance.computeEditDistance(mySA32, "bce");
         assertEquals(2, distance);
-        distance = StringCorrection.computeEditDistance(mySA32, "aaa");
+        distance = EditDistance.computeEditDistance(mySA32, "aaa");
         assertEquals(4, distance);
-        distance = StringCorrection.computeEditDistance(mySA32, "abcde");
+        distance = EditDistance.computeEditDistance(mySA32, "abcde");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA32, "bcaab");
+        distance = EditDistance.computeEditDistance(mySA32, "bcaab");
         assertEquals(4, distance);
-        distance = StringCorrection.computeEditDistance(mySA32, "aaaaaaaaa");
+        distance = EditDistance.computeEditDistance(mySA32, "aaaaaaaaa");
         assertEquals(8, distance);
 
-        distance = StringCorrection.computeEditDistance(mySA33, "a");
+        distance = EditDistance.computeEditDistance(mySA33, "a");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA33, "b");
+        distance = EditDistance.computeEditDistance(mySA33, "b");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA33, "ab");
+        distance = EditDistance.computeEditDistance(mySA33, "ab");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA33, "abc");
+        distance = EditDistance.computeEditDistance(mySA33, "abc");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA33, "abb");
+        distance = EditDistance.computeEditDistance(mySA33, "abb");
         assertEquals(1, distance);
 
-        distance = StringCorrection.computeEditDistance(mySA34, "a");
+        distance = EditDistance.computeEditDistance(mySA34, "a");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA34, "ab");
+        distance = EditDistance.computeEditDistance(mySA34, "ab");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA34, "abbb");
+        distance = EditDistance.computeEditDistance(mySA34, "abbb");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA34, "abcac");
+        distance = EditDistance.computeEditDistance(mySA34, "abcac");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA34, "abcad");
+        distance = EditDistance.computeEditDistance(mySA34, "abcad");
         assertEquals(1, distance);
 
-        distance = StringCorrection.computeEditDistance(mySA35, "aaabbbccc");
+        distance = EditDistance.computeEditDistance(mySA35, "aaabbbccc");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA35, "accbc");
+        distance = EditDistance.computeEditDistance(mySA35, "accbc");
         assertEquals(2, distance);
 
-        distance = StringCorrection.computeEditDistance(mySA41, "ac");
+        distance = EditDistance.computeEditDistance(mySA41, "ac");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA41, "abc");
+        distance = EditDistance.computeEditDistance(mySA41, "abc");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA41, "bb");
+        distance = EditDistance.computeEditDistance(mySA41, "bb");
         assertEquals(2, distance);
 
-        distance = StringCorrection.computeEditDistance(mySA42, "");
+        distance = EditDistance.computeEditDistance(mySA42, "");
         assertEquals(0, distance);
-        distance = StringCorrection.computeEditDistance(mySA42, "a");
+        distance = EditDistance.computeEditDistance(mySA42, "a");
         assertEquals(1, distance);
-        distance = StringCorrection.computeEditDistance(mySA42, "aab");
+        distance = EditDistance.computeEditDistance(mySA42, "aab");
         assertEquals(1, distance);
         
     }
@@ -374,173 +373,173 @@ public class StringCorrectionUnitTest {
     @Test
     public void testGetCorrectString() throws TimeoutException {
         String correctString;
-        correctString = StringCorrection.getCorrectString(mySA11, "");
+        correctString = EditDistance.getCorrectString(mySA11, "");
         assertEquals("", correctString);
-        correctString = StringCorrection.getCorrectString(mySA11, "a");
+        correctString = EditDistance.getCorrectString(mySA11, "a");
         assertEquals("", correctString);
-        correctString = StringCorrection.getCorrectString(mySA11, "aaa");
+        correctString = EditDistance.getCorrectString(mySA11, "aaa");
         assertEquals("", correctString);
-        correctString = StringCorrection.getCorrectString(mySA11, "bc");
+        correctString = EditDistance.getCorrectString(mySA11, "bc");
         assertEquals("", correctString);
-        correctString = StringCorrection.getCorrectString(mySA11, "cab");
+        correctString = EditDistance.getCorrectString(mySA11, "cab");
         assertEquals("", correctString);
 
-        correctString = StringCorrection.getCorrectString(mySA12, "");
+        correctString = EditDistance.getCorrectString(mySA12, "");
         assertEquals("", correctString);
-        correctString = StringCorrection.getCorrectString(mySA12, "a");
+        correctString = EditDistance.getCorrectString(mySA12, "a");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA12, "aaa");
+        correctString = EditDistance.getCorrectString(mySA12, "aaa");
         assertEquals("aaa", correctString);
-        correctString = StringCorrection.getCorrectString(mySA12, "bc");
+        correctString = EditDistance.getCorrectString(mySA12, "bc");
         assertTrue(correctString.equals("aa") || correctString.equals("a") || correctString.equals(""));
-        correctString = StringCorrection.getCorrectString(mySA12, "cab");
+        correctString = EditDistance.getCorrectString(mySA12, "cab");
         assertTrue(correctString.equals("a") || correctString.equals("aa") || correctString.equals("aaa"));
 
-        correctString = StringCorrection.getCorrectString(mySA13, "");
+        correctString = EditDistance.getCorrectString(mySA13, "");
         assertEquals("", correctString);
-        correctString = StringCorrection.getCorrectString(mySA13, "bc");
+        correctString = EditDistance.getCorrectString(mySA13, "bc");
         assertTrue(correctString.equals("ba") || correctString.equals("b"));
-        correctString = StringCorrection.getCorrectString(mySA13, "ab");
+        correctString = EditDistance.getCorrectString(mySA13, "ab");
         assertEquals("ab", correctString);
-        correctString = StringCorrection.getCorrectString(mySA13, "abba");
+        correctString = EditDistance.getCorrectString(mySA13, "abba");
         assertEquals("abba", correctString);
-        correctString = StringCorrection.getCorrectString(mySA13, "a");
+        correctString = EditDistance.getCorrectString(mySA13, "a");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA13, "cd");
+        correctString = EditDistance.getCorrectString(mySA13, "cd");
         assertTrue(correctString.equals("") || correctString.equals("a") || correctString.equals("b") ||
                 correctString.equals("ab") || correctString.equals("ba"));
 
-        correctString = StringCorrection.getCorrectString(mySA21, "a");
+        correctString = EditDistance.getCorrectString(mySA21, "a");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA21, "b");
+        correctString = EditDistance.getCorrectString(mySA21, "b");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA21, "abc");
+        correctString = EditDistance.getCorrectString(mySA21, "abc");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA21, "aaa");
+        correctString = EditDistance.getCorrectString(mySA21, "aaa");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA21, "bcd");
+        correctString = EditDistance.getCorrectString(mySA21, "bcd");
         assertEquals("a", correctString);
 
-        correctString = StringCorrection.getCorrectString(mySA22, "a");
+        correctString = EditDistance.getCorrectString(mySA22, "a");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA22, "ab");
+        correctString = EditDistance.getCorrectString(mySA22, "ab");
         assertTrue(correctString.equals("a") || correctString.equals("b"));
-        correctString = StringCorrection.getCorrectString(mySA22, "bc");
+        correctString = EditDistance.getCorrectString(mySA22, "bc");
         assertEquals("b", correctString);
-        correctString = StringCorrection.getCorrectString(mySA22, "cde");
+        correctString = EditDistance.getCorrectString(mySA22, "cde");
         assertTrue(correctString.equals("a") || correctString.equals("b"));
 
-        correctString = StringCorrection.getCorrectString(mySA23, "a");
+        correctString = EditDistance.getCorrectString(mySA23, "a");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA23, "b");
+        correctString = EditDistance.getCorrectString(mySA23, "b");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA23, "abc");
+        correctString = EditDistance.getCorrectString(mySA23, "abc");
         assertTrue(correctString.equals("a") || correctString.equals("aaa"));
-        correctString = StringCorrection.getCorrectString(mySA23, "aa");
+        correctString = EditDistance.getCorrectString(mySA23, "aa");
         assertTrue(correctString.equals("a") || correctString.equals("aaa"));
-        correctString = StringCorrection.getCorrectString(mySA23, "aaa");
+        correctString = EditDistance.getCorrectString(mySA23, "aaa");
         assertEquals("aaa", correctString);
-        correctString = StringCorrection.getCorrectString(mySA23, "bcd");
+        correctString = EditDistance.getCorrectString(mySA23, "bcd");
         assertTrue(correctString.equals("a") || correctString.equals("aaa"));
 
-        correctString = StringCorrection.getCorrectString(mySA24, "a");
+        correctString = EditDistance.getCorrectString(mySA24, "a");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA24, "b");
+        correctString = EditDistance.getCorrectString(mySA24, "b");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA24, "abc");
+        correctString = EditDistance.getCorrectString(mySA24, "abc");
         assertEquals("aba", correctString);
-        correctString = StringCorrection.getCorrectString(mySA24, "acb");
+        correctString = EditDistance.getCorrectString(mySA24, "acb");
         assertTrue(correctString.equals("a") || correctString.equals("aba"));
-        correctString = StringCorrection.getCorrectString(mySA24, "aa");
+        correctString = EditDistance.getCorrectString(mySA24, "aa");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA24, "aaa");
+        correctString = EditDistance.getCorrectString(mySA24, "aaa");
         assertEquals("aba", correctString);
-        correctString = StringCorrection.getCorrectString(mySA24, "bcd");
+        correctString = EditDistance.getCorrectString(mySA24, "bcd");
         assertTrue(correctString.equals("a") || correctString.equals("aba"));
 
-        correctString = StringCorrection.getCorrectString(mySA25, "a");
+        correctString = EditDistance.getCorrectString(mySA25, "a");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA25, "b");
+        correctString = EditDistance.getCorrectString(mySA25, "b");
         assertEquals("b", correctString);
-        correctString = StringCorrection.getCorrectString(mySA25, "abc");
+        correctString = EditDistance.getCorrectString(mySA25, "abc");
         assertTrue(correctString.equals("a") || correctString.equals("b") || correctString.equals("aca")
                 || correctString.equals("acb") || correctString.equals("ada") || correctString.equals("adb")
                 || correctString.equals("aea") || correctString.equals("aeb") || correctString.equals("bca")
                 || correctString.equals("bcb"));
-        correctString = StringCorrection.getCorrectString(mySA25, "aa");
+        correctString = EditDistance.getCorrectString(mySA25, "aa");
         assertEquals("a", correctString);
-        correctString = StringCorrection.getCorrectString(mySA25, "aaa");
+        correctString = EditDistance.getCorrectString(mySA25, "aaa");
         assertTrue(correctString.equals("aca") || correctString.equals("ada") || correctString.equals("aea"));
 
-        correctString = StringCorrection.getCorrectString(mySA31, "a");
+        correctString = EditDistance.getCorrectString(mySA31, "a");
         assertEquals("aa", correctString);
-        correctString = StringCorrection.getCorrectString(mySA31, "aa");
+        correctString = EditDistance.getCorrectString(mySA31, "aa");
         assertEquals("aa", correctString);
-        correctString = StringCorrection.getCorrectString(mySA31, "ab");
+        correctString = EditDistance.getCorrectString(mySA31, "ab");
         assertEquals("aa", correctString);
-        correctString = StringCorrection.getCorrectString(mySA31, "bce");
+        correctString = EditDistance.getCorrectString(mySA31, "bce");
         assertEquals("aa", correctString);
-        correctString = StringCorrection.getCorrectString(mySA31, "aaa");
+        correctString = EditDistance.getCorrectString(mySA31, "aaa");
         assertEquals("aa", correctString);
 
-        correctString = StringCorrection.getCorrectString(mySA32, "a");
+        correctString = EditDistance.getCorrectString(mySA32, "a");
         assertEquals("abcde", correctString);
-        correctString = StringCorrection.getCorrectString(mySA32, "aa");
+        correctString = EditDistance.getCorrectString(mySA32, "aa");
         assertEquals("abcde", correctString);
-        correctString = StringCorrection.getCorrectString(mySA32, "ab");
+        correctString = EditDistance.getCorrectString(mySA32, "ab");
         assertEquals("abcde", correctString);
-        correctString = StringCorrection.getCorrectString(mySA32, "bce");
+        correctString = EditDistance.getCorrectString(mySA32, "bce");
         assertEquals("abcde", correctString);
-        correctString = StringCorrection.getCorrectString(mySA32, "aaa");
+        correctString = EditDistance.getCorrectString(mySA32, "aaa");
         assertEquals("abcde", correctString);
-        correctString = StringCorrection.getCorrectString(mySA32, "abcde");
+        correctString = EditDistance.getCorrectString(mySA32, "abcde");
         assertEquals("abcde", correctString);
-        correctString = StringCorrection.getCorrectString(mySA32, "bcaab");
+        correctString = EditDistance.getCorrectString(mySA32, "bcaab");
         assertEquals("abcde", correctString);
-        correctString = StringCorrection.getCorrectString(mySA32, "aaaaaaaaa");
+        correctString = EditDistance.getCorrectString(mySA32, "aaaaaaaaa");
         assertEquals("abcde", correctString);
 
-        correctString = StringCorrection.getCorrectString(mySA33, "a");
+        correctString = EditDistance.getCorrectString(mySA33, "a");
         assertEquals("ab", correctString);
-        correctString = StringCorrection.getCorrectString(mySA33, "b");
+        correctString = EditDistance.getCorrectString(mySA33, "b");
         assertEquals("ab", correctString);
-        correctString = StringCorrection.getCorrectString(mySA33, "ab");
+        correctString = EditDistance.getCorrectString(mySA33, "ab");
         assertEquals("ab", correctString);
-        correctString = StringCorrection.getCorrectString(mySA33, "abc");
+        correctString = EditDistance.getCorrectString(mySA33, "abc");
         assertEquals("ab", correctString);
-        correctString = StringCorrection.getCorrectString(mySA33, "abb");
+        correctString = EditDistance.getCorrectString(mySA33, "abb");
         assertEquals("ab", correctString);
 
-        correctString = StringCorrection.getCorrectString(mySA34, "a");
+        correctString = EditDistance.getCorrectString(mySA34, "a");
         assertTrue(correctString.equals("ab") || correctString.equals("ac"));
-        correctString = StringCorrection.getCorrectString(mySA34, "ab");
+        correctString = EditDistance.getCorrectString(mySA34, "ab");
         assertEquals("ab", correctString);
-        correctString = StringCorrection.getCorrectString(mySA34, "abbb");
+        correctString = EditDistance.getCorrectString(mySA34, "abbb");
         assertEquals("abbb", correctString);
-        correctString = StringCorrection.getCorrectString(mySA34, "abcac");
+        correctString = EditDistance.getCorrectString(mySA34, "abcac");
         assertEquals("abcac", correctString);
-        correctString = StringCorrection.getCorrectString(mySA34, "abcad");
+        correctString = EditDistance.getCorrectString(mySA34, "abcad");
         assertTrue(correctString.equals("abcab") || correctString.equals("abcac"));
 
-        correctString = StringCorrection.getCorrectString(mySA35, "aaabbbccc");
+        correctString = EditDistance.getCorrectString(mySA35, "aaabbbccc");
         assertEquals("aaabbbccc", correctString);
-        correctString = StringCorrection.getCorrectString(mySA35, "accbc");
+        correctString = EditDistance.getCorrectString(mySA35, "accbc");
         assertTrue(correctString.equals("abc") || correctString.equals("aaabc") || correctString.equals("aabbc")
                 || correctString.equals("ababc") || correctString.equals("abbbc") || correctString.equals("aabc")
                 || correctString.equals("abbc") || correctString.equals("bccc"));
 
-        correctString = StringCorrection.getCorrectString(mySA41, "ac");
+        correctString = EditDistance.getCorrectString(mySA41, "ac");
         assertEquals("ac", correctString);
-        correctString = StringCorrection.getCorrectString(mySA41, "abc");
+        correctString = EditDistance.getCorrectString(mySA41, "abc");
         assertTrue(correctString.equals("aba") || correctString.equals("ac"));
-        correctString = StringCorrection.getCorrectString(mySA41, "bb");
+        correctString = EditDistance.getCorrectString(mySA41, "bb");
         assertTrue(correctString.equals("a") || correctString.equals("ac"));
 
-        correctString = StringCorrection.getCorrectString(mySA42, "");
+        correctString = EditDistance.getCorrectString(mySA42, "");
         assertEquals("", correctString);
-        correctString = StringCorrection.getCorrectString(mySA42, "a");
+        correctString = EditDistance.getCorrectString(mySA42, "a");
         assertTrue(correctString.equals("") || correctString.equals("aa"));
-        correctString = StringCorrection.getCorrectString(mySA42, "aab");
+        correctString = EditDistance.getCorrectString(mySA42, "aab");
         assertTrue(correctString.equals("abaa") || correctString.equals("aa"));
     }
 

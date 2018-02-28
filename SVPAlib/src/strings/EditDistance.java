@@ -1,4 +1,4 @@
-package correction;
+package strings;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,13 +9,17 @@ import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import theory.characters.CharPred;
 import theory.intervals.UnaryCharIntervalSolver;
+import utilities.Pair;
+import utilities.IntegerPair;
+import utilities.Triple;
+import utilities.Quadruple;
 
-public class StringCorrection {
+public class EditDistance {
 	// save computed p, l, v, f values for later use
-	private static HashMap<String, Pair> pStorage = null;
-	private static HashMap<String, Boolean> lStorage = null;
-	private static HashMap<String, Pair> vStorage = null;
-	private static HashMap<String, Pair> fStorage = null;
+	private static HashMap<Triple<Integer, Integer, Integer>, Pair<Integer, LinkedList<CharPred>>> pStorage = null;
+	private static HashMap<Quadruple<Integer, Integer, Integer, Character>, Boolean> lStorage = null;
+	private static HashMap<Triple<Integer, Integer, Character>, Pair<Integer, LinkedList<CharPred>>> vStorage = null;
+	private static HashMap<IntegerPair, Pair<Integer, LinkedList<CharPred>>> fStorage = null;
 	// let -1 represent positive infinity
 	private static final int INFINITY = -1;
 
@@ -30,8 +34,8 @@ public class StringCorrection {
 	 * @return result string that is accepted by SFA
 	 */
 	public static String getCorrectString(SFA<CharPred, Character> inpSFA, String inpStr) {
-		Pair p = getCorrectPair(inpSFA, inpStr);
-		LinkedList<CharPred> l = p.charSet;
+		Pair<Integer, LinkedList<CharPred>> p = getCorrectPair(inpSFA, inpStr);
+		LinkedList<CharPred> l = p.second;
 		UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 		return ba.stringOfListOfCharPred(l);
 	}
@@ -47,8 +51,8 @@ public class StringCorrection {
 	 * @return result edit distance
 	 */
 	public static int computeEditDistance(SFA<CharPred, Character> inpSFA, String inpStr) {
-		Pair p = getCorrectPair(inpSFA, inpStr);
-		return p.editDistance;
+		Pair<Integer, LinkedList<CharPred>> p = getCorrectPair(inpSFA, inpStr);
+		return p.first;
 	}
 
 	/**
@@ -62,8 +66,8 @@ public class StringCorrection {
 	 * @return result string represented by a linked list of char predicates
 	 */
 	public static LinkedList<CharPred> getCorrectCharPredList(SFA<CharPred, Character> inpSFA, String inpStr) {
-		Pair p = getCorrectPair(inpSFA, inpStr);
-		return p.charSet;
+		Pair<Integer, LinkedList<CharPred>> p = getCorrectPair(inpSFA, inpStr);
+		return p.second;
 	}
 
 	/**
@@ -76,17 +80,17 @@ public class StringCorrection {
 	 *            input string
 	 * @return result string represented by a linked list of char predicates
 	 */
-	private static Pair getCorrectPair(SFA<CharPred, Character> inpSFA, String inpStr) {
-		pStorage = new HashMap<String, Pair>();
-		lStorage = new HashMap<String, Boolean>();
-		fStorage = new HashMap<String, Pair>();
-		vStorage = new HashMap<String, Pair>();
-		Pair p = new Pair(INFINITY, null);
+	private static Pair<Integer, LinkedList<CharPred>> getCorrectPair(SFA<CharPred, Character> inpSFA, String inpStr) {
+		pStorage = new HashMap<Triple<Integer, Integer, Integer>, Pair<Integer, LinkedList<CharPred>>>();
+		lStorage = new HashMap<Quadruple<Integer, Integer, Integer, Character>, Boolean>();
+		fStorage = new HashMap<IntegerPair, Pair<Integer, LinkedList<CharPred>>>();
+		vStorage = new HashMap<Triple<Integer, Integer, Character>, Pair<Integer, LinkedList<CharPred>>>();
+		Pair<Integer, LinkedList<CharPred>>p = new Pair<>(INFINITY, null);
 		for (Integer i : inpSFA.getFinalStates()) {
-			Pair termF = F(inpStr.length(), i, inpSFA, inpStr);
-			if (lt(termF.editDistance, p.editDistance)) {
-				p.editDistance = termF.editDistance;
-				p.charSet = termF.charSet;
+			Pair<Integer, LinkedList<CharPred>>termF = F(inpStr.length(), i, inpSFA, inpStr);
+			if (lt(termF.first, p.first)) {
+				p.first = termF.first;
+				p.second = termF.second;
 			}
 		}
 		return p;
@@ -106,33 +110,33 @@ public class StringCorrection {
 	 *            input string
 	 * @return lowest number of edit operations and corresponding string segment
 	 */
-	private static Pair F(int j, int S, SFA<CharPred, Character> templ, String inpStr) {
-		String lookUp = String.format("%d,%d", j, S);
+	private static Pair<Integer, LinkedList<CharPred>>F(int j, int S, SFA<CharPred, Character> templ, String inpStr) {
+		IntegerPair lookUp = new IntegerPair(j, S);
 		if (fStorage.containsKey(lookUp)) {
 			return fStorage.get(lookUp);
 		}
 		if (j == 0) {
 			if (S == templ.getInitialState()) {
-				Pair result = new Pair(0, new LinkedList<CharPred>());
+				Pair<Integer, LinkedList<CharPred>>result = new Pair<Integer, LinkedList<CharPred>>(0, new LinkedList<CharPred>());
 				fStorage.put(lookUp, result);
 				return result;
 			} else {
-				Pair result = new Pair(INFINITY, new LinkedList<CharPred>());
+				Pair<Integer, LinkedList<CharPred>>result = new Pair<Integer, LinkedList<CharPred>>(INFINITY, new LinkedList<CharPred>());
 				fStorage.put(lookUp, result);
 				return result;
 			}
 		}
-		Pair minCost = new Pair(INFINITY, new LinkedList<CharPred>());
+		Pair<Integer, LinkedList<CharPred>>minCost = new Pair<Integer, LinkedList<CharPred>>(INFINITY, new LinkedList<CharPred>());
 		for (Integer i : templ.getStates()) {
-			Pair termF = F(j - 1, i, templ, inpStr);
-			Pair termV = V(i, S, inpStr.charAt(j - 1), templ);
-			int newCost = add(termF.editDistance, termV.editDistance);
-			if (lt(newCost, minCost.editDistance)) {
-				minCost.editDistance = newCost;
+			Pair<Integer, LinkedList<CharPred>>termF = F(j - 1, i, templ, inpStr);
+			Pair<Integer, LinkedList<CharPred>>termV = V(i, S, inpStr.charAt(j - 1), templ);
+			int newCost = add(termF.first, termV.first);
+			if (lt(newCost, minCost.first)) {
+				minCost.first = newCost;
 				LinkedList<CharPred> l = new LinkedList<CharPred>();
-				l.addAll(termF.charSet);
-				l.addAll(termV.charSet);
-				minCost.charSet = l;
+				l.addAll(termF.second);
+				l.addAll(termV.second);
+				minCost.second = l;
 			}
 		}
 		fStorage.put(lookUp, minCost);
@@ -154,14 +158,14 @@ public class StringCorrection {
 	 *            given SFA
 	 * @return lowest number of edit operations and corresponding string beta
 	 */
-	private static Pair V(int T, int S, Character c, SFA<CharPred, Character> templ) {
-		String lookUp = String.format("%d,%d,%c", T, S, c);
+	private static Pair<Integer, LinkedList<CharPred>>V(int T, int S, Character c, SFA<CharPred, Character> templ) {
+		Triple<Integer, Integer, Character> lookUp = new Triple<>(T, S, c);
 		if (vStorage.containsKey(lookUp)) {
 			return vStorage.get(lookUp);
 		}
-		Pair pResult = P(templ.stateCount() - 1, T, S, templ);
-		Pair p = new Pair(pResult.editDistance, (LinkedList<CharPred>) pResult.charSet.clone());
-		if (p.editDistance == 0) {
+		Pair<Integer, LinkedList<CharPred>>pResult = P(templ.stateCount() - 1, T, S, templ);
+		Pair<Integer, LinkedList<CharPred>>p = new Pair<Integer, LinkedList<CharPred>>(pResult.first, (LinkedList<CharPred>) pResult.second.clone());
+		if (p.first == 0) {
 			if (T == S) {
 				Collection<Move<CharPred, Character>> arcs = templ.getMovesFrom(T);
 				for (Move<CharPred, Character> q : arcs) {
@@ -170,29 +174,29 @@ public class StringCorrection {
 						if (curr.guard.isSatisfiedBy(c)) {
 							LinkedList<CharPred> l = new LinkedList<>();
 							l.add(new CharPred(c));
-							Pair temp = new Pair(0, l);
+							Pair<Integer, LinkedList<CharPred>>temp = new Pair<Integer, LinkedList<CharPred>>(0, l);
 							vStorage.put(lookUp, temp);
 							return temp;
 						}
 					}
 				}
 			}
-			Pair temp = new Pair(1, new LinkedList<CharPred>());
+			Pair<Integer, LinkedList<CharPred>>temp = new Pair<Integer, LinkedList<CharPred>>(1, new LinkedList<CharPred>());
 			vStorage.put(lookUp, temp);
 			return temp;
 		} else {
-			Pair term = p;
+			Pair<Integer, LinkedList<CharPred>>term = p;
 			boolean lRes = L(templ.stateCount() - 1, T, S, c, templ);
 			if (lRes) {
-				for (int j = 0; j < term.charSet.size(); j++) {
-					if (term.charSet.get(j).isSatisfiedBy(c)) {
-						term.charSet.set(j, new CharPred(c));
+				for (int j = 0; j < term.second.size(); j++) {
+					if (term.second.get(j).isSatisfiedBy(c)) {
+						term.second.set(j, new CharPred(c));
 						break;
 					}
 				}
 			}
 			int i = lRes ? 1 : 0;
-			term.editDistance = sub(term.editDistance, i);
+			term.first = sub(term.first, i);
 			vStorage.put(lookUp, term);
 			return term;
 		}
@@ -212,13 +216,13 @@ public class StringCorrection {
 	 *            given SFA
 	 * @return edit distance P and corresponding string segment
 	 */
-	private static Pair P(int k, int T, int S, SFA<CharPred, Character> templ) {
-		String lookUp = String.format("%d,%d,%d", k, T, S);
+	private static Pair<Integer, LinkedList<CharPred>>P(int k, int T, int S, SFA<CharPred, Character> templ) {
+		Triple<Integer, Integer, Integer> lookUp = new Triple<>(k, T, S);
 		if (pStorage.containsKey(lookUp)) {
 			return pStorage.get(lookUp);
 		}
 		if (T == S) {
-			Pair res = new Pair(0, new LinkedList<CharPred>());
+			Pair<Integer, LinkedList<CharPred>>res = new Pair<Integer, LinkedList<CharPred>>(0, new LinkedList<CharPred>());
 			pStorage.put(lookUp, res);
 			return res;
 		}
@@ -230,24 +234,24 @@ public class StringCorrection {
 					SFAInputMove<CharPred, Character> curr = (SFAInputMove<CharPred, Character>) q;
 					LinkedList<CharPred> l = new LinkedList<CharPred>();
 					l.add(curr.guard);
-					Pair res = new Pair(1, l);
+					Pair<Integer, LinkedList<CharPred>>res = new Pair<Integer, LinkedList<CharPred>>(1, l);
 					pStorage.put(lookUp, res);
 					return res;
 				}
 			}
-			return new Pair(INFINITY, new LinkedList<CharPred>());
+			return new Pair<Integer, LinkedList<CharPred>>(INFINITY, new LinkedList<CharPred>());
 		}
-		Pair term1 = P(k - 1, T, S, templ);
-		Pair term2 = P(k - 1, T, k, templ);
-		Pair term3 = P(k - 1, k, S, templ);
-		Pair result;
-		if (le(term1.editDistance, add(term2.editDistance, term3.editDistance))) {
-			result = new Pair(term1.editDistance, term1.charSet);
+		Pair<Integer, LinkedList<CharPred>>term1 = P(k - 1, T, S, templ);
+		Pair<Integer, LinkedList<CharPred>>term2 = P(k - 1, T, k, templ);
+		Pair<Integer, LinkedList<CharPred>>term3 = P(k - 1, k, S, templ);
+		Pair<Integer, LinkedList<CharPred>>result;
+		if (le(term1.first, add(term2.first, term3.first))) {
+			result = new Pair<Integer, LinkedList<CharPred>>(term1.first, term1.second);
 		} else {
 			LinkedList<CharPred> l = new LinkedList<CharPred>();
-			l.addAll(term2.charSet);
-			l.addAll(term3.charSet);
-			result = new Pair(add(term2.editDistance, term3.editDistance), l);
+			l.addAll(term2.second);
+			l.addAll(term3.second);
+			result = new Pair<Integer, LinkedList<CharPred>>(add(term2.first, term3.first), l);
 		}
 		pStorage.put(lookUp, result);
 		return result;
@@ -271,7 +275,7 @@ public class StringCorrection {
 	 * @return truth of indicator L
 	 */
 	private static boolean L(int k, int T, int S, Character c, SFA<CharPred, Character> templ) {
-		String lookUp = String.format("%d,%d,%d,%c", k, T, S, c);
+		Quadruple<Integer, Integer, Integer, Character> lookUp = new Quadruple<>(k, T, S, c);
 		if (lStorage.containsKey(lookUp)) {
 			return lStorage.get(lookUp);
 		}
@@ -290,13 +294,17 @@ public class StringCorrection {
 			return false;
 		}
 		boolean result;
-		Pair term1 = P(k - 1, T, S, templ);
-		Pair term2 = P(k - 1, T, k, templ);
-		Pair term3 = P(k - 1, k, S, templ);
-		if (gt(term1.editDistance, add(term2.editDistance, term3.editDistance))) {
+		Pair<Integer, LinkedList<CharPred>>term1 = P(k - 1, T, S, templ);
+		Pair<Integer, LinkedList<CharPred>> term2 = P(k - 1, T, k, templ);
+		Pair<Integer, LinkedList<CharPred>> term3 = P(k - 1, k, S, templ);
+		if (gt(term1.first, add(term2.first, term3.first))) {
 			result = L(k - 1, T, k, c, templ) || L(k - 1, k, S, c, templ);
-		} else if (eq(term1.editDistance, add(term2.editDistance, term3.editDistance))) {
-			result = L(k - 1, T, k, c, templ) || L(k - 1, k, S, c, templ) || L(k - 1, T, S, c, templ);
+		} else if (eq(term1.first, add(term2.first, term3.first))) {
+			if (T == k || k == S) {
+				result = L(k - 1, T, S, c, templ);
+			} else {
+				result = L(k - 1, T, k, c, templ) || L(k - 1, k, S, c, templ) || L(k - 1, T, S, c, templ);
+			}
 		} else {
 			result = L(k - 1, T, S, c, templ);
 		}
@@ -350,18 +358,4 @@ public class StringCorrection {
 		return a <= b;
 	}
 
-}
-
-/**
- * This is a wrapper class. It contains a double variable representing edit
- * distance and a linked list representing a string segment
- */
-class Pair {
-	protected int editDistance;
-	protected LinkedList<CharPred> charSet;
-
-	protected Pair(int i, LinkedList<CharPred> s) {
-		editDistance = i;
-		charSet = s;
-	}
 }
