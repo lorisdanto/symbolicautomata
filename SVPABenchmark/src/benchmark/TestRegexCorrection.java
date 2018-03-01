@@ -39,10 +39,9 @@ public class TestRegexCorrection {
 							}
 							String sampleStr = sb.toString();
 							long startTime = System.nanoTime();
-							System.out.println("Start computing edit distance...");
 							String resultStr = EditDistance.getCorrectString(sfa_comp, sampleStr);
 							long endTime = System.nanoTime();
-							System.out.println(i++ + "[" + sampleStr + "] [" + resultStr + "]" + ((endTime - startTime) / (double)1000000000));
+							System.out.println(i++ + "[" + sampleStr + "]\t[" + resultStr + "]\t" + ((endTime - startTime) / (double)1000000000));
 						}
 						// Counter=0;
 					} catch (Exception e1) {

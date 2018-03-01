@@ -24,8 +24,8 @@ public class EditDistance {
 	private static final int INFINITY = -1;
 
 	/**
-	 * Find the string which is accepted by given FSA and has lowest edit
-	 * distance to the input string
+	 * Find the string which is accepted by given FSA and has lowest edit distance
+	 * to the input string
 	 * 
 	 * @param inpSFA
 	 *            given symbolic finite automata
@@ -41,8 +41,8 @@ public class EditDistance {
 	}
 
 	/**
-	 * Find the lowest edit distance from input string to a string that is
-	 * accepted by given FSA
+	 * Find the lowest edit distance from input string to a string that is accepted
+	 * by given FSA
 	 * 
 	 * @param inpSFA
 	 *            given symbolic finite automata
@@ -50,14 +50,14 @@ public class EditDistance {
 	 *            input string
 	 * @return result edit distance
 	 */
-	public static int computeEditDistance(SFA<CharPred, Character> inpSFA, String inpStr) {
+	public static int computeShortestEditDistance(SFA<CharPred, Character> inpSFA, String inpStr) {
 		Pair<Integer, LinkedList<CharPred>> p = getCorrectPair(inpSFA, inpStr);
 		return p.first;
 	}
 
 	/**
-	 * Find the lowest edit distance from input string to a string that is
-	 * accepted by given FSA
+	 * Find the lowest edit distance from input string to a string that is accepted
+	 * by given FSA
 	 * 
 	 * @param inpSFA
 	 *            given symbolic finite automata
@@ -71,8 +71,8 @@ public class EditDistance {
 	}
 
 	/**
-	 * Find the string which is accepted by given FSA and has lowest edit
-	 * distance to the input string
+	 * Find the string which is accepted by given FSA and has lowest edit distance
+	 * to the input string
 	 * 
 	 * @param inpSFA
 	 *            given symbolic finite automata
@@ -85,9 +85,9 @@ public class EditDistance {
 		lStorage = new HashMap<Quadruple<Integer, Integer, Integer, Character>, Boolean>();
 		fStorage = new HashMap<IntegerPair, Pair<Integer, LinkedList<CharPred>>>();
 		vStorage = new HashMap<Triple<Integer, Integer, Character>, Pair<Integer, LinkedList<CharPred>>>();
-		Pair<Integer, LinkedList<CharPred>>p = new Pair<>(INFINITY, null);
+		Pair<Integer, LinkedList<CharPred>> p = new Pair<>(INFINITY, null);
 		for (Integer i : inpSFA.getFinalStates()) {
-			Pair<Integer, LinkedList<CharPred>>termF = F(inpStr.length(), i, inpSFA, inpStr);
+			Pair<Integer, LinkedList<CharPred>> termF = subStrToS(inpStr.length(), i, inpSFA, inpStr);
 			if (lt(termF.first, p.first)) {
 				p.first = termF.first;
 				p.second = termF.second;
@@ -97,8 +97,8 @@ public class EditDistance {
 	}
 
 	/**
-	 * F refers to the lowest number of edit operations needed to force FSA to
-	 * goal state, given the first j characters of the input string
+	 * F refers to the lowest number of edit operations needed to force FSA to goal
+	 * state, given the first j characters of the input string
 	 * 
 	 * @param j
 	 *            number of first characters of input string
@@ -110,26 +110,29 @@ public class EditDistance {
 	 *            input string
 	 * @return lowest number of edit operations and corresponding string segment
 	 */
-	private static Pair<Integer, LinkedList<CharPred>>F(int j, int S, SFA<CharPred, Character> templ, String inpStr) {
+	private static Pair<Integer, LinkedList<CharPred>> subStrToS(int j, int S, SFA<CharPred, Character> templ, String inpStr) {
 		IntegerPair lookUp = new IntegerPair(j, S);
 		if (fStorage.containsKey(lookUp)) {
 			return fStorage.get(lookUp);
 		}
 		if (j == 0) {
 			if (S == templ.getInitialState()) {
-				Pair<Integer, LinkedList<CharPred>>result = new Pair<Integer, LinkedList<CharPred>>(0, new LinkedList<CharPred>());
+				Pair<Integer, LinkedList<CharPred>> result = new Pair<Integer, LinkedList<CharPred>>(0,
+						new LinkedList<CharPred>());
 				fStorage.put(lookUp, result);
 				return result;
 			} else {
-				Pair<Integer, LinkedList<CharPred>>result = new Pair<Integer, LinkedList<CharPred>>(INFINITY, new LinkedList<CharPred>());
+				Pair<Integer, LinkedList<CharPred>> result = new Pair<Integer, LinkedList<CharPred>>(INFINITY,
+						new LinkedList<CharPred>());
 				fStorage.put(lookUp, result);
 				return result;
 			}
 		}
-		Pair<Integer, LinkedList<CharPred>>minCost = new Pair<Integer, LinkedList<CharPred>>(INFINITY, new LinkedList<CharPred>());
+		Pair<Integer, LinkedList<CharPred>> minCost = new Pair<Integer, LinkedList<CharPred>>(INFINITY,
+				new LinkedList<CharPred>());
 		for (Integer i : templ.getStates()) {
-			Pair<Integer, LinkedList<CharPred>>termF = F(j - 1, i, templ, inpStr);
-			Pair<Integer, LinkedList<CharPred>>termV = V(i, S, inpStr.charAt(j - 1), templ);
+			Pair<Integer, LinkedList<CharPred>> termF = subStrToS(j - 1, i, templ, inpStr);
+			Pair<Integer, LinkedList<CharPred>> termV = moveFromSToTGivenC(i, S, inpStr.charAt(j - 1), templ);
 			int newCost = add(termF.first, termV.first);
 			if (lt(newCost, minCost.first)) {
 				minCost.first = newCost;
@@ -144,9 +147,8 @@ public class EditDistance {
 	}
 
 	/**
-	 * V refers to the lowest number of edit operations needed to change
-	 * character c into a string beta which will force the FSA from state T to
-	 * state S
+	 * V refers to the lowest number of edit operations needed to change character c
+	 * into a string beta which will force the FSA from state T to state S
 	 * 
 	 * @param T
 	 *            origin state
@@ -158,13 +160,14 @@ public class EditDistance {
 	 *            given SFA
 	 * @return lowest number of edit operations and corresponding string beta
 	 */
-	private static Pair<Integer, LinkedList<CharPred>>V(int T, int S, Character c, SFA<CharPred, Character> templ) {
+	private static Pair<Integer, LinkedList<CharPred>> moveFromSToTGivenC(int T, int S, Character c, SFA<CharPred, Character> templ) {
 		Triple<Integer, Integer, Character> lookUp = new Triple<>(T, S, c);
 		if (vStorage.containsKey(lookUp)) {
 			return vStorage.get(lookUp);
 		}
-		Pair<Integer, LinkedList<CharPred>>pResult = P(templ.stateCount() - 1, T, S, templ);
-		Pair<Integer, LinkedList<CharPred>>p = new Pair<Integer, LinkedList<CharPred>>(pResult.first, (LinkedList<CharPred>) pResult.second.clone());
+		Pair<Integer, LinkedList<CharPred>> pResult = shortestStrFromSToT(templ.stateCount() - 1, T, S, templ);
+		Pair<Integer, LinkedList<CharPred>> p = new Pair<Integer, LinkedList<CharPred>>(pResult.first,
+				(LinkedList<CharPred>) pResult.second.clone());
 		if (p.first == 0) {
 			if (T == S) {
 				Collection<Move<CharPred, Character>> arcs = templ.getMovesFrom(T);
@@ -174,19 +177,20 @@ public class EditDistance {
 						if (curr.guard.isSatisfiedBy(c)) {
 							LinkedList<CharPred> l = new LinkedList<>();
 							l.add(new CharPred(c));
-							Pair<Integer, LinkedList<CharPred>>temp = new Pair<Integer, LinkedList<CharPred>>(0, l);
+							Pair<Integer, LinkedList<CharPred>> temp = new Pair<Integer, LinkedList<CharPred>>(0, l);
 							vStorage.put(lookUp, temp);
 							return temp;
 						}
 					}
 				}
 			}
-			Pair<Integer, LinkedList<CharPred>>temp = new Pair<Integer, LinkedList<CharPred>>(1, new LinkedList<CharPred>());
+			Pair<Integer, LinkedList<CharPred>> temp = new Pair<Integer, LinkedList<CharPred>>(1,
+					new LinkedList<CharPred>());
 			vStorage.put(lookUp, temp);
 			return temp;
 		} else {
-			Pair<Integer, LinkedList<CharPred>>term = p;
-			boolean lRes = L(templ.stateCount() - 1, T, S, c, templ);
+			Pair<Integer, LinkedList<CharPred>> term = p;
+			boolean lRes = cContainedInShortedStrFromSToT(templ.stateCount() - 1, T, S, c, templ);
 			if (lRes) {
 				for (int j = 0; j < term.second.size(); j++) {
 					if (term.second.get(j).isSatisfiedBy(c)) {
@@ -203,8 +207,8 @@ public class EditDistance {
 	}
 
 	/**
-	 * P refers to the length of the shortest string which force the FSA from
-	 * state T to state S, passing only through states numbered k or less
+	 * P refers to the length of the shortest string which force the FSA from state
+	 * T to state S, passing only through states numbered k or less
 	 * 
 	 * @param k
 	 *            max state passed
@@ -216,13 +220,14 @@ public class EditDistance {
 	 *            given SFA
 	 * @return edit distance P and corresponding string segment
 	 */
-	private static Pair<Integer, LinkedList<CharPred>>P(int k, int T, int S, SFA<CharPred, Character> templ) {
+	private static Pair<Integer, LinkedList<CharPred>> shortestStrFromSToT(int k, int T, int S, SFA<CharPred, Character> templ) {
 		Triple<Integer, Integer, Integer> lookUp = new Triple<>(k, T, S);
 		if (pStorage.containsKey(lookUp)) {
 			return pStorage.get(lookUp);
 		}
 		if (T == S) {
-			Pair<Integer, LinkedList<CharPred>>res = new Pair<Integer, LinkedList<CharPred>>(0, new LinkedList<CharPred>());
+			Pair<Integer, LinkedList<CharPred>> res = new Pair<Integer, LinkedList<CharPred>>(0,
+					new LinkedList<CharPred>());
 			pStorage.put(lookUp, res);
 			return res;
 		}
@@ -234,17 +239,17 @@ public class EditDistance {
 					SFAInputMove<CharPred, Character> curr = (SFAInputMove<CharPred, Character>) q;
 					LinkedList<CharPred> l = new LinkedList<CharPred>();
 					l.add(curr.guard);
-					Pair<Integer, LinkedList<CharPred>>res = new Pair<Integer, LinkedList<CharPred>>(1, l);
+					Pair<Integer, LinkedList<CharPred>> res = new Pair<Integer, LinkedList<CharPred>>(1, l);
 					pStorage.put(lookUp, res);
 					return res;
 				}
 			}
 			return new Pair<Integer, LinkedList<CharPred>>(INFINITY, new LinkedList<CharPred>());
 		}
-		Pair<Integer, LinkedList<CharPred>>term1 = P(k - 1, T, S, templ);
-		Pair<Integer, LinkedList<CharPred>>term2 = P(k - 1, T, k, templ);
-		Pair<Integer, LinkedList<CharPred>>term3 = P(k - 1, k, S, templ);
-		Pair<Integer, LinkedList<CharPred>>result;
+		Pair<Integer, LinkedList<CharPred>> term1 = shortestStrFromSToT(k - 1, T, S, templ);
+		Pair<Integer, LinkedList<CharPred>> term2 = shortestStrFromSToT(k - 1, T, k, templ);
+		Pair<Integer, LinkedList<CharPred>> term3 = shortestStrFromSToT(k - 1, k, S, templ);
+		Pair<Integer, LinkedList<CharPred>> result;
 		if (le(term1.first, add(term2.first, term3.first))) {
 			result = new Pair<Integer, LinkedList<CharPred>>(term1.first, term1.second);
 		} else {
@@ -258,9 +263,9 @@ public class EditDistance {
 	}
 
 	/**
-	 * L indicates whether or not character c is accepted by some arc along a
-	 * path of shortest length from T to S, passing only through states numbered
-	 * k or less
+	 * L indicates whether or not character c is accepted by some arc along a path
+	 * of shortest length from T to S, passing only through states numbered k or
+	 * less
 	 * 
 	 * @param k
 	 *            max state passed
@@ -274,7 +279,8 @@ public class EditDistance {
 	 *            given SFA
 	 * @return truth of indicator L
 	 */
-	private static boolean L(int k, int T, int S, Character c, SFA<CharPred, Character> templ) {
+	private static boolean cContainedInShortedStrFromSToT(int k, int T, int S, Character c,
+			SFA<CharPred, Character> templ) {
 		Quadruple<Integer, Integer, Integer, Character> lookUp = new Quadruple<>(k, T, S, c);
 		if (lStorage.containsKey(lookUp)) {
 			return lStorage.get(lookUp);
@@ -294,19 +300,22 @@ public class EditDistance {
 			return false;
 		}
 		boolean result;
-		Pair<Integer, LinkedList<CharPred>>term1 = P(k - 1, T, S, templ);
-		Pair<Integer, LinkedList<CharPred>> term2 = P(k - 1, T, k, templ);
-		Pair<Integer, LinkedList<CharPred>> term3 = P(k - 1, k, S, templ);
+		Pair<Integer, LinkedList<CharPred>> term1 = shortestStrFromSToT(k - 1, T, S, templ);
+		Pair<Integer, LinkedList<CharPred>> term2 = shortestStrFromSToT(k - 1, T, k, templ);
+		Pair<Integer, LinkedList<CharPred>> term3 = shortestStrFromSToT(k - 1, k, S, templ);
 		if (gt(term1.first, add(term2.first, term3.first))) {
-			result = L(k - 1, T, k, c, templ) || L(k - 1, k, S, c, templ);
+			result = cContainedInShortedStrFromSToT(k - 1, T, k, c, templ)
+					|| cContainedInShortedStrFromSToT(k - 1, k, S, c, templ);
 		} else if (eq(term1.first, add(term2.first, term3.first))) {
 			if (T == k || k == S) {
-				result = L(k - 1, T, S, c, templ);
+				result = cContainedInShortedStrFromSToT(k - 1, T, S, c, templ);
 			} else {
-				result = L(k - 1, T, k, c, templ) || L(k - 1, k, S, c, templ) || L(k - 1, T, S, c, templ);
+				result = cContainedInShortedStrFromSToT(k - 1, T, k, c, templ)
+						|| cContainedInShortedStrFromSToT(k - 1, k, S, c, templ)
+						|| cContainedInShortedStrFromSToT(k - 1, T, S, c, templ);
 			}
 		} else {
-			result = L(k - 1, T, S, c, templ);
+			result = cContainedInShortedStrFromSToT(k - 1, T, S, c, templ);
 		}
 		lStorage.put(lookUp, result);
 		return result;
