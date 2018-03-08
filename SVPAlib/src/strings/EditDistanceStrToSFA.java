@@ -13,8 +13,11 @@ import utilities.Pair;
 import utilities.IntegerPair;
 import utilities.Triple;
 import utilities.Quadruple;
-
-public class EditDistance {
+/**
+ * This class helps to find the shortest edit distance from a given string to
+ * an SFA and the corresponding string accepted by SFA. 
+ */
+public class EditDistanceStrToSFA {
 	// save computed p, l, v, f values for later use
 	private static HashMap<Triple<Integer, Integer, Integer>, Pair<Integer, LinkedList<CharPred>>> pStorage = null;
 	private static HashMap<Quadruple<Integer, Integer, Integer, Character>, Boolean> lStorage = null;

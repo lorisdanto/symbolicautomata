@@ -12,7 +12,7 @@ import benchmark.regexconverter.RegexConverter;
 import theory.BooleanAlgebra;
 import theory.characters.CharPred;
 import theory.intervals.UnaryCharIntervalSolver;
-import strings.EditDistance;
+import strings.EditDistanceStrToSFA;
 
 public class TestRegexCorrection {
 	public static void main(String[] args) {
@@ -39,7 +39,7 @@ public class TestRegexCorrection {
 							}
 							String sampleStr = sb.toString();
 							long startTime = System.nanoTime();
-							String resultStr = EditDistance.getCorrectString(sfa_comp, sampleStr);
+							String resultStr = EditDistanceStrToSFA.getCorrectString(sfa_comp, sampleStr);
 							long endTime = System.nanoTime();
 							System.out.println(i++ + "[" + sampleStr + "]\t[" + resultStr + "]\t" + ((endTime - startTime) / (double)1000000000));
 						}
