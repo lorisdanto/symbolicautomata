@@ -7,6 +7,7 @@
 	 */
 	package theory.intervals;
 
+	import static com.google.common.base.Preconditions.checkArgument;
 	import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
@@ -19,7 +20,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import com.google.common.collect.ImmutableList;
 
 import theory.BooleanAlgebraSubst;
-import theory.characters.CharFunc;
+	import theory.characters.CharConstant;
+	import theory.characters.CharFunc;
 import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 import utilities.Pair;
@@ -182,6 +184,11 @@ import utilities.Pair;
 		@Override
 		public Character MkSubstFuncConst(CharFunc f, Character c) {
 			return checkNotNull(f).instantiateWith(checkNotNull(c));
+		}
+
+		@Override
+		public CharFunc MkFuncFromConst(Character c) {
+	    	return new CharConstant(checkNotNull(c));
 		}
 		
 		/**

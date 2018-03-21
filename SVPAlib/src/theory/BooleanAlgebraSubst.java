@@ -34,5 +34,11 @@ public abstract class BooleanAlgebraSubst<P,F,S> extends BooleanAlgebra<P, S>{
 	 * @return p(f(x)) 
 	 */
 	public abstract P MkSubstFuncPred(F f, P p);
+
+	/**
+	 * Make a constant function initialized by the constant <code>s</code>
+	 * @return f(s)
+	 */
+	public abstract F MkFuncFromConst(S s);
 	
 }
