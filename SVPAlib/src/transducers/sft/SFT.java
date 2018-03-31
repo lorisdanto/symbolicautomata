@@ -23,6 +23,7 @@ import utilities.Pair;
 
 /**
  * A symbolic finite state transducer
+ * modified from the model given by the paper named after Symbolic Finite State Transducers: Algorithms And Applications
  *
  * @param <P>
  *            The type of predicates forming the Boolean algebra
@@ -67,7 +68,8 @@ public class SFT<P, F, S> extends Automaton<P, S> {
     }
 
     /*
-    * Create an automaton (removes unreachable states)
+    * Create a SFT (removes unreachable states)
+    * Page 3, left column, the last 4 lines, definition 2
     */
     public static <P, F, S> SFT<P, F, S> MkSFT(Collection<SFTMove<P, F, S>> transitions, Integer initialState,
                                                      Collection<Integer> finalStates,
@@ -105,8 +107,52 @@ public class SFT<P, F, S> extends Automaton<P, S> {
         return aut;
     }
 
+    public List<S> outpzutOn(List<S> input, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
+        return outputOn(this, input, ba);
+    }
+
+    /**
+     * Computes one of the ouptuts produced when reading input. Null if no such output exists
+     *
+     * @param input
+     * @param ba
+     * @return one output sequence, null if undefined
+     * @throws TimeoutException
+     */
+    public static <P, F, S> List<S> outputOn(SFT<P, F, S> sftWithEps, List<S> input,
+                                                 BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
+        List<S> output = new ArrayList<S>();
+
+        // composition
+        SFT<P, F, S> sft = sftWithEps.removeEpsilonMoves(ba);
+        // Assume that there are no epsilon transitions for now
+        int currentState = sft.getInitialState();
+
+        for (S element : input) {
+            Collection<SFTInputMove<P, F, S>> transitions = sft.getInputMovesFrom(currentState);
+            boolean canMove = false;
+            for (SFTInputMove<P, F, S> transition: transitions) {
+                if (ba.HasModel(transition.guard, element)) {
+                    for (F outputFunc: transition.outputFunctions)
+                        output.add(ba.MkSubstFuncConst(outputFunc, element));
+                    currentState = transition.to;
+                    canMove = true;
+                    break;
+                }
+            }
+            if (!canMove)
+                return null;
+        }
+
+        if (sft.getFinalStates().contains(currentState))
+            return output;
+        else
+            return null;
+    }
+
     /**
      * Computes the composition with <code>sft</code> as a new SFT
+     * Page 4, right column, start from the first line, part 3.1
      *
      * @throws TimeoutException
      */
@@ -116,6 +162,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 
     /**
      * Computes the composition of <code>sft1</code> and <code>sft2</code>
+     * Page 4, right column, start from the first line, part 3.1
      *
      * @throws TimeoutException
      */
@@ -148,46 +195,35 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                 // the composed sft accepts a string iff sft1 and sft2 both accept the string
                 finalStates.add(currStateId);
             for (SFTInputMove<P, F, S> t1 : sft1.getInputMovesFrom(currState.first)) {
-                List<List<Integer>> chains = sft2.getPossibleTransitionChains(currState.second, t1.outputFunctions.size());
-                for (List<Integer> chain: chains) {
-                    // chain.size cannot be 0 because a chain always has currState.second as the head of it
-                    // if chain.size() == 1, then we could know that t1's output function is an epsilon function. Since
-                    // t2 has a guard, t2.guard and t1's output cannot be composed so the corresponding composed
-                    // transition should be omitted.
-                    if (chain.size() >= 2) { // t1.outputFunctions produce something
-                        SFTInputMove<P, F, S> t2 = null;
-                        for (SFTInputMove<P, F, S> t2Find: (sft2.getInputMovesFrom(chain.get(0))))
-                            if (chain.get(1).equals(t2Find.to)) {
-                                t2 = t2Find;
-                                break;
-                            }
-                        P intersGuard = ba.MkAnd(ba.MkSubstFuncPred(t1.outputFunctions.get(0), t1.guard) , t2.guard);
-                        List<F> outputFunctions = new LinkedList<F>();
+                List<List<SFTMove<P, F, S>>> chains = sft2.getPossibleTransitionChains(currState.second, t1.outputFunctions.size());
+                for (List<SFTMove<P, F, S>> chain: chains) {
+                    // according to the algorithm of method getPossibleTransitionChains, there is at least one SFTMove
+                    // in a chain.
+                    SFTInputMove<P, F, S> t2 = (SFTInputMove<P, F, S>)chain.get(0);
+                    P internalGuard = ba.MkAnd(ba.MkSubstFuncPred(t1.outputFunctions.get(0), t1.guard) , t2.guard);
+                    P intersGuard = ba.MkAnd(t1.guard, ba.GetAllPossibleInputs(t1.outputFunctions.get(0), internalGuard));
+                    List<F> outputFunctions = new LinkedList<F>();
+                    for (F t2OutputFunction: t2.outputFunctions)
+                        outputFunctions.add(ba.MkSubstFuncFunc(t2OutputFunction, t1.outputFunctions.get(0)));
+                    // initialize the composed guard.
+                    // consider the transition p --phi/[F, f2]--> p' in sft1 and
+                    // q --psi/[g]--> q' --gamma/[h] --> q'' in sft2, the composed transition should be
+                    // (p, q) --phi and psi(F) and gamma(f2)/[g(F), h(f2)]--> (p', q'')
+                    for (int i = 1; i < chain.size(); i++) {
+                        t2 = (SFTInputMove<P, F, S>)chain.get(i);
+                        internalGuard = ba.MkAnd(ba.MkSubstFuncPred(t1.outputFunctions.get(i), t1.guard) , t2.guard);
+                        intersGuard = ba.MkAnd(intersGuard, ba.GetAllPossibleInputs(t1.outputFunctions.get(i), internalGuard));
                         for (F t2OutputFunction: t2.outputFunctions)
-                            outputFunctions.add(ba.MkSubstFuncFunc(t2OutputFunction, t1.outputFunctions.get(0)));
-                        // initialize the composed guard.
-                        // consider the transition p --phi/[F, f2]--> p' in sft1 and
-                        // q --psi/[g]--> q' --gamma/[h] --> q'' in sft2, the composed transition should be
-                        // (p, q) --phi and psi(F) and gamma(f2)/[g(F), h(f2)]--> (p', q'')
-                        for (int i = 1; i < chain.size() - 1; i++) {
-                            for (SFTInputMove<P, F, S> t2Find: (sft2.getInputMovesFrom(chain.get(0))))
-                                if (chain.get(1).equals(t2Find.to)) {
-                                    t2 = t2Find;
-                                    break;
-                                }
-                            intersGuard = ba.MkAnd(intersGuard, ba.MkAnd(ba.MkSubstFuncPred(t1.outputFunctions.get(i), t1.guard), t2.guard));
-                            for (F t2OutputFunction: t2.outputFunctions)
-                                outputFunctions.add(ba.MkSubstFuncFunc(t2OutputFunction, t1.outputFunctions.get(i)));
-                        }
-                        if (ba.IsSatisfiable(intersGuard)) {
-                            Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(t1.to, chain.get(chain.size() - 1));
-                            int nextStateId = getStateId(nextState, reached, toVisit);
+                            outputFunctions.add(ba.MkSubstFuncFunc(t2OutputFunction, t1.outputFunctions.get(i)));
+                    }
+                    if (ba.IsSatisfiable(intersGuard)) {
+                        Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(t1.to, chain.get(chain.size() - 1).to);
+                        int nextStateId = getStateId(nextState, reached, toVisit);
 
-                            SFTInputMove<P, F, S> newTrans = new SFTInputMove<P, F, S>(currStateId, nextStateId,
-                                    intersGuard, outputFunctions);
+                        SFTInputMove<P, F, S> newTrans = new SFTInputMove<P, F, S>(currStateId, nextStateId,
+                                intersGuard, outputFunctions);
 
-                            transitions.add(newTrans);
-                        }
+                        transitions.add(newTrans);
                     }
                 }
             }
@@ -234,7 +270,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                         for (SFTEpsilon<P, F, S> t: (sft.getEpsilonMovesFrom(path.get(i))))
                             if (path.get(i + 1).equals(t.to)) {
                                 for (S output: t.outputs)
-                                    outputFuncAlongPath.add(ba.MkFuncFromConst(output));
+                                    outputFuncAlongPath.add(ba.MkFuncConst(output));
                                 break;
                             }
                     }
@@ -322,7 +358,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
         return epsilonClosure;
     }
 
-    private List<List<Integer>> getPossibleTransitionChains(Integer startState, int steps) {
+    private List<List<SFTMove<P, F, S>>> getPossibleTransitionChains(Integer startState, int steps) {
         return possibleTransitionChains(this, startState, steps);
     }
 
@@ -334,24 +370,27 @@ public class SFT<P, F, S> extends Automaton<P, S> {
      * @param steps the number of steps, which should be a natural number
      * @return
      */
-    private static <P, F, S> List<List<Integer>> possibleTransitionChains(SFT<P, F, S> sft, Integer startState, int steps) {
-        List<List<Integer>> chains = new LinkedList<List<Integer>>();
-        List<Integer> tempList = new LinkedList<Integer>();
-        tempList.add(startState); // so the size of tempList is greater than 1
-        backtrack(chains, tempList, sft, startState, steps);
+    private static <P, F, S> List<List<SFTMove<P, F, S>>> possibleTransitionChains(SFT<P, F, S> sft, Integer startState, int steps) {
+        List<List<SFTMove<P, F, S>>> chains = new ArrayList<List<SFTMove<P, F, S>>>();
+        for (SFTMove<P, F, S> initialTransition: sft.getInputMovesFrom(startState)) {
+            List<SFTMove<P, F, S>> tempList = new LinkedList<SFTMove<P, F, S>>();
+            tempList.add(initialTransition);
+            backtrack(chains, tempList, sft, steps - 1);
+        }
         return chains;
     }
 
     // use backtrack method to get all possible transition chains
-    private static <P, F, S> void backtrack(List<List<Integer>> chains, List<Integer> tempList, SFT<P, F, S> sft, Integer currentState, int remainSteps) {
+    private static <P, F, S> void backtrack(List<List<SFTMove<P, F, S>>> chains, List<SFTMove<P, F, S>> tempList, SFT<P, F, S> sft, int remainSteps) {
         if (remainSteps < 0)
             return; // no solution
         else if (remainSteps == 0)
-            chains.add(new ArrayList<>(tempList));
+            chains.add(new ArrayList<SFTMove<P, F, S>>(tempList));
         else {
+            Integer currentState = tempList.get(tempList.size() - 1).to;
             for (SFTMove<P, F, S> transition: sft.getTransitionsFrom(currentState)) {
-                tempList.add(transition.to);
-                backtrack(chains, tempList, sft, transition.to, remainSteps - 1);
+                tempList.add(transition);
+                backtrack(chains, tempList, sft, remainSteps - 1);
                 tempList.remove(tempList.size() - 1);
             }
         }
@@ -363,6 +402,8 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 
     /**
      * judge whether <code>sft1withEps</code> and <code>sft2withEps</code> are 1-equality
+     * Page 6, in the middle of left column, figure 3
+     *
      * @param sft1withEps symbolic finite transducer 1 who may has epsilon transitions
      * @param sft2withEps symbolic finite transducer 2 who may has epsilon transitions
      */
@@ -382,9 +423,9 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                 List<F> u = new ArrayList<F>();
                 List<F> v = new ArrayList<F>();
                 for (S a: promise.first)
-                    u.add(ba.MkFuncFromConst(a));
+                    u.add(ba.MkFuncConst(a));
                 for (S b: promise.second)
-                    v.add(ba.MkFuncFromConst(b));
+                    v.add(ba.MkFuncConst(b));
                 u.addAll(transition.outputFunctions1);
                 v.addAll(transition.outputFunctions2);
                 if (product.getFinalStates().contains(currState) && u.size() != v.size())
@@ -407,7 +448,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                     // stored in List<S> c
                     for (int i = 0; i < u.size() - v.size(); i++) {
                         c.add(ba.MkSubstFuncConst(w.get(i), witness));
-                        cF.add(ba.MkSubstFuncFunc(w.get(i), ba.MkFuncFromConst(witness)));
+                        cF.add(ba.MkSubstFuncFunc(w.get(i), ba.MkFuncConst(witness)));
                     }
                     for (int i = 0; i < u.size() - v.size(); i++)
                         try {
@@ -441,7 +482,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                     // stored in List<S> c
                     for (int i = 0; i < v.size() - u.size(); i++) {
                         c.add(ba.MkSubstFuncConst(w.get(i), witness));
-                        cF.add(ba.MkSubstFuncFunc(w.get(i), ba.MkFuncFromConst(witness)));
+                        cF.add(ba.MkSubstFuncFunc(w.get(i), ba.MkFuncConst(witness)));
                     }
                     for (int i = 0; i < v.size() - u.size(); i++)
                         try {
@@ -465,6 +506,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
     
     /**
      * Computes the domain automaton of the sft
+     * Page 4, right column, the 17th line from the bottom
      *
      * @throws TimeoutException
      */
@@ -484,6 +526,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 
     /**
      * compute the inverse image under <code>sfa</code>, which means compose(sft, sfa)
+     * Page 7, left column, the first line
      * 
      * @throws TimeoutException
      */
@@ -518,6 +561,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 
     /**
      * compute the domain restriction of <code>this</code> for <code>sfaWithEps</code>
+     * Page 7, left column, the 8th line
      *
      * @return the domain restriction of the current sft
      */
@@ -614,6 +658,38 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                 getInputMovesTo(transition.to).add((SFTInputMove<P, F, S>) transition);
             }
         }
+    }
+
+    /**
+     * judge whether <code>otherSft</code> is just <code>this</code> itself
+     * It is just used for debugging
+     * @param otherSft a SFT
+     * @return the result of whether <code>otherSft</code> is just <code>this</code> itself
+     */
+    public boolean isItself(SFT<P, F, S> otherSft) {
+        if (this.isDeterministic != otherSft.isDeterministic)
+            return false;
+        if (this.isEmpty != otherSft.isEmpty)
+            return false;
+        if (this.isEpsilonFree != otherSft.isEpsilonFree)
+            return false;
+        if (this.maxStateId != otherSft.maxStateId)
+            return false;
+        if (this.states != otherSft.states)
+            return false;
+        if (this.initialState != otherSft.initialState)
+            return false;
+        if (this.transitionsFrom != otherSft.transitionsFrom)
+            return false;
+        if (this.transitionsTo != otherSft.transitionsTo)
+            return false;
+        if (this.epsTransitionsFrom != otherSft.epsTransitionsFrom)
+            return false;
+        if (this.epsTransitionsTo != otherSft.epsTransitionsTo)
+            return false;
+        if (this.finalStates != otherSft.finalStates)
+            return false;
+        return true;
     }
 
     // ACCESORIES METHODS
@@ -824,5 +900,4 @@ public class SFT<P, F, S> extends Automaton<P, S> {
     public String toString() {
         return super.toString();
     }
-
 }

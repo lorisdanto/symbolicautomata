@@ -37,8 +37,14 @@ public abstract class BooleanAlgebraSubst<P,F,S> extends BooleanAlgebra<P, S>{
 
 	/**
 	 * Make a constant function initialized by the constant <code>s</code>
-	 * @return f(s)
+	 * @return lambda x.s
 	 */
-	public abstract F MkFuncFromConst(S s);
+	public abstract F MkFuncConst(S s);
+
+    /**
+     * infer all corresponding possible input based on the given function <code>f</code> and the given output <code>o</code>
+     * @return all corresponding possible input
+     */
+	public abstract P GetAllPossibleInputs(F f, P o);
 	
 }

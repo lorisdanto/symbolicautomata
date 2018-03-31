@@ -15,16 +15,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
+    import com.sun.xml.internal.bind.annotation.XmlLocation;
+    import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import com.google.common.collect.ImmutableList;
 
 import theory.BooleanAlgebraSubst;
-	import theory.characters.CharConstant;
-	import theory.characters.CharFunc;
-import theory.characters.CharPred;
-import theory.characters.StdCharPred;
-import utilities.Pair;
+    import theory.characters.*;
+    import utilities.Pair;
 
 	/**
 	 * CharSolver: an interval based solver for the theory of characters
@@ -187,9 +185,22 @@ import utilities.Pair;
 		}
 
 		@Override
-		public CharFunc MkFuncFromConst(Character c) {
+		public CharFunc MkFuncConst(Character c) {
 	    	return new CharConstant(checkNotNull(c));
 		}
+
+		@Override
+        public CharPred GetAllPossibleInputs(CharFunc f, CharPred o) {
+	        if (f instanceof CharConstant) {
+                if (o.equals(new CharPred(((CharConstant) f).c)))
+                    return StdCharPred.TRUE;
+                else
+                    return StdCharPred.FALSE;
+            } else { // f instanceof CharOffset
+                CharFunc inverseF = new CharOffset(-((CharOffset)f).increment);
+                return MkSubstFuncPred(inverseF, o);
+            }
+        }
 		
 		/**
 		 * returns a string of a list of CharPred

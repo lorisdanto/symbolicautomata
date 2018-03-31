@@ -29,7 +29,12 @@ public class CharConstant implements CharFunc {
 	}
 
 	public CharPred substIn(CharPred p, UnaryCharIntervalSolver cs) {
-		return checkNotNull(p).isSatisfiedBy(c) ? StdCharPred.TRUE : StdCharPred.FALSE;
+//		return checkNotNull(p).isSatisfiedBy(c) ? StdCharPred.TRUE : StdCharPred.FALSE;
+        // the line above is the original code written by professor D'Antoni
+        // Except SFTUnitTest.java, this file (CharConstant.java) is not used by any other files.
+        // For some reason I do not know, SST uses its own CharConstant.java so my modification does not affect SST
+        // All in all, it is tentatively safe to modify codes here.
+		return new CharPred(c);
 	}
 
 	public char instantiateWith(char ch) {

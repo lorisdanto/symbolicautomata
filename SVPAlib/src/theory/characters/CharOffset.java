@@ -53,8 +53,21 @@ public class CharOffset implements CharFunc {
 	public CharPred substIn(CharPred p, UnaryCharIntervalSolver cs) {
 		ImmutableList.Builder<ImmutablePair<Character,Character>> intervals = ImmutableList.builder();
                 for (ImmutablePair<Character, Character> interval : checkNotNull(p).intervals) {
-                    long leftPrime = charSnap(interval.left - increment);
-                    long rightPrime = charSnap(interval.right - increment);
+                    // long leftPrime = charSnap(interval.left - increment);
+                    // long rightPrime = charSnap(interval.right - increment);
+					/* the commented code above is written by professor D'Antoni
+					I believe that interval.left - increment should be interval.left + increment and
+					interval.right - increment should be interval.right + increment
+					For example, suppose we want to convert 'D - F' whose ASCII values is 68 - 70 to 'd - e' whose
+                    ASCII values is 100 - 102.
+                    TO_LOWER_CASE which is also defined by professor is new CharOffset('a' - 'A');
+                    By looking up the ASCII table, we could get that 'a' - 'A' = 97 - 65 = 32 which means the increment
+                    of TO_LOWER_CASE is 32.
+                    If leftPrime = charSnap(interval.left - increment) and rightPrime = charSnap(interval.right -
+                    increment), then TO_LOWER_CASE.substIn(new CharPred('D', 'F'), cs)'s result will be
+                    CharPred('$', '&'), which is not what we want. */
+					long leftPrime = charSnap(interval.left + increment);
+					long rightPrime = charSnap(interval.right + increment);
                     intervals.add(ImmutablePair.of((char)leftPrime, (char)rightPrime));
                 }
 		return new CharPred(intervals.build());

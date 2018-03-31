@@ -38,12 +38,12 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
     protected Collection<Integer> finalStates;
     protected Integer maxStateId;
 
-    // Moves are inputs or epsilon
+    // Moves are inputs
     protected Map<Integer, Collection<SFTProductInputMove<P, F, S>>> transitionsFrom;
     protected Map<Integer, Collection<SFTProductInputMove<P, F, S>>> transitionsTo;
 
-    protected Map<Integer, Collection<SFTProductEpsilon<P, F, S>>> epsTransitionsFrom;
-    protected Map<Integer, Collection<SFTProductEpsilon<P, F, S>>> epsTransitionsTo;
+    // Every time we construct a product of 2 SFTs, we always remove the epsilon transitions in 2 SFTs so that there is
+    // no epsilon transition in SFTProduct
 
     public Integer stateCount() {
         return states.size();
@@ -53,20 +53,18 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
         return getTransitions().size();
     }
 
-    protected SFTProduct() {
+    private SFTProduct() {
         super();
         states = new HashSet<Integer>();
         transitionsFrom = new HashMap<Integer, Collection<SFTProductInputMove<P, F, S>>>();
         transitionsTo = new HashMap<Integer, Collection<SFTProductInputMove<P, F, S>>>();
-        epsTransitionsFrom = new HashMap<Integer, Collection<SFTProductEpsilon<P, F, S>>>();
-        epsTransitionsTo = new HashMap<Integer, Collection<SFTProductEpsilon<P, F, S>>>();
         finalStates = new HashSet<Integer>();
         maxStateId = 0;
         initialState = 0;
     }
 
     /*
-    * Create an automaton (removes unreachable states)
+    * Create a product of two SFTs (removes unreachable states)
     */
     public static <P, F, S> SFTProduct<P, F, S> MkSFTProduct(SFT<P, F, S> sft1withEps, SFT<P, F, S> sft2withEps, BooleanAlgebraSubst<P, F, S> ba) {
         // Remove epsilons
@@ -123,9 +121,9 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
     }
 
     /*
-    * Create an automaton (removes unreachable states)
+    * Create a product of two SFTs (removes unreachable states)
     */
-    public static <P, F, S> SFTProduct<P, F, S> MkSFTProduct(Collection<SFTMove<P, F, S>> transitions, Integer initialState,
+    private static <P, F, S> SFTProduct<P, F, S> MkSFTProduct(Collection<SFTMove<P, F, S>> transitions, Integer initialState,
                                                      Collection<Integer> finalStates,
                                                      BooleanAlgebraSubst<P, F, S> ba) {
         SFTProduct<P, F, S> aut = new SFTProduct<P, F, S>();
@@ -161,138 +159,6 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
         return aut;
     }
 
-    /**
-     * return an equivalent copy without epsilon moves
-     */
-    private SFTProduct<P, F, S> removeEpsilonMoves(BooleanAlgebraSubst<P, F, S> ba) {
-        return removeEpsilonMovesFrom(this, ba);
-    }
-
-    /**
-     * return an equivalent copy without epsilon moves
-     */
-    private static <P, F, S> SFTProduct<P, F, S> removeEpsilonMovesFrom(SFTProduct<P, F, S> sft,
-                                                                         BooleanAlgebraSubst<P, F, S> ba) {
-
-        if (sft.isEpsilonFree)
-            return sft;
-
-        Collection<SFTMove<P, F, S>> transitions = new ArrayList<SFTMove<P, F, S>>();
-        Collection<Integer> finalStates = new HashSet<Integer>(sft.getFinalStates());
-
-        for (Integer state: sft.getStates())
-            transitions.addAll(sft.getInputMovesFrom(state));
-
-        for (Integer state: sft.getStates()) {
-            Map<Integer, List<Integer>> epsilonClosureAndPath = sft.getSFTProductEpsClosureAndPath(state);
-            if (!finalStates.contains(state)) // update the final state
-                for (Integer nextState: epsilonClosureAndPath.keySet())
-                    if (sft.getFinalStates().contains(nextState)) {
-                        finalStates.add(state);
-                        break;
-                    }
-            for (Integer nextState: epsilonClosureAndPath.keySet())
-                if (!nextState.equals(state)) {
-                    List<Integer> path = epsilonClosureAndPath.get(nextState);
-                    List<F> outputFuncAlongPath1 = new ArrayList<F>();
-                    List<F> outputFuncAlongPath2 = new ArrayList<F>();
-                    for (int i = 0; i < path.size() - 1; i++) {
-                        for (SFTProductEpsilon<P, F, S> t: (sft.getEpsilonMovesFrom(path.get(i))))
-                            if (path.get(i + 1).equals(t.to)) {
-                                for (S output: t.outputs1)
-                                    outputFuncAlongPath1.add(ba.MkFuncFromConst(output));
-                                for (S output: t.outputs2)
-                                    outputFuncAlongPath2.add(ba.MkFuncFromConst(output));
-                                break;
-                            }
-                    }
-                    for (SFTProductInputMove<P, F, S> nextInputMove: sft.getInputMovesFrom(nextState)) {
-                        List<F> combinedOutputFunctions1 = new ArrayList<F>(outputFuncAlongPath1);
-                        combinedOutputFunctions1.addAll(nextInputMove.outputFunctions1);
-                        List<F> combinedOutputFunctions2 = new ArrayList<F>(outputFuncAlongPath2);
-                        combinedOutputFunctions2.addAll(nextInputMove.outputFunctions2);
-                        transitions.add(new SFTProductInputMove<P, F, S>(state, nextInputMove.to, nextInputMove.guard,
-                                combinedOutputFunctions1, combinedOutputFunctions2));
-                    }
-                }
-        }
-
-        return MkSFTProduct(transitions, sft.initialState, finalStates, ba);
-    }
-
-    private <P, F, S> Map<Integer, List<Integer>> getSFTProductEpsClosureAndPath(Integer currentState) {
-        return getSFTProductEpsClosureAndPath(this, currentState);
-    }
-
-    /**
-     * get the set of all states reachable from <code>currentState</code> using zero or more epsilon transitions
-     * and all corresponding transition paths.
-     * @param sft symbolic finite transducer
-     * @param currentState the start point
-     */
-    private static <P, F, S> Map<Integer, List<Integer>> getSFTProductEpsClosureAndPath(SFTProduct<P, F, S> sft, Integer currentState) {
-        Map<Integer, List<Integer>> epsilonClosureAndPath = new HashMap<Integer, List<Integer>>();
-
-        Collection<Integer> reached = new HashSet<Integer>(currentState);
-        LinkedList<Integer> toVisit = new LinkedList<Integer>();
-        toVisit.add(currentState);
-        List<Integer> path = new ArrayList<Integer>();
-        path.add(currentState);
-        epsilonClosureAndPath.put(currentState, path);
-
-        while (toVisit.size() > 0) {
-            int fromState = toVisit.pop();
-            for (SFTProductEpsilon<P, F, S> t : sft.getEpsilonMovesFrom(fromState)) {
-                if (!reached.contains(t.to)) {
-                    reached.add(t.to);
-                    toVisit.add(t.to);
-                    List<Integer> newPath = epsilonClosureAndPath.get(fromState);
-                    newPath.add(t.to);
-                    epsilonClosureAndPath.put(t.to, newPath);
-                } else {
-                    throw new IllegalArgumentException(
-                            "the epsilon transitions cause ambiguity (" + "their relation not a tree)");
-                }
-            }
-        }
-
-        return epsilonClosureAndPath;
-    }
-
-    private <P, F, S> Collection<Integer> getSFTProductEpsClosure(Integer currentState) {
-        return getSFTProductEpsClosure(this, currentState);
-    }
-
-    /**
-     * get the set of all states reachable from <code>currentState</code> using zero or more epsilon transitions
-     * @param sft symbolic finite transducer
-     * @param currentState the start point
-     */
-    private static <P, F, S> Collection<Integer> getSFTProductEpsClosure(SFTProduct<P, F, S> sft, Integer currentState) {
-        Collection<Integer> epsilonClosure = new HashSet<Integer>();
-
-        Collection<Integer> reached = new HashSet<Integer>(currentState);
-        LinkedList<Integer> toVisit = new LinkedList<Integer>();
-        toVisit.add(currentState);
-        epsilonClosure.add(currentState);
-
-        while (toVisit.size() > 0) {
-            int fromState = toVisit.pop();
-            for (SFTProductEpsilon<P, F, S> t : sft.getEpsilonMovesFrom(fromState)) {
-                if (!reached.contains(t.to)) {
-                    reached.add(t.to);
-                    toVisit.add(t.to);
-                    epsilonClosure.add(t.to);
-                } else {
-                    throw new IllegalArgumentException(
-                            "the epsilon transitions cause ambiguity (" + "their relation not a tree)");
-                }
-            }
-        }
-
-        return epsilonClosure;
-    }
-
     private List<List<Integer>> getPossibleTransitionChains(Integer startState, int steps) {
         return possibleTransitionChains(this, startState, steps);
     }
@@ -320,7 +186,7 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
         else if (remainSteps == 0)
             chains.add(new ArrayList<>(tempList));
         else {
-            for (SFTMove<P, F, S> transition: sft.getTransitionsFrom(currentState)) {
+            for (SFTProductInputMove<P, F, S> transition: sft.getInputMovesFrom(currentState)) {
                 tempList.add(transition.to);
                 backtrack(chains, tempList, sft, transition.to, remainSteps - 1);
                 tempList.remove(tempList.size() - 1);
@@ -338,9 +204,6 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 
         for (SFTProductInputMove<P, F, S> t : getInputMovesFrom(states))
             transitions.add(new SFAInputMove<P, S>(t.from, t.to, t.guard));
-
-        for (SFTProductEpsilon<P, F, S> t : getEpsilonMovesFrom(states))
-            transitions.add(new SFAEpsilon<P, S>(t.from, t.to));
 
         Collection<Integer> finalStates = getFinalStates();
 
@@ -371,13 +234,8 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
             states.add(transition.from);
             states.add(transition.to);
 
-            if (transition.isEpsilonTransition()) {
-                getEpsilonMovesFrom(transition.from).add((SFTProductEpsilon<P, F, S>) transition);
-                getEpsilonMovesTo(transition.to).add((SFTProductEpsilon<P, F, S>) transition);
-            } else {
-                getInputMovesFrom(transition.from).add((SFTProductInputMove<P, F, S>) transition);
-                getInputMovesTo(transition.to).add((SFTProductInputMove<P, F, S>) transition);
-            }
+            getInputMovesFrom(transition.from).add((SFTProductInputMove<P, F, S>) transition);
+            getInputMovesTo(transition.to).add((SFTProductInputMove<P, F, S>) transition);
         }
     }
 
@@ -429,98 +287,12 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
         return transitions;
     }
 
-    // GET Epsilon MOVES
-
-    /**
-     * Returns the set of transitions to state <code>s</code>
-     */
-    public Collection<SFTProductEpsilon<P, F, S>> getEpsilonMovesFrom(Integer state) {
-        Collection<SFTProductEpsilon<P, F, S>> trset = epsTransitionsFrom.get(state);
-        if (trset == null) {
-            trset = new HashSet<SFTProductEpsilon<P, F, S>>();
-            epsTransitionsFrom.put(state, trset);
-        }
-        return trset;
-    }
 
     /**
      * Returns the set of transitions starting set of states
      */
-    public Collection<SFTProductEpsilon<P, F, S>> getEpsilonMovesFrom(Collection<Integer> stateSet) {
-        Collection<SFTProductEpsilon<P, F, S>> transitions = new LinkedList<SFTProductEpsilon<P, F, S>>();
-        for (Integer state : stateSet)
-            transitions.addAll(getEpsilonMovesFrom(state));
-        return transitions;
-    }
-
-    /**
-     * Returns the set of input transitions to state <code>s</code>
-     */
-    public Collection<SFTProductEpsilon<P, F, S>> getEpsilonMovesTo(Integer state) {
-        Collection<SFTProductEpsilon<P, F, S>> trset = epsTransitionsTo.get(state);
-        if (trset == null) {
-            trset = new HashSet<SFTProductEpsilon<P, F, S>>();
-            epsTransitionsTo.put(state, trset);
-        }
-        return trset;
-    }
-
-    /**
-     * Returns the set of transitions starting set of states
-     */
-    public Collection<SFTProductEpsilon<P, F, S>> getEpsilonMovesTo(Collection<Integer> stateSet) {
-        Collection<SFTProductEpsilon<P, F, S>> transitions = new LinkedList<SFTProductEpsilon<P, F, S>>();
-        for (Integer state : stateSet)
-            transitions.addAll(getEpsilonMovesTo(state));
-        return transitions;
-    }
-
-    // GET ALL MOVES
-    /**
-     * Returns the set of transitions starting at state <code>s</code>
-     */
-    public Collection<SFTMove<P, F, S>> getTransitionsFrom(Integer state) {
-        Collection<SFTMove<P, F, S>> trset = new HashSet<SFTMove<P, F, S>>();
-        trset.addAll(getInputMovesFrom(state));
-        trset.addAll(getEpsilonMovesFrom(state));
-        return trset;
-    }
-
-    /**
-     * Returns the set of transitions starting at a set of states
-     */
-    public Collection<SFTMove<P, F, S>> getTransitionsFrom(Collection<Integer> stateSet) {
-        Collection<SFTMove<P, F, S>> trset = new HashSet<SFTMove<P, F, S>>();
-        trset.addAll(getInputMovesFrom(stateSet));
-        trset.addAll(getEpsilonMovesFrom(stateSet));
-        return trset;
-    }
-
-    /**
-     * Returns the set of transitions to state <code>s</code>
-     */
-    public Collection<SFTMove<P, F, S>> getTransitionsTo(Integer state) {
-        Collection<SFTMove<P, F, S>> trset = new HashSet<SFTMove<P, F, S>>();
-        trset.addAll(getInputMovesTo(state));
-        trset.addAll(getEpsilonMovesTo(state));
-        return trset;
-    }
-
-    /**
-     * Returns the set of transitions to a set of states
-     */
-    public Collection<SFTMove<P, F, S>> getTransitionsTo(Collection<Integer> stateSet) {
-        Collection<SFTMove<P, F, S>> trset = new HashSet<SFTMove<P, F, S>>();
-        trset.addAll(getInputMovesTo(stateSet));
-        trset.addAll(getEpsilonMovesTo(stateSet));
-        return trset;
-    }
-
-    /**
-     * Returns the set of transitions starting set of states
-     */
-    public Collection<SFTMove<P, F, S>> getTransitions() {
-        return getTransitionsFrom(states);
+    public Collection<SFTProductInputMove<P, F, S>> getTransitions() {
+        return getInputMovesFrom(states);
     }
 
     // Methods for superclass
@@ -534,14 +306,14 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
     @Override
     public Collection<Move<P, S>> getMovesFrom(Integer state) {
         Collection<Move<P, S>> transitions = new LinkedList<Move<P, S>>();
-        transitions.addAll(getTransitionsFrom(state));
+        transitions.addAll(getInputMovesFrom(state));
         return transitions;
     }
 
     @Override
     public Collection<Move<P, S>> getMovesTo(Integer state) {
         Collection<Move<P, S>> transitions = new LinkedList<Move<P, S>>();
-        transitions.addAll(getTransitionsTo(state));
+        transitions.addAll(getInputMovesTo(state));
         return transitions;
     }
 
@@ -576,9 +348,6 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 
         cl.transitionsFrom = new HashMap<Integer, Collection<SFTProductInputMove<P, F, S>>>(transitionsFrom);
         cl.transitionsTo = new HashMap<Integer, Collection<SFTProductInputMove<P, F, S>>>(transitionsTo);
-
-        cl.epsTransitionsFrom = new HashMap<Integer, Collection<SFTProductEpsilon<P, F, S>>>(epsTransitionsFrom);
-        cl.epsTransitionsTo = new HashMap<Integer, Collection<SFTProductEpsilon<P, F, S>>>(epsTransitionsTo);
 
         cl.finalStates = new HashSet<Integer>(finalStates);
 
