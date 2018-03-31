@@ -401,8 +401,9 @@ public class SFT<P, F, S> extends Automaton<P, S> {
     }
 
     /**
-     * judge whether <code>sft1withEps</code> and <code>sft2withEps</code> are 1-equality
+     * judge whether <code>sft1withEps</code> and <code>sft2withEps</code> are 1-equality (partial equivalent)
      * Page 6, in the middle of left column, figure 3
+     * Warning: it cannot recognize that when input is 'b', lambda x.x is equivalent to lambda x.b
      *
      * @param sft1withEps symbolic finite transducer 1 who may has epsilon transitions
      * @param sft2withEps symbolic finite transducer 2 who may has epsilon transitions
@@ -470,7 +471,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                             return false;
                     List<F> w = new ArrayList<F>();
                     for (int i = u.size(); i < v.size(); i++)
-                        w.add(u.get(i));
+                        w.add(v.get(i));
                     S witness = null;
                     try {
                         witness = (S)transition.getWitness(ba);
@@ -503,7 +504,136 @@ public class SFT<P, F, S> extends Automaton<P, S> {
         }
         return true;
     }
-    
+
+    public List<S> witness1disequality(SFT<P, F, S> otherSft, BooleanAlgebraSubst<P, F, S> ba) {
+        return witness1disequality(this, otherSft, ba);
+    }
+
+    /**
+     * generate a witness if <code>sft1withEps</code> and <code>sft2withEps</code> are not 1-equality
+     *
+     * @param sft1withEps symbolic finite transducer 1 who may has epsilon transitions
+     * @param sft2withEps symbolic finite transducer 2 who may has epsilon transitions
+     */
+    public static <P, F, S> List<S> witness1disequality(SFT<P, F, S> sft1withEps, SFT<P, F, S> sft2withEps, BooleanAlgebraSubst<P, F, S> ba) {
+        SFTProduct<P, F, S> product = SFTProduct.MkSFTProduct(sft1withEps, sft2withEps, ba);
+        // a product without epsilon transitions
+
+        HashMap<Integer, Pair<List<S>, List<S>>> reached = new HashMap<Integer, Pair<List<S>, List<S>>>();
+        LinkedList<Integer> toVisit = new LinkedList<Integer>();
+        HashMap<Integer, List<S>> path = new HashMap<Integer, List<S>>();
+
+        reached.put(product.getInitialState(), new Pair(new ArrayList<S>(), new ArrayList<S>()));
+        toVisit.add(product.getInitialState());
+        path.put(product.getInitialState(), new ArrayList<S>());
+        while (!toVisit.isEmpty()) {
+            Integer currState = toVisit.pop();
+            Pair<List<S>, List<S>> promise = reached.get(currState);
+            for (SFTProductInputMove transition: product.getInputMovesFrom(currState)) {
+                List<S> previousPath = new ArrayList<S>(path.get(transition.from));
+                try {
+                    previousPath.add((S) transition.getWitness(ba));
+                } catch (TimeoutException te) {
+                    te.printStackTrace();
+                }
+                path.put(transition.to, previousPath);
+                List<F> u = new ArrayList<F>();
+                List<F> v = new ArrayList<F>();
+                for (S a: promise.first)
+                    u.add(ba.MkFuncConst(a));
+                for (S b: promise.second)
+                    v.add(ba.MkFuncConst(b));
+                u.addAll(transition.outputFunctions1);
+                v.addAll(transition.outputFunctions2);
+                if (product.getFinalStates().contains(currState) && u.size() != v.size())
+                    return previousPath;
+                if (u.size() >= v.size()) {
+                    for (int i = 0; i < v.size(); i++)
+                        if (!u.get(i).equals(v.get(i))) {
+                            previousPath.addAll(product.getWitness(transition.to, ba));
+                            return previousPath;
+                        }
+                    List<F> w = new ArrayList<F>();
+                    for (int i = v.size(); i < u.size(); i++)
+                        w.add(u.get(i));
+                    S witness = null;
+                    try {
+                        witness = (S)transition.getWitness(ba);
+                    } catch (TimeoutException te) {
+                        te.printStackTrace();
+                    }
+                    List<S> c = new ArrayList<S>();
+                    List<F> cF = new ArrayList<F>(); // a sequence of lamda x.alpha, where alpha is a constant S
+                    // stored in List<S> c
+                    for (int i = 0; i < u.size() - v.size(); i++) {
+                        c.add(ba.MkSubstFuncConst(w.get(i), witness));
+                        cF.add(ba.MkSubstFuncFunc(w.get(i), ba.MkFuncConst(witness)));
+                    }
+                    for (int i = 0; i < u.size() - v.size(); i++)
+                        try {
+                            if (!ba.AreEquivalent(ba.MkSubstFuncPred(w.get(i), (P)transition.guard),
+                                    ba.MkSubstFuncPred(cF.get(i), (P)transition.guard))) {
+                                previousPath.addAll(product.getWitness(transition.to, ba));
+                                return previousPath;
+                            }
+                        } catch (TimeoutException te) {
+                            te.printStackTrace();
+                        }
+                    if (reached.containsKey(currState) && !reached.get(currState).equals(new Pair(c, new ArrayList<S>()))) {
+                        previousPath.addAll(product.getWitness(transition.to, ba));
+                        return previousPath;
+                    }
+                    if (!reached.containsKey(currState)) {
+                        toVisit.push(currState);
+                        reached.put(currState, new Pair(c, new ArrayList<S>()));
+                    }
+                } else { // u.size() < v.size()
+                    for (int i = 0; i < u.size(); i++)
+                        if (!u.get(i).equals(v.get(i))) {
+                            previousPath.addAll(product.getWitness(transition.to, ba));
+                            return previousPath;
+                        }
+                    List<F> w = new ArrayList<F>();
+                    for (int i = u.size(); i < v.size(); i++)
+                        w.add(v.get(i));
+                    S witness = null;
+                    try {
+                        witness = (S)transition.getWitness(ba);
+                    } catch (TimeoutException te) {
+                        te.printStackTrace();
+                    }
+                    List<S> c = new ArrayList<S>();
+                    List<F> cF = new ArrayList<F>(); // a sequence of lamda x.alpha, where alpha is a constant S
+                    // stored in List<S> c
+                    for (int i = 0; i < v.size() - u.size(); i++) {
+                        c.add(ba.MkSubstFuncConst(w.get(i), witness));
+                        cF.add(ba.MkSubstFuncFunc(w.get(i), ba.MkFuncConst(witness)));
+                    }
+                    for (int i = 0; i < v.size() - u.size(); i++)
+                        try {
+                            if (!ba.AreEquivalent(ba.MkSubstFuncPred(w.get(i), (P)transition.guard),
+                                    ba.MkSubstFuncPred(cF.get(i), (P)transition.guard))) {
+                                previousPath.addAll(product.getWitness(transition.to, ba));
+                                return previousPath;
+                            }
+                        } catch (TimeoutException te) {
+                            te.printStackTrace();
+                        }
+                    if (reached.containsKey(currState) && !reached.get(currState).equals(new Pair(new ArrayList<S>(), c))) {
+                        previousPath.addAll(product.getWitness(transition.to, ba));
+                        return previousPath;
+                    }
+                    if (!reached.containsKey(currState)) {
+                        toVisit.push(currState);
+                        reached.put(currState, new Pair(new ArrayList<S>(), c));
+                    }
+                }
+
+            }
+        }
+        return null; // two SFTs are partial equivalent
+    }
+
     /**
      * Computes the domain automaton of the sft
      * Page 4, right column, the 17th line from the bottom

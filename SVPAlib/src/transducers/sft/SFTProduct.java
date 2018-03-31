@@ -14,14 +14,15 @@ import automata.Automaton;
 import automata.Move;
 import automata.sfa.SFA;
 import automata.sfa.SFAMove;
-import automata.sfa.SFAEpsilon;
 import automata.sfa.SFAInputMove;
 import theory.BooleanAlgebraSubst;
 import utilities.Pair;
 
 /**
- * the product of two symbolic finite state transducers
+ * the product of two symbolic finite state transducers, which is discussed on the paper named after Symbolic Finite
+ * State Transducers: Algorithms And Applications
  * Because SFTs are not closed under product, I have to create a new type to represent the product of two SFTs.
+ *
  *
  * @param <P>
  *            The type of predicates forming the Boolean algebra
@@ -65,6 +66,7 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 
     /*
     * Create a product of two SFTs (removes unreachable states)
+    * Page 3, in the 8-th line of left column, definition 7
     */
     public static <P, F, S> SFTProduct<P, F, S> MkSFTProduct(SFT<P, F, S> sft1withEps, SFT<P, F, S> sft2withEps, BooleanAlgebraSubst<P, F, S> ba) {
         // Remove epsilons
@@ -72,7 +74,7 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
         SFT<P, F, S> sft2 = sft2withEps.removeEpsilonMoves(ba);
 
         Collection<SFTMove<P, F, S>> transitions = new ArrayList<SFTMove<P, F, S>>();
-        Integer initialState = 0;
+        Integer initialState;
 
         HashMap<Pair<Integer, Integer>, Integer> reached = new HashMap<Pair<Integer, Integer>, Integer>();
         LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<Pair<Integer, Integer>>();
@@ -159,7 +161,7 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
         return aut;
     }
 
-    private List<List<Integer>> getPossibleTransitionChains(Integer startState, int steps) {
+    private List<List<SFTProductInputMove<P, F, S>>> getPossibleTransitionChains(Integer startState, int steps) {
         return possibleTransitionChains(this, startState, steps);
     }
 
@@ -171,24 +173,27 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
      * @param steps the number of steps, which should be a natural number
      * @return
      */
-    private static <P, F, S> List<List<Integer>> possibleTransitionChains(SFTProduct<P, F, S> sft, Integer startState, int steps) {
-        List<List<Integer>> chains = new LinkedList<List<Integer>>();
-        List<Integer> tempList = new LinkedList<Integer>();
-        tempList.add(startState); // so the size of tempList is greater than 1
-        backtrack(chains, tempList, sft, startState, steps);
+    private static <P, F, S> List<List<SFTProductInputMove<P, F, S>>> possibleTransitionChains(SFTProduct<P, F, S> sft, Integer startState, int steps) {
+        List<List<SFTProductInputMove<P, F, S>>> chains = new ArrayList<List<SFTProductInputMove<P, F, S>>>();
+        for (SFTProductInputMove<P, F, S> initialTransition: sft.getInputMovesFrom(startState)) {
+            List<SFTProductInputMove<P, F, S>> tempList = new LinkedList<SFTProductInputMove<P, F, S>>();
+            tempList.add(initialTransition); // so the size of tempList is greater than 1
+            backtrack(chains, tempList, sft, steps - 1);
+        }
         return chains;
     }
 
     // use backtrack method to get all possible transition chains
-    private static <P, F, S> void backtrack(List<List<Integer>> chains, List<Integer> tempList, SFTProduct<P, F, S> sft, Integer currentState, int remainSteps) {
+    private static <P, F, S> void backtrack(List<List<SFTProductInputMove<P, F, S>>> chains, List<SFTProductInputMove<P, F, S>> tempList, SFTProduct<P, F, S> sft, int remainSteps) {
         if (remainSteps < 0)
             return; // no solution
         else if (remainSteps == 0)
-            chains.add(new ArrayList<>(tempList));
+            chains.add(new ArrayList<SFTProductInputMove<P, F, S>>(tempList));
         else {
+            Integer currentState = tempList.get(tempList.size() - 1).to;
             for (SFTProductInputMove<P, F, S> transition: sft.getInputMovesFrom(currentState)) {
-                tempList.add(transition.to);
-                backtrack(chains, tempList, sft, transition.to, remainSteps - 1);
+                tempList.add(transition);
+                backtrack(chains, tempList, sft, remainSteps - 1);
                 tempList.remove(tempList.size() - 1);
             }
         }
@@ -208,6 +213,41 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
         Collection<Integer> finalStates = getFinalStates();
 
         return SFA.MkSFA(transitions, initialState, finalStates, ba);
+    }
+
+    /**
+     * use DFS to find a witness from the <code>startState</code> to a final state
+     * if there the <code>startState</code> is in a dead end, return null
+     * @param startState
+     * @param ba
+     * @return
+     */
+    public List<S> getWitness(Integer startState, BooleanAlgebraSubst<P, F, S> ba) {
+        HashMap<Integer, List<S>> reached = new HashMap<Integer, List<S>>();
+        LinkedList<Integer> toVisit = new LinkedList<Integer>();
+
+        reached.put(startState, new ArrayList<S>());
+        toVisit.add(startState);
+
+        while (!toVisit.isEmpty()) {
+            Integer currState = toVisit.pop();
+            if (this.getFinalStates().contains(currState)) {
+                return reached.get(currState);
+            }
+            for (SFTProductInputMove transition: this.getInputMovesFrom(currState)) {
+                List<S> previousPath = new ArrayList<S>(reached.get(transition.from));
+                try {
+                    previousPath.add((S) transition.getWitness(ba));
+                } catch (TimeoutException te) {
+                    te.printStackTrace();
+                }
+                if (this.getFinalStates().contains(transition.to)) {
+                    return previousPath;
+                }
+                reached.put(transition.to, previousPath);
+            }
+        }
+        return null; // there is no such a path from the <code>startState</code> to any final state
     }
 
     /**
@@ -286,7 +326,6 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
             transitions.addAll(getInputMovesTo(state));
         return transitions;
     }
-
 
     /**
      * Returns the set of transitions starting set of states

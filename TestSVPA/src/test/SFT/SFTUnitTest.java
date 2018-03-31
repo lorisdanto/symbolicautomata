@@ -3,23 +3,29 @@ package test.SFT;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Collection;
+import java.util.HashSet;
 
 import transducers.sft.SFT;
 import transducers.sft.SFTMove;
 import transducers.sft.SFTInputMove;
 import transducers.sft.SFTEpsilon;
+import automata.sfa.SFA;
+import automata.sfa.SFAMove;
+import automata.sfa.SFAInputMove;
 
 import theory.characters.CharPred;
 import theory.characters.CharFunc;
 import theory.characters.CharConstant;
 import theory.characters.CharOffset;
 import theory.intervals.UnaryCharIntervalSolver;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 /** 
 * SFT Tester. 
@@ -552,6 +558,7 @@ public class SFTUnitTest {
         inputs.add(stringToListOfCharacter("abcz"));
         inputs.add(stringToListOfCharacter("bcsaee"));
         inputs.add(stringToListOfCharacter("12-3"));
+        inputs.add(stringToListOfCharacter("1b- *&@3"));
 
         for (SFT<CharPred, CharFunc, Character> firstSft: allSFTs)
             for (SFT<CharPred, CharFunc, Character> secondSft: allSFTs) {
@@ -626,19 +633,141 @@ public class SFTUnitTest {
      */
     @Test
     public void testDecide1equalityForOtherSftBa() throws Exception {
-        System.out.println(mySFT111.decide1equality(mySFT121, ba));
-        int n = allSFTs.size();
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++) {
-                System.out.print(allSFTs.get(i).toString());
-                System.out.println("*****");
-                System.out.print(allSFTs.get(j).toString());
-                System.out.println();
+        // part 1
+        for (int i = 0; i < allSFTs.size(); i++) {
+            for (int j = 0; j < allSFTs.size(); j++) {
                 if (i == j)
                     assertTrue(allSFTs.get(i).decide1equality(allSFTs.get(j), ba));
-                else
-                    assertFalse(allSFTs.get(i).decide1equality(allSFTs.get(j), ba));
             }
+        }
+
+        // part 2
+        /* According to page 2, deciding whether SFTs A abd B are equivalent can be reduced to two independent tasks:
+        1. domain equivalence: Domain(A) = Domain(B)
+        2. partial equivalence: for all a belongs to MkAnd(Domain(A), Domain(B)), T_A(a) = T_B(a)
+        decide1equality only checks the partial equivalence, so if A's abd B's domain are not equal, decide1equality
+        does not work properly.
+        Unfortunately, SFTs constructed in beforeClass have various domains so that I have to construct some new SFTs
+        to test decide1equality. */
+
+        // Here I assume all SFTs' domains are CharPred('b', 'c')
+        List<SFT<CharPred, CharFunc, Character>> SFTlibrary = new ArrayList<SFT<CharPred, CharFunc, Character>>();
+        // 1. one state with one final state
+        // 1.1 there is only one input transition and the output function is only a CharConstant
+        List<SFTMove<CharPred, CharFunc, Character>> transitions121 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output1211 = new ArrayList<CharFunc>();
+        output1211.add(new CharConstant('b'));
+        transitions121.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'c'), output1211));
+        List<Integer> finStates121 = new ArrayList<Integer>();
+        finStates121.add(1);
+        SFT<CharPred, CharFunc, Character> SFT11 = SFT.MkSFT(transitions121, 1, finStates121, ba);
+        SFTlibrary.add(SFT11);
+
+        // 1.2 there is only one input transition and the output function is only a CharOffset
+        List<SFTMove<CharPred, CharFunc, Character>> transitions122 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output1221 = new ArrayList<CharFunc>();
+        output1221.add(new CharOffset(1));
+        transitions122.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'c'), output1221));
+        List<Integer> finStates122 = new ArrayList<Integer>();
+        finStates122.add(1);
+        SFT<CharPred, CharFunc, Character> SFT12 = SFT.MkSFT(transitions122, 1, finStates122, ba);
+        SFTlibrary.add(SFT12);
+
+        // 1.3 there is only one input transition and there are many output functions in the transition
+        List<SFTMove<CharPred, CharFunc, Character>> transitions123 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output1231 = new ArrayList<CharFunc>();
+        output1231.add(CharOffset.IDENTITY);
+        output1231.add(new CharConstant('b'));
+        transitions123.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'c'), output1231));
+        List<Integer> finStates123 = new ArrayList<Integer>();
+        finStates123.add(1);
+        SFT<CharPred, CharFunc, Character> SFT13 = SFT.MkSFT(transitions123, 1, finStates123, ba);
+        SFTlibrary.add(SFT13);
+
+        // 1.4 many input transitions
+        List<SFTMove<CharPred, CharFunc, Character>> transitions131 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output1311 = new ArrayList<CharFunc>();
+        output1311.add(CharOffset.IDENTITY);
+        transitions131.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b'), output1311));
+        List<CharFunc> output1312 = new ArrayList<CharFunc>();
+        output1312.add(new CharOffset(1));
+        output1312.add(new CharConstant('d'));
+        transitions131.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('c'), output1312));
+        List<Integer> finStates131 = new ArrayList<Integer>();
+        finStates131.add(1);
+        SFT<CharPred, CharFunc, Character> SFT14 = SFT.MkSFT(transitions131, 1, finStates131, ba);
+        SFTlibrary.add(SFT14);
+
+        // 2. two states with one final state
+        // 2.1 the transitions are in opposite directions
+        List<SFTMove<CharPred, CharFunc, Character>> transitions242 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output2421 = new ArrayList<CharFunc>();
+        output2421.add(CharOffset.IDENTITY);
+        transitions242.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('b', 'c'), output2421));
+        List<CharFunc> output2422 = new ArrayList<CharFunc>();
+        output2422.add(new CharConstant('c'));
+        transitions242.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('b', 'c'), output2422));
+        List<Integer> finStates242 = new ArrayList<Integer>();
+        finStates242.add(2);
+        SFT<CharPred, CharFunc, Character> SFT21 = SFT.MkSFT(transitions242, 1, finStates242, ba);
+        SFTlibrary.add(SFT21);
+
+        for (int i = 0; i < SFTlibrary.size(); i++) {
+            for (int j = 0; j < SFTlibrary.size(); j++) {
+                if (i == j)
+                    assertTrue(SFTlibrary.get(i).decide1equality(SFTlibrary.get(j), ba));
+                else
+                    assertFalse(SFTlibrary.get(i).decide1equality(SFTlibrary.get(j), ba));
+            }
+        }
+
+        // part 3
+        // two stats, one final state, only one transition
+        List<SFTMove<CharPred, CharFunc, Character>> transitions1 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output11 = new ArrayList<CharFunc>();
+        output11.add(CharOffset.IDENTITY);
+        transitions1.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('b', 'c'), output11));
+        List<Integer> finStates1 = new ArrayList<Integer>();
+        finStates1.add(2);
+        SFT<CharPred, CharFunc, Character> SFT1 = SFT.MkSFT(transitions1, 1, finStates1, ba);
+
+        // three stats, one final state, one input transition and one epsilon transition
+        // Since the epsilon transition's outputs is empty, SFT1 should be equivalent with SFT2
+        List<SFTMove<CharPred, CharFunc, Character>> transitions2 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output21 = new ArrayList<CharFunc>();
+        output21.add(CharOffset.IDENTITY);
+        transitions2.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('b', 'c'), output21));
+        List<Character> output22 = new ArrayList<Character>();
+        transitions2.add(new SFTEpsilon<CharPred, CharFunc, Character>(2, 3, output22));
+        List<Integer> finStates2 = new ArrayList<Integer>();
+        finStates1.add(3);
+        SFT<CharPred, CharFunc, Character> SFT2 = SFT.MkSFT(transitions2, 1, finStates2, ba);
+
+        assertTrue(SFT1.decide1equality(SFT2, ba));
+
+        // part 4
+        // a flaw in algorithm decide1equality
+        // decide1equality cannot recognize that when input is 'b', lambda x.x is equivalent to lambda x.b
+
+        List<SFTMove<CharPred, CharFunc, Character>> mytransitions1 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output1 = new ArrayList<CharFunc>();
+        output1.add(new CharConstant('b'));
+        mytransitions1.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b'), output1));
+        List<Integer> myfinStates1 = new ArrayList<Integer>();
+        myfinStates1.add(1);
+        SFT<CharPred, CharFunc, Character> mySFT1 = SFT.MkSFT(mytransitions1, 1, myfinStates1, ba);
+
+        List<SFTMove<CharPred, CharFunc, Character>> mytransitions2 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output2 = new ArrayList<CharFunc>();
+        output2.add(CharOffset.IDENTITY);
+        mytransitions2.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b'), output2));
+        List<Integer> myfinStates2 = new ArrayList<Integer>();
+        myfinStates2.add(1);
+        SFT<CharPred, CharFunc, Character> mySFT2 = SFT.MkSFT(mytransitions2, 1, myfinStates2, ba);
+
+        assertFalse(mySFT1.decide1equality(mySFT2, ba)); // Theoretically, mySFT1 == mySFT2. However, method
+        // decide1equality cannot recognize that when input is 'b', lambda x.x is equivalent to lambda x.b
+        // So I assert that mySFT1.decide1equality(mySFT2, ba) is false
     }
 
     /**
@@ -655,12 +784,226 @@ public class SFTUnitTest {
 
     /**
      *
+     * Method: witness1disequality(SFT<P, F, S> otherSft, BooleanAlgebraSubst<P, F, S> ba)
+     *
+     */
+    @Test
+    public void testWitness1disequalityForOtherSftBa() throws Exception {
+        for (int i = 0; i < allSFTs.size(); i++) {
+            for (int j = 0; j < allSFTs.size(); j++) {
+                if (i == j) {
+                    List<Character> witness = allSFTs.get(i).witness1disequality(allSFTs.get(j), ba);
+                    assertEquals(null, witness);
+                }
+            }
+        }
+
+        // Here I assume all SFTs' domains are CharPred('b', 'c')
+        List<SFT<CharPred, CharFunc, Character>> SFTlibrary = new ArrayList<SFT<CharPred, CharFunc, Character>>();
+        // 1. one state with one final state
+        // 1.1 there is only one input transition and the output function is only a CharConstant
+        List<SFTMove<CharPred, CharFunc, Character>> transitions121 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output1211 = new ArrayList<CharFunc>();
+        output1211.add(new CharConstant('b'));
+        transitions121.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'c'), output1211));
+        List<Integer> finStates121 = new ArrayList<Integer>();
+        finStates121.add(1);
+        SFT<CharPred, CharFunc, Character> SFT11 = SFT.MkSFT(transitions121, 1, finStates121, ba);
+        SFTlibrary.add(SFT11);
+
+        // 1.2 there is only one input transition and the output function is only a CharOffset
+        List<SFTMove<CharPred, CharFunc, Character>> transitions122 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output1221 = new ArrayList<CharFunc>();
+        output1221.add(new CharOffset(1));
+        transitions122.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'c'), output1221));
+        List<Integer> finStates122 = new ArrayList<Integer>();
+        finStates122.add(1);
+        SFT<CharPred, CharFunc, Character> SFT12 = SFT.MkSFT(transitions122, 1, finStates122, ba);
+        SFTlibrary.add(SFT12);
+
+        // 1.3 there is only one input transition and there are many output functions in the transition
+        List<SFTMove<CharPred, CharFunc, Character>> transitions123 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output1231 = new ArrayList<CharFunc>();
+        output1231.add(CharOffset.IDENTITY);
+        output1231.add(new CharConstant('b'));
+        transitions123.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'c'), output1231));
+        List<Integer> finStates123 = new ArrayList<Integer>();
+        finStates123.add(1);
+        SFT<CharPred, CharFunc, Character> SFT13 = SFT.MkSFT(transitions123, 1, finStates123, ba);
+        SFTlibrary.add(SFT13);
+
+        // 1.4 many input transitions
+        List<SFTMove<CharPred, CharFunc, Character>> transitions131 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output1311 = new ArrayList<CharFunc>();
+        output1311.add(CharOffset.IDENTITY);
+        transitions131.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('d'), output1311));
+        List<CharFunc> output1312 = new ArrayList<CharFunc>();
+        output1312.add(new CharOffset(1));
+        output1312.add(new CharConstant('d'));
+        transitions131.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('c'), output1312));
+        List<Integer> finStates131 = new ArrayList<Integer>();
+        finStates131.add(1);
+        SFT<CharPred, CharFunc, Character> SFT14 = SFT.MkSFT(transitions131, 1, finStates131, ba);
+        SFTlibrary.add(SFT14);
+
+        // 2. two states with one final state
+        // 2.1 the transitions are in opposite directions
+        List<SFTMove<CharPred, CharFunc, Character>> transitions242 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output2421 = new ArrayList<CharFunc>();
+        output2421.add(new CharOffset(3));
+        transitions242.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('b', 'c'), output2421));
+        List<CharFunc> output2422 = new ArrayList<CharFunc>();
+        output2422.add(new CharConstant('c'));
+        transitions242.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('b', 'c'), output2422));
+        List<Integer> finStates242 = new ArrayList<Integer>();
+        finStates242.add(2);
+        SFT<CharPred, CharFunc, Character> SFT21 = SFT.MkSFT(transitions242, 1, finStates242, ba);
+        SFTlibrary.add(SFT21);
+
+        for (int i = 0; i < SFTlibrary.size(); i++) {
+            for (int j = 0; j < SFTlibrary.size(); j++) {
+                List<Character> witness = SFTlibrary.get(i).witness1disequality(SFTlibrary.get(j), ba);
+                if (i == j) {
+                    assertEquals(null, witness);
+                } else {
+                    if (witness != null) {
+                        List <Character> output1 = SFTlibrary.get(i).outpzutOn(witness, ba);
+                        List <Character> output2 = SFTlibrary.get(j).outpzutOn(witness, ba);
+                        assertFalse(output1.equals(output2));
+                    } else {
+                        System.out.println(i + " " + j);
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testadd() throws Exception {
+
+    }
+
+    /**
+     *
+     * Method: witness1disequality(SFT<P, F, S> sft1withEps, SFT<P, F, S> sft2withEps, BooleanAlgebraSubst<P, F, S> ba)
+     *
+     */
+    @Test
+    public void testWitness1disequalityForSft1withEpsSft2withEpsBa() throws Exception {
+        // since witness1disequality(SFT<P, F, S> otherSft, BooleanAlgebraSubst<P, F, S> ba) is just a wrapper of the method,
+        // we could test the method incidentally by testing witness1disequality(SFT<P, F, S> otherSft,
+        // BooleanAlgebraSubst<P, F, S> ba)
+    }
+
+    /**
+     *
      * Method: getDomain(BooleanAlgebraSubst<P, F, S> ba)
      *
      */
     @Test
     public void testGetDomain() throws Exception {
-//TODO: Test goes here...
+        SFA<CharPred, Character> mySFA111 = mySFT111.getDomain(ba);
+        SFA<CharPred, Character> mySFA121 = mySFT121.getDomain(ba);
+        SFA<CharPred, Character> mySFA122 = mySFT122.getDomain(ba);
+        SFA<CharPred, Character> mySFA123 = mySFT123.getDomain(ba);
+        SFA<CharPred, Character> mySFA131 = mySFT131.getDomain(ba);
+        SFA<CharPred, Character> mySFA211 = mySFT211.getDomain(ba);
+        SFA<CharPred, Character> mySFA221 = mySFT221.getDomain(ba);
+        SFA<CharPred, Character> mySFA222 = mySFT222.getDomain(ba);
+        SFA<CharPred, Character> mySFA223 = mySFT223.getDomain(ba);
+        SFA<CharPred, Character> mySFA231 = mySFT231.getDomain(ba);
+        SFA<CharPred, Character> mySFA232 = mySFT232.getDomain(ba);
+        SFA<CharPred, Character> mySFA241 = mySFT241.getDomain(ba);
+        SFA<CharPred, Character> mySFA242 = mySFT242.getDomain(ba);
+        SFA<CharPred, Character> mySFA251 = mySFT251.getDomain(ba);
+        SFA<CharPred, Character> mySFA252 = mySFT252.getDomain(ba);
+        SFA<CharPred, Character> mySFA261 = mySFT261.getDomain(ba);
+        SFA<CharPred, Character> mySFA311 = mySFT311.getDomain(ba);
+        SFA<CharPred, Character> mySFA321 = mySFT321.getDomain(ba);
+        SFA<CharPred, Character> mySFA331 = mySFT331.getDomain(ba);
+        SFA<CharPred, Character> mySFA411 = mySFT411.getDomain(ba);
+        SFA<CharPred, Character> mySFA421 = mySFT421.getDomain(ba);
+        
+        Integer expectedInitialState = 1;
+        assertEquals(expectedInitialState, mySFA111.getInitialState());
+        assertEquals(expectedInitialState, mySFA121.getInitialState());
+        assertEquals(expectedInitialState, mySFA122.getInitialState());
+        assertEquals(expectedInitialState, mySFA123.getInitialState());
+        assertEquals(expectedInitialState, mySFA131.getInitialState());
+        // mySFA211 will be tested soon
+        assertEquals(expectedInitialState, mySFA221.getInitialState());
+        assertEquals(expectedInitialState, mySFA222.getInitialState());
+        assertEquals(expectedInitialState, mySFA223.getInitialState());
+        assertEquals(expectedInitialState, mySFA231.getInitialState());
+        assertEquals(expectedInitialState, mySFA232.getInitialState());
+        assertEquals(expectedInitialState, mySFA241.getInitialState());
+        assertEquals(expectedInitialState, mySFA242.getInitialState());
+        assertEquals(expectedInitialState, mySFA251.getInitialState());
+        assertEquals(expectedInitialState, mySFA252.getInitialState());
+        assertEquals(expectedInitialState, mySFA261.getInitialState());
+        assertEquals(expectedInitialState, mySFA311.getInitialState());
+        assertEquals(expectedInitialState, mySFA321.getInitialState());
+        assertEquals(expectedInitialState, mySFA331.getInitialState());
+        assertEquals(expectedInitialState, mySFA411.getInitialState());
+        assertEquals(expectedInitialState, mySFA421.getInitialState());
+        expectedInitialState = 0;
+        assertEquals(expectedInitialState, mySFA211.getInitialState()); // since the final state of mySFA211 is
+        // unreachable, the initial state is 0
+
+        Collection<Integer> states;
+        Collection<Integer> zeroState = new HashSet<Integer>();
+        Collection<Integer> oneState = new HashSet<Integer>();
+        Collection<Integer> twoStates= new HashSet<Integer>();
+        Collection<Integer> threeStates = new HashSet<Integer>();
+        zeroState.add(0);
+        oneState.add(1);
+        twoStates.add(1);
+        twoStates.add(2);
+        threeStates.add(1);
+        threeStates.add(2);
+        threeStates.add(3);
+        states = mySFA111.getStates();
+        assertEquals(oneState, states);
+        states = mySFA121.getStates();
+        assertEquals(oneState, states);
+        states = mySFA122.getStates();
+        assertEquals(oneState, states);
+        states = mySFA123.getStates();
+        assertEquals(oneState, states);
+        states = mySFA131.getStates();
+        assertEquals(oneState, states);
+        states = mySFA211.getStates();
+        assertEquals(zeroState, states);
+        states = mySFA221.getStates();
+        assertEquals(twoStates, states);
+        states = mySFA222.getStates();
+        assertEquals(twoStates, states);
+        states = mySFA223.getStates();
+        assertEquals(twoStates, states);
+        states = mySFA231.getStates();
+        assertEquals(twoStates, states);
+        states = mySFA232.getStates();
+        assertEquals(twoStates, states);
+        states = mySFA241.getStates();
+        assertEquals(twoStates, states);
+        states = mySFA242.getStates();
+        assertEquals(twoStates, states);
+        states = mySFA251.getStates();
+        assertEquals(twoStates, states);
+        states = mySFA252.getStates();
+        assertEquals(twoStates, states);
+        states = mySFA261.getStates();
+        assertEquals(twoStates, states);
+        states = mySFA311.getStates();
+        assertEquals(threeStates, states);
+        states = mySFA321.getStates();
+        assertEquals(threeStates, states);
+        states = mySFA331.getStates();
+        assertEquals(threeStates, states);
+        states = mySFA411.getStates();
+        assertEquals(threeStates, states);
+        states = mySFA421.getStates();
+        assertEquals(threeStates, states);
     }
 
     /**
@@ -670,7 +1013,36 @@ public class SFTUnitTest {
      */
     @Test
     public void testInverseImage() throws Exception {
-//TODO: Test goes here...
+        List<List<Character>> inputs = new ArrayList<List<Character>>(); // it is a corpus of all kinds of inputs
+        //inputs.add(stringToListOfCharacter(""));
+        inputs.add(stringToListOfCharacter("a"));
+        inputs.add(stringToListOfCharacter("b"));
+        inputs.add(stringToListOfCharacter("c"));
+        inputs.add(stringToListOfCharacter("d"));
+        inputs.add(stringToListOfCharacter("z"));
+        inputs.add(stringToListOfCharacter("1"));
+        inputs.add(stringToListOfCharacter(" "));
+        inputs.add(stringToListOfCharacter("bb"));
+        inputs.add(stringToListOfCharacter("ab"));
+        inputs.add(stringToListOfCharacter("ac"));
+        inputs.add(stringToListOfCharacter("ccc"));
+        inputs.add(stringToListOfCharacter("abcz"));
+        inputs.add(stringToListOfCharacter("bcsaee"));
+        inputs.add(stringToListOfCharacter("12-3"));
+
+        // I. one state with one final state
+        // i. no transition
+        LinkedList<SFAMove<CharPred, Character>> transitions11 = new LinkedList<SFAMove<CharPred, Character>>();
+        LinkedList<Integer> finStates11 = new LinkedList<>();
+        finStates11.add(1);
+        SFA<CharPred, Character> mySA11 = SFA.MkSFA(transitions11, 1, finStates11, ba);
+
+        for (SFT<CharPred, CharFunc, Character> sft: allSFTs) {
+            SFA<CharPred, Character> domain = sft.getDomain(ba);
+            SFA<CharPred, Character> image = sft.inverseImage(mySA11, ba);
+            for (List<Character> input: inputs)
+                assertFalse(image.accepts(input, ba));
+        }
     }
 
     /**
@@ -680,7 +1052,39 @@ public class SFTUnitTest {
      */
     @Test
     public void testDomainRestriction() throws Exception {
-//TODO: Test goes here...
+        for (SFT<CharPred, CharFunc, Character> sft: allSFTs) {
+            SFT<CharPred, CharFunc, Character> restricted = sft.domainRestriction(sft.getDomain(ba), ba);
+            assertTrue(sft.decide1equality(restricted, ba));
+        }
+
+        // I. one state with one final state
+        // i. no transition
+        LinkedList<SFAMove<CharPred, Character>> transitions11 = new LinkedList<SFAMove<CharPred, Character>>();
+        LinkedList<Integer> finStates11 = new LinkedList<>();
+        finStates11.add(1);
+        SFA<CharPred, Character> mySA11 = SFA.MkSFA(transitions11, 1, finStates11, ba);
+        for (SFT<CharPred, CharFunc, Character> sft: allSFTs) {
+            SFT<CharPred, CharFunc, Character> restricted = sft.domainRestriction(mySA11, ba);
+            assertTrue(mySFT111.decide1equality(restricted, ba));
+        }
+
+        // II. two states with one final state
+        // i. onr arc, one transition condition
+        LinkedList<SFAMove<CharPred, Character>> transitions21 = new LinkedList<SFAMove<CharPred, Character>>();
+        transitions21.add(new SFAInputMove<CharPred, Character>(1, 2, new CharPred('b')));
+        LinkedList<Integer> finStates21 = new LinkedList<>();
+        finStates21.add(2);
+        SFA<CharPred, Character> restriction = SFA.MkSFA(transitions21, 1, finStates21, ba);
+
+        List<SFTMove<CharPred, CharFunc, Character>> transitions222 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output2221 = new ArrayList<CharFunc>();
+        output2221.add(new CharOffset(1));
+        transitions222.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('c'), output2221));
+        List<Integer> finStates222 = new ArrayList<Integer>();
+        finStates222.add(2);
+        SFT<CharPred, CharFunc, Character> expectedSFT = SFT.MkSFT(transitions222, 1, finStates222, ba);
+
+        assertTrue(expectedSFT.decide1equality(mySFT222.domainRestriction(restriction, ba), ba));
     }
 
     /**
@@ -1906,7 +2310,7 @@ public class SFTUnitTest {
         List<Character> output2512 = new ArrayList<Character>();
         output2512.add('a');
         transitions251.add(new SFTEpsilon<CharPred, CharFunc, Character>(1, 2, output2512));
-        //assertEquals(new HashSet<>(transitions251), mySFT251.getTransitionsTo(1));
+        assertEquals(new LinkedList<>(), new LinkedList<>(mySFT251.getTransitionsTo(1)));
 
         List<SFTMove<CharPred, CharFunc, Character>> transitions252 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
         List<Character> output2521 = new ArrayList<Character>();
@@ -1918,9 +2322,9 @@ public class SFTUnitTest {
         List<SFTMove<CharPred, CharFunc, Character>> transitions2521 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
         transitions2521.add(new SFTEpsilon<CharPred, CharFunc, Character>(1, 2, output2521));
         List<SFTMove<CharPred, CharFunc, Character>> transitions2522 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
-        transitions2522.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('b'), output2522));
+        transitions2522.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('a'), output2522));
         assertEquals(transitions2521, new LinkedList<>(mySFT252.getTransitionsTo(2)));
-        //assertEquals(transitions2522, new LinkedList<>(mySFT252.getTransitionsTo(1)));
+        assertEquals(transitions2522, new LinkedList<>(mySFT252.getTransitionsTo(1)));
 
         List<SFTMove<CharPred, CharFunc, Character>> transitions261 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
         List<Character> output2611 = new ArrayList<Character>();
@@ -2190,6 +2594,9 @@ public class SFTUnitTest {
         output2412.add(CharOffset.IDENTITY);
         transitions241.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('b', 'z'), output2412));
         assertEquals(transitions241, new LinkedList<>(mySFT241.getMoves()));
+
+        // We use HashMap to store transitions in SFT.java. Due to the implementation method of HashSet, the order of
+        // the elements in mySFT251.getMoves() is uncertain, so we cannot use Junit to test it.
     }
 
     /**
@@ -2275,6 +2682,18 @@ public class SFTUnitTest {
         output2412.add(CharOffset.IDENTITY);
         transitions241.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('b', 'z'), output2412));
         assertEquals(transitions241, new LinkedList<>(mySFT241.getMovesFrom(mySFT241.getStates())));
+
+        List<SFTMove<CharPred, CharFunc, Character>> transitions242 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        List<CharFunc> output2421 = new ArrayList<CharFunc>();
+        output2421.add(CharOffset.IDENTITY);
+        transitions242.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('a'), output2421));
+        List<CharFunc> output2422 = new ArrayList<CharFunc>();
+        output2422.add(new CharConstant('c'));
+        transitions242.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('b'), output2422));
+        assertEquals(transitions242, new LinkedList<>(mySFT242.getMovesFrom(mySFT242.getStates())));
+
+        // We use HashMap to store transitions in SFT.java. Due to the implementation method of HashSet, the order of
+        // the elements in mySFT251.getMovesFrom(mySFT251.getStates()) is uncertain, so we cannot use Junit to test it.
     }
 
     /**
@@ -2383,7 +2802,7 @@ public class SFTUnitTest {
         List<Character> output2512 = new ArrayList<Character>();
         output2512.add('a');
         transitions251.add(new SFTEpsilon<CharPred, CharFunc, Character>(1, 2, output2512));
-        //assertEquals(new HashSet<>(transitions251), mySFT251.getMovesTo(1));
+        assertEquals(new LinkedList<>(), new LinkedList<>(mySFT251.getMovesTo(1)));
 
         List<SFTMove<CharPred, CharFunc, Character>> transitions252 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
         List<Character> output2521 = new ArrayList<Character>();
@@ -2395,9 +2814,9 @@ public class SFTUnitTest {
         List<SFTMove<CharPred, CharFunc, Character>> transitions2521 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
         transitions2521.add(new SFTEpsilon<CharPred, CharFunc, Character>(1, 2, output2521));
         List<SFTMove<CharPred, CharFunc, Character>> transitions2522 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
-        transitions2522.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('b'), output2522));
+        transitions2522.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('a'), output2522));
         assertEquals(transitions2521, new LinkedList<>(mySFT252.getMovesTo(2)));
-        //assertEquals(transitions2522, new LinkedList<>(mySFT252.getMovesTo(1)));
+        assertEquals(transitions2522, new LinkedList<>(mySFT252.getMovesTo(1)));
 
         List<SFTMove<CharPred, CharFunc, Character>> transitions261 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
         List<Character> output2611 = new ArrayList<Character>();
