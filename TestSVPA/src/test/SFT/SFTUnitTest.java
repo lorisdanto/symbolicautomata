@@ -615,7 +615,7 @@ public class SFTUnitTest {
     }
 
     /**
-     * convert a string into a list of char
+     * convert a string into a list of characters
      * @param input a string
      * @return a list of class Character
      */

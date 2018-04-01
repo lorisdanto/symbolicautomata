@@ -6,7 +6,13 @@
  */
 package transducers.sft;
 
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Collection;
 
 import org.sat4j.specs.TimeoutException;
 
@@ -18,7 +24,6 @@ import automata.sfa.SFAEpsilon;
 import automata.sfa.SFAInputMove;
 import theory.BooleanAlgebraSubst;
 import utilities.Pair;
-
 
 
 /**
@@ -112,7 +117,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
     }
 
     /**
-     * Computes one of the ouptuts produced when reading input. Null if no such output exists
+     * Computes one of the outputs produced when reading input. Null if no such output exists
      *
      * @param input
      * @param ba
@@ -121,11 +126,15 @@ public class SFT<P, F, S> extends Automaton<P, S> {
      */
     public static <P, F, S> List<S> outputOn(SFT<P, F, S> sftWithEps, List<S> input,
                                                  BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
+        /*
+        // following codes only work for deterministic symbolic finite transducers
+        // Since they have been tested under unit test, I am reluctant to delete them in case that they will be used
+        // one day.
         List<S> output = new ArrayList<S>();
 
         // composition
         SFT<P, F, S> sft = sftWithEps.removeEpsilonMoves(ba);
-        // Assume that there are no epsilon transitions for now
+        // guarantee that there are no epsilon transitions for now
         int currentState = sft.getInitialState();
 
         for (S element : input) {
@@ -148,6 +157,52 @@ public class SFT<P, F, S> extends Automaton<P, S> {
             return output;
         else
             return null;
+       */
+        // codes for nondeterministic but single-valued symbolic finite transducers
+        List<List<S>> outputs = new ArrayList<List<S>>();
+
+        SFT<P, F, S> sft = sftWithEps.removeEpsilonMoves(ba);
+        // guarantee that there are no epsilon transitions for now
+
+        backtrack(outputs, new ArrayList<S>(), sft, sft.getInitialState(), input, 0, ba);
+        if (outputs.size() != 0)
+            return outputs.get(0);
+        else
+            return null;
+    }
+
+    // use backtrack method to get all possible outputs
+    private static <P, F, S> void backtrack(List<List<S>> outputs, List<S> tempList, SFT<P, F, S> sft,
+                                            Integer currentState, List<S> input, int position, BooleanAlgebraSubst<P, F, S> ba) {
+        if (position > input.size())
+            return;
+        else if (position == input.size()) {
+            if (sft.getFinalStates().contains(currentState)) {
+                outputs.add(new ArrayList<S>(tempList));
+            }
+            return;
+        } else {
+            Collection<SFTInputMove<P, F, S>> transitions = sft.getInputMovesFrom(currentState);
+            boolean canMove = false;
+            for (SFTInputMove<P, F, S> transition: transitions) {
+                boolean hasModel = false;
+                try {
+                    hasModel = ba.HasModel(transition.guard, input.get(position));
+                } catch (TimeoutException te) {
+                    te.printStackTrace();
+                }
+                if (hasModel) {
+                    for (F outputFunc: transition.outputFunctions)
+                        tempList.add(ba.MkSubstFuncConst(outputFunc, input.get(position)));
+                    backtrack(outputs, tempList, sft, transition.to, input, position + 1, ba);
+                    for (int i = 0; i < transition.outputFunctions.size(); i++)
+                        tempList.remove(tempList.size() - 1);
+                    canMove = true;
+                }
+            }
+            if (!canMove)
+                return;
+        }
     }
 
     /**
