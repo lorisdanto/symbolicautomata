@@ -15,159 +15,159 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-    import com.sun.xml.internal.bind.annotation.XmlLocation;
-    import org.apache.commons.lang3.tuple.ImmutablePair;
+	import com.sun.xml.internal.bind.annotation.XmlLocation;
+	import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import com.google.common.collect.ImmutableList;
 
 import theory.BooleanAlgebraSubst;
-    import theory.characters.*;
-    import utilities.Pair;
+	import theory.characters.*;
+	import utilities.Pair;
 
 	/**
 	 * CharSolver: an interval based solver for the theory of characters
 	 */
 	public class UnaryCharIntervalSolver extends BooleanAlgebraSubst<CharPred, CharFunc, Character> {
-	    
-	    @Override
-	    public CharPred MkNot(CharPred u) {
-	        List<ImmutablePair<Character,Character>> newIntervals =
-	        		new ArrayList<ImmutablePair<Character, Character>>();
+		
+		@Override
+		public CharPred MkNot(CharPred u) {
+			List<ImmutablePair<Character,Character>> newIntervals =
+					new ArrayList<ImmutablePair<Character, Character>>();
 
-	        if(checkNotNull(u).intervals.isEmpty()) {
-	            return StdCharPred.TRUE;
-	        }
-	        
-	        Character curBot = u.intervals.get(0).left;
-	        if(CharPred.MIN_CHAR < curBot) {
-	            newIntervals.add(ImmutablePair.of(CharPred.MIN_CHAR, (char)(curBot - 1)));
-	        }
+			if(checkNotNull(u).intervals.isEmpty()) {
+				return StdCharPred.TRUE;
+			}
+			
+			Character curBot = u.intervals.get(0).left;
+			if(CharPred.MIN_CHAR < curBot) {
+				newIntervals.add(ImmutablePair.of(CharPred.MIN_CHAR, (char)(curBot - 1)));
+			}
 
-	        char prevTop = u.intervals.get(0).right;
-	        for(int i = 1; i < u.intervals.size(); i++) {
-	        	ImmutablePair<Character,Character> curr = u.intervals.get(i);
-	            curBot = curr.left;          
-	            char newIntLo = (char)(prevTop + 1);
-	            char newIntHi = (char)(curBot - 1);
-	            if (newIntLo <= newIntHi) {
-	            	newIntervals.add(ImmutablePair.of(newIntLo, newIntHi));
-	            }
+			char prevTop = u.intervals.get(0).right;
+			for(int i = 1; i < u.intervals.size(); i++) {
+				ImmutablePair<Character,Character> curr = u.intervals.get(i);
+				curBot = curr.left;		  
+				char newIntLo = (char)(prevTop + 1);
+				char newIntHi = (char)(curBot - 1);
+				if (newIntLo <= newIntHi) {
+					newIntervals.add(ImmutablePair.of(newIntLo, newIntHi));
+				}
 
-	            prevTop = curr.right;
-	        }
+				prevTop = curr.right;
+			}
 
-	        if(prevTop < CharPred.MAX_CHAR) {
-	            newIntervals.add(ImmutablePair.of((char)(prevTop + 1), CharPred.MAX_CHAR));
-	        }
+			if(prevTop < CharPred.MAX_CHAR) {
+				newIntervals.add(ImmutablePair.of((char)(prevTop + 1), CharPred.MAX_CHAR));
+			}
 
-	        return new CharPred(ImmutableList.copyOf(newIntervals));
-	    }
+			return new CharPred(ImmutableList.copyOf(newIntervals));
+		}
 
-	    @Override
-	    public CharPred MkOr(Collection<CharPred> clctn) {
-	    	CharPred or = StdCharPred.FALSE;
-	    	for(CharPred a : clctn) {
-	    		or = MkOr(or, a);
-	    	}
-	    	return or;
-	    }
+		@Override
+		public CharPred MkOr(Collection<CharPred> clctn) {
+			CharPred or = StdCharPred.FALSE;
+			for(CharPred a : clctn) {
+				or = MkOr(or, a);
+			}
+			return or;
+		}
 
-	    @Override
-	    public CharPred MkOr(CharPred u1, CharPred u2) {
-	        return MkNot(MkAnd(MkNot(u1), MkNot(u2)));
-	    }
+		@Override
+		public CharPred MkOr(CharPred u1, CharPred u2) {
+			return MkNot(MkAnd(MkNot(u1), MkNot(u2)));
+		}
 
-	    @Override
-	    public CharPred MkAnd(Collection<CharPred> clctn) {
-	       CharPred and = StdCharPred.TRUE;
-	       for(CharPred a : clctn) {
-	           and = MkAnd(and, a);
-	       }
-	       return and;
-	    }
+		@Override
+		public CharPred MkAnd(Collection<CharPred> clctn) {
+		   CharPred and = StdCharPred.TRUE;
+		   for(CharPred a : clctn) {
+			   and = MkAnd(and, a);
+		   }
+		   return and;
+		}
 
-	    @Override
-	    public CharPred MkAnd(CharPred u1, CharPred u2) {
-	        if(checkNotNull(u1).intervals.isEmpty() || checkNotNull(u2).intervals.isEmpty()) {
-	            return False();
-	        }
+		@Override
+		public CharPred MkAnd(CharPred u1, CharPred u2) {
+			if(checkNotNull(u1).intervals.isEmpty() || checkNotNull(u2).intervals.isEmpty()) {
+				return False();
+			}
 
-	        List<ImmutablePair<Character,Character>> newIntervals =
-	        		new ArrayList<ImmutablePair<Character, Character>>();
+			List<ImmutablePair<Character,Character>> newIntervals =
+					new ArrayList<ImmutablePair<Character, Character>>();
 
-	        for (int i = 0, j = 0; i < u1.intervals.size() && j < u2.intervals.size(); ) {
-	        	ImmutablePair<Character, Character> cur1 = u1.intervals.get(i);
-	        	ImmutablePair<Character, Character> cur2 = u2.intervals.get(j);
+			for (int i = 0, j = 0; i < u1.intervals.size() && j < u2.intervals.size(); ) {
+				ImmutablePair<Character, Character> cur1 = u1.intervals.get(i);
+				ImmutablePair<Character, Character> cur2 = u2.intervals.get(j);
 
-	        	char lo = (char)Math.max(cur1.left, cur2.left);
-	        	char hi = (char)Math.min(cur1.right, cur2.right);
-	        	if (lo <= hi) {
-	        		newIntervals.add(ImmutablePair.of(lo, hi));
-	        	}
+				char lo = (char)Math.max(cur1.left, cur2.left);
+				char hi = (char)Math.min(cur1.right, cur2.right);
+				if (lo <= hi) {
+					newIntervals.add(ImmutablePair.of(lo, hi));
+				}
 
-	        	if (cur1.right == hi) {
-	        		i++;
-	        	} else {
-	        		j++;
-	        	}
-	        }
+				if (cur1.right == hi) {
+					i++;
+				} else {
+					j++;
+				}
+			}
 
-	        return new CharPred(ImmutableList.copyOf(newIntervals));
-	    }
+			return new CharPred(ImmutableList.copyOf(newIntervals));
+		}
 
-	    @Override
-	    public CharPred True() {
-	    	return StdCharPred.TRUE;
-	    }
+		@Override
+		public CharPred True() {
+			return StdCharPred.TRUE;
+		}
 
-	    @Override
-	    public CharPred False() {
-	    	return StdCharPred.FALSE;
-	    }
+		@Override
+		public CharPred False() {
+			return StdCharPred.FALSE;
+		}
 
-	    @Override
-	    public boolean AreEquivalent(CharPred u1, CharPred u2) {
-	    	checkNotNull(u1);
-	    	checkNotNull(u2);
+		@Override
+		public boolean AreEquivalent(CharPred u1, CharPred u2) {
+			checkNotNull(u1);
+			checkNotNull(u2);
 
-	    	boolean nonEquivalent = IsSatisfiable(MkAnd(u1, MkNot(u2))) ||
-	    			IsSatisfiable(MkAnd(MkNot(u1),u2)); 
-	    	return !nonEquivalent;
-	    }
+			boolean nonEquivalent = IsSatisfiable(MkAnd(u1, MkNot(u2))) ||
+					IsSatisfiable(MkAnd(MkNot(u1),u2)); 
+			return !nonEquivalent;
+		}
 
-	    @Override
-	    public boolean IsSatisfiable(CharPred u) {
-	        return !checkNotNull(u).intervals.isEmpty();
-	    }
+		@Override
+		public boolean IsSatisfiable(CharPred u) {
+			return !checkNotNull(u).intervals.isEmpty();
+		}
 
-	    @Override
-	    public boolean HasModel(CharPred u, Character s) {
-	    	return checkNotNull(u).isSatisfiedBy(checkNotNull(s));
-	    }
+		@Override
+		public boolean HasModel(CharPred u, Character s) {
+			return checkNotNull(u).isSatisfiedBy(checkNotNull(s));
+		}
 
-	    @Override
-	    public boolean HasModel(CharPred u, Character s, Character s1) {
-	        throw new UnsupportedOperationException("Not supported yet.");
-	    }
+		@Override
+		public boolean HasModel(CharPred u, Character s, Character s1) {
+			throw new UnsupportedOperationException("Not supported yet.");
+		}
 
-	    @Override
-	    public Character generateWitness(CharPred u) {
-	        if (checkNotNull(u).intervals.isEmpty()) {
-	            return null;
-	        } else {
-	        	Random r = new Random();
-	        	int whichInterval = r.nextInt(u.intervals.size());
-	        	ImmutablePair<Character, Character> interval = u.intervals.get(whichInterval);
-	        	int diff = interval.right-interval.left;
-	        	Character c= (char)(Character.valueOf(interval.left) + (diff==0?0:r.nextInt(diff+1)));
-	        	return c;
-	        }
-	    }
+		@Override
+		public Character generateWitness(CharPred u) {
+			if (checkNotNull(u).intervals.isEmpty()) {
+				return null;
+			} else {
+				Random r = new Random();
+				int whichInterval = r.nextInt(u.intervals.size());
+				ImmutablePair<Character, Character> interval = u.intervals.get(whichInterval);
+				int diff = interval.right-interval.left;
+				Character c= (char)(Character.valueOf(interval.left) + (diff==0?0:r.nextInt(diff+1)));
+				return c;
+			}
+		}
 
-	    @Override
-	    public Pair<Character, Character> generateWitnesses(CharPred u) {
-	        throw new UnsupportedOperationException("Not supported yet."); 
-	    }
+		@Override
+		public Pair<Character, Character> generateWitnesses(CharPred u) {
+			throw new UnsupportedOperationException("Not supported yet."); 
+		}
 
 		@Override
 		public CharFunc MkSubstFuncFunc(CharFunc f1, CharFunc f2) {
@@ -186,31 +186,21 @@ import theory.BooleanAlgebraSubst;
 
 		@Override
 		public CharFunc MkFuncConst(Character c) {
-	    	return new CharConstant(checkNotNull(c));
+			return new CharConstant(checkNotNull(c));
 		}
 
 		@Override
 		public boolean CheckGuardedEquality(CharPred p, CharFunc f1, CharFunc f2) {
-            CharPred f1Output, f2Output;
-            if (checkNotNull(f1) instanceof CharOffset) {
-                CharFunc inverseF1 = new CharOffset(-((CharOffset) f1).increment);
-                f1Output = this.MkSubstFuncPred(inverseF1, checkNotNull(p));
-                // a little tricky way to get output by using MkSubstFuncPred
-                // In substIn(CharPred p, UnaryCharIntervalSolver cs) in CharOffset.java,
-                // leftPrime = charSnap(interval.left - increment); and rightPrime = charSnap(interval.right - increment);
-                // However, we want to let leftPrime = charSnap(interval.left + increment); and
-                // rightPrime = charSnap(interval.right + increment);
-                // So I create a new CharOffset whose increment is the negative increment of f1.
-            } else { // checkNotNull(f1) instanceof CharConstant
-                f1Output = new CharPred(((CharConstant) f1).c);
-            }
-            if (checkNotNull(f2) instanceof CharOffset) {
-                CharFunc inverseF2 = new CharOffset(-((CharOffset) f2).increment);
-                f2Output = this.MkSubstFuncPred(inverseF2, checkNotNull(p));
-            } else { // checkNotNull(f2) instanceof CharConstant
-                f2Output = new CharPred(((CharConstant) f2).c);
-            }
-            return this.AreEquivalent(f1Output, f2Output);
+			CharPred f1IsNotEqualTof2;
+			if (checkNotNull(f1) instanceof CharConstant && checkNotNull(f2) instanceof CharConstant)
+				f1IsNotEqualTof2 = ((CharConstant) f1).c == ((CharConstant) f2).c ? False() : True();
+			else if (checkNotNull(f1) instanceof CharConstant && checkNotNull(f2) instanceof CharOffset)
+				f1IsNotEqualTof2 = MkNot(MkSubstFuncPred(f2, new CharPred(((CharConstant) f1).c)));
+			else if (checkNotNull(f1) instanceof CharOffset && checkNotNull(f2) instanceof CharConstant)
+				f1IsNotEqualTof2 = MkNot(MkSubstFuncPred(f1, new CharPred(((CharConstant) f2).c)));
+			else // checkNotNull(f1) instanceof CharOffset && checkNotNull(f2) instanceof CharOffset
+				f1IsNotEqualTof2 = ((CharOffset) f1).increment == ((CharOffset) f2).increment ? False() : True();
+			return !IsSatisfiable(MkAnd(p, f1IsNotEqualTof2));
 		}
 		
 		/**
@@ -225,7 +215,7 @@ import theory.BooleanAlgebraSubst;
 			}
 			return sb.toString();
 		}
-	    
+		
 		/**
 		 * returns the string of a list of chars
 		 * @param chars
