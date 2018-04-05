@@ -451,7 +451,6 @@ public class SFT<P, F, S> extends Automaton<P, S> {
     /**
      * judge whether <code>sft1withEps</code> and <code>sft2withEps</code> are 1-equality (partial equivalent)
      * Page 6, in the middle of left column, figure 3
-     * Warning: it cannot recognize that when input is 'b', lambda x.x is equivalent to lambda x.b
      *
      * @param sft1withEps symbolic finite transducer 1 who may has epsilon transitions
      * @param sft2withEps symbolic finite transducer 2 who may has epsilon transitions
