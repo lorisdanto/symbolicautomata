@@ -42,9 +42,9 @@ public abstract class BooleanAlgebraSubst<P,F,S> extends BooleanAlgebra<P, S>{
 	public abstract F MkFuncConst(S s);
 
     /**
-     * infer all corresponding possible input based on the given function <code>f</code> and the given output <code>o</code>
-     * @return all corresponding possible input
+     * Check whether <code>f1</code> and <code>f2</code> are equivalent relative to the predicate <code>p</code>
+     * @return lambda x.(p(x) and f1(x) != f2(x))
      */
-	public abstract P GetAllPossibleInputs(F f, P o);
+	public abstract boolean CheckGuardedEquality(P p, F f1, F f2);
 	
 }

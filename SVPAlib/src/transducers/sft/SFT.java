@@ -173,7 +173,8 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 
     // use backtrack method to get all possible outputs
     private static <P, F, S> void backtrack(List<List<S>> outputs, List<S> tempList, SFT<P, F, S> sft,
-                                            Integer currentState, List<S> input, int position, BooleanAlgebraSubst<P, F, S> ba) {
+                                            Integer currentState, List<S> input, int position,
+                                            BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
         if (position > input.size())
             return;
         else if (position == input.size()) {
@@ -185,13 +186,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
             Collection<SFTInputMove<P, F, S>> transitions = sft.getInputMovesFrom(currentState);
             boolean canMove = false;
             for (SFTInputMove<P, F, S> transition: transitions) {
-                boolean hasModel = false;
-                try {
-                    hasModel = ba.HasModel(transition.guard, input.get(position));
-                } catch (TimeoutException te) {
-                    te.printStackTrace();
-                }
-                if (hasModel) {
+                if (ba.HasModel(transition.guard, input.get(position))) {
                     for (F outputFunc: transition.outputFunctions)
                         tempList.add(ba.MkSubstFuncConst(outputFunc, input.get(position)));
                     backtrack(outputs, tempList, sft, transition.to, input, position + 1, ba);
@@ -255,8 +250,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                     // according to the algorithm of method getPossibleTransitionChains, there is at least one SFTMove
                     // in a chain.
                     SFTInputMove<P, F, S> t2 = (SFTInputMove<P, F, S>)chain.get(0);
-                    P internalGuard = ba.MkAnd(ba.MkSubstFuncPred(t1.outputFunctions.get(0), t1.guard) , t2.guard);
-                    P intersGuard = ba.MkAnd(t1.guard, ba.GetAllPossibleInputs(t1.outputFunctions.get(0), internalGuard));
+                    P intersGuard = ba.MkAnd(t1.guard, ba.MkSubstFuncPred(t1.outputFunctions.get(0), t2.guard));
                     List<F> outputFunctions = new LinkedList<F>();
                     for (F t2OutputFunction: t2.outputFunctions)
                         outputFunctions.add(ba.MkSubstFuncFunc(t2OutputFunction, t1.outputFunctions.get(0)));
@@ -266,8 +260,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                     // (p, q) --phi and psi(F) and gamma(f2)/[g(F), h(f2)]--> (p', q'')
                     for (int i = 1; i < chain.size(); i++) {
                         t2 = (SFTInputMove<P, F, S>)chain.get(i);
-                        internalGuard = ba.MkAnd(ba.MkSubstFuncPred(t1.outputFunctions.get(i), t1.guard) , t2.guard);
-                        intersGuard = ba.MkAnd(intersGuard, ba.GetAllPossibleInputs(t1.outputFunctions.get(i), internalGuard));
+                        intersGuard = ba.MkAnd(intersGuard, ba.MkSubstFuncPred(t1.outputFunctions.get(i), t2.guard));
                         for (F t2OutputFunction: t2.outputFunctions)
                             outputFunctions.add(ba.MkSubstFuncFunc(t2OutputFunction, t1.outputFunctions.get(i)));
                     }
@@ -451,7 +444,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
         }
     }
 
-    public boolean decide1equality(SFT<P, F, S> otherSft, BooleanAlgebraSubst<P, F, S> ba) {
+    public boolean decide1equality(SFT<P, F, S> otherSft, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
         return decide1equality(this, otherSft, ba);
     }
 
@@ -463,19 +456,33 @@ public class SFT<P, F, S> extends Automaton<P, S> {
      * @param sft1withEps symbolic finite transducer 1 who may has epsilon transitions
      * @param sft2withEps symbolic finite transducer 2 who may has epsilon transitions
      */
-    public static <P, F, S> boolean decide1equality(SFT<P, F, S> sft1withEps, SFT<P, F, S> sft2withEps, BooleanAlgebraSubst<P, F, S> ba) {
-        SFTProduct<P, F, S> product = SFTProduct.MkSFTProduct(sft1withEps, sft2withEps, ba);
-        // a product without epsilon transitions
+    public static <P, F, S> boolean decide1equality(SFT<P, F, S> sft1withEps, SFT<P, F, S> sft2withEps,
+                                                    BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
+        // Figure 3 line 1: C := A  \times B;
+        SFTProduct<P, F, S> product = SFTProduct.MkSFTProduct(sft1withEps, sft2withEps, ba); // <code>product</code> is
+        // a product without epsilon transitions.
 
+        // Figure 3 line 1: Q := \{q_c^0 \mapsto (\epsilon, \epsilon)\};
         HashMap<Integer, Pair<List<S>, List<S>>> reached = new HashMap<Integer, Pair<List<S>, List<S>>>();
-        LinkedList<Integer> toVisit = new LinkedList<Integer>();
-
         reached.put(product.getInitialState(), new Pair(new ArrayList<S>(), new ArrayList<S>()));
+
+        // Figure 3 line 1: S := stack(q_c^0);
+        LinkedList<Integer> toVisit = new LinkedList<Integer>();
         toVisit.add(product.getInitialState());
+
+        // Figure 3 line 2: \textbf{while} \ S \neq \emptyset
         while (!toVisit.isEmpty()) {
+
+            // Figure 3 line 3: p := pop(S);
             Integer currState = toVisit.pop();
+
+            // Figure 3 line 3: (\alpha, \beta) := Q(p);
             Pair<List<S>, List<S>> promise = reached.get(currState);
+
+            // Figure 3 line 4: \textbf{foreach} \  (p, \varphi, (\textbf f, \textbf g), q) \in R_C(p)
             for (SFTProductInputMove transition: product.getInputMovesFrom(currState)) {
+
+                // Figure 3 line 5: (u, v) := (\alpha \cdot \textbf f,\beta \cdot \textbf g);
                 List<F> u = new ArrayList<F>();
                 List<F> v = new ArrayList<F>();
                 for (S a: promise.first)
@@ -484,21 +491,26 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                     v.add(ba.MkFuncConst(b));
                 u.addAll(transition.outputFunctions1);
                 v.addAll(transition.outputFunctions2);
+
+                // Figure 3 line 6: \textbf{if} \ q \in F_C \wedge |u| \neq |v| \ \textbf{return} \ f;
                 if (product.getFinalStates().contains(currState) && u.size() != v.size())
                     return false;
+
+                // Figure 3 line 7: \textbf{if} \ |u| \geq |v|
                 if (u.size() >= v.size()) {
+
+                    // Figure 3 line 8: \textbf{if} \ \vee_{i=0}^{|v|-1}u_i \not\equiv_\varphi v_i \ \textbf{return} \ f;
                     for (int i = 0; i < v.size(); i++)
-                        if (!u.get(i).equals(v.get(i)))
+                        if (!ba.CheckGuardedEquality((P) transition.guard, u.get(i), v.get(i)))
                             return false;
+
+                    // Figure 3 line 9: w := [u_{|v|,\dots,u_{|u|-1}}];
                     List<F> w = new ArrayList<F>();
                     for (int i = v.size(); i < u.size(); i++)
                         w.add(u.get(i));
-                    S witness = null;
-                    try {
-                        witness = (S)transition.getWitness(ba);
-                    } catch (TimeoutException te) {
-                        te.printStackTrace();
-                    }
+
+                    // Figure 3 line 9: c := [\![ w]\!](witness(\varphi));
+                    S witness = (S)transition.getWitness(ba);
                     List<S> c = new ArrayList<S>();
                     List<F> cF = new ArrayList<F>(); // a sequence of lamda x.alpha, where alpha is a constant S
                     // stored in List<S> c
@@ -506,33 +518,34 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                         c.add(ba.MkSubstFuncConst(w.get(i), witness));
                         cF.add(ba.MkSubstFuncFunc(w.get(i), ba.MkFuncConst(witness)));
                     }
+
+                    // Figure 3 line 10: \textbf{if} \ w \not\equiv_\varphi c \vee (q \in Dom(Q) \wedge Q(q) \neq
+                    // (\textbf c, \epsilon)) \textbf{return} \ f;
                     for (int i = 0; i < u.size() - v.size(); i++)
-                        try {
-                            if (!ba.AreEquivalent(ba.MkSubstFuncPred(w.get(i), (P)transition.guard),
-                                    ba.MkSubstFuncPred(cF.get(i), (P)transition.guard)))
-                                return false;
-                        } catch (TimeoutException te) {
-                            te.printStackTrace();
-                        }
+                        if (!ba.AreEquivalent(ba.MkSubstFuncPred(w.get(i), (P)transition.guard),
+                                ba.MkSubstFuncPred(cF.get(i), (P)transition.guard)))
+                            return false;
+
                     if (reached.containsKey(currState) && !reached.get(currState).equals(new Pair(c, new ArrayList<S>())))
                         return false;
+
+                    // Figure 3 line 11: \textbf{if} \ q \not\in Dom(Q) \ push(q,S);
                     if (!reached.containsKey(currState)) {
                         toVisit.push(currState);
+
+                        // Figure 3 line 11: Q(q):=(\textbf c, \epsilon);
                         reached.put(currState, new Pair(c, new ArrayList<S>()));
                     }
+
+                // Figure 3 line 12: \textbf{if} \ |u|<|v| \dots (symmetrical \ to \ the \  case \ |u|>|v|)
                 } else { // u.size() < v.size()
                     for (int i = 0; i < u.size(); i++)
-                        if (!u.get(i).equals(v.get(i)))
+                        if (!ba.CheckGuardedEquality((P) transition.guard, u.get(i), v.get(i)))
                             return false;
                     List<F> w = new ArrayList<F>();
                     for (int i = u.size(); i < v.size(); i++)
                         w.add(v.get(i));
-                    S witness = null;
-                    try {
-                        witness = (S)transition.getWitness(ba);
-                    } catch (TimeoutException te) {
-                        te.printStackTrace();
-                    }
+                    S witness = (S)transition.getWitness(ba);
                     List<S> c = new ArrayList<S>();
                     List<F> cF = new ArrayList<F>(); // a sequence of lamda x.alpha, where alpha is a constant S
                     // stored in List<S> c
@@ -541,13 +554,9 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                         cF.add(ba.MkSubstFuncFunc(w.get(i), ba.MkFuncConst(witness)));
                     }
                     for (int i = 0; i < v.size() - u.size(); i++)
-                        try {
-                            if (!ba.AreEquivalent(ba.MkSubstFuncPred(w.get(i), (P)transition.guard),
-                                    ba.MkSubstFuncPred(cF.get(i), (P)transition.guard)))
-                                return false;
-                        } catch (TimeoutException te) {
-                            te.printStackTrace();
-                        }
+                        if (!ba.AreEquivalent(ba.MkSubstFuncPred(w.get(i), (P)transition.guard),
+                                ba.MkSubstFuncPred(cF.get(i), (P)transition.guard)))
+                            return false;
                     if (reached.containsKey(currState) && !reached.get(currState).equals(new Pair(new ArrayList<S>(), c)))
                         return false;
                     if (!reached.containsKey(currState)) {
@@ -557,10 +566,12 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                 }
             }
         }
+
+        // Figure 3 line 13: \textbf{return} \ t;
         return true;
     }
 
-    public List<S> witness1disequality(SFT<P, F, S> otherSft, BooleanAlgebraSubst<P, F, S> ba) {
+    public List<S> witness1disequality(SFT<P, F, S> otherSft, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
         return witness1disequality(this, otherSft, ba);
     }
 
@@ -570,7 +581,8 @@ public class SFT<P, F, S> extends Automaton<P, S> {
      * @param sft1withEps symbolic finite transducer 1 who may has epsilon transitions
      * @param sft2withEps symbolic finite transducer 2 who may has epsilon transitions
      */
-    public static <P, F, S> List<S> witness1disequality(SFT<P, F, S> sft1withEps, SFT<P, F, S> sft2withEps, BooleanAlgebraSubst<P, F, S> ba) {
+    public static <P, F, S> List<S> witness1disequality(SFT<P, F, S> sft1withEps, SFT<P, F, S> sft2withEps,
+                                                        BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
         SFTProduct<P, F, S> product = SFTProduct.MkSFTProduct(sft1withEps, sft2withEps, ba);
         // a product without epsilon transitions
 
@@ -579,19 +591,23 @@ public class SFT<P, F, S> extends Automaton<P, S> {
         HashMap<Integer, List<S>> path = new HashMap<Integer, List<S>>();
 
         reached.put(product.getInitialState(), new Pair(new ArrayList<S>(), new ArrayList<S>()));
+        // stores reached states and its promise
         toVisit.add(product.getInitialState());
         path.put(product.getInitialState(), new ArrayList<S>());
+        // stores reached states and the latest path from the initial state to it, which means if there are many possible
+        // paths from the initial state to it, only store the latest used one in the following loop
+
         while (!toVisit.isEmpty()) {
+
             Integer currState = toVisit.pop();
             Pair<List<S>, List<S>> promise = reached.get(currState);
+
             for (SFTProductInputMove transition: product.getInputMovesFrom(currState)) {
+
                 List<S> previousPath = new ArrayList<S>(path.get(transition.from));
-                try {
-                    previousPath.add((S) transition.getWitness(ba));
-                } catch (TimeoutException te) {
-                    te.printStackTrace();
-                }
+                previousPath.add((S) transition.getWitness(ba));
                 path.put(transition.to, previousPath);
+
                 List<F> u = new ArrayList<F>();
                 List<F> v = new ArrayList<F>();
                 for (S a: promise.first)
@@ -600,23 +616,19 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                     v.add(ba.MkFuncConst(b));
                 u.addAll(transition.outputFunctions1);
                 v.addAll(transition.outputFunctions2);
+
                 if (product.getFinalStates().contains(currState) && u.size() != v.size())
                     return previousPath;
                 if (u.size() >= v.size()) {
                     for (int i = 0; i < v.size(); i++)
-                        if (!u.get(i).equals(v.get(i))) {
+                        if (!ba.CheckGuardedEquality((P) transition.guard, u.get(i), v.get(i))) {
                             previousPath.addAll(product.getWitness(transition.to, ba));
                             return previousPath;
                         }
                     List<F> w = new ArrayList<F>();
                     for (int i = v.size(); i < u.size(); i++)
                         w.add(u.get(i));
-                    S witness = null;
-                    try {
-                        witness = (S)transition.getWitness(ba);
-                    } catch (TimeoutException te) {
-                        te.printStackTrace();
-                    }
+                    S witness = (S) transition.getWitness(ba);
                     List<S> c = new ArrayList<S>();
                     List<F> cF = new ArrayList<F>(); // a sequence of lamda x.alpha, where alpha is a constant S
                     // stored in List<S> c
@@ -625,14 +637,10 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                         cF.add(ba.MkSubstFuncFunc(w.get(i), ba.MkFuncConst(witness)));
                     }
                     for (int i = 0; i < u.size() - v.size(); i++)
-                        try {
-                            if (!ba.AreEquivalent(ba.MkSubstFuncPred(w.get(i), (P)transition.guard),
-                                    ba.MkSubstFuncPred(cF.get(i), (P)transition.guard))) {
-                                previousPath.addAll(product.getWitness(transition.to, ba));
-                                return previousPath;
-                            }
-                        } catch (TimeoutException te) {
-                            te.printStackTrace();
+                        if (!ba.AreEquivalent(ba.MkSubstFuncPred(w.get(i), (P)transition.guard),
+                                ba.MkSubstFuncPred(cF.get(i), (P)transition.guard))) {
+                            previousPath.addAll(product.getWitness(transition.to, ba));
+                            return previousPath;
                         }
                     if (reached.containsKey(currState) && !reached.get(currState).equals(new Pair(c, new ArrayList<S>()))) {
                         previousPath.addAll(product.getWitness(transition.to, ba));
@@ -644,19 +652,14 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                     }
                 } else { // u.size() < v.size()
                     for (int i = 0; i < u.size(); i++)
-                        if (!u.get(i).equals(v.get(i))) {
+                        if (!ba.CheckGuardedEquality((P) transition.guard, u.get(i), v.get(i))) {
                             previousPath.addAll(product.getWitness(transition.to, ba));
                             return previousPath;
                         }
                     List<F> w = new ArrayList<F>();
                     for (int i = u.size(); i < v.size(); i++)
                         w.add(v.get(i));
-                    S witness = null;
-                    try {
-                        witness = (S)transition.getWitness(ba);
-                    } catch (TimeoutException te) {
-                        te.printStackTrace();
-                    }
+                    S witness = (S) transition.getWitness(ba);
                     List<S> c = new ArrayList<S>();
                     List<F> cF = new ArrayList<F>(); // a sequence of lamda x.alpha, where alpha is a constant S
                     // stored in List<S> c
@@ -665,14 +668,10 @@ public class SFT<P, F, S> extends Automaton<P, S> {
                         cF.add(ba.MkSubstFuncFunc(w.get(i), ba.MkFuncConst(witness)));
                     }
                     for (int i = 0; i < v.size() - u.size(); i++)
-                        try {
-                            if (!ba.AreEquivalent(ba.MkSubstFuncPred(w.get(i), (P)transition.guard),
-                                    ba.MkSubstFuncPred(cF.get(i), (P)transition.guard))) {
-                                previousPath.addAll(product.getWitness(transition.to, ba));
-                                return previousPath;
-                            }
-                        } catch (TimeoutException te) {
-                            te.printStackTrace();
+                        if (!ba.AreEquivalent(ba.MkSubstFuncPred(w.get(i), (P)transition.guard),
+                                ba.MkSubstFuncPred(cF.get(i), (P)transition.guard))) {
+                            previousPath.addAll(product.getWitness(transition.to, ba));
+                            return previousPath;
                         }
                     if (reached.containsKey(currState) && !reached.get(currState).equals(new Pair(new ArrayList<S>(), c))) {
                         previousPath.addAll(product.getWitness(transition.to, ba));
@@ -750,15 +749,10 @@ public class SFT<P, F, S> extends Automaton<P, S> {
      *
      * @return the domain restriction of the current sft
      */
-    public SFT<P, F, S> domainRestriction(SFA<P, S> sfaWithEps, BooleanAlgebraSubst<P, F, S> ba) {
+    public SFT<P, F, S> domainRestriction(SFA<P, S> sfaWithEps, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
         // Remove epsilons
         SFT<P, F, S> sft = this.removeEpsilonMoves(ba);
-        SFA<P, S> sfa = null;
-        try {
-            sfa = sfaWithEps.removeEpsilonMoves(ba);
-        } catch (TimeoutException te) {
-            te.printStackTrace();
-        }
+        SFA<P, S> sfa = sfaWithEps.removeEpsilonMoves(ba);
 
         Collection<SFTMove<P, F, S>> transitions = new ArrayList<SFTMove<P, F, S>>();
         Integer initialState = 0;
@@ -787,19 +781,8 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 
             for (SFTInputMove<P, F, S> t1 : sft.getInputMovesFrom(currState.first))
                 for (SFAInputMove<P, S> t2 : sfa.getInputMovesFrom(currState.second)) {
-                    P intersGuard = null;
-                    try {
-                        intersGuard = ba.MkAnd(t1.guard, t2.guard);
-                    } catch (TimeoutException te) {
-                        te.printStackTrace();
-                    }
-                    boolean isSatisfiable = false;
-                    try {
-                        isSatisfiable = ba.IsSatisfiable(intersGuard);
-                    } catch (TimeoutException te) {
-                        te.printStackTrace();
-                    }
-                    if (isSatisfiable) {
+                    P intersGuard = ba.MkAnd(t1.guard, t2.guard);
+                    if (ba.IsSatisfiable(intersGuard)) {
                         Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(t1.to, t2.to);
                         int nextStateId = getStateId(nextState, reached, toVisit); // update reached and toVisit
                         SFTInputMove<P, F, S> newTrans = new SFTInputMove<P, F, S>(currStateId, nextStateId,

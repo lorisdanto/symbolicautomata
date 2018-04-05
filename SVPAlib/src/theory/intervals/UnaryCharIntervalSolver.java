@@ -190,17 +190,28 @@ import theory.BooleanAlgebraSubst;
 		}
 
 		@Override
-        public CharPred GetAllPossibleInputs(CharFunc f, CharPred o) {
-	        if (f instanceof CharConstant) {
-                if (o.equals(new CharPred(((CharConstant) f).c)))
-                    return StdCharPred.TRUE;
-                else
-                    return StdCharPred.FALSE;
-            } else { // f instanceof CharOffset
-                CharFunc inverseF = new CharOffset(-((CharOffset)f).increment);
-                return MkSubstFuncPred(inverseF, o);
+		public boolean CheckGuardedEquality(CharPred p, CharFunc f1, CharFunc f2) {
+            CharPred f1Output, f2Output;
+            if (checkNotNull(f1) instanceof CharOffset) {
+                CharFunc inverseF1 = new CharOffset(-((CharOffset) f1).increment);
+                f1Output = this.MkSubstFuncPred(inverseF1, checkNotNull(p));
+                // a little tricky way to get output by using MkSubstFuncPred
+                // In substIn(CharPred p, UnaryCharIntervalSolver cs) in CharOffset.java,
+                // leftPrime = charSnap(interval.left - increment); and rightPrime = charSnap(interval.right - increment);
+                // However, we want to let leftPrime = charSnap(interval.left + increment); and
+                // rightPrime = charSnap(interval.right + increment);
+                // So I create a new CharOffset whose increment is the negative increment of f1.
+            } else { // checkNotNull(f1) instanceof CharConstant
+                f1Output = new CharPred(((CharConstant) f1).c);
             }
-        }
+            if (checkNotNull(f2) instanceof CharOffset) {
+                CharFunc inverseF2 = new CharOffset(-((CharOffset) f2).increment);
+                f2Output = this.MkSubstFuncPred(inverseF2, checkNotNull(p));
+            } else { // checkNotNull(f2) instanceof CharConstant
+                f2Output = new CharPred(((CharConstant) f2).c);
+            }
+            return this.AreEquivalent(f1Output, f2Output);
+		}
 		
 		/**
 		 * returns a string of a list of CharPred

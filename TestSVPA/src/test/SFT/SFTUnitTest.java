@@ -565,11 +565,11 @@ public class SFTUnitTest {
                 SFT<CharPred, CharFunc, Character> composed = firstSft.composeWith(secondSft, ba);
                 for (List<Character> input: inputs) {
                     List<Character> composedOuputList = composed.outpzutOn(input, ba);
-                    String composedOuput;
+                    String composedOutput;
                     if (composedOuputList == null)
-                        composedOuput = null;
+                        composedOutput = null;
                     else
-                        composedOuput = composedOuputList.toString();
+                        composedOutput = composedOuputList.toString();
                     List<Character> mediumOutputList = firstSft.outpzutOn(input, ba);
                     String finalOutput;
                     if (mediumOutputList == null)
@@ -581,7 +581,7 @@ public class SFTUnitTest {
                         else
                             finalOutput = finalOutputList.toString();
                     }
-                    assertEquals(composedOuput, finalOutput);
+                    assertEquals(composedOutput, finalOutput);
                 }
             }
     }
@@ -645,7 +645,7 @@ public class SFTUnitTest {
         /* According to page 2, deciding whether SFTs A abd B are equivalent can be reduced to two independent tasks:
         1. domain equivalence: Domain(A) = Domain(B)
         2. partial equivalence: for all a belongs to MkAnd(Domain(A), Domain(B)), T_A(a) = T_B(a)
-        decide1equality only checks the partial equivalence, so if A's abd B's domain are not equal, decide1equality
+        decide1equality only checks the partial equivalence, so if A's abd B's domains are not equal, decide1equality
         does not work properly.
         Unfortunately, SFTs constructed in beforeClass have various domains so that I have to construct some new SFTs
         to test decide1equality. */
@@ -745,9 +745,7 @@ public class SFTUnitTest {
 
         assertTrue(SFT1.decide1equality(SFT2, ba));
 
-        // part 4
-        // a flaw in algorithm decide1equality
-        // decide1equality cannot recognize that when input is 'b', lambda x.x is equivalent to lambda x.b
+        // part 4 decide1equality should recognize that when input is 'b', lambda x.x is equivalent to lambda x.b
 
         List<SFTMove<CharPred, CharFunc, Character>> mytransitions1 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
         List<CharFunc> output1 = new ArrayList<CharFunc>();
@@ -765,9 +763,7 @@ public class SFTUnitTest {
         myfinStates2.add(1);
         SFT<CharPred, CharFunc, Character> mySFT2 = SFT.MkSFT(mytransitions2, 1, myfinStates2, ba);
 
-        assertFalse(mySFT1.decide1equality(mySFT2, ba)); // Theoretically, mySFT1 == mySFT2. However, method
-        // decide1equality cannot recognize that when input is 'b', lambda x.x is equivalent to lambda x.b
-        // So I assert that mySFT1.decide1equality(mySFT2, ba) is false
+        assertTrue(mySFT1.decide1equality(mySFT2, ba));
     }
 
     /**
