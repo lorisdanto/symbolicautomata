@@ -289,64 +289,64 @@ public class DReXUnitTest {
 		return new FunctionalVariableUpdate<>(xa);
 	}
 
-    /**
-     *
-     * Method: MkFuncConst(Character c)
-     *
-     */
-    @Test
-    public void testMkFuncConst() {
-        UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
-        CharFunc a = (CharConstant) ba.MkFuncConst('a');
+	/**
+	 *
+	 * Method: MkFuncConst(Character c)
+	 *
+	 */
+	@Test
+	public void testMkFuncConst() {
+		UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
+		CharFunc a = (CharConstant) ba.MkFuncConst('a');
 
-        assertEquals('a', a.instantiateWith('a'));
-        assertEquals('a', a.instantiateWith('b'));
-        assertEquals('a', a.instantiateWith('2'));
-        assertEquals('a', a.instantiateWith('@'));
-        assertEquals("x -> a", a.toString());
-        assertEquals(StdCharPred.TRUE, a.substIn(new CharPred('a', 'c'), ba));
-        assertEquals(StdCharPred.FALSE, a.substIn(new CharPred('b', 'c'), ba));
-        assertTrue(a.equals(new CharConstant('a')));
-    }
+		assertEquals('a', a.instantiateWith('a'));
+		assertEquals('a', a.instantiateWith('b'));
+		assertEquals('a', a.instantiateWith('2'));
+		assertEquals('a', a.instantiateWith('@'));
+		assertEquals("x -> a", a.toString());
+		assertEquals(StdCharPred.TRUE, a.substIn(new CharPred('a', 'c'), ba));
+		assertEquals(StdCharPred.FALSE, a.substIn(new CharPred('b', 'c'), ba));
+		assertTrue(a.equals(new CharConstant('a')));
+	}
 
-    /**
-     *
-     * Method: CheckGuardedEquality(CharPred p, CharFunc f1, CharFunc f2)
-     *
-     */
-    @Test
-    public void testCheckGuardedEquality() {
-        UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
-        CharFunc f1, f2;
+	/**
+	 *
+	 * Method: CheckGuardedEquality(CharPred p, CharFunc f1, CharFunc f2)
+	 *
+	 */
+	@Test
+	public void testCheckGuardedEquality() {
+		UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
+		CharFunc f1, f2;
 
-        // 1. f1 is CharConstant, f2 is CharConstant
-        f1 = new CharConstant('a');
-        f2 = new CharConstant('b');
-        assertEquals(false, ba.CheckGuardedEquality(new CharPred('a', 'b'), f1, f2));
-        assertEquals(false, ba.CheckGuardedEquality(new CharPred('c'), f1, f2));
-        assertEquals(true, ba.CheckGuardedEquality(new CharPred('a', 'b'), f1, f1));
-        assertEquals(true, ba.CheckGuardedEquality(new CharPred('c'), f2, f2));
+		// 1. f1 is CharConstant, f2 is CharConstant
+		f1 = new CharConstant('a');
+		f2 = new CharConstant('b');
+		assertEquals(false, ba.CheckGuardedEquality(new CharPred('a', 'b'), f1, f2));
+		assertEquals(false, ba.CheckGuardedEquality(new CharPred('c'), f1, f2));
+		assertEquals(true, ba.CheckGuardedEquality(new CharPred('a', 'b'), f1, f1));
+		assertEquals(true, ba.CheckGuardedEquality(new CharPred('c'), f2, f2));
 
-        // 2. f1 is CharConstant, f2 is CharOffset
-        f1 = new CharConstant('a');
-        f2 = CharOffset.TO_LOWER_CASE;
-        assertEquals(true, ba.CheckGuardedEquality(new CharPred('A'), f1, f2));
-        assertEquals(false, ba.CheckGuardedEquality(new CharPred('B'), f1, f2));
-        assertEquals(false, ba.CheckGuardedEquality(new CharPred('@'), f1, f2));
-        assertEquals(false, ba.CheckGuardedEquality(new CharPred('a', 'z'), f1, f2));
+		// 2. f1 is CharConstant, f2 is CharOffset
+		f1 = new CharConstant('a');
+		f2 = CharOffset.TO_LOWER_CASE;
+		assertEquals(true, ba.CheckGuardedEquality(new CharPred('A'), f1, f2));
+		assertEquals(false, ba.CheckGuardedEquality(new CharPred('B'), f1, f2));
+		assertEquals(false, ba.CheckGuardedEquality(new CharPred('@'), f1, f2));
+		assertEquals(false, ba.CheckGuardedEquality(new CharPred('a', 'z'), f1, f2));
 
-        // 3. f1 is CharOffset, f2 is CharConstant
-        f1 = CharOffset.IDENTITY;
-        f2 = new CharConstant('@');
-        assertEquals(true, ba.CheckGuardedEquality(new CharPred('@'), f1, f2));
-        assertEquals(false, ba.CheckGuardedEquality(new CharPred('a', 'z'), f1, f2));
+		// 3. f1 is CharOffset, f2 is CharConstant
+		f1 = CharOffset.IDENTITY;
+		f2 = new CharConstant('@');
+		assertEquals(true, ba.CheckGuardedEquality(new CharPred('@'), f1, f2));
+		assertEquals(false, ba.CheckGuardedEquality(new CharPred('a', 'z'), f1, f2));
 
-        // 4. f1 is CharOffset, f2 is CharOffset
-        f1 = new CharOffset(2);
-        f2 = new CharOffset(-1);
-        assertEquals(false, ba.CheckGuardedEquality(new CharPred('a', 'z'), f1, f2));
-        assertEquals(true, ba.CheckGuardedEquality(new CharPred('a', 'z'), f1, f1));
-        assertEquals(true, ba.CheckGuardedEquality(new CharPred('A'), f2, f2));
-    }
+		// 4. f1 is CharOffset, f2 is CharOffset
+		f1 = new CharOffset(2);
+		f2 = new CharOffset(-1);
+		assertEquals(false, ba.CheckGuardedEquality(new CharPred('a', 'z'), f1, f2));
+		assertEquals(true, ba.CheckGuardedEquality(new CharPred('a', 'z'), f1, f1));
+		assertEquals(true, ba.CheckGuardedEquality(new CharPred('A'), f2, f2));
+	}
 
 }

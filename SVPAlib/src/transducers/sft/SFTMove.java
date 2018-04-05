@@ -19,11 +19,11 @@ import java.util.List;
  * An SFT move.
  * 
  * @param <P>
- *            The type of predicates forming the Boolean algebra
+ *			The type of predicates forming the Boolean algebra
  * @param <F>
- *            The type of functions S->S in the Boolean Algebra
+ *			The type of functions S->S in the Boolean Algebra
  * @param <S>
- *            The domain of the Boolean algebra
+ *			The domain of the Boolean algebra
  */
 public abstract class SFTMove<P, F, S> extends Move<P, S> {
 

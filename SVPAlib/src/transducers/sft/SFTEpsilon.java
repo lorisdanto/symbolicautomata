@@ -14,15 +14,15 @@ import theory.BooleanAlgebra;
 /**
  * SFT epsilon transition
  * @param <P>
- *            The type of predicates forming the Boolean algebra
+ *			The type of predicates forming the Boolean algebra
  * @param <F>
- *            The type of s S->S in the Boolean Algebra
+ *			The type of s S->S in the Boolean Algebra
  * @param <S>
- *            The domain of the Boolean algebra
+ *			The domain of the Boolean algebra
  */
 public class SFTEpsilon<P, F, S> extends SFTMove<P, F, S> {
 
-    // since it is an epsilon transition, there is no guard. We do not have to declare public P guard;
+	// since it is an epsilon transition, there is no guard. We do not have to declare public P guard;
 	public List<S> outputs;
 	/**
 	 * An Epsilon transition from <code>from<code> to <code>to</code> performing the <code>outputs</code>
@@ -34,7 +34,7 @@ public class SFTEpsilon<P, F, S> extends SFTMove<P, F, S> {
 
 	@Override
 	public boolean isDisjointFrom(SFTMove<P, F, S> t, BooleanAlgebra<P,S> ba){
-        return !t.from.equals(from);
+		return !t.from.equals(from);
 	}
 
 	@Override
@@ -44,11 +44,11 @@ public class SFTEpsilon<P, F, S> extends SFTMove<P, F, S> {
 
 	@Override
 	public String toDotString() {
-        StringBuilder label = new StringBuilder("&#949;/\n");
-        for (S output: outputs) {
-            label.append(output.toString());
-            label.append('\n');
-        }
+		StringBuilder label = new StringBuilder("&#949;/\n");
+		for (S output: outputs) {
+			label.append(output.toString());
+			label.append('\n');
+		}
 		return String.format("%s -> %s [label=\"%s\"]\n", from, to, label.toString());
 	}
 	
@@ -71,11 +71,11 @@ public class SFTEpsilon<P, F, S> extends SFTMove<P, F, S> {
 	
 	@Override
 	public String toString() {
-        StringBuilder stringOutputs = new StringBuilder();
-        for (S output: outputs) {
-            stringOutputs.append(output.toString());
-            stringOutputs.append(' ');
-        }
+		StringBuilder stringOutputs = new StringBuilder();
+		for (S output: outputs) {
+			stringOutputs.append(output.toString());
+			stringOutputs.append(' ');
+		}
 		return String.format("E: %s -%s-> %s", from, stringOutputs.toString(), to);
 	}
 	
