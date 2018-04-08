@@ -183,7 +183,7 @@ public class HTMLDecode {
 
         List<Character> output = sft.outputOn(stringToListOfCharacter(input), ba);
 
-        return listOfCharacterToString(output);
+        return ba.stringOfList(output);
     }
 
     /**
@@ -196,20 +196,6 @@ public class HTMLDecode {
         for (char character: input.toCharArray())
             output.add(character);
         return output;
-    }
-
-    /**
-     * convert a list of char into a string
-     * @param input a list of characters
-     * @return a list of class Character
-     */
-    private static String listOfCharacterToString(List<Character> input) {
-        StringBuilder output = new StringBuilder();
-        if (input == null)
-            return null;
-        for (char character: input)
-            output.append(character);
-        return output.toString();
     }
 
     public static void main(String args[]) throws org.sat4j.specs.TimeoutException {

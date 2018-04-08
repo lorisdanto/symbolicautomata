@@ -114,7 +114,7 @@ public class GetTag {
 
 		List<Character> output = sft.outputOn(stringToListOfCharacter(input), ba);
 
-		return listOfCharacterToString(output);
+		return ba.stringOfList(output);
 	}
 
 	/**
@@ -129,19 +129,6 @@ public class GetTag {
 		return output;
 	}
 
-	/**
-	 * convert a list of char into a string
-	 * @param input a list of characters
-	 * @return a list of class Character
-	 */
-	private static String listOfCharacterToString(List<Character> input) {
-		StringBuilder output = new StringBuilder();
-		if (input == null)
-			return null;
-		for (char character: input)
-			output.append(character);
-		return output.toString();
-	}
 
 	// examples of how to use GetTags and GetTagsBySFT
 	public static void main(String args[]) throws TimeoutException {
