@@ -586,6 +586,33 @@ public class SFTUnitTest {
 					assertEquals(composedOutput, finalOutput);
 				}
 			}
+
+		// the output functions of the first SFT is empty
+		List<SFTMove<CharPred, CharFunc, Character>> transitions1 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+		List<CharFunc> output1 = new ArrayList<CharFunc>();
+		transitions1.add(new SFTInputMove<CharPred, CharFunc, Character>(0, 1, new CharPred('b', 'c'), output1));
+		Map<Integer, List<Character>> finStatesAndTails1 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails1.put(1, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> mySFT1 = SFT.MkSFT(transitions1, 0, finStatesAndTails1, ba);
+
+		List<SFTMove<CharPred, CharFunc, Character>> transitions2 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+		List<CharFunc> output21 = new ArrayList<CharFunc>();
+		output21.add(new CharConstant('a'));
+		transitions2.add(new SFTInputMove<CharPred, CharFunc, Character>(0, 1, new CharPred('d'), output21));
+		List<CharFunc> output22 = new ArrayList<CharFunc>();
+		output22.add(new CharOffset(1));
+		output22.add(new CharConstant('e'));
+		transitions2.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('c'), output22));
+		Map<Integer, List<Character>> finStatesAndTails2 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails2.put(2, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> mySFT2 = SFT.MkSFT(transitions2, 0, finStatesAndTails2, ba);
+
+		SFT<CharPred, CharFunc, Character> composed = mySFT1.composeWith(mySFT2, ba);
+		assertEquals(4, composed.getStates().size());
+		assertEquals(3, composed.getTransitions().size());
+		for (SFTInputMove<CharPred, CharFunc, Character> transition: composed.getInputMovesFrom(composed.getStates()))
+			assertEquals(0, transition.outputFunctions.size());
+
 	}
 
 	/**
@@ -597,6 +624,8 @@ public class SFTUnitTest {
 	public void testCompose() throws Exception {
 		// since method compose is just a wrapper of method composeWith, we could test method compose to test method
 		// composeWith incidentally
+
+
 	}
 
 	/**
@@ -868,8 +897,6 @@ public class SFTUnitTest {
 						List <Character> output1 = SFTlibrary.get(i).outputOn(witness, ba);
 						List <Character> output2 = SFTlibrary.get(j).outputOn(witness, ba);
 						assertFalse(output1.equals(output2));
-					} else {
-						System.out.println(i + " " + j);
 					}
 				}
 			}

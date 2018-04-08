@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Collection;
 
+import automata.svpa.Internal;
 import org.sat4j.specs.TimeoutException;
 
 import automata.Automaton;
@@ -254,39 +255,78 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 				// the composed sft accepts a string iff sft1 and sft2 both accept the string
 				finalStatesAndTails.put(currStateId, sft2FinalStatesAndTails.get(currState.second));
 			for (SFTInputMove<P, F, S> t1 : sft1.getInputMovesFrom(currState.first)) {
-				List<List<SFTMove<P, F, S>>> chains = sft2.getPossibleTransitionChains(currState.second, t1.outputFunctions.size());
-				for (List<SFTMove<P, F, S>> chain: chains) {
-					// according to the algorithm of method getPossibleTransitionChains, there is at least one SFTMove
-					// in a chain.
-					SFTInputMove<P, F, S> t2 = (SFTInputMove<P, F, S>)chain.get(0);
-					P intersGuard = ba.MkAnd(t1.guard, ba.MkSubstFuncPred(t1.outputFunctions.get(0), t2.guard));
-					List<F> outputFunctions = new LinkedList<F>();
-					for (F t2OutputFunction: t2.outputFunctions)
-						outputFunctions.add(ba.MkSubstFuncFunc(t2OutputFunction, t1.outputFunctions.get(0)));
-					// initialize the composed guard.
-					// consider the transition p --phi/[F, f2]--> p' in sft1 and
-					// q --psi/[g]--> q' --gamma/[h] --> q'' in sft2, the composed transition should be
-					// (p, q) --phi and psi(F) and gamma(f2)/[g(F), h(f2)]--> (p', q'')
-					for (int i = 1; i < chain.size(); i++) {
-						t2 = (SFTInputMove<P, F, S>)chain.get(i);
-						intersGuard = ba.MkAnd(intersGuard, ba.MkSubstFuncPred(t1.outputFunctions.get(i), t2.guard));
-						for (F t2OutputFunction: t2.outputFunctions)
-							outputFunctions.add(ba.MkSubstFuncFunc(t2OutputFunction, t1.outputFunctions.get(i)));
+				if (t1.outputFunctions.size() != 0) {
+					List<List<SFTMove<P, F, S>>> chains = sft2.getPossibleTransitionChains(currState.second, t1.outputFunctions.size());
+					for (List<SFTMove<P, F, S>> chain : chains) {
+						// according to the algorithm of method getPossibleTransitionChains, there is at least one SFTMove
+						// in a chain.
+						SFTInputMove<P, F, S> t2 = (SFTInputMove<P, F, S>) chain.get(0);
+						P intersGuard = ba.MkAnd(t1.guard, ba.MkSubstFuncPred(t1.outputFunctions.get(0), t2.guard));
+						List<F> outputFunctions = new LinkedList<F>();
+						for (F t2OutputFunction : t2.outputFunctions)
+							outputFunctions.add(ba.MkSubstFuncFunc(t2OutputFunction, t1.outputFunctions.get(0)));
+						// initialize the composed guard.
+						// consider the transition p --phi/[F, f2]--> p' in sft1 and
+						// q --psi/[g]--> q' --gamma/[h] --> q'' in sft2, the composed transition should be
+						// (p, q) --phi and psi(F) and gamma(f2)/[g(F), h(f2)]--> (p', q'')
+						for (int i = 1; i < chain.size(); i++) {
+							t2 = (SFTInputMove<P, F, S>) chain.get(i);
+							intersGuard = ba.MkAnd(intersGuard, ba.MkSubstFuncPred(t1.outputFunctions.get(i), t2.guard));
+							for (F t2OutputFunction : t2.outputFunctions)
+								outputFunctions.add(ba.MkSubstFuncFunc(t2OutputFunction, t1.outputFunctions.get(i)));
+						}
+						if (ba.IsSatisfiable(intersGuard)) {
+							Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(t1.to, chain.get(chain.size() - 1).to);
+							int nextStateId = getStateId(nextState, reached, toVisit);
+
+							SFTInputMove<P, F, S> newTrans = new SFTInputMove<P, F, S>(currStateId, nextStateId,
+									intersGuard, outputFunctions);
+
+							transitions.add(newTrans);
+						}
 					}
-					if (ba.IsSatisfiable(intersGuard)) {
-						Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(t1.to, chain.get(chain.size() - 1).to);
-						int nextStateId = getStateId(nextState, reached, toVisit);
+				} else { // t1.outputFunctions.size() == 0
+					if (ba.IsSatisfiable(t1.guard)) {
+						List<Integer> allStatesOfSft2CanBeReached = sft2.getAllStatesCanBeReached(currState.second);
+						for (Integer state: allStatesOfSft2CanBeReached) {
+							Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(t1.to, state);
+							int nextStateId = getStateId(nextState, reached, toVisit);
 
-						SFTInputMove<P, F, S> newTrans = new SFTInputMove<P, F, S>(currStateId, nextStateId,
-								intersGuard, outputFunctions);
+							SFTInputMove<P, F, S> newTrans = new SFTInputMove<P, F, S>(currStateId, nextStateId,
+									t1.guard, new LinkedList<F>());
 
-						transitions.add(newTrans);
+							transitions.add(newTrans);
+						}
 					}
 				}
+
 			}
 		}
 
 		return MkSFT(transitions, initialState, finalStatesAndTails, ba);
+	}
+
+	/**
+	 * return all states which can be reached from the <code>startState</code>
+	 */
+	private List<Integer> getAllStatesCanBeReached(Integer startState) {
+		List<Integer> reached = new ArrayList<Integer>();
+		LinkedList<Integer> toVisit = new LinkedList<Integer>();
+
+		toVisit.add(startState);
+
+		// depth first search
+		while (!toVisit.isEmpty()) {
+			Integer currState = toVisit.pop();
+			reached.add(currState);
+
+			for (SFTMove<P, F, S> transition : this.getTransitionsFrom(currState)) {
+				if (!reached.contains(transition.to))
+					toVisit.add(transition.to);
+			}
+		}
+
+		return reached;
 	}
 
 	/**

@@ -63,7 +63,7 @@ public class GetTag {
 	private static SFT<CharPred, CharFunc, Character> sft = null;
 	private static UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 
-	private static SFT<CharPred, CharFunc, Character> MkGetTagsSFT(){
+	private static SFT<CharPred, CharFunc, Character> MkGetTagsSFT() {
 		List<SFTMove<CharPred, CharFunc, Character>> transitions = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
 
 		List<CharFunc> output00 = new ArrayList<CharFunc>();
@@ -136,6 +136,8 @@ public class GetTag {
 	 */
 	private static String listOfCharacterToString(List<Character> input) {
 		StringBuilder output = new StringBuilder();
+		if (input == null)
+			return null;
 		for (char character: input)
 			output.append(character);
 		return output.toString();

@@ -205,6 +205,8 @@ public class HTMLDecode {
      */
     private static String listOfCharacterToString(List<Character> input) {
         StringBuilder output = new StringBuilder();
+        if (input == null)
+            return null;
         for (char character: input)
             output.append(character);
         return output.toString();
