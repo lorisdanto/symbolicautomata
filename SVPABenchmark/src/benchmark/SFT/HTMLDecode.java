@@ -5,139 +5,86 @@ import static org.junit.Assert.assertEquals;
 
 import benchmark.SFT.codecs.HTMLEntityCodec;
 
+import theory.characters.CharConstant;
 import theory.characters.CharFunc;
+import theory.characters.CharOffset;
 import theory.characters.CharPred;
 import theory.intervals.UnaryCharIntervalSolver;
 import transducers.sft.SFT;
+import transducers.sft.SFTInputMove;
+import transducers.sft.SFTMove;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class HTMLDecode {
     private static HTMLEntityCodec htmlCodec = new HTMLEntityCodec();
     private static SFT<CharPred, CharFunc, Character> sft = null;
     private static UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 
+    private static SFT<CharPred, CharFunc, Character> MkDecodeSFT(){
+        List<SFTMove<CharPred, CharFunc, Character>> transitions = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+        CharPred notLessThan = ba.MkOr(new CharPred(CharPred.MIN_CHAR, (char)('<' - 1)), new CharPred((char)('<' + 1), CharPred.MAX_CHAR));
+        CharPred notGreaterThan = ba.MkOr(new CharPred(CharPred.MIN_CHAR, (char)('>' - 1)), new CharPred((char)('>' + 1), CharPred.MAX_CHAR));
+
+        List<CharFunc> output00 = new ArrayList<CharFunc>();
+        transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(0, 0, notLessThan, output00));
+
+        List<CharFunc> output01 = new ArrayList<CharFunc>();
+        transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(0, 1, new CharPred('<'), output01));
+
+        List<CharFunc> output11 = new ArrayList<CharFunc>();
+        transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('<'), output11));
+
+        List<CharFunc> output12 = new ArrayList<CharFunc>();
+        transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, notLessThan, output12));
+
+        List<CharFunc> output13 = new ArrayList<CharFunc>();
+        output13.add(new CharConstant('<'));
+        output13.add(CharOffset.IDENTITY);
+        transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 3, notLessThan, output13));
+
+        List<CharFunc> output20 = new ArrayList<CharFunc>();
+        transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 0, ba.MkAnd(notLessThan, notGreaterThan), output20));
+
+        List<CharFunc> output21 = new ArrayList<CharFunc>();
+        transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('<'), output21));
+
+        List<CharFunc> output30 = new ArrayList<CharFunc>();
+        output30.add(CharOffset.IDENTITY);
+        transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(3, 0, new CharPred('>'), output30));
+
+        Map<Integer, List<Character>> finStatesAndTails = new HashMap<Integer, List<Character>>();
+        finStatesAndTails.put(0, new ArrayList<Character>());
+        finStatesAndTails.put(1, new ArrayList<Character>());
+        finStatesAndTails.put(2, new ArrayList<Character>());
+
+        return SFT.MkSFT(transitions, 0, finStatesAndTails, ba);
+    }
+
+    /**
+     * the implementation of the SFT in left column on page 4 on the paper named after Symbolic Finite State Transducers:
+     * Algorithms And Applications
+     */
+    public static String GetTagsBySFT(String input) {
+        // if the required SFT has not been created yet, then generate it. Otherwise we could just use it directly
+        // instead of generating it every time GetTagsBySFT is called, which is quite time consuming.
+        if (sft == null)
+            sft = MkDecodeSFT();
+        return input;
+    }
+
     public static void main(String args[]) {
         System.out.println(htmlCodec.decode("123&#49"));
     }
 
-    /* Copied from https://github.com/ESAPI/esapi-java-legacy/blob/92734ea2c08705639b4377c6b7cfee70a19bd230/src/test/
-    java/org/owasp/esapi/codecs/AbstractCodecTest.java
-    Since it uses the BSD License and I have placed the BSD License under the folder called codecs, there is no legal
-    issues or contradictions with Apache License which is used by the whole library */
     @Test
-    public void testHtmlDecodeDecimalEntities()
+    public void test()
     {
         assertEquals( "test!", htmlCodec.decode("&#116;&#101;&#115;&#116;!") );
-    }
-
-    @Test
-    public void testHtmlDecodeHexEntitites()
-    {
-        assertEquals( "test!", htmlCodec.decode("&#x74;&#x65;&#x73;&#x74;!") );
-    }
-
-    @Test
-    public void testHtmlDecodeInvalidAttribute()
-    {
-        assertEquals( "&jeff;", htmlCodec.decode("&jeff;") );
-    }
-
-    @Test
-    public void testHtmlDecodeAmp()
-    {
-        assertEquals("&", htmlCodec.decode("&amp;"));
-        assertEquals("&X", htmlCodec.decode("&amp;X"));
-        assertEquals("&", htmlCodec.decode("&amp"));
-        assertEquals("&X", htmlCodec.decode("&ampX"));
-    }
-
-    @Test
-    public void testHtmlDecodeLt()
-    {
-        assertEquals("<", htmlCodec.decode("&lt;"));
-        assertEquals("<X", htmlCodec.decode("&lt;X"));
-        assertEquals("<", htmlCodec.decode("&lt"));
-        assertEquals("<X", htmlCodec.decode("&ltX"));
-    }
-
-    @Test
-    public void testHtmlDecodeSup1()
-    {
-        assertEquals("\u00B9", htmlCodec.decode("&sup1;"));
-        assertEquals("\u00B9X", htmlCodec.decode("&sup1;X"));
-        assertEquals("\u00B9", htmlCodec.decode("&sup1"));
-        assertEquals("\u00B9X", htmlCodec.decode("&sup1X"));
-    }
-
-    @Test
-    public void testHtmlDecodeSup2()
-    {
-        assertEquals("\u00B2", htmlCodec.decode("&sup2;"));
-        assertEquals("\u00B2X", htmlCodec.decode("&sup2;X"));
-        assertEquals("\u00B2", htmlCodec.decode("&sup2"));
-        assertEquals("\u00B2X", htmlCodec.decode("&sup2X"));
-    }
-
-    @Test
-    public void testHtmlDecodeSup3()
-    {
-        assertEquals("\u00B3", htmlCodec.decode("&sup3;"));
-        assertEquals("\u00B3X", htmlCodec.decode("&sup3;X"));
-        assertEquals("\u00B3", htmlCodec.decode("&sup3"));
-        assertEquals("\u00B3X", htmlCodec.decode("&sup3X"));
-    }
-
-    @Test
-    public void testHtmlDecodeSup()
-    {
-        assertEquals("\u2283", htmlCodec.decode("&sup;"));
-        assertEquals("\u2283X", htmlCodec.decode("&sup;X"));
-        assertEquals("\u2283", htmlCodec.decode("&sup"));
-        assertEquals("\u2283X", htmlCodec.decode("&supX"));
-    }
-
-    @Test
-    public void testHtmlDecodeSupe()
-    {
-        assertEquals("\u2287", htmlCodec.decode("&supe;"));
-        assertEquals("\u2287X", htmlCodec.decode("&supe;X"));
-        assertEquals("\u2287", htmlCodec.decode("&supe"));
-        assertEquals("\u2287X", htmlCodec.decode("&supeX"));
-    }
-
-    @Test
-    public void testHtmlDecodePi()
-    {
-        assertEquals("\u03C0", htmlCodec.decode("&pi;"));
-        assertEquals("\u03C0X", htmlCodec.decode("&pi;X"));
-        assertEquals("\u03C0", htmlCodec.decode("&pi"));
-        assertEquals("\u03C0X", htmlCodec.decode("&piX"));
-    }
-
-    @Test
-    public void testHtmlDecodePiv()
-    {
-        assertEquals("\u03D6", htmlCodec.decode("&piv;"));
-        assertEquals("\u03D6X", htmlCodec.decode("&piv;X"));
-        assertEquals("\u03D6", htmlCodec.decode("&piv"));
-        assertEquals("\u03D6X", htmlCodec.decode("&pivX"));
-    }
-
-    @Test
-    public void testHtmlDecodeTheta()
-    {
-        assertEquals("\u03B8", htmlCodec.decode("&theta;"));
-        assertEquals("\u03B8X", htmlCodec.decode("&theta;X"));
-        assertEquals("\u03B8", htmlCodec.decode("&theta"));
-        assertEquals("\u03B8X", htmlCodec.decode("&thetaX"));
-    }
-
-    @Test
-    public void testHtmlDecodeThetasym()
-    {
-        assertEquals("\u03D1", htmlCodec.decode("&thetasym;"));
-        assertEquals("\u03D1X", htmlCodec.decode("&thetasym;X"));
-        assertEquals("\u03D1", htmlCodec.decode("&thetasym"));
-        assertEquals("\u03D1X", htmlCodec.decode("&thetasymX"));
     }
 }
 

@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
 
 import transducers.sft.SFT;
 import transducers.sft.SFTMove;
@@ -69,9 +71,9 @@ public class SFTUnitTest {
 		// (since there is only one state, the state must be the final state)
 		// 1.1 no transition
 		List<SFTMove<CharPred, CharFunc, Character>> transitions111 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
-		List<Integer> finStates111 = new ArrayList<Integer>();
-		finStates111.add(1);
-		mySFT111 = SFT.MkSFT(transitions111, 1, finStates111, ba);
+		Map<Integer, List<Character>> finStatesAndTails111 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails111.put(1, new ArrayList<Character>());
+		mySFT111 = SFT.MkSFT(transitions111, 1, finStatesAndTails111, ba);
 
 		// 1.2 one input transition
 		// 1.2.1 the output function is only a CharConstant
@@ -79,18 +81,18 @@ public class SFTUnitTest {
 		List<CharFunc> output1211 = new ArrayList<CharFunc>();
 		output1211.add(new CharConstant('b'));
 		transitions121.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('a'), output1211));
-		List<Integer> finStates121 = new ArrayList<Integer>();
-		finStates121.add(1);
-		mySFT121 = SFT.MkSFT(transitions121, 1, finStates121, ba);
+		Map<Integer, List<Character>> finStatesAndTails121 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails121.put(1, new ArrayList<Character>());
+		mySFT121 = SFT.MkSFT(transitions121, 1, finStatesAndTails121, ba);
 
 		// 1.2.2 the output function is only a CharOffset
 		List<SFTMove<CharPred, CharFunc, Character>> transitions122 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
 		List<CharFunc> output1221 = new ArrayList<CharFunc>();
 		output1221.add(new CharOffset(1));
 		transitions122.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'c'), output1221));
-		List<Integer> finStates122 = new ArrayList<Integer>();
-		finStates122.add(1);
-		mySFT122 = SFT.MkSFT(transitions122, 1, finStates122, ba);
+		Map<Integer, List<Character>> finStatesAndTails122 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails122.put(1, new ArrayList<Character>());
+		mySFT122 = SFT.MkSFT(transitions122, 1, finStatesAndTails122, ba);
 
 		// 1.2.3 there are many output functions in the transition
 		List<SFTMove<CharPred, CharFunc, Character>> transitions123 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
@@ -98,9 +100,9 @@ public class SFTUnitTest {
 		output1231.add(CharOffset.IDENTITY);
 		output1231.add(new CharConstant('b'));
 		transitions123.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('a'), output1231));
-		List<Integer> finStates123 = new ArrayList<Integer>();
-		finStates123.add(1);
-		mySFT123 = SFT.MkSFT(transitions123, 1, finStates123, ba);
+		Map<Integer, List<Character>> finStatesAndTails123 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails123.put(1, new ArrayList<Character>());
+		mySFT123 = SFT.MkSFT(transitions123, 1, finStatesAndTails123, ba);
 
 		// epsilon transition is not allowed to point from one state to itself
 
@@ -113,18 +115,18 @@ public class SFTUnitTest {
 		output1312.add(new CharOffset(1));
 		output1312.add(new CharConstant('d'));
 		transitions131.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b'), output1312));
-		List<Integer> finStates131 = new ArrayList<Integer>();
-		finStates131.add(1);
-		mySFT131 = SFT.MkSFT(transitions131, 1, finStates131, ba);
+		Map<Integer, List<Character>> finStatesAndTails131 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails131.put(1, new ArrayList<Character>());
+		mySFT131 = SFT.MkSFT(transitions131, 1, finStatesAndTails131, ba);
 
 		// The situation where one state has many epsilon transitions is not allowed.
 
 		// 2. two states with one final state
 		// 2.1 no transition (the final state is unreachable)
 		List<SFTMove<CharPred, CharFunc, Character>> transitions211 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
-		List<Integer> finStates211 = new ArrayList<Integer>();
-		finStates211.add(2);
-		mySFT211 = SFT.MkSFT(transitions211, 1, finStates211, ba);
+		Map<Integer, List<Character>> finStatesAndTails211 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails211.put(2, new ArrayList<Character>());
+		mySFT211 = SFT.MkSFT(transitions211, 1, finStatesAndTails211, ba);
 
 		// 2.2 one input transition
 		// 2.2.1 the output function is only a CharConstant
@@ -132,18 +134,18 @@ public class SFTUnitTest {
 		List<CharFunc> output2211 = new ArrayList<CharFunc>();
 		output2211.add(new CharConstant('b'));
 		transitions221.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('a'), output2211));
-		List<Integer> finStates221 = new ArrayList<Integer>();
-		finStates221.add(2);
-		mySFT221 = SFT.MkSFT(transitions221, 1, finStates221, ba);
+		Map<Integer, List<Character>> finStatesAndTails221 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails221.put(2, new ArrayList<Character>());
+		mySFT221 = SFT.MkSFT(transitions221, 1, finStatesAndTails221, ba);
 
 		// 2.2.2 the output function is only a CharOffset
 		List<SFTMove<CharPred, CharFunc, Character>> transitions222 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
 		List<CharFunc> output2221 = new ArrayList<CharFunc>();
 		output2221.add(new CharOffset(1));
 		transitions222.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('b', 'c'), output2221));
-		List<Integer> finStates222 = new ArrayList<Integer>();
-		finStates222.add(2);
-		mySFT222 = SFT.MkSFT(transitions222, 1, finStates222, ba);
+		Map<Integer, List<Character>> finStatesAndTails222 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails222.put(2, new ArrayList<Character>());
+		mySFT222 = SFT.MkSFT(transitions222, 1, finStatesAndTails222, ba);
 
 		// 2.2.3 there are multiple output functions in the transition
 		List<SFTMove<CharPred, CharFunc, Character>> transitions223 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
@@ -151,9 +153,9 @@ public class SFTUnitTest {
 		output2231.add(CharOffset.IDENTITY);
 		output2231.add(new CharConstant('b'));
 		transitions223.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('a'), output2231));
-		List<Integer> finStates223 = new ArrayList<Integer>();
-		finStates223.add(2);
-		mySFT223 = SFT.MkSFT(transitions223, 1, finStates223, ba);
+		Map<Integer, List<Character>> finStatesAndTails223 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails223.put(2, new ArrayList<Character>());
+		mySFT223 = SFT.MkSFT(transitions223, 1, finStatesAndTails223, ba);
 
 		// 2.3 one epsilon transition
 		// 2.3.1 only one output in the transition
@@ -161,9 +163,9 @@ public class SFTUnitTest {
 		List<Character> output2331 = new ArrayList<Character>();
 		output2331.add('a');
 		transitions231.add(new SFTEpsilon<CharPred, CharFunc, Character>(1, 2, output2331));
-		List<Integer> finStates231 = new ArrayList<Integer>();
-		finStates231.add(2);
-		mySFT231 = SFT.MkSFT(transitions231, 1, finStates231, ba);
+		Map<Integer, List<Character>> finStatesAndTails231 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails231.put(2, new ArrayList<Character>());
+		mySFT231 = SFT.MkSFT(transitions231, 1, finStatesAndTails231, ba);
 
 		// 2.3.2 many outputs in the transition
 		List<SFTMove<CharPred, CharFunc, Character>> transitions232 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
@@ -172,9 +174,9 @@ public class SFTUnitTest {
 		output2321.add('b');
 		output2321.add('b');
 		transitions232.add(new SFTEpsilon<CharPred, CharFunc, Character>(1, 2, output2321));
-		List<Integer> finStates232 = new ArrayList<Integer>();
-		finStates232.add(2);
-		mySFT232 = SFT.MkSFT(transitions232, 1, finStates232, ba);
+		Map<Integer, List<Character>> finStatesAndTails232 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails232.put(2, new ArrayList<Character>());
+		mySFT232 = SFT.MkSFT(transitions232, 1, finStatesAndTails232, ba);
 
 		// 2.4 many input transitions
 		// 2.4.1 the transitions are in the same direction
@@ -185,9 +187,9 @@ public class SFTUnitTest {
 		List<CharFunc> output2412 = new ArrayList<CharFunc>();
 		output2412.add(CharOffset.IDENTITY);
 		transitions241.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('b', 'z'), output2412));
-		List<Integer> finStates241 = new ArrayList<Integer>();
-		finStates241.add(2);
-		mySFT241 = SFT.MkSFT(transitions241, 1, finStates241, ba);
+		Map<Integer, List<Character>> finStatesAndTails241 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails241.put(2, new ArrayList<Character>());
+		mySFT241 = SFT.MkSFT(transitions241, 1, finStatesAndTails241, ba);
 
 		// 2.4.2 the transitions are in opposite directions
 		List<SFTMove<CharPred, CharFunc, Character>> transitions242 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
@@ -197,9 +199,9 @@ public class SFTUnitTest {
 		List<CharFunc> output2422 = new ArrayList<CharFunc>();
 		output2422.add(new CharConstant('c'));
 		transitions242.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('b'), output2422));
-		List<Integer> finStates242 = new ArrayList<Integer>();
-		finStates242.add(2);
-		mySFT242 = SFT.MkSFT(transitions242, 1, finStates242, ba);
+		Map<Integer, List<Character>> finStatesAndTails242 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails242.put(2, new ArrayList<Character>());
+		mySFT242 = SFT.MkSFT(transitions242, 1, finStatesAndTails242, ba);
 
 		// The situation where one state has many epsilon transitions is not allowed.
 
@@ -212,9 +214,9 @@ public class SFTUnitTest {
 		List<Character> output2512 = new ArrayList<Character>();
 		output2512.add('a');
 		transitions251.add(new SFTEpsilon<CharPred, CharFunc, Character>(1, 2, output2512));
-		List<Integer> finStates251 = new ArrayList<Integer>();
-		finStates251.add(2);
-		mySFT251 = SFT.MkSFT(transitions251, 1, finStates251, ba);
+		Map<Integer, List<Character>> finStatesAndTails251 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails251.put(2, new ArrayList<Character>());
+		mySFT251 = SFT.MkSFT(transitions251, 1, finStatesAndTails251, ba);
 
 		// 2.5.2 the transitions are in opposite directions
 		List<SFTMove<CharPred, CharFunc, Character>> transitions252 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
@@ -224,9 +226,9 @@ public class SFTUnitTest {
 		List<CharFunc> output2522 = new ArrayList<CharFunc>();
 		output2522.add(new CharConstant('b'));
 		transitions252.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('a'), output2522));
-		List<Integer> finStates252 = new ArrayList<Integer>();
-		finStates252.add(2);
-		mySFT252 = SFT.MkSFT(transitions252, 1, finStates252, ba);
+		Map<Integer, List<Character>> finStatesAndTails252 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails252.put(2, new ArrayList<Character>());
+		mySFT252 = SFT.MkSFT(transitions252, 1, finStatesAndTails252, ba);
 
 		// 2.6 many input transitions and one epsilon transition
 		// 2.6.1 the transitions are in the same direction
@@ -240,9 +242,9 @@ public class SFTUnitTest {
 		List<CharFunc> output2623 = new ArrayList<CharFunc>();
 		output2623.add(CharOffset.IDENTITY);
 		transitions261.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('c'), output2623));
-		List<Integer> finStates261 = new ArrayList<Integer>();
-		finStates261.add(2);
-		mySFT261 = SFT.MkSFT(transitions261, 1, finStates261, ba);
+		Map<Integer, List<Character>> finStatesAndTails261 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails261.put(2, new ArrayList<Character>());
+		mySFT261 = SFT.MkSFT(transitions261, 1, finStatesAndTails261, ba);
 
 		// the case of two states with two final states is less general than case 4.2 which will be tested later
 		// So it is omitted
@@ -256,9 +258,9 @@ public class SFTUnitTest {
 		List<Character> output3112 = new ArrayList<Character>();
 		output3112.add('b');
 		transitions311.add(new SFTEpsilon<CharPred, CharFunc, Character>(2, 3, output3112));
-		List<Integer> finStates311 = new ArrayList<Integer>();
-		finStates311.add(3);
-		mySFT311 = SFT.MkSFT(transitions311, 1, finStates311, ba);
+		Map<Integer, List<Character>> finStatesAndTails311 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails311.put(3, new ArrayList<Character>());
+		mySFT311 = SFT.MkSFT(transitions311, 1, finStatesAndTails311, ba);
 
 		// 3.2 n states with more than n - 1 transitions
 		List<SFTMove<CharPred, CharFunc, Character>> transitions321 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
@@ -271,9 +273,9 @@ public class SFTUnitTest {
 		List<CharFunc> output3213 = new ArrayList<CharFunc>();
 		output3213.add(new CharConstant('d'));
 		transitions321.add(new SFTInputMove<CharPred, CharFunc, Character>(3, 2, new CharPred('c'), output3213));
-		List<Integer> finStates321 = new ArrayList<Integer>();
-		finStates321.add(3);
-		mySFT321 = SFT.MkSFT(transitions321, 1, finStates321, ba);
+		Map<Integer, List<Character>> finStatesAndTails321 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails321.put(3, new ArrayList<Character>());
+		mySFT321 = SFT.MkSFT(transitions321, 1, finStatesAndTails321, ba);
 
 		// 3.3 n states with self-pointing transitions
 		List<SFTMove<CharPred, CharFunc, Character>> transitions331 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
@@ -299,9 +301,9 @@ public class SFTUnitTest {
 		output3315.add(new CharConstant('a'));
 		output3315.add(new CharConstant('t'));
 		transitions331.add(new SFTInputMove<CharPred, CharFunc, Character>(3, 3, new CharPred('a', 'z'), output3315));
-		List<Integer> finStates331 = new ArrayList<Integer>();
-		finStates331.add(3);
-		mySFT331 = SFT.MkSFT(transitions331, 1, finStates331, ba);
+		Map<Integer, List<Character>> finStatesAndTails331 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails331.put(3, new ArrayList<Character>());
+		mySFT331 = SFT.MkSFT(transitions331, 1, finStatesAndTails331, ba);
 
 		// 4. many states with one many state
 		// 4.1 the initial state is not a final state
@@ -328,10 +330,10 @@ public class SFTUnitTest {
 		output4115.add(new CharConstant('a'));
 		output4115.add(new CharConstant('t'));
 		transitions411.add(new SFTInputMove<CharPred, CharFunc, Character>(3, 3, new CharPred('a', 'z'), output4115));
-		List<Integer> finStates411 = new ArrayList<Integer>();
-		finStates411.add(2);
-		finStates411.add(3);
-		mySFT411 = SFT.MkSFT(transitions411, 1, finStates411, ba);
+		Map<Integer, List<Character>> finStatesAndTails411 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails411.put(2, new ArrayList<Character>());
+		finStatesAndTails411.put(3, new ArrayList<Character>());
+		mySFT411 = SFT.MkSFT(transitions411, 1, finStatesAndTails411, ba);
 
 		// 4.2 the initial state is also a final state
 		List<SFTMove<CharPred, CharFunc, Character>> transitions421 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
@@ -349,10 +351,10 @@ public class SFTUnitTest {
 		output4213.add(CharOffset.IDENTITY);
 		output4213.add(new CharConstant('d'));
 		transitions421.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'z'), output4213));
-		List<Integer> finStates421 = new ArrayList<Integer>();
-		finStates421.add(1);
-		finStates421.add(3);
-		mySFT421 = SFT.MkSFT(transitions421, 1, finStates421, ba);
+		Map<Integer, List<Character>> finStatesAndTails421 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails421.put(1, new ArrayList<Character>());
+		finStatesAndTails421.put(3, new ArrayList<Character>());
+		mySFT421 = SFT.MkSFT(transitions421, 1, finStatesAndTails421, ba);
 
 		// Secondly, store all SFTs to a list. The list is used in method testCompose
 		allSFTs.add(mySFT111);
@@ -564,18 +566,18 @@ public class SFTUnitTest {
 			for (SFT<CharPred, CharFunc, Character> secondSft: allSFTs) {
 				SFT<CharPred, CharFunc, Character> composed = firstSft.composeWith(secondSft, ba);
 				for (List<Character> input: inputs) {
-					List<Character> composedOuputList = composed.outpzutOn(input, ba);
+					List<Character> composedOutputList = composed.outputOn(input, ba);
 					String composedOutput;
-					if (composedOuputList == null)
+					if (composedOutputList == null)
 						composedOutput = null;
 					else
-						composedOutput = composedOuputList.toString();
-					List<Character> mediumOutputList = firstSft.outpzutOn(input, ba);
+						composedOutput = composedOutputList.toString();
+					List<Character> mediumOutputList = firstSft.outputOn(input, ba);
 					String finalOutput;
 					if (mediumOutputList == null)
 						finalOutput = null;
 					else {
-						List<Character> finalOutputList = secondSft.outpzutOn(mediumOutputList, ba);
+						List<Character> finalOutputList = secondSft.outputOn(mediumOutputList, ba);
 						if (finalOutputList == null)
 							finalOutput = null;
 						else
@@ -658,9 +660,9 @@ public class SFTUnitTest {
 		List<CharFunc> output1211 = new ArrayList<CharFunc>();
 		output1211.add(new CharConstant('b'));
 		transitions121.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'c'), output1211));
-		List<Integer> finStates121 = new ArrayList<Integer>();
-		finStates121.add(1);
-		SFT<CharPred, CharFunc, Character> SFT11 = SFT.MkSFT(transitions121, 1, finStates121, ba);
+		Map<Integer, List<Character>> finStatesAndTails121 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails121.put(1, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> SFT11 = SFT.MkSFT(transitions121, 1, finStatesAndTails121, ba);
 		SFTlibrary.add(SFT11);
 
 		// 1.2 there is only one input transition and the output function is only a CharOffset
@@ -668,9 +670,9 @@ public class SFTUnitTest {
 		List<CharFunc> output1221 = new ArrayList<CharFunc>();
 		output1221.add(new CharOffset(1));
 		transitions122.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'c'), output1221));
-		List<Integer> finStates122 = new ArrayList<Integer>();
-		finStates122.add(1);
-		SFT<CharPred, CharFunc, Character> SFT12 = SFT.MkSFT(transitions122, 1, finStates122, ba);
+		Map<Integer, List<Character>> finStatesAndTails122 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails122.put(1, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> SFT12 = SFT.MkSFT(transitions122, 1, finStatesAndTails122, ba);
 		SFTlibrary.add(SFT12);
 
 		// 1.3 there is only one input transition and there are many output functions in the transition
@@ -679,9 +681,9 @@ public class SFTUnitTest {
 		output1231.add(CharOffset.IDENTITY);
 		output1231.add(new CharConstant('b'));
 		transitions123.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'c'), output1231));
-		List<Integer> finStates123 = new ArrayList<Integer>();
-		finStates123.add(1);
-		SFT<CharPred, CharFunc, Character> SFT13 = SFT.MkSFT(transitions123, 1, finStates123, ba);
+		Map<Integer, List<Character>> finStatesAndTails123 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails123.put(1, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> SFT13 = SFT.MkSFT(transitions123, 1, finStatesAndTails123, ba);
 		SFTlibrary.add(SFT13);
 
 		// 1.4 many input transitions
@@ -693,9 +695,9 @@ public class SFTUnitTest {
 		output1312.add(new CharOffset(1));
 		output1312.add(new CharConstant('d'));
 		transitions131.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('c'), output1312));
-		List<Integer> finStates131 = new ArrayList<Integer>();
-		finStates131.add(1);
-		SFT<CharPred, CharFunc, Character> SFT14 = SFT.MkSFT(transitions131, 1, finStates131, ba);
+		Map<Integer, List<Character>> finStatesAndTails131 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails131.put(1, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> SFT14 = SFT.MkSFT(transitions131, 1, finStatesAndTails131, ba);
 		SFTlibrary.add(SFT14);
 
 		// 2. two states with one final state
@@ -707,9 +709,9 @@ public class SFTUnitTest {
 		List<CharFunc> output2422 = new ArrayList<CharFunc>();
 		output2422.add(new CharConstant('c'));
 		transitions242.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('b', 'c'), output2422));
-		List<Integer> finStates242 = new ArrayList<Integer>();
-		finStates242.add(2);
-		SFT<CharPred, CharFunc, Character> SFT21 = SFT.MkSFT(transitions242, 1, finStates242, ba);
+		Map<Integer, List<Character>> finStatesAndTails242 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails242.put(2, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> SFT21 = SFT.MkSFT(transitions242, 1, finStatesAndTails242, ba);
 		SFTlibrary.add(SFT21);
 
 		for (int i = 0; i < SFTlibrary.size(); i++) {
@@ -727,9 +729,9 @@ public class SFTUnitTest {
 		List<CharFunc> output11 = new ArrayList<CharFunc>();
 		output11.add(CharOffset.IDENTITY);
 		transitions1.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('b', 'c'), output11));
-		List<Integer> finStates1 = new ArrayList<Integer>();
-		finStates1.add(2);
-		SFT<CharPred, CharFunc, Character> SFT1 = SFT.MkSFT(transitions1, 1, finStates1, ba);
+		Map<Integer, List<Character>> finStatesAndTails1 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails1.put(2, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> SFT1 = SFT.MkSFT(transitions1, 1, finStatesAndTails1, ba);
 
 		// three stats, one final state, one input transition and one epsilon transition
 		// Since the epsilon transition's outputs is empty, SFT1 should be equivalent with SFT2
@@ -739,9 +741,9 @@ public class SFTUnitTest {
 		transitions2.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('b', 'c'), output21));
 		List<Character> output22 = new ArrayList<Character>();
 		transitions2.add(new SFTEpsilon<CharPred, CharFunc, Character>(2, 3, output22));
-		List<Integer> finStates2 = new ArrayList<Integer>();
-		finStates1.add(3);
-		SFT<CharPred, CharFunc, Character> SFT2 = SFT.MkSFT(transitions2, 1, finStates2, ba);
+		Map<Integer, List<Character>> finStatesAndTails2 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails1.put(3, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> SFT2 = SFT.MkSFT(transitions2, 1, finStatesAndTails2, ba);
 
 		assertTrue(SFT1.decide1equality(SFT2, ba));
 
@@ -751,17 +753,17 @@ public class SFTUnitTest {
 		List<CharFunc> output1 = new ArrayList<CharFunc>();
 		output1.add(new CharConstant('b'));
 		mytransitions1.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b'), output1));
-		List<Integer> myfinStates1 = new ArrayList<Integer>();
-		myfinStates1.add(1);
-		SFT<CharPred, CharFunc, Character> mySFT1 = SFT.MkSFT(mytransitions1, 1, myfinStates1, ba);
+		Map<Integer, List<Character>> myfinStatesAndTails1 = new HashMap<Integer, List<Character>>();
+		myfinStatesAndTails1.put(1, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> mySFT1 = SFT.MkSFT(mytransitions1, 1, myfinStatesAndTails1, ba);
 
 		List<SFTMove<CharPred, CharFunc, Character>> mytransitions2 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
 		List<CharFunc> output2 = new ArrayList<CharFunc>();
 		output2.add(CharOffset.IDENTITY);
 		mytransitions2.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b'), output2));
-		List<Integer> myfinStates2 = new ArrayList<Integer>();
-		myfinStates2.add(1);
-		SFT<CharPred, CharFunc, Character> mySFT2 = SFT.MkSFT(mytransitions2, 1, myfinStates2, ba);
+		Map<Integer, List<Character>> myfinStatesAndTails2 = new HashMap<Integer, List<Character>>();
+		myfinStatesAndTails2.put(1, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> mySFT2 = SFT.MkSFT(mytransitions2, 1, myfinStatesAndTails2, ba);
 
 		assertTrue(mySFT1.decide1equality(mySFT2, ba));
 	}
@@ -802,9 +804,9 @@ public class SFTUnitTest {
 		List<CharFunc> output1211 = new ArrayList<CharFunc>();
 		output1211.add(new CharConstant('b'));
 		transitions121.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'c'), output1211));
-		List<Integer> finStates121 = new ArrayList<Integer>();
-		finStates121.add(1);
-		SFT<CharPred, CharFunc, Character> SFT11 = SFT.MkSFT(transitions121, 1, finStates121, ba);
+		Map<Integer, List<Character>> finStatesAndTails121 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails121.put(1, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> SFT11 = SFT.MkSFT(transitions121, 1, finStatesAndTails121, ba);
 		SFTlibrary.add(SFT11);
 
 		// 1.2 there is only one input transition and the output function is only a CharOffset
@@ -812,9 +814,9 @@ public class SFTUnitTest {
 		List<CharFunc> output1221 = new ArrayList<CharFunc>();
 		output1221.add(new CharOffset(1));
 		transitions122.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'c'), output1221));
-		List<Integer> finStates122 = new ArrayList<Integer>();
-		finStates122.add(1);
-		SFT<CharPred, CharFunc, Character> SFT12 = SFT.MkSFT(transitions122, 1, finStates122, ba);
+		Map<Integer, List<Character>> finStatesAndTails122 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails122.put(1, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> SFT12 = SFT.MkSFT(transitions122, 1, finStatesAndTails122, ba);
 		SFTlibrary.add(SFT12);
 
 		// 1.3 there is only one input transition and there are many output functions in the transition
@@ -823,9 +825,9 @@ public class SFTUnitTest {
 		output1231.add(CharOffset.IDENTITY);
 		output1231.add(new CharConstant('b'));
 		transitions123.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('b', 'c'), output1231));
-		List<Integer> finStates123 = new ArrayList<Integer>();
-		finStates123.add(1);
-		SFT<CharPred, CharFunc, Character> SFT13 = SFT.MkSFT(transitions123, 1, finStates123, ba);
+		Map<Integer, List<Character>> finStatesAndTails123 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails123.put(1, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> SFT13 = SFT.MkSFT(transitions123, 1, finStatesAndTails123, ba);
 		SFTlibrary.add(SFT13);
 
 		// 1.4 many input transitions
@@ -837,9 +839,9 @@ public class SFTUnitTest {
 		output1312.add(new CharOffset(1));
 		output1312.add(new CharConstant('d'));
 		transitions131.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('c'), output1312));
-		List<Integer> finStates131 = new ArrayList<Integer>();
-		finStates131.add(1);
-		SFT<CharPred, CharFunc, Character> SFT14 = SFT.MkSFT(transitions131, 1, finStates131, ba);
+		Map<Integer, List<Character>> finStatesAndTails131 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails131.put(1, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> SFT14 = SFT.MkSFT(transitions131, 1, finStatesAndTails131, ba);
 		SFTlibrary.add(SFT14);
 
 		// 2. two states with one final state
@@ -851,9 +853,9 @@ public class SFTUnitTest {
 		List<CharFunc> output2422 = new ArrayList<CharFunc>();
 		output2422.add(new CharConstant('c'));
 		transitions242.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('b', 'c'), output2422));
-		List<Integer> finStates242 = new ArrayList<Integer>();
-		finStates242.add(2);
-		SFT<CharPred, CharFunc, Character> SFT21 = SFT.MkSFT(transitions242, 1, finStates242, ba);
+		Map<Integer, List<Character>> finStatesAndTails242 = new HashMap<Integer, List<Character>>();
+		finStatesAndTails242.put(2, new ArrayList<Character>());
+		SFT<CharPred, CharFunc, Character> SFT21 = SFT.MkSFT(transitions242, 1, finStatesAndTails242, ba);
 		SFTlibrary.add(SFT21);
 
 		for (int i = 0; i < SFTlibrary.size(); i++) {
@@ -863,8 +865,8 @@ public class SFTUnitTest {
 					assertEquals(null, witness);
 				} else {
 					if (witness != null) {
-						List <Character> output1 = SFTlibrary.get(i).outpzutOn(witness, ba);
-						List <Character> output2 = SFTlibrary.get(j).outpzutOn(witness, ba);
+						List <Character> output1 = SFTlibrary.get(i).outputOn(witness, ba);
+						List <Character> output2 = SFTlibrary.get(j).outputOn(witness, ba);
 						assertFalse(output1.equals(output2));
 					} else {
 						System.out.println(i + " " + j);
@@ -1029,7 +1031,7 @@ public class SFTUnitTest {
 		// I. one state with one final state
 		// i. no transition
 		LinkedList<SFAMove<CharPred, Character>> transitions11 = new LinkedList<SFAMove<CharPred, Character>>();
-		LinkedList<Integer> finStates11 = new LinkedList<>();
+		List<Integer> finStates11 = new LinkedList<Integer>();
 		finStates11.add(1);
 		SFA<CharPred, Character> mySA11 = SFA.MkSFA(transitions11, 1, finStates11, ba);
 
@@ -1056,7 +1058,7 @@ public class SFTUnitTest {
 		// I. one state with one final state
 		// i. no transition
 		LinkedList<SFAMove<CharPred, Character>> transitions11 = new LinkedList<SFAMove<CharPred, Character>>();
-		LinkedList<Integer> finStates11 = new LinkedList<>();
+		List<Integer> finStates11 = new LinkedList<Integer>();
 		finStates11.add(1);
 		SFA<CharPred, Character> mySA11 = SFA.MkSFA(transitions11, 1, finStates11, ba);
 		for (SFT<CharPred, CharFunc, Character> sft: allSFTs) {
@@ -1068,7 +1070,7 @@ public class SFTUnitTest {
 		// i. onr arc, one transition condition
 		LinkedList<SFAMove<CharPred, Character>> transitions21 = new LinkedList<SFAMove<CharPred, Character>>();
 		transitions21.add(new SFAInputMove<CharPred, Character>(1, 2, new CharPred('b')));
-		LinkedList<Integer> finStates21 = new LinkedList<>();
+		List<Integer> finStates21 = new LinkedList<Integer>();
 		finStates21.add(2);
 		SFA<CharPred, Character> restriction = SFA.MkSFA(transitions21, 1, finStates21, ba);
 
@@ -1076,8 +1078,8 @@ public class SFTUnitTest {
 		List<CharFunc> output2221 = new ArrayList<CharFunc>();
 		output2221.add(new CharOffset(1));
 		transitions222.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('c'), output2221));
-		List<Integer> finStates222 = new ArrayList<Integer>();
-		finStates222.add(2);
+		Map<Integer, List<Character>> finStates222 = new HashMap<Integer, List<Character>>();
+		finStates222.put(2, new ArrayList<Character>());
 		SFT<CharPred, CharFunc, Character> expectedSFT = SFT.MkSFT(transitions222, 1, finStates222, ba);
 
 		assertTrue(expectedSFT.decide1equality(mySFT222.domainRestriction(restriction, ba), ba));
@@ -2836,14 +2838,14 @@ public class SFTUnitTest {
 	 */
 	@Test
 	public void testGetFinalStates() throws Exception {
-		List<Integer> finalStates = new ArrayList<Integer>();
+		Collection<Integer> finalStates = new HashSet<Integer>();
 		finalStates.add(1);
 		assertEquals(finalStates, mySFT111.getFinalStates());
 		assertEquals(finalStates, mySFT121.getFinalStates());
 		assertEquals(finalStates, mySFT122.getFinalStates());
 		assertEquals(finalStates, mySFT123.getFinalStates());
 		assertEquals(finalStates, mySFT131.getFinalStates());
-		finalStates = new ArrayList<Integer>();
+		finalStates = new HashSet<Integer>();
 		finalStates.add(2);
 		assertEquals(finalStates, mySFT211.getFinalStates());
 		assertEquals(finalStates, mySFT221.getFinalStates());
@@ -2856,16 +2858,16 @@ public class SFTUnitTest {
 		assertEquals(finalStates, mySFT251.getFinalStates());
 		assertEquals(finalStates, mySFT252.getFinalStates());
 		assertEquals(finalStates, mySFT261.getFinalStates());
-		finalStates = new ArrayList<Integer>();
+		finalStates = new HashSet<Integer>();
 		finalStates.add(3);
 		assertEquals(finalStates, mySFT311.getFinalStates());
 		assertEquals(finalStates, mySFT321.getFinalStates());
 		assertEquals(finalStates, mySFT331.getFinalStates());
-		finalStates = new ArrayList<Integer>();
+		finalStates = new HashSet<Integer>();
 		finalStates.add(2);
 		finalStates.add(3);
 		assertEquals(finalStates, mySFT411.getFinalStates());
-		finalStates = new ArrayList<Integer>();
+		finalStates = new HashSet<Integer>();
 		finalStates.add(1);
 		finalStates.add(3);
 		assertEquals(finalStates, mySFT421.getFinalStates());

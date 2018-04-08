@@ -13,6 +13,10 @@
  * @author Jeff Williams <a href="http://www.aspectsecurity.com">Aspect Security</a>
  * @created 2007
  */
+/*
+ * Since it uses the BSD License and I have placed the BSD License under the folder called codecs, there is no legal
+ * issues or contradictions with Apache License which is used by the whole library
+ */
 package benchmark.SFT.codecs;
 
 import java.util.HashMap;

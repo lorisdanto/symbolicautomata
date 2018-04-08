@@ -6,6 +6,8 @@ import static org.junit.Assert.assertEquals;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.sat4j.specs.TimeoutException;
 import theory.characters.CharConstant;
@@ -63,11 +65,9 @@ public class GetTag {
 
 	private static SFT<CharPred, CharFunc, Character> MkGetTagsSFT(){
 		List<SFTMove<CharPred, CharFunc, Character>> transitions = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
-		CharPred notLessThan = ba.MkOr(new CharPred(CharPred.MIN_CHAR, (char)('<' - 1)), new CharPred((char)('<' + 1), CharPred.MAX_CHAR));
-		CharPred notGreaterThan = ba.MkOr(new CharPred(CharPred.MIN_CHAR, (char)('>' - 1)), new CharPred((char)('>' + 1), CharPred.MAX_CHAR));
 
 		List<CharFunc> output00 = new ArrayList<CharFunc>();
-		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(0, 0, notLessThan, output00));
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(0, 0, ba.MkNot(new CharPred('<')), output00));
 
 		List<CharFunc> output01 = new ArrayList<CharFunc>();
 		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(0, 1, new CharPred('<'), output01));
@@ -76,15 +76,15 @@ public class GetTag {
 		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('<'), output11));
 
 		List<CharFunc> output12 = new ArrayList<CharFunc>();
-		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, notLessThan, output12));
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, ba.MkNot(new CharPred('<')), output12));
 
 		List<CharFunc> output13 = new ArrayList<CharFunc>();
 		output13.add(new CharConstant('<'));
 		output13.add(CharOffset.IDENTITY);
-		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 3, notLessThan, output13));
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 3, ba.MkNot(new CharPred('<')), output13));
 
 		List<CharFunc> output20 = new ArrayList<CharFunc>();
-		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 0, ba.MkAnd(notLessThan, notGreaterThan), output20));
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 0, ba.MkAnd(ba.MkNot(new CharPred('<')), ba.MkNot(new CharPred('>'))), output20));
 
 		List<CharFunc> output21 = new ArrayList<CharFunc>();
 		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(2, 1, new CharPred('<'), output21));
@@ -93,12 +93,12 @@ public class GetTag {
 		output30.add(CharOffset.IDENTITY);
 		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(3, 0, new CharPred('>'), output30));
 
-		List<Integer> finStates = new ArrayList<Integer>();
-		finStates.add(0);
-		finStates.add(1);
-		finStates.add(2);
+		Map<Integer, List<Character>> finStatesAndTails = new HashMap<Integer, List<Character>>();
+		finStatesAndTails.put(0, new ArrayList<Character>());
+		finStatesAndTails.put(1, new ArrayList<Character>());
+		finStatesAndTails.put(2, new ArrayList<Character>());
 
-		return SFT.MkSFT(transitions, 0, finStates, ba);
+		return SFT.MkSFT(transitions, 0, finStatesAndTails, ba);
 	}
 
 
@@ -116,9 +116,7 @@ public class GetTag {
 		try {
 			List<Character> actualInput = stringToListOfCharacter(input);
 			int a = 1 + 1;
-			output = sft.outpzutOn(actualInput, ba);
-
-			//output = sft.outpzutOn(stringToListOfCharacter(input), ba);
+			output = sft.outputOn(actualInput, ba);
 		} catch (TimeoutException te) {
 			te.printStackTrace();
 		}
