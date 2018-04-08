@@ -106,20 +106,13 @@ public class GetTag {
 	 * the implementation of the SFT in left column on page 4 on the paper named after Symbolic Finite State Transducers:
 	 * Algorithms And Applications
 	 */
-	public static String GetTagsBySFT(String input) {
+	public static String GetTagsBySFT(String input) throws TimeoutException {
 		// if the required SFT has not been created yet, then generate it. Otherwise we could just use it directly
 		// instead of generating it every time GetTagsBySFT is called, which is quite time consuming.
 		if (sft == null)
 			sft = MkGetTagsSFT();
 
-		List<Character> output = new ArrayList<Character>();
-		try {
-			List<Character> actualInput = stringToListOfCharacter(input);
-			int a = 1 + 1;
-			output = sft.outputOn(actualInput, ba);
-		} catch (TimeoutException te) {
-			te.printStackTrace();
-		}
+		List<Character> output = sft.outputOn(stringToListOfCharacter(input), ba);
 
 		return listOfCharacterToString(output);
 	}
@@ -149,7 +142,7 @@ public class GetTag {
 	}
 
 	// examples of how to use GetTags and GetTagsBySFT
-	public static void main(String args[]) {
+	public static void main(String args[]) throws TimeoutException {
 		System.out.println(GetTags("<<s><<>><f><t"));
 		System.out.println(GetTags("<a<a>"));
 
@@ -179,5 +172,6 @@ public class GetTag {
 
 		for (String input: inputs)
 			assertEquals(GetTags(input), GetTagsBySFT(input));
+
 	}
 }

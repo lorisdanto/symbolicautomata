@@ -29,6 +29,8 @@ import utilities.Pair;
 /**
  * A symbolic finite state transducer
  * modified from the model given by the paper named after Symbolic Finite State Transducers: Algorithms And Applications
+ * Although you could add tails for any final state, please use SFT without any tail when using methods compose,
+ * composeWith, decide1equality, witness1disequality, inverseImage and domainRestriction.
  *
  * @param <P>
  *			The type of predicates forming the Boolean algebra
@@ -178,6 +180,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 	private static <P, F, S> void backtrack(List<List<S>> outputs, List<S> tempList, SFT<P, F, S> sft,
 											Integer currentState, List<S> input, int position,
 											BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
+
 		if (position > input.size())
 			return;
 		else if (position == input.size()) {
