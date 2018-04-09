@@ -287,16 +287,13 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 					}
 				} else { // t1.outputFunctions.size() == 0
 					if (ba.IsSatisfiable(t1.guard)) {
-						List<Integer> allStatesOfSft2CanBeReached = sft2.getAllStatesCanBeReached(currState.second);
-						for (Integer state: allStatesOfSft2CanBeReached) {
-							Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(t1.to, state);
-							int nextStateId = getStateId(nextState, reached, toVisit);
+						Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(t1.to, currState.second);
+						int nextStateId = getStateId(nextState, reached, toVisit);
 
-							SFTInputMove<P, F, S> newTrans = new SFTInputMove<P, F, S>(currStateId, nextStateId,
-									t1.guard, new LinkedList<F>());
+						SFTInputMove<P, F, S> newTrans = new SFTInputMove<P, F, S>(currStateId, nextStateId,
+								t1.guard, new LinkedList<F>());
 
-							transitions.add(newTrans);
-						}
+						transitions.add(newTrans);
 					}
 				}
 
@@ -304,29 +301,6 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 		}
 
 		return MkSFT(transitions, initialState, finalStatesAndTails, ba);
-	}
-
-	/**
-	 * return all states which can be reached from the <code>startState</code>
-	 */
-	private List<Integer> getAllStatesCanBeReached(Integer startState) {
-		List<Integer> reached = new ArrayList<Integer>();
-		LinkedList<Integer> toVisit = new LinkedList<Integer>();
-
-		toVisit.add(startState);
-
-		// depth first search
-		while (!toVisit.isEmpty()) {
-			Integer currState = toVisit.pop();
-			reached.add(currState);
-
-			for (SFTMove<P, F, S> transition : this.getTransitionsFrom(currState)) {
-				if (!reached.contains(transition.to))
-					toVisit.add(transition.to);
-			}
-		}
-
-		return reached;
 	}
 
 	/**
