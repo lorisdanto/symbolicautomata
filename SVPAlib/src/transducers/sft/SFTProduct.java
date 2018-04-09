@@ -119,6 +119,33 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 					}
 				}
 		}
+		SFTProduct sftProduct = MkSFTProduct(transitions, initialState, finalStates, ba);
+		return sftProduct.removeDeadend(ba);
+	}
+
+	/*
+	* Create a product of two SFTs (removes unreachable states)
+	*/
+	private <P, F, S> SFTProduct<P, F, S> removeDeadend(BooleanAlgebraSubst<P, F, S> ba) {
+		Collection<SFTMove<P, F, S>> transitions = new ArrayList<SFTMove<P, F, S>>();
+		Integer initialState = this.getInitialState();
+		HashSet<Integer> finalStates = new HashSet<Integer>(this.getFinalStates());
+
+		HashSet<Integer> reached = new HashSet<Integer>();
+		LinkedList<Integer> toVisit = new LinkedList<Integer>();
+		toVisit.addAll(finalStates);
+
+		while (!toVisit.isEmpty()) {
+			Integer currState = toVisit.removeFirst();
+			reached.add(currState);
+
+			for (SFTProductInputMove transition: this.getInputMovesTo(currState)) {
+				transitions.add(transition);
+				if (!reached.contains(transition.from))
+					toVisit.add(transition.from);
+			}
+		}
+
 		return MkSFTProduct(transitions, initialState, finalStates, ba);
 	}
 

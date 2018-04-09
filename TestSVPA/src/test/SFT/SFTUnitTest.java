@@ -608,8 +608,8 @@ public class SFTUnitTest {
 		SFT<CharPred, CharFunc, Character> mySFT2 = SFT.MkSFT(transitions2, 0, finStatesAndTails2, ba);
 
 		SFT<CharPred, CharFunc, Character> composed = mySFT1.composeWith(mySFT2, ba);
-		assertEquals(4, composed.getStates().size());
-		assertEquals(3, composed.getTransitions().size());
+		assertEquals(2, composed.getStates().size());
+		assertEquals(1, composed.getTransitions().size());
 		for (SFTInputMove<CharPred, CharFunc, Character> transition: composed.getInputMovesFrom(composed.getStates()))
 			assertEquals(0, transition.outputFunctions.size());
 
