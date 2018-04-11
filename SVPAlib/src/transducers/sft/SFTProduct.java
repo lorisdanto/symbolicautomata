@@ -456,7 +456,22 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 
 	@Override
 	public String toString() {
-		return super.toString();
+		String s = "";
+		s = "SFT product: " + getMoves().size() + " transitions, " + getStates().size() + " states" + "\n";
+		s += "Transitions \n";
+		for (Move<P, S> t : getMoves())
+			s = s + t + "\n";
+
+		s += "Initial State \n";
+		s = s + getInitialState() + "\n";
+
+		s += "Final States \n";
+		for (Integer fs : getFinalStates())
+			if (getFinalStatesAndTails().get(fs) == null)
+				s = s + fs + "\n";
+			else
+				s = s + fs + " " + getFinalStatesAndTails().get(fs) + "\n";
+		return s;
 	}
 
 }

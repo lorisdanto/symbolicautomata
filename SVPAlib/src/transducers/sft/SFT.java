@@ -1188,7 +1188,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 	@Override
 	public String toString() {
 		String s = "";
-		s = "Automaton: " + getMoves().size() + " transitions, " + getStates().size() + " states" + "\n";
+		s = "SFT: " + getMoves().size() + " transitions, " + getStates().size() + " states" + "\n";
 		s += "Transitions \n";
 		for (Move<P, S> t : getMoves())
 			s = s + t + "\n";
