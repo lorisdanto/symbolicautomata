@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.sat4j.specs.TimeoutException;
 import theory.characters.CharConstant;
@@ -93,10 +95,10 @@ public class GetTag {
 		output30.add(CharOffset.IDENTITY);
 		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(3, 0, new CharPred('>'), output30));
 
-		Map<Integer, List<Character>> finStatesAndTails = new HashMap<Integer, List<Character>>();
-		finStatesAndTails.put(0, new ArrayList<Character>());
-		finStatesAndTails.put(1, new ArrayList<Character>());
-		finStatesAndTails.put(2, new ArrayList<Character>());
+		Map<Integer, Set<List<Character>>> finStatesAndTails = new HashMap<Integer, Set<List<Character>>>();
+		finStatesAndTails.put(0, new HashSet<List<Character>>());
+		finStatesAndTails.put(1, new HashSet<List<Character>>());
+		finStatesAndTails.put(2, new HashSet<List<Character>>());
 
 		return SFT.MkSFT(transitions, 0, finStatesAndTails, ba);
 	}

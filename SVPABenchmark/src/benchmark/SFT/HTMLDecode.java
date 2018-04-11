@@ -19,6 +19,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * The program focuses on decoding 2-digit html codes.
@@ -136,35 +138,43 @@ public class HTMLDecode {
         }
 
 
-        Map<Integer, List<Character>> finStatesAndTails = new HashMap<Integer, List<Character>>();
+        Map<Integer, Set<List<Character>>> finStatesAndTails = new HashMap<Integer, Set<List<Character>>>();
 
-        finStatesAndTails.put(0, new ArrayList<Character>());
+        finStatesAndTails.put(0, new HashSet<List<Character>>());
 
-        List<Character> tail1 = new ArrayList<Character>();
-        tail1.add('&');
-        finStatesAndTails.put(1, tail1);
+        Set<List<Character>> tails1 = new HashSet<List<Character>>();
+        List<Character> tail11 = new ArrayList<Character>();
+        tail11.add('&');
+        tails1.add(tail11);
+        finStatesAndTails.put(1, tails1);
 
-        List<Character> tail2 = new ArrayList<Character>();
-        tail2.add('&');
-        tail2.add('#');
-        finStatesAndTails.put(2, tail2);
+        Set<List<Character>> tails2 = new HashSet<List<Character>>();
+        List<Character> tail21 = new ArrayList<Character>();
+        tail21.add('&');
+        tail21.add('#');
+        tails2.add(tail21);
+        finStatesAndTails.put(2, tails2);
 
         for (Integer i = 0; i < 10; i++) {
+            Set<List<Character>> tails = new HashSet<List<Character>>();
             List<Character> tail = new ArrayList<Character>();
             tail.add('&');
             tail.add('#');
             tail.add(i.toString().charAt(0));
-            finStatesAndTails.put(i + 3, tail);
+            tails.add(tail);
+            finStatesAndTails.put(i + 3, tails);
         }
 
         for (Integer i = 0; i < 10; i++) {
             for (Integer j = 0; j < 10; j++) {
+                Set<List<Character>> tails = new HashSet<List<Character>>();
                 List<Character> tail = new ArrayList<Character>();
                 tail.add('&');
                 tail.add('#');
                 tail.add(i.toString().charAt(0));
                 tail.add(j.toString().charAt(0));
-                finStatesAndTails.put(13 + 10 * i + j, tail);
+                tails.add(tail);
+                finStatesAndTails.put(13 + 10 * i + j, tails);
             }
         }
 

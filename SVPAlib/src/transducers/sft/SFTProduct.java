@@ -6,7 +6,14 @@
  */
 package transducers.sft;
 
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Collection;
 
 import org.sat4j.specs.TimeoutException;
 
@@ -36,7 +43,7 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 	// SFT properties
 	protected Collection<Integer> states;
 	protected Integer initialState;
-	protected Collection<Integer> finalStates;
+	protected Map<Integer, Pair<Set<List<S>>, Set<List<S>>>> finalStatesAndTails; // it stores tails for 2 SFTs separately
 	protected Integer maxStateId;
 
 	// Moves are inputs
@@ -59,7 +66,7 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 		states = new HashSet<Integer>();
 		transitionsFrom = new HashMap<Integer, Collection<SFTProductInputMove<P, F, S>>>();
 		transitionsTo = new HashMap<Integer, Collection<SFTProductInputMove<P, F, S>>>();
-		finalStates = new HashSet<Integer>();
+		finalStatesAndTails = new HashMap<Integer, Pair<Set<List<S>>, Set<List<S>>>>();
 		maxStateId = 0;
 		initialState = 0;
 	}
@@ -83,7 +90,7 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 		Pair<Integer, Integer> p = new Pair<Integer, Integer>(sft1.getInitialState(), sft2.getInitialState());
 
 		initialState = 0;
-		HashSet<Integer> finalStates = new HashSet<Integer>();
+		Map<Integer, Pair<Set<List<S>>, Set<List<S>>>> finalStatesAndTails = new HashMap<Integer, Pair<Set<List<S>>, Set<List<S>>>>();
 
 		reached.put(p, initialState);
 		toVisit.add(p);
@@ -95,7 +102,9 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 
 			// If both states are final, combine is final
 			if (sft1.isFinalState(currState.first) && sft2.isFinalState(currState.second)) {
-				finalStates.add(currStateId);
+				finalStatesAndTails.put(currStateId, new Pair<Set<List<S>>, Set<List<S>>>(
+						sft1.getFinalStatesAndTails().get(currState.first), 
+						sft2.getFinalStatesAndTails().get(currState.second)));
 			}
 
 			for (SFTInputMove<P, F, S> t1 : sft1.getInputMovesFrom(currState.first))
@@ -119,21 +128,19 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 					}
 				}
 		}
-		SFTProduct sftProduct = MkSFTProduct(transitions, initialState, finalStates, ba);
+		SFTProduct sftProduct = MkSFTProduct(transitions, initialState, finalStatesAndTails, ba);
 		return sftProduct.removeDeadend(ba);
 	}
 
 	/*
 	* Create a product of two SFTs (removes unreachable states)
 	*/
-	private <P, F, S> SFTProduct<P, F, S> removeDeadend(BooleanAlgebraSubst<P, F, S> ba) {
+	private SFTProduct<P, F, S> removeDeadend(BooleanAlgebraSubst<P, F, S> ba) {
 		Collection<SFTMove<P, F, S>> transitions = new ArrayList<SFTMove<P, F, S>>();
-		Integer initialState = this.getInitialState();
-		HashSet<Integer> finalStates = new HashSet<Integer>(this.getFinalStates());
 
 		HashSet<Integer> reached = new HashSet<Integer>();
 		LinkedList<Integer> toVisit = new LinkedList<Integer>();
-		toVisit.addAll(finalStates);
+		toVisit.addAll(this.finalStatesAndTails.keySet());
 
 		while (!toVisit.isEmpty()) {
 			Integer currState = toVisit.removeFirst();
@@ -146,23 +153,46 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 			}
 		}
 
-		return MkSFTProduct(transitions, initialState, finalStates, ba);
+		return MkSFTProduct(transitions, this.initialState, this.finalStatesAndTails, ba);
 	}
 
 	/*
 	* Create a product of two SFTs (removes unreachable states)
 	*/
 	private static <P, F, S> SFTProduct<P, F, S> MkSFTProduct(Collection<SFTMove<P, F, S>> transitions, Integer initialState,
-													 Collection<Integer> finalStates,
+															  Map<Integer, Pair<Set<List<S>>, Set<List<S>>>> finalStatesAndTails,
 													 BooleanAlgebraSubst<P, F, S> ba) {
 		SFTProduct<P, F, S> aut = new SFTProduct<P, F, S>();
 
 		// Initialize state set
 		aut.initialState = initialState;
-		aut.finalStates = finalStates;
+
+		aut.finalStatesAndTails = finalStatesAndTails;
+		for (Integer state: finalStatesAndTails.keySet()) {
+			Set<List<S>> tails1 = finalStatesAndTails.get(state).first;
+			Set<List<S>> tails2 = finalStatesAndTails.get(state).second;
+
+			Set<List<S>> nonEmptyTails1 = new HashSet<List<S>>();
+			for (List<S> tail: tails1) {
+				if (tail.size() != 0) // remove the empty tail which is just an empty List<S> for brevity
+					nonEmptyTails1.add(tail);
+			}
+			Set<List<S>> nonEmptyTails2 = new HashSet<List<S>>();
+			for (List<S> tail: tails2) {
+				if (tail.size() != 0)
+					nonEmptyTails2.add(tail);
+			}
+
+			aut.finalStatesAndTails.put(state, new Pair<Set<List<S>>, Set<List<S>>>(nonEmptyTails1, nonEmptyTails2));
+		}
+		// Now all tails are not empty.
+		// MkSFT in SFT.java has removed all non-empty tails and SFTProduct can only be made by two SFTs so there could
+		// not be any empty tails in SFTProduct and the codes above is unnecessary. But I still want to ensure that
+		// there is no empty tails in SFTProduct.
+
 		aut.states = new HashSet<Integer>();
 		aut.states.add(initialState);
-		aut.states.addAll(finalStates);
+		aut.states.addAll(finalStatesAndTails.keySet());
 		
 		try {
 			for (SFTMove<P, F, S> t : transitions)
@@ -258,7 +288,7 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 
 		while (!toVisit.isEmpty()) {
 			Integer currState = toVisit.pop();
-			if (this.getFinalStates().contains(currState)) {
+			if (this.isFinalState(currState)) {
 				return reached.get(currState);
 			}
 			for (SFTProductInputMove transition: this.getInputMovesFrom(currState)) {
@@ -268,7 +298,7 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 				} catch (TimeoutException te) {
 					te.printStackTrace();
 				}
-				if (this.getFinalStates().contains(transition.to)) {
+				if (this.isFinalState(transition.to)) {
 					return previousPath;
 				}
 				reached.put(transition.to, previousPath);
@@ -385,7 +415,11 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 
 	@Override
 	public Collection<Integer> getFinalStates() {
-		return finalStates;
+		return finalStatesAndTails.keySet();
+	}
+
+	public Map<Integer, Pair<Set<List<S>>, Set<List<S>>>> getFinalStatesAndTails() {
+		return finalStatesAndTails;
 	}
 
 	@Override
@@ -415,7 +449,7 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 		cl.transitionsFrom = new HashMap<Integer, Collection<SFTProductInputMove<P, F, S>>>(transitionsFrom);
 		cl.transitionsTo = new HashMap<Integer, Collection<SFTProductInputMove<P, F, S>>>(transitionsTo);
 
-		cl.finalStates = new HashSet<Integer>(finalStates);
+		cl.finalStatesAndTails = new HashMap<Integer, Pair<Set<List<S>>, Set<List<S>>>>(finalStatesAndTails);
 
 		return cl;
 	}
