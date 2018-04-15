@@ -867,7 +867,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 		SFA<P, S> complementOfOutput = output.complement(ba);
 		SFA<P, S> preImage = transducer.inverseImage(complementOfOutput, ba);
 		SFA<P, S> intersection = input.intersectionWith(preImage, ba);
-		return intersection.isEquivalentTo(SFA.getEmptySFA(ba), ba);
+		return intersection.isEmpty();
 	}
 
 	/**
