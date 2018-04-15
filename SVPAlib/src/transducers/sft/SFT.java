@@ -828,9 +828,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 	 * @throws TimeoutException
 	 */
 	public SFA<P, S> inverseImage(SFA<P, S> sfaWithEps, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
-		// Remove epsilons
-		SFA<P, S> sfa = sfaWithEps.removeEpsilonMoves(ba);
-		SFT<P, F, S> composition = this.composeWith(toSFT(sfa, ba), ba);
+		SFT<P, F, S> composition = this.composeWith(toSFT(sfaWithEps, ba), ba);
 		return composition.getDomain(ba);
 	}
 
@@ -858,6 +856,18 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 		for (Integer finalState: sfa.getFinalStates())
 			finalStatesAndTails.put(finalState, new HashSet<List<S>>());
 		return MkSFT(transitions, sfa.getInitialState(), finalStatesAndTails, ba);
+	}
+
+	/**
+	 * check whether <code>input</code> is in the pre image of <code>transducer</code> under <code>output</code>
+	 *
+	 */
+	public static <P, F, S> boolean typeCheck(SFA<P, S> input, SFT<P, F, S> transducer, SFA<P, S> output,
+							 BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException  {
+		SFA<P, S> complementOfOutput = output.complement(ba);
+		SFA<P, S> preImage = transducer.inverseImage(complementOfOutput, ba);
+		SFA<P, S> intersection = input.intersectionWith(preImage, ba);
+		return intersection.isEquivalentTo(SFA.getEmptySFA(ba), ba);
 	}
 
 	/**
@@ -945,37 +955,6 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 		}
 	}
 
-	/**
-	 * judge whether <code>otherSft</code> is just <code>this</code> itself
-	 * It is just used for debugging
-	 * @param otherSft a SFT
-	 * @return the result of whether <code>otherSft</code> is just <code>this</code> itself
-	 */
-	public boolean isItself(SFT<P, F, S> otherSft) {
-		if (this.isDeterministic != otherSft.isDeterministic)
-			return false;
-		if (this.isEmpty != otherSft.isEmpty)
-			return false;
-		if (this.isEpsilonFree != otherSft.isEpsilonFree)
-			return false;
-		if (this.maxStateId != otherSft.maxStateId)
-			return false;
-		if (this.states != otherSft.states)
-			return false;
-		if (this.initialState != otherSft.initialState)
-			return false;
-		if (this.transitionsFrom != otherSft.transitionsFrom)
-			return false;
-		if (this.transitionsTo != otherSft.transitionsTo)
-			return false;
-		if (this.epsTransitionsFrom != otherSft.epsTransitionsFrom)
-			return false;
-		if (this.epsTransitionsTo != otherSft.epsTransitionsTo)
-			return false;
-		if (this.finalStatesAndTails != otherSft.finalStatesAndTails)
-			return false;
-		return true;
-	}
 
 	// ACCESORIES METHODS
 

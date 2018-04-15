@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 
+import theory.characters.*;
 import transducers.sft.SFT;
 import transducers.sft.SFTMove;
 import transducers.sft.SFTInputMove;
@@ -24,10 +25,6 @@ import automata.sfa.SFA;
 import automata.sfa.SFAMove;
 import automata.sfa.SFAInputMove;
 
-import theory.characters.CharPred;
-import theory.characters.CharFunc;
-import theory.characters.CharConstant;
-import theory.characters.CharOffset;
 import theory.intervals.UnaryCharIntervalSolver;
 
 /** 
@@ -630,23 +627,6 @@ public class SFTUnitTest {
 	}
 
 	/**
-	 *
-	 * Method: isItself(SFT<P, F, S> otherSft)
-	 *
-	 */
-	@Test
-	public void testisItself() throws Exception {
-		int n = allSFTs.size();
-		for (int i = 0; i < n; i++)
-			for (int j = 0; j < n; j++) {
-				if (i == j)
-					assertTrue(allSFTs.get(i).isItself(allSFTs.get(j)));
-				else
-					assertFalse(allSFTs.get(i).isItself(allSFTs.get(j)));
-			}
-	}
-
-	/**
 	 * convert a string into a list of characters
 	 * @param input a string
 	 * @return a list of class Character
@@ -1070,6 +1050,82 @@ public class SFTUnitTest {
 			for (List<Character> input: inputs)
 				assertFalse(image.accepts(input, ba));
 		}
+	}
+
+	/**
+	 *
+	 * Method: typeCheck(SFA<P, S> input, SFT<P, F, S> transducer, SFA<P, S> output, BooleanAlgebraSubst<P, F, S> ba) 
+	 *
+	 */
+	@Test
+	public void testTypeCheck() throws Exception {
+		// input1: all strings in the form of a*
+		LinkedList<SFAMove<CharPred, Character>> transitions11 = new LinkedList<SFAMove<CharPred, Character>>();
+		transitions11.add(new SFAInputMove<CharPred, Character>(1, 1, new CharPred('a')));
+		List<Integer> finStates11 = new LinkedList<Integer>();
+		finStates11.add(1);
+		SFA<CharPred, Character> input1 = SFA.MkSFA(transitions11, 1, finStates11, ba);
+
+		// input2: all strings in the form of b*
+		LinkedList<SFAMove<CharPred, Character>> transitions12 = new LinkedList<SFAMove<CharPred, Character>>();
+		transitions12.add(new SFAInputMove<CharPred, Character>(1, 1, new CharPred('b')));
+		List<Integer> finStates12 = new LinkedList<Integer>();
+		finStates12.add(1);
+		SFA<CharPred, Character> input2 = SFA.MkSFA(transitions12, 1, finStates12, ba);
+
+		// input3: only accept one single 'a'
+		LinkedList<SFAMove<CharPred, Character>> transitions13 = new LinkedList<SFAMove<CharPred, Character>>();
+		transitions13.add(new SFAInputMove<CharPred, Character>(1, 2, new CharPred('a')));
+		List<Integer> finStates13 = new LinkedList<Integer>();
+		finStates13.add(2);
+		SFA<CharPred, Character> input3 = SFA.MkSFA(transitions13, 1, finStates13, ba);
+
+		// input4: only accept one single 'b'
+		LinkedList<SFAMove<CharPred, Character>> transitions14 = new LinkedList<SFAMove<CharPred, Character>>();
+		transitions14.add(new SFAInputMove<CharPred, Character>(1, 2, new CharPred('b')));
+		List<Integer> finStates14 = new LinkedList<Integer>();
+		finStates14.add(2);
+		SFA<CharPred, Character> input4 = SFA.MkSFA(transitions14, 1, finStates14, ba);
+		
+		// transducer1: convert all characters a to c and discard other characters
+		List<SFTMove<CharPred, CharFunc, Character>> transitions21 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+		List<CharFunc> output21 = new ArrayList<CharFunc>();
+		output21.add(new CharConstant('c'));
+		transitions21.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 1, new CharPred('a'), output21));
+		Map<Integer, Set<List<Character>>> finStatesAndTails21 = new HashMap<Integer, Set<List<Character>>>();
+		finStatesAndTails21.put(1, new HashSet<List<Character>>());
+		SFT<CharPred, CharFunc, Character> transducer1 = SFT.MkSFT(transitions21, 1, finStatesAndTails21, ba);
+
+		// transducer2: convert an 'a' to a 'c' and a 'b' to 'd'
+		List<SFTMove<CharPred, CharFunc, Character>> transitions22 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+		List<CharFunc> output221 = new ArrayList<CharFunc>();
+		output221.add(new CharConstant('c'));
+		transitions22.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('a'), output221));
+		List<CharFunc> output222 = new ArrayList<CharFunc>();
+		output222.add(new CharConstant('d'));
+		transitions22.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('b'), output222));
+		Map<Integer, Set<List<Character>>> finStatesAndTails22 = new HashMap<Integer, Set<List<Character>>>();
+		finStatesAndTails22.put(2, new HashSet<List<Character>>());
+		SFT<CharPred, CharFunc, Character> transducer2 = SFT.MkSFT(transitions22, 1, finStatesAndTails22, ba);
+		
+		// output1: all strings in the form of c*
+		LinkedList<SFAMove<CharPred, Character>> transitions31 = new LinkedList<SFAMove<CharPred, Character>>();
+		transitions31.add(new SFAInputMove<CharPred, Character>(1, 1, new CharPred('c')));
+		List<Integer> finStates31 = new LinkedList<Integer>();
+		finStates31.add(1);
+		SFA<CharPred, Character> output1 = SFA.MkSFA(transitions31, 1, finStates31, ba);
+
+		// output2: only accepts a 'c'
+		LinkedList<SFAMove<CharPred, Character>> transitions32 = new LinkedList<SFAMove<CharPred, Character>>();
+		transitions32.add(new SFAInputMove<CharPred, Character>(1, 2, new CharPred('c')));
+		List<Integer> finStates32 = new LinkedList<Integer>();
+		finStates32.add(2);
+		SFA<CharPred, Character> output2 = SFA.MkSFA(transitions32, 1, finStates32, ba);
+
+		assertTrue(SFT.typeCheck(input1, transducer1, output1, ba));
+		assertTrue(SFT.typeCheck(input2, transducer1, output1, ba));
+		assertTrue(SFT.typeCheck(input3, transducer2, output2, ba));
+		assertFalse(SFT.typeCheck(input4, transducer2, output2, ba));
 	}
 
 	/**
