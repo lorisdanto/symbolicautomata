@@ -828,7 +828,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 	 * @throws TimeoutException
 	 */
 	public SFA<P, S> inverseImage(SFA<P, S> sfaWithEps, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
-		SFT<P, F, S> composition = this.composeWith(toSFT(sfaWithEps, ba), ba);
+		SFT<P, F, S> composition = this.composeWith(SFAtoSFT(sfaWithEps, ba), ba);
 		return composition.getDomain(ba);
 	}
 
@@ -837,7 +837,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 	 * 
 	 * @return corresponding sft
 	 */
-	private static <P, F, S> SFT<P, F, S> toSFT(SFA<P, S> sfa, BooleanAlgebraSubst<P, F, S> ba) {
+	private static <P, F, S> SFT<P, F, S> SFAtoSFT(SFA<P, S> sfa, BooleanAlgebraSubst<P, F, S> ba) {
 		Collection<SFTMove<P, F, S>> transitions = new ArrayList<SFTMove<P, F, S>>();
 		for (Integer state: sfa.getStates()) {
 			for (SFAInputMove<P, S> transition: sfa.getInputMovesFrom(state)) {
