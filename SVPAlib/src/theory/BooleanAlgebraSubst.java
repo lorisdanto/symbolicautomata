@@ -34,5 +34,17 @@ public abstract class BooleanAlgebraSubst<P,F,S> extends BooleanAlgebra<P, S>{
 	 * @return p(f(x)) 
 	 */
 	public abstract P MkSubstFuncPred(F f, P p);
+
+	/**
+	 * Make a constant function initialized by the constant <code>s</code>
+	 * @return lambda x.s
+	 */
+	public abstract F MkFuncConst(S s);
+
+	/**
+	 * Check whether <code>f1</code> and <code>f2</code> are equivalent relative to the predicate <code>p</code>
+	 * @return lambda x.(p(x) and f1(x) != f2(x))
+	 */
+	public abstract boolean CheckGuardedEquality(P p, F f1, F f2);
 	
 }
