@@ -966,26 +966,53 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 			}
 
 			for (SFTEpsilon<P, F, S> t1 : this.getEpsilonMovesFrom(currState)) {
-				if (t1.outputs.size() != 0) {
+				// if t1.outputs.size() == 0, just do nothing
+				if (t1.outputs.size() == 1) {
+					int nextStateId = getStateId(t1.to, reached, toVisit);
+					SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
+							ba.MkAtom(t1.outputs.get(0)));
+					transitions.add(newTrans);
+				} else if (t1.outputs.size() > 1) {
 					int nextStateId = getStateId(moreStateId++, reached, toVisit);
 					SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
 							ba.MkAtom(t1.outputs.get(0)));
 					transitions.add(newTrans);
 					int lastStateId = nextStateId;
-					for (int i = 1; i < t1.outputs.size(); i++) {
+					for (int i = 1; i < t1.outputs.size() - 1; i++) {
 						nextStateId = getStateId(moreStateId++, reached, toVisit);
 						newTrans = new SFAInputMove<P, S>(lastStateId, nextStateId, ba.MkAtom(t1.outputs.get(i)));
 						transitions.add(newTrans);
 						lastStateId = nextStateId;
 					}
+					nextStateId = getStateId(t1.to, reached, toVisit);
+					newTrans = new SFAInputMove<P, S>(currStateId, nextStateId, ba.MkAtom(t1.outputs.get(t1.outputs.size() - 1)));
+					transitions.add(newTrans);
 				}
 			}
 
 			for (SFTInputMove<P, F, S> t1 : this.getInputMovesFrom(currState)) {
+				// if t1.outputFunctions.size() == 0, just do nothing
 				if (t1.outputFunctions.size() == 1) {
 					int nextStateId = getStateId(t1.to, reached, toVisit);
 					SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
 							ba.getRestrictedOutput(t1.guard, t1.outputFunctions.get(0)));
+					transitions.add(newTrans);
+				} else if (t1.outputFunctions.size() > 1) {
+					int nextStateId = getStateId(moreStateId++, reached, toVisit);
+					SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
+							ba.getRestrictedOutput(t1.guard, t1.outputFunctions.get(0)));
+					transitions.add(newTrans);
+					int lastStateId = nextStateId;
+					for (int i = 1; i < t1.outputFunctions.size() - 1; i++) {
+						nextStateId = getStateId(moreStateId++, reached, toVisit);
+						newTrans = new SFAInputMove<P, S>(lastStateId, nextStateId,
+								ba.getRestrictedOutput(t1.guard, t1.outputFunctions.get(i)));
+						transitions.add(newTrans);
+						lastStateId = nextStateId;
+					}
+					nextStateId = getStateId(t1.to, reached, toVisit);
+					newTrans = new SFAInputMove<P, S>(currStateId, nextStateId, ba.getRestrictedOutput(t1.guard,
+							t1.outputFunctions.get(t1.outputFunctions.size() - 1)));
 					transitions.add(newTrans);
 				}
 			}
