@@ -921,6 +921,80 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 		return MkSFT(transitions, initialState, finalStatesAndTails, ba);
 	}
 
+	public SFA<P, S> getRestrictedOutput(BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
+
+		Collection<SFAMove<P, S>> transitions = new ArrayList<SFAMove<P, S>>();
+		Integer initialState;
+		Collection<Integer> finalStates = new HashSet<Integer>();
+
+		Map<Integer, Integer> reached = new HashMap<Integer, Integer>();
+		LinkedList<Integer> toVisit = new LinkedList<Integer>();
+
+		Integer moreStateId = this.maxStateId + 1;
+
+		// Add initial state
+		initialState = 0;
+		reached.put(this.initialState, initialState);
+		toVisit.push(this.initialState);
+
+		// depth first search
+		while (!toVisit.isEmpty()) {
+			Integer currState = toVisit.pop();
+			int currStateId = reached.get(currState);
+
+			if (this.isFinalState(currState)) {
+				Set<List<S>> tails = this.getFinalStatesAndTails().get(currState);
+				if (tails.size() == 0) {
+					finalStates.add(currStateId);
+				} else { // currState is a final state and it has non-empty tails
+					for (List<S> tail: tails) {
+						int nextStateId = getStateId(moreStateId++, reached, toVisit);
+						SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
+								ba.MkAtom(tail.get(0)));
+						transitions.add(newTrans);
+						int lastStateId = nextStateId;
+						for (int i = 1; i < tail.size(); i++) {
+							nextStateId = getStateId(moreStateId++, reached, toVisit);
+							newTrans = new SFAInputMove<P, S>(lastStateId, nextStateId,
+									ba.MkAtom(tail.get(i)));
+							transitions.add(newTrans);
+							lastStateId = nextStateId;
+						}
+						finalStates.add(lastStateId);
+					}
+				}
+			}
+
+			for (SFTEpsilon<P, F, S> t1 : this.getEpsilonMovesFrom(currState)) {
+				if (t1.outputs.size() != 0) {
+					int nextStateId = getStateId(moreStateId++, reached, toVisit);
+					SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
+							ba.MkAtom(t1.outputs.get(0)));
+					transitions.add(newTrans);
+					int lastStateId = nextStateId;
+					for (int i = 1; i < t1.outputs.size(); i++) {
+						nextStateId = getStateId(moreStateId++, reached, toVisit);
+						newTrans = new SFAInputMove<P, S>(lastStateId, nextStateId, ba.MkAtom(t1.outputs.get(i)));
+						transitions.add(newTrans);
+						lastStateId = nextStateId;
+					}
+				}
+			}
+
+			for (SFTInputMove<P, F, S> t1 : this.getInputMovesFrom(currState)) {
+				if (t1.outputFunctions.size() == 1) {
+					int nextStateId = getStateId(t1.to, reached, toVisit);
+					SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
+							ba.getRestrictedOutput(t1.guard, t1.outputFunctions.get(0)));
+					transitions.add(newTrans);
+				}
+			}
+
+		}
+
+		return SFA.MkSFA(transitions, initialState, finalStates, ba);
+	}
+
 	/**
 	 * Add Transition
 	 *

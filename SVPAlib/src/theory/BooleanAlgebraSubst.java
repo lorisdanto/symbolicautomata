@@ -46,5 +46,12 @@ public abstract class BooleanAlgebraSubst<P,F,S> extends BooleanAlgebra<P, S>{
 	 * @return lambda x.(p(x) and f1(x) != f2(x))
 	 */
 	public abstract boolean CheckGuardedEquality(P p, F f1, F f2);
+
+
+	/**
+	 * get the restricted output based on <code>p</code> and <code>f</code>
+	 * @return \phi(y) \exists x. \phi(x) \wedge f(x)=y
+	 */
+	public abstract P getRestrictedOutput(P p, F f);
 	
 }

@@ -202,6 +202,14 @@ public class UnaryCharIntervalSolver extends BooleanAlgebraSubst<CharPred, CharF
 		return !IsSatisfiable(MkAnd(p, f1IsNotEqualTof2));
 	}
 
+	@Override
+	public CharPred getRestrictedOutput(CharPred p, CharFunc f) {
+		if (checkNotNull(f) instanceof CharConstant)
+			return new CharPred(((CharConstant) f).c);
+		else // checkNotNull(f) instanceof CharOffset
+			return (new CharOffset(-((CharOffset) f).increment)).substIn(p, this);
+	}
+
 	/**
 	 * returns a string of a list of CharPred
 	 * @param charPreds
