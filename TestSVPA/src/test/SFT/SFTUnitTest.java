@@ -1172,6 +1172,39 @@ public class SFTUnitTest {
 
 	/**
 	 *
+	 * Method: getOutputSFA(BooleanAlgebraSubst<P, F, S> ba)
+	 *
+	 */
+	@Test
+	public void testGetOutputSFA() throws Exception {
+		// no output functions
+		List<SFTMove<CharPred, CharFunc, Character>> transitions121 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
+		List<CharFunc> output1211 = new ArrayList<CharFunc>();
+		transitions121.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('a', 'c'), output1211));
+		Map<Integer, Set<List<Character>>> finStatesAndTails121 = new HashMap<Integer, Set<List<Character>>>();
+		finStatesAndTails121.put(2, new HashSet<List<Character>>());
+		SFT<CharPred, CharFunc, Character> noOutputFunctions = SFT.MkSFT(transitions121, 1, finStatesAndTails121, ba);
+
+		LinkedList<SFAMove<CharPred, Character>> transitions1 = new LinkedList<SFAMove<CharPred, Character>>();
+		List<Integer> finStates1 = new LinkedList<Integer>();
+		finStates1.add(2);
+		SFA<CharPred, Character> expected1 = SFA.MkSFA(transitions1, 1, finStates1, ba);
+
+		assertTrue(expected1.isEquivalentTo(noOutputFunctions.getOutputSFA(ba), ba));
+
+		// II. two states with one final state
+		// i. onr arc, one transition condition
+		LinkedList<SFAMove<CharPred, Character>> transitions21 = new LinkedList<SFAMove<CharPred, Character>>();
+		transitions21.add(new SFAInputMove<CharPred, Character>(1, 2, new CharPred('c', 'd')));
+		List<Integer> finStates21 = new LinkedList<Integer>();
+		finStates21.add(2);
+		SFA<CharPred, Character> expected2 = SFA.MkSFA(transitions21, 1, finStates21, ba);
+
+		assertTrue(expected2.isEquivalentTo(mySFT222.getOutputSFA(ba), ba));
+	}
+
+	/**
+	 *
 	 * Method: getInputMovesFrom(Integer state)
 	 *
 	 */
