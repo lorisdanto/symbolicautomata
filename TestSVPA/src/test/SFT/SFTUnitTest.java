@@ -1172,11 +1172,11 @@ public class SFTUnitTest {
 
 	/**
 	 *
-	 * Method: getRestrictedOutput(BooleanAlgebraSubst<P, F, S> ba)
+	 * Method: getOutputSFA(BooleanAlgebraSubst<P, F, S> ba)
 	 *
 	 */
 	@Test
-	public void testGetRestrictedOutput() throws Exception {
+	public void testGetOutputSFA() throws Exception {
 		// no output functions
 		List<SFTMove<CharPred, CharFunc, Character>> transitions121 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
 		List<CharFunc> output1211 = new ArrayList<CharFunc>();
@@ -1190,7 +1190,7 @@ public class SFTUnitTest {
 		finStates1.add(2);
 		SFA<CharPred, Character> expected1 = SFA.MkSFA(transitions1, 1, finStates1, ba);
 
-		assertTrue(expected1.isEquivalentTo(noOutputFunctions.getRestrictedOutput(ba), ba));
+		assertTrue(expected1.isEquivalentTo(noOutputFunctions.getOutputSFA(ba), ba));
 
 		// II. two states with one final state
 		// i. onr arc, one transition condition
@@ -1200,7 +1200,7 @@ public class SFTUnitTest {
 		finStates21.add(2);
 		SFA<CharPred, Character> expected2 = SFA.MkSFA(transitions21, 1, finStates21, ba);
 
-		assertTrue(expected2.isEquivalentTo(mySFT222.getRestrictedOutput(ba), ba));
+		assertTrue(expected2.isEquivalentTo(mySFT222.getOutputSFA(ba), ba));
 	}
 
 	/**

@@ -921,7 +921,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 		return MkSFT(transitions, initialState, finalStatesAndTails, ba);
 	}
 
-	public SFA<P, S> getRestrictedOutput(BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
+	public SFA<P, S> getOutputSFA(BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 
 		Collection<SFAMove<P, S>> transitions = new ArrayList<SFAMove<P, S>>();
 		Integer initialState;
@@ -998,22 +998,7 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 							ba.getRestrictedOutput(t1.guard, t1.outputFunctions.get(0)));
 					transitions.add(newTrans);
 				} else if (t1.outputFunctions.size() > 1) {
-					int nextStateId = getStateId(moreStateId++, reached, toVisit);
-					SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
-							ba.getRestrictedOutput(t1.guard, t1.outputFunctions.get(0)));
-					transitions.add(newTrans);
-					int lastStateId = nextStateId;
-					for (int i = 1; i < t1.outputFunctions.size() - 1; i++) {
-						nextStateId = getStateId(moreStateId++, reached, toVisit);
-						newTrans = new SFAInputMove<P, S>(lastStateId, nextStateId,
-								ba.getRestrictedOutput(t1.guard, t1.outputFunctions.get(i)));
-						transitions.add(newTrans);
-						lastStateId = nextStateId;
-					}
-					nextStateId = getStateId(t1.to, reached, toVisit);
-					newTrans = new SFAInputMove<P, S>(currStateId, nextStateId, ba.getRestrictedOutput(t1.guard,
-							t1.outputFunctions.get(t1.outputFunctions.size() - 1)));
-					transitions.add(newTrans);
+					throw new UnsupportedOperationException("Not supported yet.");
 				}
 			}
 
