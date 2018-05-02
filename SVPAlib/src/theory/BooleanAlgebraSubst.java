@@ -50,7 +50,7 @@ public abstract class BooleanAlgebraSubst<P,F,S> extends BooleanAlgebra<P, S>{
 
 	/**
 	 * get the restricted output based on <code>p</code> and <code>f</code>
-	 * @return \phi(y) = \exists x. \phi(x) \wedge f(x)=y
+	 * @return \psi(y) = \exists x. \phi(x) \wedge f(x)=y
 	 */
 	public abstract P getRestrictedOutput(P p, F f);
 	
