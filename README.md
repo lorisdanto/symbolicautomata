@@ -17,6 +17,7 @@ The library supports:
 - *Symbolic automata* and all their algorithms (intersection, equivalence, minimization, etc.)
 - *Symbolic visibly pushdown automata* and all their algorithms
 - *Symbolic streaming string transducers*
+- *Symbolic finite transducer* (You can read more about SFT here: https://www.doc.ic.ac.uk/~livshits/papers/pdf/popl12.pdf)
 - The character theory of intervals
 
 Before installing
