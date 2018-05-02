@@ -209,7 +209,7 @@ public class UnaryCharIntervalSolver extends BooleanAlgebraSubst<CharPred, CharF
 		if (checkNotNull(f) instanceof CharConstant)
 			return new CharPred(((CharConstant) f).c);
 		else { // checkNotNull(f) instanceof CharOffset
-			// \phi(y) = \exists x. \phi(x) \wedge f(x)=y
+			// \psi(y) = \exists x. \phi(x) \wedge f(x)=y
 			// first of all, get all x
 			p = this.MkAnd(f.substIn(True(), this), p);
 			// Then compute y based on x
