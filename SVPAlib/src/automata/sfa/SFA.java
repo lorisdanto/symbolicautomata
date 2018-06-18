@@ -149,7 +149,8 @@ public class SFA<P, S> extends Automaton<P, S> {
 
 		return MkSFA(transitions, initialState, finalStates, ba, true);
 	}
-
+	
+	
 	/**
 	 * Create an automaton and removes unreachable states and only removes
 	 * unreachable states if <code>remUnreachableStates<code> is true
@@ -168,7 +169,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	 * unreachable states if remUnreachableStates is true and normalizes the
 	 * automaton if normalize is true
 	 */
-	private static <A, B> SFA<A, B> MkSFA(Collection<SFAMove<A, B>> transitions, Integer initialState,
+	public static <A, B> SFA<A, B> MkSFA(Collection<SFAMove<A, B>> transitions, Integer initialState,
 			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba, boolean remUnreachableStates, boolean normalize)
 					throws TimeoutException {
 
@@ -198,6 +199,39 @@ public class SFA<P, S> extends Automaton<P, S> {
 		return aut;
 	}
 
+	/**
+	 * Gives the option to create an automaton exactly as given by the parameters, avoiding all normalizations.
+	 * 
+	 * @throws TimeoutException
+	 */
+	public static <A, B> SFA<A, B> MkSFA(Collection<SFAMove<A, B>> transitions, Integer initialState,
+			Collection<Integer> finalStates, BooleanAlgebra<A, B> ba, boolean remUnreachableStates, boolean normalize, boolean keepEmpty)  
+					throws TimeoutException{
+		SFA<A, B> aut = new SFA<A, B>();
+
+		aut.states = new HashSet<Integer>();
+		aut.states.add(initialState);
+		aut.states.addAll(finalStates);
+
+		aut.initialState = initialState;
+		aut.finalStates = finalStates;
+
+		for (SFAMove<A, B> t : transitions)
+			aut.addTransition(t, ba, true);
+
+		if (normalize)
+			aut = aut.normalize(ba);
+
+		if (remUnreachableStates)
+			aut = removeDeadOrUnreachableStates(aut, ba);
+
+		if (aut.finalStates.isEmpty() && !keepEmpty)
+			return getEmptySFA(ba);
+
+		return aut;
+	}
+	
+	
 	// Adds a transition to the SFA
 	private void addTransition(SFAMove<P, S> transition, BooleanAlgebra<P, S> ba, boolean skipSatCheck) throws TimeoutException {
 
