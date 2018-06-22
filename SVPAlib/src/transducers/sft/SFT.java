@@ -618,15 +618,16 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 								ba.MkSubstFuncPred(cF.get(i), (P)transition.guard)))
 							return false;
 
-					if (reached.containsKey(currState) && !reached.get(currState).equals(new Pair(c, new ArrayList<S>())))
+					Integer nextState = transition.to;
+					if (reached.containsKey(nextState) && !reached.get(nextState).equals(new Pair(c, new ArrayList<S>())))
 						return false;
 
 					// Figure 3 line 11: \textbf{if} \ q \not\in Dom(Q) \ push(q,S);
-					if (!reached.containsKey(currState)) {
-						toVisit.push(currState);
+					if (!reached.containsKey(nextState)) {
+						toVisit.push(nextState);
 
 						// Figure 3 line 11: Q(q):=(\textbf c, \epsilon);
-						reached.put(currState, new Pair(c, new ArrayList<S>()));
+						reached.put(nextState, new Pair(c, new ArrayList<S>()));
 					}
 
 				// Figure 3 line 12: \textbf{if} \ |u|<|v| \dots (symmetrical \ to \ the \  case \ |u|>|v|)
@@ -649,11 +650,12 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 						if (!ba.AreEquivalent(ba.MkSubstFuncPred(w.get(i), (P)transition.guard),
 								ba.MkSubstFuncPred(cF.get(i), (P)transition.guard)))
 							return false;
-					if (reached.containsKey(currState) && !reached.get(currState).equals(new Pair(new ArrayList<S>(), c)))
+					Integer nextState = transition.to;
+					if (reached.containsKey(nextState) && !reached.get(nextState).equals(new Pair(new ArrayList<S>(), c)))
 						return false;
-					if (!reached.containsKey(currState)) {
-						toVisit.push(currState);
-						reached.put(currState, new Pair(new ArrayList<S>(), c));
+					if (!reached.containsKey(nextState)) {
+						toVisit.push(nextState);
+						reached.put(nextState, new Pair(new ArrayList<S>(), c));
 					}
 				}
 			}
@@ -755,13 +757,14 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 							previousPath.addAll(product.getWitness(transition.to, ba));
 							return previousPath;
 						}
-					if (reached.containsKey(currState) && !reached.get(currState).equals(new Pair(c, new ArrayList<S>()))) {
+					Integer nextState = transition.to;
+					if (reached.containsKey(nextState) && !reached.get(nextState).equals(new Pair(c, new ArrayList<S>()))) {
 						previousPath.addAll(product.getWitness(transition.to, ba));
 						return previousPath;
 					}
-					if (!reached.containsKey(currState)) {
-						toVisit.push(currState);
-						reached.put(currState, new Pair(c, new ArrayList<S>()));
+					if (!reached.containsKey(nextState)) {
+						toVisit.push(nextState);
+						reached.put(nextState, new Pair(c, new ArrayList<S>()));
 					}
 				} else { // u.size() < v.size()
 					for (int i = 0; i < u.size(); i++)
@@ -786,13 +789,14 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 							previousPath.addAll(product.getWitness(transition.to, ba));
 							return previousPath;
 						}
-					if (reached.containsKey(currState) && !reached.get(currState).equals(new Pair(new ArrayList<S>(), c))) {
+					Integer nextState = transition.to;
+					if (reached.containsKey(nextState) && !reached.get(nextState).equals(new Pair(new ArrayList<S>(), c))) {
 						previousPath.addAll(product.getWitness(transition.to, ba));
 						return previousPath;
 					}
-					if (!reached.containsKey(currState)) {
-						toVisit.push(currState);
-						reached.put(currState, new Pair(new ArrayList<S>(), c));
+					if (!reached.containsKey(nextState)) {
+						toVisit.push(nextState);
+						reached.put(nextState, new Pair(new ArrayList<S>(), c));
 					}
 				}
 
