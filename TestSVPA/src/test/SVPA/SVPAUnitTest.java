@@ -914,28 +914,28 @@ public class SVPAUnitTest {
 
 	// test demonstrating the benefit of symbolic automata on large alphabets
 	// but also: slow queries test
-	@Test
-	public void testCcrypt(){
-		try {
-			SVPA<ICharPred, Character> first =
-					importFromResourceFile("ccrypt_0");
-			SVPA<ICharPred, Character> second =
-					importFromResourceFile("ccrypt_1");
-
-			SVPA<ICharPred, Character> firstQuery =
-					importFromResourceFile("ccrypt_query_0");
-			SVPA<ICharPred, Character> secondQuery =
-					importFromResourceFile("ccrypt_query_1");
-
-			EqualitySolver ba = new EqualitySolver();
-			SVPA<ICharPred, Character> result = first.intersectionWith(second, ba);
-
-			result.intersectionWith(firstQuery, ba);
-			result.intersectionWith(secondQuery, ba);
-		} catch(Exception e) {
-			e.printStackTrace();
-			assertTrue("Error message was: " + e.getMessage(), false);
-		}
-	}
+//	@Test
+//	public void testCcrypt(){
+//		try {
+//			SVPA<ICharPred, Character> first =
+//					importFromResourceFile("ccrypt_0");
+//			SVPA<ICharPred, Character> second =
+//					importFromResourceFile("ccrypt_1");
+//
+//			SVPA<ICharPred, Character> firstQuery =
+//					importFromResourceFile("ccrypt_query_0");
+//			SVPA<ICharPred, Character> secondQuery =
+//					importFromResourceFile("ccrypt_query_1");
+//
+//			EqualitySolver ba = new EqualitySolver();
+//			SVPA<ICharPred, Character> result = first.intersectionWith(second, ba);
+//
+//			result.intersectionWith(firstQuery, ba);
+//			result.intersectionWith(secondQuery, ba);
+//		} catch(Exception e) {
+//			e.printStackTrace();
+//			assertTrue("Error message was: " + e.getMessage(), false);
+//		}
+//	}
 
 }
