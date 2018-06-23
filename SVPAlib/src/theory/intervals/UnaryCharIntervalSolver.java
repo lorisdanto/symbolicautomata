@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-import com.sun.xml.internal.bind.annotation.XmlLocation;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import com.google.common.collect.ImmutableList;
