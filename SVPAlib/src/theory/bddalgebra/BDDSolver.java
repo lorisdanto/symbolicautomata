@@ -9,7 +9,7 @@ package theory.bddalgebra;
 
 import java.util.Collection;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import java.lang.UnsupportedOperationException;
 import theory.BooleanAlgebra;
 import theory.bdd.BDD;
 import theory.bdd.BDDFactory;
@@ -93,7 +93,7 @@ public class BDDSolver extends BooleanAlgebra<BDD, BDD> {
 	@Override
 	public boolean HasModel(BDD p1, BDD el1, BDD el2) {
 		// TODO Auto-generated method stub
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -104,7 +104,7 @@ public class BDDSolver extends BooleanAlgebra<BDD, BDD> {
 	@Override
 	public Pair<BDD, BDD> generateWitnesses(BDD p1) {
 		// TODO Auto-generated method stub
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

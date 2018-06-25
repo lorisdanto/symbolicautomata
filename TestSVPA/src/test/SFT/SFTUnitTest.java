@@ -27,11 +27,11 @@ import automata.sfa.SFAInputMove;
 
 import theory.intervals.UnaryCharIntervalSolver;
 
-/** 
-* SFT Tester. 
+/**
+* SFT Tester.
 *
-* @version 1.0 
-*/ 
+* @version 1.0
+*/
 public class SFTUnitTest {
 
 	private static UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
@@ -777,6 +777,104 @@ public class SFTUnitTest {
 		SFT<CharPred, CharFunc, Character> mySFT2 = SFT.MkSFT(mytransitions2, 1, myfinStatesAndTails2, ba);
 
 		assertTrue(mySFT1.decide1equality(mySFT2, ba));
+
+		// part 5 a more complicated transducer
+		SFT testSFTTotal = getTestSFTTotal();
+		SFT SFTCounterexample = getTestSFTCounterexample();
+		assertFalse(testSFTTotal.decide1equality(SFTCounterexample, ba));
+	}
+
+	public static List<CharFunc> stringToCharFunc(String output) {
+		List <CharFunc> charList = new LinkedList<>();
+		for (Character c: output.toCharArray()) {
+			charList.add(new CharConstant(c));
+		}
+		return charList;
+	}
+
+	public static Map<Integer, Set<List<Character>>> setToFTMap(Collection <Integer> finalStates) {
+		HashMap <Integer, Set<List<Character>>> stateMap = new HashMap<>();
+
+		for (Integer sid : finalStates) {
+			stateMap.put(sid, new HashSet<List<Character>>());
+		}
+
+		return stateMap;
+	}
+
+
+	public static List<Character> strToList(String s) {
+		List <Character> ret = new ArrayList<>();
+
+		for (int i = 0; i < s.length(); i ++) {
+			ret.add(s.charAt(i));
+		}
+		return ret;
+	}
+
+	public static SFT<CharPred, CharFunc, Character> getTestSFTTotal() {
+		List <SFTMove <CharPred, CharFunc, Character>> transitions = new LinkedList<>();
+		Map<Integer, Set<List<Character>>> finalStates;
+
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 1,
+				new CharPred('a'),
+				stringToCharFunc("d")));
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 2,
+				new CharPred('b'),
+				stringToCharFunc("")));
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				1, 3,
+				new CharPred('a'),
+				stringToCharFunc("d")));
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				1, 3,
+				new CharPred('b'),
+				stringToCharFunc("c")));
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				2, 3,
+				new CharPred('a'),
+				stringToCharFunc("dd")));
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				2, 3,
+				new CharPred('b'),
+				stringToCharFunc("c")));
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				3, 3,
+				new CharPred('a'),
+				stringToCharFunc("s")));
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				3, 3,
+				new CharPred('b'),
+				stringToCharFunc("w")));
+
+		HashSet<Integer> finalStatesSet = new HashSet<>();
+		finalStatesSet.add(0);
+		finalStatesSet.add(1);
+		finalStatesSet.add(2);
+		finalStatesSet.add(3);
+		finalStates = setToFTMap(finalStatesSet);
+		return SFT.MkSFT(transitions, 0, finalStates, ba);
+	}
+
+
+	public static SFT<CharPred, CharFunc, Character> getTestSFTCounterexample() {
+		List <SFTMove <CharPred, CharFunc, Character>> transitions = new LinkedList<>();
+		Map<Integer, Set<List<Character>>> finalStates;
+
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 0,
+				new CharPred('b'),
+				stringToCharFunc("")));
+		transitions.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 0,
+				new CharPred('a'),
+				stringToCharFunc("d")));
+		HashSet<Integer> finalStatesSet = new HashSet<>();
+		finalStatesSet.add(0);
+		finalStates = setToFTMap(finalStatesSet);
+		return SFT.MkSFT(transitions, 0, finalStates, ba);
 	}
 
 	/**
@@ -930,7 +1028,7 @@ public class SFTUnitTest {
 		SFA<CharPred, Character> mySFA331 = mySFT331.getDomain(ba);
 		SFA<CharPred, Character> mySFA411 = mySFT411.getDomain(ba);
 		SFA<CharPred, Character> mySFA421 = mySFT421.getDomain(ba);
-		
+
 		Integer expectedInitialState = 1;
 		assertEquals(expectedInitialState, mySFA111.getInitialState());
 		assertEquals(expectedInitialState, mySFA121.getInitialState());
@@ -1054,7 +1152,7 @@ public class SFTUnitTest {
 
 	/**
 	 *
-	 * Method: typeCheck(SFA<P, S> input, SFT<P, F, S> transducer, SFA<P, S> output, BooleanAlgebraSubst<P, F, S> ba) 
+	 * Method: typeCheck(SFA<P, S> input, SFT<P, F, S> transducer, SFA<P, S> output, BooleanAlgebraSubst<P, F, S> ba)
 	 *
 	 */
 	@Test
@@ -1086,7 +1184,7 @@ public class SFTUnitTest {
 		List<Integer> finStates14 = new LinkedList<Integer>();
 		finStates14.add(2);
 		SFA<CharPred, Character> input4 = SFA.MkSFA(transitions14, 1, finStates14, ba);
-		
+
 		// transducer1: convert all characters a to c and discard other characters
 		List<SFTMove<CharPred, CharFunc, Character>> transitions21 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
 		List<CharFunc> output21 = new ArrayList<CharFunc>();
@@ -1107,7 +1205,7 @@ public class SFTUnitTest {
 		Map<Integer, Set<List<Character>>> finStatesAndTails22 = new HashMap<Integer, Set<List<Character>>>();
 		finStatesAndTails22.put(2, new HashSet<List<Character>>());
 		SFT<CharPred, CharFunc, Character> transducer2 = SFT.MkSFT(transitions22, 1, finStatesAndTails22, ba);
-		
+
 		// output1: all strings in the form of c*
 		LinkedList<SFAMove<CharPred, Character>> transitions31 = new LinkedList<SFAMove<CharPred, Character>>();
 		transitions31.add(new SFAInputMove<CharPred, Character>(1, 1, new CharPred('c')));
