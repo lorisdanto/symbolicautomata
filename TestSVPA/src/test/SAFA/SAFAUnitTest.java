@@ -72,23 +72,23 @@ public class SAFAUnitTest {
 		SAFA<CharPred, Character> intersection1 = atLeastOneAlpha.intersectionWith(atLeastOneNum, ba);
 		SAFA<CharPred, Character> intersection2 = atLeastOneNum.intersectionWith(atLeastOneAlpha, ba);
 
-		assertFalse(SAFA.areReverseEquivalent(atLeastOneAlpha, atLeastOneNum, ba).first);
-		assertFalse(SAFA.areReverseEquivalent(atLeastOneNum, atLeastOneAlpha, ba).first);
-		assertFalse(SAFA.areReverseEquivalent(atLeastOneAlpha, intersection1, ba).first);
-		assertFalse(SAFA.areReverseEquivalent(intersection1, atLeastOneAlpha, ba).first);
-		assertFalse(SAFA.areReverseEquivalent(atLeastOneAlpha, intersection2, ba).first);
-		assertFalse(SAFA.areReverseEquivalent(intersection2, atLeastOneAlpha, ba).first);
-		assertFalse(SAFA.areReverseEquivalent(atLeastOneNum, intersection1, ba).first);
-		assertFalse(SAFA.areReverseEquivalent(intersection1, atLeastOneNum, ba).first);
-		assertFalse(SAFA.areReverseEquivalent(atLeastOneNum, intersection2, ba).first);
-		assertFalse(SAFA.areReverseEquivalent(intersection2, atLeastOneNum, ba).first);
-		assertTrue(SAFA.areReverseEquivalent(intersection2, intersection1, ba).first);
-		assertTrue(SAFA.areReverseEquivalent(intersection1, intersection2, ba).first);
+		assertFalse(SAFA.areReverseEquivalent(atLeastOneAlpha, atLeastOneNum, ba));
+		assertFalse(SAFA.areReverseEquivalent(atLeastOneNum, atLeastOneAlpha, ba));
+		assertFalse(SAFA.areReverseEquivalent(atLeastOneAlpha, intersection1, ba));
+		assertFalse(SAFA.areReverseEquivalent(intersection1, atLeastOneAlpha, ba));
+		assertFalse(SAFA.areReverseEquivalent(atLeastOneAlpha, intersection2, ba));
+		assertFalse(SAFA.areReverseEquivalent(intersection2, atLeastOneAlpha, ba));
+		assertFalse(SAFA.areReverseEquivalent(atLeastOneNum, intersection1, ba));
+		assertFalse(SAFA.areReverseEquivalent(intersection1, atLeastOneNum, ba));
+		assertFalse(SAFA.areReverseEquivalent(atLeastOneNum, intersection2, ba));
+		assertFalse(SAFA.areReverseEquivalent(intersection2, atLeastOneNum, ba));
+		assertTrue(SAFA.areReverseEquivalent(intersection2, intersection1, ba));
+		assertTrue(SAFA.areReverseEquivalent(intersection1, intersection2, ba));
 	}
 
 	@Test
 	public void testListOfLists() throws TimeoutException {
-		System.out.println("lists of lists");
+		//System.out.println("lists of lists");
 		BooleanAlgebra<SAFA<CharPred,Character>,List<Character>> lol = new SAFABooleanAlgebra<>(ba, boolexpr);
 		CharPred a = new CharPred('a');
 		CharPred z = new CharPred('z');

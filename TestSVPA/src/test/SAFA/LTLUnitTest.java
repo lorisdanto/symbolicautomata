@@ -100,18 +100,18 @@ public class LTLUnitTest {
 
 		long stopTime = System.currentTimeMillis();
 		long elapsedTime = stopTime - startTime;
-		System.out.println(elapsedTime);
+		//System.out.println(elapsedTime);
 
 		startTime = System.currentTimeMillis();
 
-		Pair<Boolean, List<Character>> b1 = SAFA.areReverseEquivalent(safa1, safa2, ba);
-		System.out.println(b1);
+		Boolean b1 = SAFA.areReverseEquivalent(safa1, safa2, ba);
+		//System.out.println(b1);
 
 		stopTime = System.currentTimeMillis();
 		elapsedTime = stopTime - startTime;
-		System.out.println(elapsedTime);
+		//System.out.println(elapsedTime);
 
-		assertTrue(b == b1.first);
+		assertTrue(b == b1);
 
 	}
 
@@ -140,7 +140,7 @@ public class LTLUnitTest {
 
 			long stopTime = System.currentTimeMillis();
 			long elapsedTime = stopTime - startTime;
-			System.out.println(size + " " + elapsedTime);
+			//System.out.println(size + " " + elapsedTime);
 		}
 	}
 
@@ -178,7 +178,7 @@ public class LTLUnitTest {
 
 			long stopTime = System.currentTimeMillis();
 			long elapsedTime = stopTime - startTime;
-			System.out.println(size + " " + elapsedTime);
+			//System.out.println(size + " " + elapsedTime);
 		}
 	}
 
@@ -202,7 +202,7 @@ public class LTLUnitTest {
 			long startTime = System.currentTimeMillis();
 			SAFA<Integer, boolean[]> safa1 = tot.getSAFA(ba);
 			long stopTime = System.currentTimeMillis();
-			System.out.println("BuildSAFA " + (stopTime - startTime));
+			//System.out.println("BuildSAFA " + (stopTime - startTime));
 
 			startTime = System.currentTimeMillis();
 			boolean b = true;
@@ -215,7 +215,7 @@ public class LTLUnitTest {
 
 			stopTime = System.currentTimeMillis();
 			long elapsedTime = stopTime - startTime;
-			System.out.println("Emptiness " + elapsedTime);
+			//System.out.println("Emptiness " + elapsedTime);
 		}
 	}
 
@@ -252,18 +252,18 @@ public class LTLUnitTest {
 
 		long stopTime = System.currentTimeMillis();
 		long elapsedTime = stopTime - startTime;
-		System.out.println(elapsedTime);
+		//System.out.println(elapsedTime);
 
 		startTime = System.currentTimeMillis();
 
-		Pair<Boolean, List<boolean[]>> b1 = SAFA.areReverseEquivalent(safa1, safa2, ba);
-		System.out.println(b1);
+		boolean b1 = SAFA.areReverseEquivalent(safa1, safa2, ba);
+		//System.out.println(b1);
 
 		stopTime = System.currentTimeMillis();
 		elapsedTime = stopTime - startTime;
-		System.out.println(elapsedTime);
+		//System.out.println(elapsedTime);
 
-		assertTrue(b == b1.first);
+		assertTrue(b == b1);
 	}
 
 	@Test

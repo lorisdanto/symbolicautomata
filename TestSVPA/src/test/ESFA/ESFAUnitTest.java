@@ -26,7 +26,7 @@ public class ESFAUnitTest {
 		assertTrue(autA.stateCount() == 5);
 		assertTrue(autA.getTransitionCount() == 5);
 
-		System.out.println(autA.getAmbiguousInput(ba));
+		//System.out.println(autA.getAmbiguousInput(ba));
 		assertTrue(autA.accepts(la, ba));
 		
 		
@@ -65,7 +65,7 @@ public class ESFAUnitTest {
 		transitionsA.add(new CartesianESFAInputMove<CharPred, Character>(0, 2, guard_1));
 		transitionsA.add(new CartesianESFAInputMove<CharPred, Character>(2, 4, guard_1));
 		transitionsA.add(new CartesianESFAInputMove<CharPred, Character>(3, 4, guard_1));
-		System.out.println(transitionsA.toString());
+		//System.out.println(transitionsA.toString());
 		return CartesianESFA.MkESFA(transitionsA, 0, Arrays.asList(4), kba);
 	}
 
