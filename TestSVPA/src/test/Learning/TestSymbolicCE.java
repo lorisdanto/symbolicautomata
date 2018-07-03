@@ -82,7 +82,7 @@ public class TestSymbolicCE {
 
 		List<IntPred> ce = o.checkEquivalence(hyp);
 		assertTrue(ce.equals(Arrays.asList(new IntPred(0,9))));
-	}*/
+	}
 	
 	@Test
 	public void testLearning1() throws TimeoutException {
