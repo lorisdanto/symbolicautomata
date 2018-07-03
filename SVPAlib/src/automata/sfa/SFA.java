@@ -719,7 +719,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 		SFA<A, B> tmp1 = collapseMultipleTransitions(aut1, ba, timeout);
 		SFA<A, B> tmp2 = collapseMultipleTransitions(aut2, ba, timeout);
 
-		Pair<Boolean, List<A>> result = areEquivalentSymoblicWitness(tmp1, tmp2, ba, timeout);
+		Pair<Boolean, List<A>> result = areEquivalentSymbolicWitness(tmp1, tmp2, ba, timeout);
 		if(result.first)
 			return new Pair<Boolean, List<B>>(true, null);
 		
@@ -745,10 +745,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 		SFA<P, S> tmp1 = collapseMultipleTransitions(this, ba, timeout);
 		SFA<P, S> tmp2 = collapseMultipleTransitions(aut, ba, timeout);
 
-		return areEquivalentSymoblicWitness(tmp1, tmp2, ba, timeout);
+		return areEquivalentSymbolicWitness(tmp1, tmp2, ba, timeout);
 	}
 	
-	private static <A, B> Pair<Boolean, List<A>> areEquivalentSymoblicWitness(SFA<A, B> aut1, SFA<A, B> aut2,
+	private static <A, B> Pair<Boolean, List<A>> areEquivalentSymbolicWitness(SFA<A, B> aut1, SFA<A, B> aut2,
 			BooleanAlgebra<A, B> ba, long timeout) throws TimeoutException {
 
 		long startTime = System.currentTimeMillis();
