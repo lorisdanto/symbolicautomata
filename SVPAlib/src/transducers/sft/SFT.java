@@ -132,7 +132,6 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 								if (!ba.CheckGuardedEquality(union,
 										trset.get(i).outputFunctions.get(k), trset.get(j).outputFunctions.get(k)))
 									return false;
-							return false;
 						}
 					}
 				}

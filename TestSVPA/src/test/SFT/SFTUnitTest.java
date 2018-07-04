@@ -495,7 +495,116 @@ public class SFTUnitTest {
 	 */
 	@Test
 	public void testMkSFT() throws Exception {
-		// it is tested in beforeClass()
+		// test the correctness of determinism of SFTs
+
+		// case 1: test case provided by George Argyros on Jun 4th, 2018
+		List <SFTMove <CharPred, CharFunc, Character>> transitions1 = new LinkedList<>();
+		Map<Integer, Set<List<Character>>> finalStates1;
+		transitions1.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 0,
+				new CharPred('b'),
+				stringToCharFunc("")));
+		transitions1.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 0,
+				new CharPred('a'),
+				stringToCharFunc("d")));
+		HashSet<Integer> finalStatesSet1 = new HashSet<>();
+		finalStatesSet1.add(0);
+		finalStates1 = setToFTMap(finalStatesSet1);
+		SFT<CharPred, CharFunc, Character> myMkSFT1 = SFT.MkSFT(transitions1, 0, finalStates1, ba);
+		assertTrue(myMkSFT1.isDeterministic());
+
+		// case 2: As to SFTs created in method beforeClass, if it has epsilon transitions, it of course is 
+		// non-deterministic. Otherwise, it is deterministic because its transitions' guards are not overlapped.
+		assertTrue(mySFT111.isDeterministic());
+		assertTrue(mySFT121.isDeterministic());
+		assertTrue(mySFT122.isDeterministic());
+		assertTrue(mySFT123.isDeterministic());
+		assertTrue(mySFT131.isDeterministic());
+		assertTrue(mySFT211.isDeterministic());
+		assertTrue(mySFT221.isDeterministic());
+		assertTrue(mySFT222.isDeterministic());
+		assertTrue(mySFT223.isDeterministic());
+		assertFalse(mySFT231.isDeterministic());
+		assertFalse(mySFT232.isDeterministic());
+		assertTrue(mySFT241.isDeterministic());
+		assertTrue(mySFT242.isDeterministic());
+		assertFalse(mySFT251.isDeterministic());
+		assertFalse(mySFT252.isDeterministic());
+		assertFalse(mySFT261.isDeterministic());
+		assertFalse(mySFT311.isDeterministic());
+		assertFalse(mySFT321.isDeterministic());
+		assertTrue(mySFT331.isDeterministic());
+		assertTrue(mySFT411.isDeterministic());
+		assertFalse(mySFT421.isDeterministic());
+
+		// case 3: some transitions' guards are overlapped but these transitions output different things
+		List <SFTMove <CharPred, CharFunc, Character>> transitions2 = new LinkedList<>();
+		Map<Integer, Set<List<Character>>> finalStates2;
+		transitions2.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 0,
+				new CharPred('a', 'd'),
+				stringToCharFunc("cat")));
+		transitions2.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 0,
+				new CharPred('b', 'e'),
+				stringToCharFunc("dog")));
+		HashSet<Integer> finalStatesSet2 = new HashSet<>();
+		finalStatesSet2.add(0);
+		finalStates2 = setToFTMap(finalStatesSet2);
+		SFT<CharPred, CharFunc, Character> myMkSFT2 = SFT.MkSFT(transitions2, 0, finalStates2, ba);
+		assertFalse(myMkSFT2.isDeterministic());
+
+		List <SFTMove <CharPred, CharFunc, Character>> transitions3 = new LinkedList<>();
+		Map<Integer, Set<List<Character>>> finalStates3;
+		transitions3.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 1,
+				new CharPred('a', 'd'),
+				stringToCharFunc("cat")));
+		transitions3.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 0,
+				new CharPred('b', 'e'),
+				stringToCharFunc("dog")));
+		HashSet<Integer> finalStatesSet3 = new HashSet<>();
+		finalStatesSet3.add(0);
+		finalStatesSet3.add(1);
+		finalStates3 = setToFTMap(finalStatesSet3);
+		SFT<CharPred, CharFunc, Character> myMkSFT3 = SFT.MkSFT(transitions3, 0, finalStates3, ba);
+		assertFalse(myMkSFT3.isDeterministic());
+
+		// case 4:
+		List <SFTMove <CharPred, CharFunc, Character>> transitions4 = new LinkedList<>();
+		Map<Integer, Set<List<Character>>> finalStates4;
+		transitions4.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 0,
+				new CharPred('a', 'd'),
+				stringToCharFunc("cat")));
+		transitions4.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 0,
+				new CharPred('b', 'e'),
+				stringToCharFunc("cat")));
+		HashSet<Integer> finalStatesSet4 = new HashSet<>();
+		finalStatesSet4.add(0);
+		finalStates4 = setToFTMap(finalStatesSet4);
+		SFT<CharPred, CharFunc, Character> myMkSFT4 = SFT.MkSFT(transitions4, 0, finalStates4, ba);
+		assertTrue(myMkSFT4.isDeterministic());
+
+		List <SFTMove <CharPred, CharFunc, Character>> transitions5 = new LinkedList<>();
+		Map<Integer, Set<List<Character>>> finalStates5;
+		transitions5.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 1,
+				new CharPred('a', 'd'),
+				stringToCharFunc("cat")));
+		transitions5.add(new SFTInputMove<CharPred, CharFunc, Character>(
+				0, 0,
+				new CharPred('b', 'e'),
+				stringToCharFunc("cat")));
+		HashSet<Integer> finalStatesSet5 = new HashSet<>();
+		finalStatesSet5.add(0);
+		finalStatesSet5.add(1);
+		finalStates5 = setToFTMap(finalStatesSet5);
+		SFT<CharPred, CharFunc, Character> myMkSFT5 = SFT.MkSFT(transitions5, 0, finalStates5, ba);
+		assertTrue(myMkSFT5.isDeterministic());
 	}
 
 	/**
