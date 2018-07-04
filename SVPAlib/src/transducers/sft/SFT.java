@@ -119,19 +119,13 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 	private boolean checkDeterminism(BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		if (!isEpsilonFree) {
 			return false;
-		} else { // check whether transitions of one state have overlapped guards and different outputs
+		} else { // check whether transitions of one state have overlapped guards
 			for (Integer state: getStates()) {
 				ArrayList<SFTInputMove<P, F, S>> trset = new ArrayList<SFTInputMove<P, F, S>>(getInputMovesFrom(state));
 				for (int i = 0; i < trset.size(); i++) {
 					for (int j = i + 1; j < trset.size(); j++) {
-						P union = ba.MkAnd(trset.get(i).guard, trset.get(j).guard);
-						if (ba.IsSatisfiable(union)) {
-							if (trset.get(i).outputFunctions.size() != trset.get(j).outputFunctions.size())
-								return false;
-							for (int k = 0; k < trset.get(i).outputFunctions.size(); k++)
-								if (!ba.CheckGuardedEquality(union,
-										trset.get(i).outputFunctions.get(k), trset.get(j).outputFunctions.get(k)))
-									return false;
+						if (ba.IsSatisfiable(ba.MkAnd(trset.get(i).guard, trset.get(j).guard))) {
+							return false;
 						}
 					}
 				}

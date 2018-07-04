@@ -572,7 +572,7 @@ public class SFTUnitTest {
 		SFT<CharPred, CharFunc, Character> myMkSFT3 = SFT.MkSFT(transitions3, 0, finalStates3, ba);
 		assertFalse(myMkSFT3.isDeterministic());
 
-		// case 4:
+		// case 4: some transitions' guards are overlapped but these transitions output the same things
 		List <SFTMove <CharPred, CharFunc, Character>> transitions4 = new LinkedList<>();
 		Map<Integer, Set<List<Character>>> finalStates4;
 		transitions4.add(new SFTInputMove<CharPred, CharFunc, Character>(
@@ -587,7 +587,7 @@ public class SFTUnitTest {
 		finalStatesSet4.add(0);
 		finalStates4 = setToFTMap(finalStatesSet4);
 		SFT<CharPred, CharFunc, Character> myMkSFT4 = SFT.MkSFT(transitions4, 0, finalStates4, ba);
-		assertTrue(myMkSFT4.isDeterministic());
+		assertFalse(myMkSFT4.isDeterministic());
 
 		List <SFTMove <CharPred, CharFunc, Character>> transitions5 = new LinkedList<>();
 		Map<Integer, Set<List<Character>>> finalStates5;
@@ -604,7 +604,7 @@ public class SFTUnitTest {
 		finalStatesSet5.add(1);
 		finalStates5 = setToFTMap(finalStatesSet5);
 		SFT<CharPred, CharFunc, Character> myMkSFT5 = SFT.MkSFT(transitions5, 0, finalStates5, ba);
-		assertTrue(myMkSFT5.isDeterministic());
+		assertFalse(myMkSFT5.isDeterministic());
 	}
 
 	/**
