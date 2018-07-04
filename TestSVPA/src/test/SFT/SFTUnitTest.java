@@ -812,7 +812,7 @@ public class SFTUnitTest {
 		return ret;
 	}
 
-	public static SFT<CharPred, CharFunc, Character> getTestSFTTotal() {
+	public static SFT<CharPred, CharFunc, Character> getTestSFTTotal() throws Exception {
 		List <SFTMove <CharPred, CharFunc, Character>> transitions = new LinkedList<>();
 		Map<Integer, Set<List<Character>>> finalStates;
 
@@ -859,7 +859,7 @@ public class SFTUnitTest {
 	}
 
 
-	public static SFT<CharPred, CharFunc, Character> getTestSFTCounterexample() {
+	public static SFT<CharPred, CharFunc, Character> getTestSFTCounterexample() throws Exception {
 		List <SFTMove <CharPred, CharFunc, Character>> transitions = new LinkedList<>();
 		Map<Integer, Set<List<Character>>> finalStates;
 
