@@ -75,7 +75,7 @@ public class SFTProduct<P, F, S> extends Automaton<P, S> {
 	* Create a product of two SFTs (removes unreachable states and all tails of final states)
 	* Page 3, in the 8-th line of left column, definition 7
 	*/
-	public static <P, F, S> SFTProduct<P, F, S> MkSFTProduct(SFT<P, F, S> sft1withEps, SFT<P, F, S> sft2withEps, BooleanAlgebraSubst<P, F, S> ba) {
+	public static <P, F, S> SFTProduct<P, F, S> MkSFTProduct(SFT<P, F, S> sft1withEps, SFT<P, F, S> sft2withEps, BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 		// Remove epsilons
 		SFT<P, F, S> sft1 = sft1withEps.removeEpsilonMoves(ba);
 		SFT<P, F, S> sft2 = sft2withEps.removeEpsilonMoves(ba);
