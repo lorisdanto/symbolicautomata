@@ -51,7 +51,7 @@ public final class UnionFindHopKarp<S> {
 	private Map<Integer,Integer> ranks;   // Always in the range [0, floor(log2(numElems))]. Thus has a maximum value of 30.
 	private Map<Integer,Integer> sizes;    // Positive number if the element is a representative, otherwise zero.
 	private Map<Integer,Boolean> isFinal;
-	private Map<Integer,List<S>> witness; 
+//	private Map<Integer,List<S>> witness; 
 	
 	
 	public boolean contains(int elem){
@@ -85,20 +85,20 @@ public final class UnionFindHopKarp<S> {
 		ranks = new HashMap<>();
 		sizes = new HashMap<>();
 		isFinal = new HashMap<>();
-		witness = new HashMap<>();
+//		witness = new HashMap<>();
 		numSets = 0;
 	}
 	
 	// Constructs a new set containing the given number of singleton sets.
 	// For example, new DisjointSet(3) --> {{0}, {1}, {2}}.
-	public void add(int elem, boolean isFin, List<S> wit) {
+	public void add(int elem, boolean isFin) {
 		if (parents.containsKey(elem))
 			throw new IllegalArgumentException("Element should not be in the set already");
 		parents.put(elem,elem);
 		ranks.put(elem,0);
 		sizes.put(elem,1);
 		isFinal.put(elem, isFin);
-		witness.put(elem, wit);
+//		witness.put(elem, wit);
 		numSets++;
 	}
 	
@@ -147,10 +147,10 @@ public final class UnionFindHopKarp<S> {
 		return sizes.get(getRepr(elemIndex));
 	}
 	
-	// Returns the size of the set that the given element is a member of. 1 <= result <= getNumberOfElements().
-	public List<S> getWitness(int elemIndex) {
-		return witness.get(elemIndex);
-	}
+//	// Returns the size of the set that the given element is a member of. 1 <= result <= getNumberOfElements().
+//	public List<S> getWitness(int elemIndex) {
+//		return witness.get(elemIndex);
+//	}
 	
 	
 	// Tests whether the given two elements are members of the same set. Note that the arguments are orderless.

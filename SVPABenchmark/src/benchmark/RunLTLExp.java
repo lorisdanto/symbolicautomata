@@ -119,7 +119,7 @@ public class RunLTLExp {
 									long startTime2 = System.currentTimeMillis();
 									try {
 										boolean result2 = SAFA.areReverseEquivalent(safa, SAFA.getEmptySAFA(bdds), bdds,
-												timeout).first;
+												timeout);
 										if (!to1 && result != result2)
 											throw new IllegalArgumentException("bug");
 										fw.append(System.currentTimeMillis() - startTime2 + ", ");
@@ -239,7 +239,7 @@ public class RunLTLExp {
 									long startTime2 = System.currentTimeMillis();
 									boolean result2 = true;
 									try {
-										result2 = SAFA.areReverseEquivalent(safa1, safa2, bdds, timeout).first;
+										result2 = SAFA.areReverseEquivalent(safa1, safa2, bdds, timeout);
 										fw.append(System.currentTimeMillis() - startTime2 + ", ");
 										System.out.print(System.currentTimeMillis() - startTime2 + ", ");
 										if (!to1 && result != result2)
@@ -347,7 +347,7 @@ public class RunLTLExp {
 								if (!skipRev) {
 									long startTime2 = System.currentTimeMillis();
 									try {
-										result = SAFA.areReverseEquivalent(safa, safa, bdds, timeout).first;
+										result = SAFA.areReverseEquivalent(safa, safa, bdds, timeout);
 										fw.append(System.currentTimeMillis() - startTime2 + ", ");
 										System.out.print(System.currentTimeMillis() - startTime2 + ", ");
 										if (!result)

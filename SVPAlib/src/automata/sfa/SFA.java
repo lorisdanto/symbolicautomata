@@ -666,58 +666,157 @@ public class SFA<P, S> extends Automaton<P, S> {
 	}
 
 	/**
-	 * checks whether the aut accepts the same language
+	 * Checks whether the automaton accepts the same language as aut
 	 * 
 	 * @throws TimeoutException
 	 */
 	public boolean isEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return areEquivalent(this, aut, ba);
 	}
-
+	
 	/**
-	 * checks whether aut1 is equivalent to aut2
+	 * Checks whether aut1 and aut2 accept the same language
 	 * 
 	 * @throws TimeoutException
 	 */
-	public static <A, B> boolean areEquivalent(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba)
+	public static <A, B> Boolean areEquivalent(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba)
 			throws TimeoutException {
-		return areEquivalent(aut1, aut2, ba, Long.MAX_VALUE);
+		return areEquivalentPlusWitness(aut1, aut2, ba, Long.MAX_VALUE).first;
+	}
+	
+	/**
+	 * Checks whether the automaton accepts the same language as aut
+	 * 
+	 * @throws TimeoutException
+	 */
+	public Pair<Boolean, List<S>> isEquivalentPlusWitnessTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba) throws TimeoutException {
+		return areEquivalentPlusWitness(this, aut, ba, Long.MAX_VALUE);
 	}
 
 	/**
-	 * checks whether aut1 is equivalent to aut2
+	 * Checks whether aut1 is equivalent to aut2 and returns a concrete witness if not. Second element is null if equivalent.
 	 * 
 	 * @throws TimeoutException
 	 */
-	public static <A, B> boolean areEquivalent(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba, long timeout)
+	public static <A, B> Pair<Boolean, List<B>> areEquivalentPlusWitness(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba)
 			throws TimeoutException {
+		return areEquivalentPlusWitness(aut1, aut2, ba, Long.MAX_VALUE);
+	}
+
+	/**
+	 * Checks whether aut1 is equivalent to aut2 and returns a concrete witness if not. Second element is null if equivalent.
+	 * 
+	 * @throws TimeoutException
+	 */
+	public static <A, B> Pair<Boolean, List<B>> areEquivalentPlusWitness(SFA<A, B> aut1, SFA<A, B> aut2, BooleanAlgebra<A, B> ba, long timeout)
+			throws TimeoutException {
+		if(!aut1.isDeterministic)
+			aut1 = aut1.determinize(ba);
+		if(!aut2.isDeterministic)
+			aut2 = aut2.determinize(ba);
+		
+		
+		SFA<A, B> tmp1 = collapseMultipleTransitions(aut1, ba, timeout);
+		SFA<A, B> tmp2 = collapseMultipleTransitions(aut2, ba, timeout);
+
+		Pair<Boolean, List<A>> result = areEquivalentSymbolicWitness(tmp1, tmp2, ba, timeout);
+		if(result.first)
+			return new Pair<Boolean, List<B>>(true, null);
+		
+		List<B> concreteWitness = new LinkedList<>();
+		for(A pred: result.second)
+			concreteWitness.add(ba.generateWitness(pred));
+		
+		return new Pair<Boolean, List<B>>(false, concreteWitness);
+	}	
+	
+	/**
+	 * checks whether aut1 is equivalent to aut2, if not returns a symbolic
+	 * sequence of predicates as a witness
+	 * @assume Inputs to be deterministic SFA
+	 * @throws TimeoutException
+	 */
+	public Pair<Boolean, List<P>> isEquivalentPlusSymoblicWitnessTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba, long timeout)
+			throws TimeoutException {		
+		
+		if(!this.isDeterministic || !aut.isDeterministic)
+			throw new IllegalArgumentException("The SFAs have to be deterministic");
+		
+		SFA<P, S> tmp1 = collapseMultipleTransitions(this, ba, timeout);
+		SFA<P, S> tmp2 = collapseMultipleTransitions(aut, ba, timeout);
+
+		return areEquivalentSymbolicWitness(tmp1, tmp2, ba, timeout);
+	}
+	
+	private static <A, B> Pair<Boolean, List<A>> areEquivalentSymbolicWitness(SFA<A, B> aut1, SFA<A, B> aut2,
+			BooleanAlgebra<A, B> ba, long timeout) throws TimeoutException {
+
 		long startTime = System.currentTimeMillis();
-		if (!difference(aut1, aut2, ba, timeout).isEmpty)
-			return false;
-		return difference(aut2, aut1, ba, timeout - (System.currentTimeMillis() - startTime)).isEmpty;
+
+		boolean isF1=aut1.isFinalState(aut1.initialState);
+		boolean isF2=aut2.isFinalState(aut2.initialState);
+		if(isF1!=isF2)
+			return new Pair<Boolean, List<A>>(false, new LinkedList<>());			
+
+		Pair<Integer, Integer> initPair = new Pair<Integer, Integer>(aut1.initialState, aut2.initialState);
+		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<>();
+		toVisit.add(initPair);
+		
+		HashSet<Pair<Integer, Integer>> reached = new HashSet<>();
+		reached.add(initPair);
+		
+		HashMap<Pair<Integer, Integer>, List<A>> witnesses = new HashMap<>();
+		witnesses.put(initPair, new LinkedList<>());
+		
+		while (!toVisit.isEmpty()) {
+
+			if (System.currentTimeMillis() - startTime > timeout)
+				throw new TimeoutException();
+
+			Pair<Integer, Integer> curr = toVisit.removeFirst();
+			List<A> currWitness = witnesses.get(curr);
+			
+			for (SFAInputMove<A, B> move1 : aut1.getInputMovesFrom(curr.first))
+				for (SFAInputMove<A, B> move2 : aut2.getInputMovesFrom(curr.second)) {
+					A conj = ba.MkAnd(move1.guard, move2.guard);
+					if (ba.IsSatisfiable(conj)) {
+						
+						Pair<Integer, Integer> newState = new Pair<Integer, Integer>(move1.to, move2.to);
+						if(!reached.contains(newState)){
+							toVisit.add(newState);
+							reached.add(newState);
+							List<A> newWitness = new LinkedList<A>(currWitness);
+							newWitness.add(conj);
+							witnesses.put(newState, newWitness);	
+							
+							if(aut1.isFinalState(move1.to)!= aut2.isFinalState(move2.to))
+								return new Pair<Boolean, List<A>>(false, newWitness);
+						}
+					}
+				}
+		}
+
+		return new Pair<Boolean, List<A>>(true, null);
 	}
 
 	/**
-	 * checks whether the aut accepts the same language
-	 * 
+	 * Checks whether the automaton accepts the same language as aut using Hopcroft-Karp algorithm
+	 * @assume the two automata are deterministic
 	 * @throws TimeoutException
 	 */
-	public Pair<Boolean, List<S>> isHopcroftKarpEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba)
+	public boolean isHopcroftKarpEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba)
 			throws TimeoutException {
 		
 		return areHKEquivalentNondet(this.removeEpsilonMoves(ba).mkTotal(ba).normalize(ba),
 				aut.removeEpsilonMoves(ba).mkTotal(ba).normalize(ba), ba, Long.MAX_VALUE);
-		
-//		return areHopcroftKarpEquivalent(this.determinize(ba).mkTotal(ba).normalize(ba),
-//				aut.determinize(ba).mkTotal(ba).normalize(ba), ba, Long.MAX_VALUE);
 	}
 
 	/**
-	 * checks whether the aut accepts the same language
-	 * 
+	 * Checks whether the automaton accepts the same language as aut using Hopcroft-Karp algorithm
+	 * @assume the two automata are deterministic
 	 * @throws TimeoutException
 	 */
-	public Pair<Boolean, List<S>> isHopcroftKarpEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba, long timeout)
+	public boolean isHopcroftKarpEquivalentTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba, long timeout)
 			throws TimeoutException {
 		long startTime = System.currentTimeMillis();
 		SFA<P, S> tmp1 = this.removeEpsilonMoves(ba);
@@ -744,90 +843,16 @@ public class SFA<P, S> extends Automaton<P, S> {
 		leftover = leftover - (System.currentTimeMillis() - startTime);
 
 		return areHKEquivalentNondet(tmp1, tmp2, ba, leftover);
-//		return areHopcroftKarpEquivalent(tmp1, tmp2, ba, leftover);
 	}
-	
-	
-	/**
-	 * checks whether aut1 is equivalent to aut2 using Hopcroft Karp's algorithm, if not returns a symbolic
-	 * sequence of predicates as a witness
-	 * @assume Inputs to be deterministic SFA
-	 * @throws TimeoutException
-	 */
-	public Pair<Boolean, List<P>> isHopcroftKarpEquivalentSymoblicWitnessTo(SFA<P, S> aut, BooleanAlgebra<P, S> ba, long timeout)
-			throws TimeoutException {		
-		
-		if(!this.isDeterministic || !aut.isDeterministic)
-			throw new IllegalArgumentException("The SFAs have to be deterministic");
-		
-		SFA<P, S> tmp1 = collapseMultipleTransitions(this, ba, timeout);
-		SFA<P, S> tmp2 = collapseMultipleTransitions(aut, ba, timeout);
-
-		return areHopcroftKarpEquivalentSymoblicWitness(tmp1, tmp2, ba, timeout);
-	}
-	
-	private static <A, B> Pair<Boolean, List<A>> areHopcroftKarpEquivalentSymoblicWitness(SFA<A, B> aut1, SFA<A, B> aut2,
-			BooleanAlgebra<A, B> ba, long timeout) throws TimeoutException {
-		
-		Timers.setForCongruence();
-
-		long startTime = System.currentTimeMillis();
-		UnionFindHopKarp<A> ds = new UnionFindHopKarp<>();
-		int offset = aut1.stateCount();
-
-		boolean isF1=aut1.isFinalState(aut1.initialState);
-		boolean isF2=aut2.isFinalState(aut2.initialState);
-		if(isF1!=isF2)
-			return new Pair<Boolean, List<A>>(false, new LinkedList<>());
-		
-		ds.add(aut1.initialState, isF1, new LinkedList<>());
-		ds.add(aut2.initialState + offset, isF2, new LinkedList<>());
-		ds.mergeSets(aut1.initialState, aut2.initialState + offset);
-
-		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<>();
-		toVisit.add(new Pair<Integer, Integer>(aut1.initialState, aut2.initialState));
-		while (!toVisit.isEmpty()) {
-			Timers.oneMoreState();
-
-			if (System.currentTimeMillis() - startTime > timeout)
-				throw new TimeoutException();
-
-			Pair<Integer, Integer> curr = toVisit.removeFirst();
-			for (SFAInputMove<A, B> move1 : aut1.getInputMovesFrom(curr.first))
-				for (SFAInputMove<A, B> move2 : aut2.getInputMovesFrom(curr.second)) {
-					A conj = ba.MkAnd(move1.guard, move2.guard);
-					if (ba.IsSatisfiable(conj)) {
-						int r1 = move1.to;
-						int r2 = move2.to + offset;
-
-						List<A> pref = new LinkedList<A>(ds.getWitness(curr.first));
-						pref.add(conj);
-
-						if (!ds.contains(r1))
-							ds.add(r1, aut1.isFinalState(move1.to), pref);
-						if (!ds.contains(r2))
-							ds.add(r2, aut2.isFinalState(move2.to), pref);
-
-						if (!ds.areInSameSet(r1, r2)) {
-							if (!ds.mergeSets(r1, r2))
-								return new Pair<Boolean, List<A>>(false, pref);
-							toVisit.add(new Pair<Integer, Integer>(move1.to, move2.to));
-						}
-					}
-				}
-		}
-
-		return new Pair<Boolean, List<A>>(true, null);
-	}
-	
+			
 
 	/**
 	 * checks whether aut1 is equivalent to aut2 using Hopcroft Karp's algorithm
-	 * 
+	 * @assume automata are deterministic
 	 * @throws TimeoutException
 	 */
 	@SuppressWarnings("unused")
-	private static <A, B> Pair<Boolean, List<B>> areHopcroftKarpEquivalent(SFA<A, B> aut1, SFA<A, B> aut2,
+	private static <A, B> boolean areHopcroftKarpEquivalent(SFA<A, B> aut1, SFA<A, B> aut2,
 			BooleanAlgebra<A, B> ba, long timeout) throws TimeoutException {
 
 		Timers.setForCongruence();
@@ -839,10 +864,10 @@ public class SFA<P, S> extends Automaton<P, S> {
 		boolean isF1=aut1.isFinalState(aut1.initialState);
 		boolean isF2=aut2.isFinalState(aut2.initialState);
 		if(isF1!=isF2)
-			return new Pair<Boolean, List<B>>(false, new LinkedList<>());
+			return false;
 		
-		ds.add(aut1.initialState, isF1, new LinkedList<>());
-		ds.add(aut2.initialState + offset, isF2, new LinkedList<>());
+		ds.add(aut1.initialState, isF1);
+		ds.add(aut2.initialState + offset, isF2);
 		ds.mergeSets(aut1.initialState, aut2.initialState + offset);
 
 		LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<>();
@@ -861,31 +886,28 @@ public class SFA<P, S> extends Automaton<P, S> {
 						int r1 = move1.to;
 						int r2 = move2.to + offset;
 
-						List<B> pref = new LinkedList<B>(ds.getWitness(curr.first));
-						pref.add(ba.generateWitness(conj));
-
 						if (!ds.contains(r1))
-							ds.add(r1, aut1.isFinalState(move1.to), pref);
+							ds.add(r1, aut1.isFinalState(move1.to));
 						if (!ds.contains(r2))
-							ds.add(r2, aut2.isFinalState(move2.to), pref);
+							ds.add(r2, aut2.isFinalState(move2.to));
 
 						if (!ds.areInSameSet(r1, r2)) {
 							if (!ds.mergeSets(r1, r2))
-								return new Pair<Boolean, List<B>>(false, pref);
+								return false;
 							toVisit.add(new Pair<Integer, Integer>(move1.to, move2.to));
 						}
 					}
 				}
 		}
 
-		return new Pair<Boolean, List<B>>(true, null);
+		return true;
 	}
 	
 	 /**
      * Lazy Hopcroft-Karp plus determinization 
 	 * @throws TimeoutException 
     */
-    public static <A, B> Pair<Boolean, List<B>> areHKEquivalentNondet(SFA<A,B> aut1, SFA<A,B> aut2,
+    public static <A, B> boolean areHKEquivalentNondet(SFA<A,B> aut1, SFA<A,B> aut2,
     		BooleanAlgebra<A, B> ba, long timeout) throws TimeoutException
     {
     	Timers.setForCongruence();
@@ -935,10 +957,10 @@ public class SFA<P, S> extends Automaton<P, S> {
         boolean isIn2Final = aut2.isFinalConfiguration(detInitialState2);
         
         if (isIn1Final != isIn2Final)
-            return new Pair<Boolean, List<B>>(false, new LinkedList<B>());
+            return false;
 
-        ds.add(0, isIn1Final, new LinkedList<B>());
-        ds.add(1, isIn2Final, new LinkedList<B>());
+        ds.add(0, isIn1Final);
+        ds.add(1, isIn2Final);
         ds.mergeSets(0, 1);
 
         while (toVisit.size() > 0)
@@ -982,7 +1004,7 @@ public class SFA<P, S> extends Automaton<P, S> {
                     {
                         HashSet<Integer> to1 = new HashSet<Integer>();
                         for (int i = 0; i < minterm1.second.size(); i++)
-                            if (minterm1.second.get(i)==1)
+                            if (minterm1.second.get(i)==1 && ba.IsSatisfiable(ba.MkAnd(movesFromCurr1.get(i).guard, conj)))
                                 to1.add(movesFromCurr1.get(i).to);
                         
                         LinkedList<HashSet<Integer>> l1 = new LinkedList<HashSet<Integer>>();
@@ -992,7 +1014,7 @@ public class SFA<P, S> extends Automaton<P, S> {
                         
                         HashSet<Integer> to2 = new HashSet<Integer>();
                         for (int i = 0; i < minterm2.second.size(); i++)
-                            if (minterm2.second.get(i)==1)
+                            if (minterm2.second.get(i)==1 && ba.IsSatisfiable(ba.MkAnd(movesFromCurr2.get(i).guard, conj)))
                                 to2.add(movesFromCurr2.get(i).to);
                                                 
                         LinkedList<HashSet<Integer>> l2 = new LinkedList<HashSet<Integer>>();
@@ -1000,17 +1022,13 @@ public class SFA<P, S> extends Automaton<P, S> {
                         if(!l2.isEmpty())
                         	idToStates2.put(reachedStates2.size()-1,to2);
                         
-                        List<B> wit = ds.getWitness(reached1.get(curr.first));
-                        LinkedList<B> pref = new LinkedList<B>(wit);
-                        pref.add(ba.generateWitness(conj));
-
                         // If not in union find add them
                         int r1 = 0, r2 = 0;
                         if (!reached1.containsKey(to1st))
                         {
                             r1 = ds.getNumberOfElements();
                             reached1.put(to1st, r1);
-                            ds.add(r1, aut1.isFinalConfiguration(to1), pref);
+                            ds.add(r1, aut1.isFinalConfiguration(to1));
                         }
                         else
                             r1 = reached1.get(to1st);
@@ -1019,7 +1037,7 @@ public class SFA<P, S> extends Automaton<P, S> {
                         {
                             r2 = ds.getNumberOfElements();
                             reached2.put(to2st, r2);
-                            ds.add(r2, aut2.isFinalConfiguration(to2), pref);
+                            ds.add(r2, aut2.isFinalConfiguration(to2));
                         }
                         else
                             r2 = reached2.get(to2st);                        
@@ -1028,7 +1046,7 @@ public class SFA<P, S> extends Automaton<P, S> {
                         if (!ds.areInSameSet(r1, r2))
                         {
                             if (!ds.mergeSets(r1, r2))
-                                return new Pair<Boolean, List<B>>(false, pref);
+                                return false;
 
                             toVisit.add(new Pair<Integer, Integer>(to1st, to2st));
                         }
@@ -1036,7 +1054,7 @@ public class SFA<P, S> extends Automaton<P, S> {
                 }
             }
         }
-        return new Pair<Boolean, List<B>>(true, null);
+        return true;
     }
 
 

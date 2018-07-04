@@ -13,6 +13,7 @@ import org.sat4j.specs.TimeoutException;
 import algebralearning.oracles.EquivalenceOracle;
 import automata.sfa.SFA;
 import theory.BooleanAlgebra;
+import utilities.Pair;
 
 /**
  * Implements the equivalence oracle for SFAs. 
@@ -42,54 +43,29 @@ public class SFAEquivalenceOracle <P,D> extends EquivalenceOracle <SFA <P,D>, Li
 		// invoking the more expensive equivalence test. 
 		cachedCe = null;
 	}
-
-	/**
-	 * Internal method to compare the provided model with the correctModel SFA.
-	 * 
-	 * @param model model to compare against.
-	 * @return An input under which the two models differ or null if they are equivalent.
-	 * @throws TimeoutException
-	 */
-	private List<D> compareWithTarget(SFA <P,D> model) throws TimeoutException {
-		
-		SFA <P,D> diff;
-		
-		diff = model.complement(ba);
-		diff = diff.intersectionWith(correctModel, ba);
-		if (!diff.isEmpty()) {
-			return diff.getWitness(ba);
-		}
-		diff = correctModel.complement(ba);
-		diff = diff.intersectionWith(model, ba);
-		if (!diff.isEmpty()) {
-			return diff.getWitness(ba);
-		}		
-		return null;		
-	}
     
-    public List <D>getCounterexample (SFA <P,D> model) throws TimeoutException {
-    		List <D> ce;
-    		
-    		if ((cachedCe != null) && 
-    				(model.accepts(cachedCe, ba) != correctModel.accepts(cachedCe, ba))) {
-    			cachedCeNum ++;
-    			return cachedCe;
-    		}    			    		
-    		ce = compareWithTarget(model);    		
-    		if (ce == null) {    			
-    			return null;
-    		} else {    			
-    			cachedCe = new LinkedList <D>(ce);
-    			distinctCeNum ++;
-    			return ce;
-    		}
+	
+    public List <D>getCounterexample (SFA <P,D> model) throws TimeoutException {    		
+		if ((cachedCe != null) && 
+				(model.accepts(cachedCe, ba) != correctModel.accepts(cachedCe, ba))) {
+			cachedCeNum ++;
+			return cachedCe;
+		}    			    		
+		Pair <Boolean, List<D>>p = correctModel.isEquivalentPlusWitnessTo(model, ba);
+		if (p.first) {    			
+			return null;
+		} else {    			
+			cachedCe = new LinkedList <D>(p.second);
+			distinctCeNum ++;
+			return p.second;
+		}
     }
 
     /**
      * @return the number of cached counterexamples used so far.
      */
     	public Integer getCachedCeNum() {
-    		   return cachedCeNum; 		
+		   return cachedCeNum; 		
     	}
     	
     	/**

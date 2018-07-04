@@ -20,7 +20,7 @@ import theory.intervals.UnaryCharIntervalSolver;
  */
 public class RELearning {
 
-	static String[] reBenchmarks = {
+	public static String[] reBenchmarks = {
 			"\\<.*(script|xss).*?\\>",
 			"\\<.*(applet|b(ase|gsound|link)|embed)[^\\>]*\\>",
 			"(\\<[^\\<\\>]+\\>\\<[^<]+\\>\\<\\/[^\\<\\>]+\\>)",
@@ -38,7 +38,7 @@ public class RELearning {
 			"[\\+\\-]?([0-9]*\\.?[0-9]+|[0-9]+\\.?[0-9]*)([eE][\\+\\-]?[0-9]+)?"
 	};		
 		
-	public Integer[] learnREBenchmark(Integer index) throws TimeoutException {
+	public static Integer[] learnREBenchmark(Integer index) throws TimeoutException {
 		Integer[] results = new Integer[8];
 		
 		if (index < 0 || index >= reBenchmarks.length) {
@@ -65,7 +65,7 @@ public class RELearning {
   		return results;
 	}
 	
-	public Integer[][] learnAllBenchmarks() throws TimeoutException {
+	public static Integer[][] learnAllBenchmarks() throws TimeoutException {
 		Integer[][] results = new Integer[reBenchmarks.length][8];
 	    for (int i = 0; i < reBenchmarks.length; i ++) {
 	    	results[i] = learnREBenchmark(i);	    	

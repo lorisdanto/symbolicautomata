@@ -571,7 +571,7 @@ public class SAFA<P, S> {
 	 * Checks whether laut and raut are equivalent using HopcroftKarp on the SFA
 	 * accepting the reverse language
 	 */
-	public static <P, S> Pair<Boolean, List<S>> areReverseEquivalent(SAFA<P, S> aut1, SAFA<P, S> aut2,
+	public static <P, S> boolean areReverseEquivalent(SAFA<P, S> aut1, SAFA<P, S> aut2,
 			BooleanAlgebra<P, S> ba) throws TimeoutException {
 		return areReverseEquivalent(aut1, aut2, ba, Long.MAX_VALUE);
 	}
@@ -580,7 +580,7 @@ public class SAFA<P, S> {
 	 * Checks whether laut and raut are equivalent using HopcroftKarp on the SFA
 	 * accepting the reverse language
 	 */
-	public static <P, S> Pair<Boolean, List<S>> areReverseEquivalent(SAFA<P, S> aut1, SAFA<P, S> aut2,
+	public static <P, S> boolean areReverseEquivalent(SAFA<P, S> aut1, SAFA<P, S> aut2,
 			BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
 
 		long startTime = System.currentTimeMillis();
@@ -599,8 +599,8 @@ public class SAFA<P, S> {
 		reached2.put(in2, 1);
 		toVisit.add(new Pair<HashSet<Integer>, HashSet<Integer>>(in1, in2));
 
-		ds.add(0, in1.contains(aut1.initialState), new LinkedList<>());
-		ds.add(1, in2.contains(aut2.initialState), new LinkedList<>());
+		ds.add(0, in1.contains(aut1.initialState));
+		ds.add(1, in2.contains(aut2.initialState));
 		ds.mergeSets(0, 1);
 
 		while (!toVisit.isEmpty()) {
@@ -648,15 +648,12 @@ public class SAFA<P, S> {
 							if (minterm2.second.get(i) == 1)
 								from2.add(movesToCurr2.get(i).from);
 
-						List<S> pref = new LinkedList<S>(ds.getWitness(reached1.get(curr1)));
-						pref.add(ba.generateWitness(conj));
-
 						// If not in union find add them
 						Integer r1 = null, r2 = null;
 						if (!reached1.containsKey(from1)) {
 							r1 = ds.getNumberOfElements();
 							reached1.put(from1, r1);
-							ds.add(r1, aut1.initialState.hasModel(from1), pref);
+							ds.add(r1, aut1.initialState.hasModel(from1));
 						}
 						if (r1 == null)
 							r1 = reached1.get(from1);
@@ -664,7 +661,7 @@ public class SAFA<P, S> {
 						if (!reached2.containsKey(from2)) {
 							r2 = ds.getNumberOfElements();
 							reached2.put(from2, r2);
-							ds.add(r2, aut2.initialState.hasModel(from2), pref);
+							ds.add(r2, aut2.initialState.hasModel(from2));
 						}
 						if (r2 == null)
 							r2 = reached2.get(from2);
@@ -672,7 +669,7 @@ public class SAFA<P, S> {
 						// Check whether are in simulation relation
 						if (!ds.areInSameSet(r1, r2)) {
 							if (!ds.mergeSets(r1, r2))
-								return new Pair<Boolean, List<S>>(false, Lists.reverse(pref));
+								return false;
 
 							toVisit.add(new Pair<HashSet<Integer>, HashSet<Integer>>(from1, from2));
 						}
@@ -680,7 +677,7 @@ public class SAFA<P, S> {
 				}
 			}
 		}
-		return new Pair<Boolean, List<S>>(true, null);
+		return true;
 	}
 
 	/**
