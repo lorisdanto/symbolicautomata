@@ -56,6 +56,15 @@ public class SFAUnitTest {
 
 	}
 
+    @Test
+    public void testHasNDistinctWitnesses() {
+        CharPred integers = new CharPred('0', '9');
+        assertTrue(ba.hasNDistinctWitnesses(integers, 5));
+        assertTrue(ba.hasNDistinctWitnesses(integers, 0));
+        assertTrue(ba.hasNDistinctWitnesses(integers, 10));
+        assertFalse(ba.hasNDistinctWitnesses(integers, 11));
+    }
+
 	@Test
 	public void testCreateDot() {
 		boolean check = autB.createDotFile("autb", "");
