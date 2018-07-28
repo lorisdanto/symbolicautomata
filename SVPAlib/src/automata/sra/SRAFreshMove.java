@@ -34,11 +34,14 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 		return boolal.IsSatisfiable(guard);
 	}
 	
+	
 	@Override
-	public boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException{
-		if (from.equals(t.from)){			
+	public boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException {
+		if (from.equals(t.from)) {
+            if (register != t.register) {
+                return true;
+            }
 			SRACheckMove<P, S> ct = (SRACheckMove<P, S>) t;
-            // FIXME: Is having the same register required for disjunction?
 			if(ba.IsSatisfiable(ba.MkAnd(guard,ct.guard)))
 				return false;
 		}
