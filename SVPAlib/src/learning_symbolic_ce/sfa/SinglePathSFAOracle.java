@@ -1,5 +1,6 @@
 package learning_symbolic_ce.sfa;
 
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,7 +11,9 @@ import automata.sfa.SFA;
 import automata.sfa.SFAMove;
 import automata.sfa.SFAInputMove;
 import theory.BooleanAlgebra;
-
+import java.io.PrintWriter;
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 
 
 public class SinglePathSFAOracle<P, S> extends SymbolicOracle<P, S> {
@@ -25,6 +28,20 @@ public class SinglePathSFAOracle<P, S> extends SymbolicOracle<P, S> {
 		this.ba = ba;
 	}
 	
+	public void printStats(){
+		try {
+			long unixTime = System.currentTimeMillis() / 1000L;
+			 PrintWriter writer = new PrintWriter("statsOutput" + String.valueOf(unixTime) + ".txt", "UTF-8");
+			 writer.println("Number Membership Queries: " + String.valueOf(this.getNumMembership()));
+			 writer.println("Number Equivalence Queries: " + String.valueOf(this.getNumEquivalence()));
+			 writer.close();
+		}  catch (FileNotFoundException e1) {
+			   assert false :  "File cannot be created";
+			} catch (UnsupportedEncodingException e2) {
+			   assert false : "This will literally never happen";
+			} 
+	}
+	
 	@Override
 	protected List<P> checkEquivalenceImpl(SFA<P, S> compareTo) throws TimeoutException {
 		SFA<P,S> d1 = SFA.difference(toLearn, compareTo, ba, Long.MAX_VALUE);
@@ -33,6 +50,7 @@ public class SinglePathSFAOracle<P, S> extends SymbolicOracle<P, S> {
 
 		List<S> wit = sdiff.getWitness(ba);
 		if(wit == null) { //learned correct automaton.
+			printStats();
 			return null;
 		}
 		

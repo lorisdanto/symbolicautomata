@@ -32,7 +32,7 @@ import utilities.Pair;
 
 public class TestSymbolicCE {
 	
-
+/*
 	@Test
 	public void testSinglePathOracle() throws TimeoutException{
 		BooleanAlgebra<IntPred, Integer> ba = new BoundedIntegerSolver(0,null);
@@ -82,7 +82,7 @@ public class TestSymbolicCE {
 
 		List<IntPred> ce = o.checkEquivalence(hyp);
 		assertTrue(ce.equals(Arrays.asList(new IntPred(0,9))));
-	}
+	}*/
 	
 	@Test
 	public void testLearning1() throws TimeoutException {
@@ -105,6 +105,7 @@ public class TestSymbolicCE {
 
 	}
 	
+	/*
 	@Test
 	public void testLearning2() throws TimeoutException {
 		BooleanAlgebra<IntPred, Integer> ba = new BoundedIntegerSolver(0,null);
@@ -126,28 +127,6 @@ public class TestSymbolicCE {
 		assertTrue(learned.getStates().size() <= given.getStates().size());
 		
 	}
-	
-	/*
-	@Test
-	public void testLearningChar() throws TimeoutException {
-		UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
-		
-		Integer init = 1;
-		List<Integer> fin = Arrays.asList(3);
-		List<SFAMove<CharPred, Character>> trans = new ArrayList<SFAMove<CharPred, Character>>();
-		trans.add(new SFAInputMove<CharPred, Character>(1, 2, new CharPred('a')));
-		trans.add(new SFAInputMove<CharPred, Character>(2, 3, new CharPred('b')));
-		trans.add(new SFAInputMove<CharPred, Character>(3, 1, new CharPred('c')));
-		SFA<CharPred, Character> given = SFA.MkSFA(trans, init, fin, ba, false);
-		
-		SymbolicLearner<CharPred, Character> ell = new SymbolicLearner<CharPred, Character>();
-		SymbolicOracle<CharPred, Character> o = new SinglePathSFAOracle<CharPred, Character>(given, ba);
-		SFA<CharPred, Character> learned = ell.learn(o, ba);
-		
-		assertTrue(SFA.areEquivalent(given, learned, ba));
-		assertTrue(learned.getStates().size() <= given.getStates().size());
-
-	}*/
 	
 	@Test
 	public void testLearning3() throws TimeoutException {
@@ -305,7 +284,28 @@ public class TestSymbolicCE {
 		assertTrue(learned1.getStates().size() == learned2.getStates().size());
 	}
 	
-	
+	*/
 
 }
 
+/*
+@Test
+public void testLearningChar() throws TimeoutException {
+	UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
+	
+	Integer init = 1;
+	List<Integer> fin = Arrays.asList(3);
+	List<SFAMove<CharPred, Character>> trans = new ArrayList<SFAMove<CharPred, Character>>();
+	trans.add(new SFAInputMove<CharPred, Character>(1, 2, new CharPred('a')));
+	trans.add(new SFAInputMove<CharPred, Character>(2, 3, new CharPred('b')));
+	trans.add(new SFAInputMove<CharPred, Character>(3, 1, new CharPred('c')));
+	SFA<CharPred, Character> given = SFA.MkSFA(trans, init, fin, ba, false);
+	
+	SymbolicLearner<CharPred, Character> ell = new SymbolicLearner<CharPred, Character>();
+	SymbolicOracle<CharPred, Character> o = new SinglePathSFAOracle<CharPred, Character>(given, ba);
+	SFA<CharPred, Character> learned = ell.learn(o, ba);
+	
+	assertTrue(SFA.areEquivalent(given, learned, ba));
+	assertTrue(learned.getStates().size() <= given.getStates().size());
+
+}*/
