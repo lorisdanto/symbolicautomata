@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 
 import benchmark.SFT.codecs.HTMLEntityCodec;
 
+import org.sat4j.specs.TimeoutException;
 import theory.characters.CharConstant;
 import theory.characters.CharFunc;
 import theory.characters.CharOffset;
@@ -34,7 +35,7 @@ public class HTMLDecode {
     private static SFT<CharPred, CharFunc, Character> sft = null;
     private static UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
 
-    private static SFT<CharPred, CharFunc, Character> MkDecodeSFT(){
+    private static SFT<CharPred, CharFunc, Character> MkDecodeSFT() throws TimeoutException {
         List<SFTMove<CharPred, CharFunc, Character>> transitions = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
 
         List<CharFunc> output00 = new ArrayList<CharFunc>();
@@ -185,7 +186,7 @@ public class HTMLDecode {
      * the modification of ST on page 9 on the paper named after Symbolic Finite State Transducers: Algorithms And
      * Applications
      */
-    public static String decodeSFT(String input) throws org.sat4j.specs.TimeoutException {
+    public static String decodeSFT(String input) throws TimeoutException {
         // if the required SFT has not been created yet, then generate it. Otherwise we could just use it directly
         // instead of generating it every time decodeSFT is called, which is quite time consuming.
         if (sft == null)

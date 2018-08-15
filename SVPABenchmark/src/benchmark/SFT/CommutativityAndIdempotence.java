@@ -27,13 +27,13 @@ import transducers.sft.SFTInputMove;
  */
 public class CommutativityAndIdempotence {
     private static UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
-    private static SFT<CharPred, CharFunc, Character> caseConversion = MkCaseConversionSft();
-    private static SFT<CharPred, CharFunc, Character> deleteZeros = MkDeleteZeros();
+    private static SFT<CharPred, CharFunc, Character> caseConversion;
+    private static SFT<CharPred, CharFunc, Character> deleteZeros;
 
     /**
      * convert all lower cases to upper cases and all upper cases to lower cases
      */
-    private static SFT<CharPred, CharFunc, Character> MkCaseConversionSft() {
+    private static SFT<CharPred, CharFunc, Character> MkCaseConversionSft() throws Exception {
         List<SFTMove<CharPred, CharFunc, Character>> transitions = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
 
         List<CharFunc> output001 = new ArrayList<CharFunc>();
@@ -53,7 +53,7 @@ public class CommutativityAndIdempotence {
     /**
      * delete all character '0' in the string
      */
-    private static SFT<CharPred, CharFunc, Character> MkDeleteZeros() {
+    private static SFT<CharPred, CharFunc, Character> MkDeleteZeros() throws Exception {
         List<SFTMove<CharPred, CharFunc, Character>> transitions = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
 
         List<CharFunc> output001 = new ArrayList<CharFunc>();
@@ -71,6 +71,8 @@ public class CommutativityAndIdempotence {
 
     @Test
     public void test() throws Exception {
+        caseConversion = MkCaseConversionSft();
+        deleteZeros = MkDeleteZeros();
         // commutativity: delete zeros first or convert cases first does not matter, so they should commute
         SFT<CharPred, CharFunc, Character> composed1 = deleteZeros.composeWith(caseConversion, ba);
         SFT<CharPred, CharFunc, Character> composed2 = caseConversion.composeWith(deleteZeros, ba);

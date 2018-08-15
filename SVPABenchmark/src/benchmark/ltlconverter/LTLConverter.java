@@ -40,7 +40,7 @@ import logic.ltl.Predicate;
 import logic.ltl.True;
 import logic.ltl.Until;
 import logic.ltl.WeakUntil;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import java.lang.UnsupportedOperationException;
 import theory.bdd.BDD;
 import theory.bddalgebra.BDDSolver;
 import utilities.Pair;
@@ -152,7 +152,7 @@ public class LTLConverter {
 															// cphi =
 															// (StrongReleaseNode)
 															// phi;
-															throw new NotImplementedException();
+															throw new UnsupportedOperationException();
 														} else {
 															if (phi instanceof TrueNode) {
 																outputLTL = new True<BDD, BDD>();

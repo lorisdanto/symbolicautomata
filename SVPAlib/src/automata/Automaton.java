@@ -355,7 +355,7 @@ public abstract class Automaton<P, S> {
 	 * If <code>state<code> belongs to reached returns reached(state) otherwise
 	 * add state to reached and to toVisit and return corresponding id
 	 */
-	public static <A, B> int getStateId(A state, Map<A, Integer> reached, LinkedList<A> toVisit) {
+	public static <T> int getStateId(T state, Map<T, Integer> reached, LinkedList<T> toVisit) {
 		if (!reached.containsKey(state)) {
 			int newId = reached.size();
 			reached.put(state, newId);
