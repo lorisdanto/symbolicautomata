@@ -55,257 +55,7 @@ public class SRAUnitTest {
 		assertTrue(autB.getTransitionCount() == 2);
 	}
 
-	@Test
-	public void testEpsRemove() throws TimeoutException {
-		SFA<CharPred, Character> autAnoEps = autA.removeEpsilonMoves(ba);
-
-		assertFalse(autA.isEpsilonFree());
-		assertTrue(autAnoEps.isEpsilonFree());
-	}
-
-	@Test
-	public void testAmbiguity() throws TimeoutException {
-		SFA<CharPred, Character> autAmb = getAmbSFA(ba);
-		SFA<CharPred, Character> autUnamb = getUnambSFA(ba);
-		SFA<CharPred, Character> epsAmb = getEpsAmbSFA(ba);
-		SFA<CharPred, Character> epsUnamb = getEpsUnambSFA(ba);
-
-		List<Character> a = autAmb.getAmbiguousInput(ba);
-		List<Character> u = autUnamb.getAmbiguousInput(ba);
-		
-		List<Character> aeps = epsAmb.getAmbiguousInput(ba);
-		List<Character> ueps = epsUnamb.getAmbiguousInput(ba);
-		
-		assertTrue(a != null);
-		assertTrue(u == null);
-		assertTrue(aeps != null);
-		assertTrue(ueps == null);
-	}
-
-	@Test
-	public void testIntersectionWith() throws TimeoutException {
-		SFA<CharPred, Character> intersection = autA.intersectionWith(autB, ba);
-
-		assertTrue(autA.accepts(la, ba));
-		assertFalse(autA.accepts(lb, ba));
-		assertTrue(autA.accepts(lab, ba));
-		assertFalse(autA.accepts(lnot, ba));
-
-		assertFalse(autB.accepts(la, ba));
-		assertTrue(autB.accepts(lb, ba));
-		assertTrue(autB.accepts(lab, ba));
-		assertFalse(autB.accepts(lnot, ba));
-
-		assertFalse(intersection.accepts(la, ba));
-		assertFalse(intersection.accepts(lb, ba));
-		assertTrue(intersection.accepts(lab, ba));
-		assertFalse(intersection.accepts(lnot, ba));
-
-	}
-
-	@Test
-	public void testMinimization() throws TimeoutException {
-		SFA<CharPred, Character> autM = getSFAtoMin2(ba);
-
-		SFA<CharPred, Character> min = autM.minimize(ba);
-
-		assertTrue(autM.accepts(la, ba));
-		assertFalse(autM.accepts(lnot, ba));
-		assertTrue(min.accepts(la, ba));
-		assertFalse(min.accepts(lnot, ba));
-
-		assertTrue(min.stateCount() == 3);
-
-		assertTrue(min.isEquivalentTo(autM, ba));
-	}
-
-	@Test
-	public void testDeterminization() throws TimeoutException {
-		SFA<CharPred, Character> detAutA = autA.determinize(ba);
-
-		assertFalse(autA.isDeterministic(ba));
-		assertTrue(detAutA.isDeterministic(ba));
-		assertFalse(autA.isDeterministic(ba));
-	}
-
-	@Test
-	public void testMkTotal() throws TimeoutException {
-		SFA<CharPred, Character> autcSfa = getSFAc(ba);
-		SFA<CharPred, Character> totc = autcSfa.mkTotal(ba);
-
-		assertTrue(autcSfa.isDeterministic(ba));
-		assertTrue(totc.isDeterministic(ba));
-	}
-
-	@Test
-	public void testGetWitness() throws TimeoutException {
-		SFA<CharPred, Character> ca = autA.complement(ba);
-
-		boolean oneIsOk = false;
-		for (Character e : ca.getWitness(ba))
-			oneIsOk = oneIsOk || ba.HasModel(ba.MkNot(alpha), e);
-
-		assertTrue(oneIsOk);
-	}
-
-	@Test
-	public void testComplement() throws TimeoutException {
-		SFA<CharPred, Character> complementA = autA.complement(ba);
-		SFA<CharPred, Character> complementB = autB.complement(ba);
-
-		assertTrue(autA.accepts(la, ba));
-		assertFalse(autA.accepts(lb, ba));
-		assertTrue(autA.accepts(lab, ba));
-		assertFalse(autA.accepts(lnot, ba));
-
-		assertFalse(complementA.accepts(la, ba));
-		assertTrue(complementA.accepts(lb, ba));
-		assertFalse(complementA.accepts(lab, ba));
-		assertTrue(complementA.accepts(lnot, ba));
-
-		assertFalse(autB.accepts(la, ba));
-		assertTrue(autB.accepts(lb, ba));
-		assertTrue(autB.accepts(lab, ba));
-		assertFalse(autB.accepts(lnot, ba));
-
-		assertTrue(complementB.accepts(la, ba));
-		assertFalse(complementB.accepts(lb, ba));
-		assertFalse(complementB.accepts(lab, ba));
-		assertTrue(complementB.accepts(lnot, ba));
-	}
-
-	@Test
-	public void testEquivalence() throws TimeoutException {
-		SFA<CharPred, Character> cA = autA.complement(ba);
-		SFA<CharPred, Character> cUcA = autA.unionWith(cA, ba);
-		SFA<CharPred, Character> ccA = cA.complement(ba);
-		SFA<CharPred, Character> cB = autB.complement(ba);
-		SFA<CharPred, Character> cUcB = autB.unionWith(cB, ba);
-		SFA<CharPred, Character> ccB = cB.complement(ba);
-
-		assertFalse(autA.isEquivalentTo(autB, ba));
-		assertTrue(autA.isEquivalentTo(ccA, ba));
-		boolean res = autB.isEquivalentTo(ccB, ba);
-
-		assertTrue(res);
-		assertTrue(cUcA.isEquivalentTo(SFA.getFullSFA(ba), ba));
-		assertTrue(cUcB.isEquivalentTo(SFA.getFullSFA(ba), ba));
-		assertTrue(cUcB.isEquivalentTo(cUcA, ba));		
-		
-		
-		autA = autA.determinize(ba);
-		autB = autB.determinize(ba);
-		cUcA = cUcA.determinize(ba);
-		cUcB = cUcB.determinize(ba);
-			
-		assertFalse(autA.isEquivalentPlusSymoblicWitnessTo(autB, ba, 1000).first);		
-		assertTrue(cUcA.isEquivalentPlusSymoblicWitnessTo(SFA.getFullSFA(ba), ba, 1000).first);
-		assertTrue(cUcB.isEquivalentPlusSymoblicWitnessTo(SFA.getFullSFA(ba), ba, 1000).first);
-		assertTrue(cUcB.isEquivalentPlusSymoblicWitnessTo(cUcA, ba, 1000).first);
-		
-		Pair<Boolean, List<Character>> result = autA.isEquivalentPlusWitnessTo(autB, ba);
-		assertTrue(autA.accepts(result.second, ba)!= autB.accepts(result.second, ba));
-		
-	}
-
-	@Test
-	public void testEquivalenceHK() throws TimeoutException {
-		SFA<CharPred, Character> cA = autA.complement(ba);
-		SFA<CharPred, Character> cUcA = autA.unionWith(cA, ba);
-		SFA<CharPred, Character> ccA = cA.complement(ba);
-		SFA<CharPred, Character> cB = autB.complement(ba);
-		SFA<CharPred, Character> cUcB = autB.unionWith(cB, ba);
-		SFA<CharPred, Character> ccB = cB.complement(ba);
-
-		assertFalse(autA.isHopcroftKarpEquivalentTo(autB, ba));
-
-		assertTrue(autA.isHopcroftKarpEquivalentTo(ccA, ba));
-
-		boolean res = autB.isHopcroftKarpEquivalentTo(ccB, ba);
-
-		assertTrue(res);
-		assertTrue(cUcA.isHopcroftKarpEquivalentTo(SFA.getFullSFA(ba), ba));
-		assertTrue(cUcB.isHopcroftKarpEquivalentTo(SFA.getFullSFA(ba), ba));
-		assertTrue(cUcB.isHopcroftKarpEquivalentTo(cUcA, ba));
-
-		SFA<CharPred, Character> fsfa = getFullSFA().determinize(ba).minimize(ba);
-		SFA<CharPred, Character> esfa = getEmptySFA();
-
-		assertFalse(esfa.isHopcroftKarpEquivalentTo(fsfa, ba));			
-		
-	}
-	
-	public SFA<CharPred, Character> getEmptySFA() throws TimeoutException {
-		Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<>();
-
-		transitions.add(new SFAInputMove<>(0, 0, ba.True()));
-		return SFA.MkSFA(transitions, 0, new HashSet<Integer>(), ba, false, false, true);
-	}
-
-	public SFA<CharPred, Character> getFullSFA() throws TimeoutException {
-		Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<>();
-		Collection<Integer> finalStates = new HashSet<>();
-
-		finalStates.add(3);
-		transitions.add(new SFAInputMove<>(0, 1, new CharPred('a')));
-		transitions.add(new SFAInputMove<>(1, 2, new CharPred('b')));
-		transitions.add(new SFAInputMove<>(2, 3, new CharPred('c')));
-		return SFA.MkSFA(transitions, 0, finalStates, ba);
-	}
-
-	@Test
-	public void testUnion() throws TimeoutException {
-		SFA<CharPred, Character> union = autA.unionWith(autB, ba);
-
-		assertTrue(autA.accepts(la, ba));
-		assertFalse(autA.accepts(lb, ba));
-		assertTrue(autA.accepts(lab, ba));
-		assertFalse(autA.accepts(lnot, ba));
-
-		assertFalse(autB.accepts(la, ba));
-		assertTrue(autB.accepts(lb, ba));
-		assertTrue(autB.accepts(lab, ba));
-		assertFalse(autB.accepts(lnot, ba));
-
-		assertTrue(union.accepts(la, ba));
-		assertTrue(union.accepts(lb, ba));
-		assertTrue(union.accepts(lab, ba));
-		assertFalse(union.accepts(lnot, ba));
-	}
-
-	@Test
-	public void testDifference() throws TimeoutException {
-		SFA<CharPred, Character> difference = autA.minus(autB, ba);
-
-		assertTrue(autA.accepts(la, ba));
-		assertFalse(autA.accepts(lb, ba));
-		assertTrue(autA.accepts(lab, ba));
-		assertFalse(autA.accepts(lnot, ba));
-
-		assertFalse(autB.accepts(la, ba));
-		assertTrue(autB.accepts(lb, ba));
-		assertTrue(autB.accepts(lab, ba));
-		assertFalse(autB.accepts(lnot, ba));
-
-		assertTrue(difference.accepts(la, ba));
-		assertFalse(difference.accepts(lb, ba));
-		assertFalse(difference.accepts(lab, ba));
-		assertFalse(difference.accepts(lnot, ba));
-	}
-
-	@Test
-	public void testMinus() throws TimeoutException {
-		SFA<CharPred, Character> justA = justAlpha(ba);
-		SFA<CharPred, Character> plus = justA.concatenateWith(SFA.star(justA, ba), ba);
-
-		SFA<CharPred, Character> sfaAMPlus = justA.minus(plus, ba);
-		assertTrue(sfaAMPlus.isEmpty());
-
-		SFA<CharPred, Character> sfaPlusMA = plus.minus(justA, ba);
-		assertFalse(sfaPlusMA.isEmpty());
-	}
-
-	// ---------------------------------------
+    // ---------------------------------------
 	// Predicates
 	// ---------------------------------------
 	UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
@@ -316,8 +66,8 @@ public class SRAUnitTest {
 	CharPred comma = new CharPred(',');
 	Integer onlyX = 1;
 
-	SFA<CharPred, Character> autA = getSFAa(ba);
-	SFA<CharPred, Character> autB = getSFAb(ba);
+	SRA<CharPred, Character> autA = getSRAa(ba);
+	SRA<CharPred, Character> autB = getSRAb(ba);
 
 	// Test strings
 	List<Character> la = lOfS("aa"); // accepted only by autA
@@ -326,80 +76,20 @@ public class SRAUnitTest {
 	List<Character> lnot = lOfS("44"); // accepted only by neither autA nor autB
 
 	// [a-z]+ ambiguous
-	private SFA<CharPred, Character> justAlpha(UnaryCharIntervalSolver ba) {
+	private SRA<CharPred, Character> justAlpha(UnaryCharIntervalSolver ba) {
 
-		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
-		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));
+		Collection<SRAMove<CharPred, Character>> transitionsA = new LinkedList<SRAMove<CharPred, Character>>();
+		transitionsA.add(new SRACheckMove<CharPred, Character>(0, 1, alpha));
 		try {
-			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
+			return SRA.MkSRA(transitionsA, 0, Arrays.asList(1), ba);
 		} catch (TimeoutException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
 	}
-
-	// [a-z]+ ambiguous
-	private SFA<CharPred, Character> getAmbSFA(UnaryCharIntervalSolver ba) {
-
-		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
-		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 0, alpha));
-		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));
-		transitionsA.add(new SFAInputMove<CharPred, Character>(1, 1, alpha));
-		try {
-			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
-		} catch (TimeoutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	// [a-z]+ ambiguous
-	private SFA<CharPred, Character> getEpsAmbSFA(UnaryCharIntervalSolver ba) {
-
-		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
-		transitionsA.add(new SFAEpsilon<CharPred, Character>(0, 1));
-		transitionsA.add(new SFAEpsilon<CharPred, Character>(0, 2));
-		try {
-			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1, 2), ba);
-		} catch (TimeoutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	// [a-z]+ unambiguos
-	private SFA<CharPred, Character> getUnambSFA(UnaryCharIntervalSolver ba) {
-
-		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
-		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 0, alpha));
-		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));
-		try {
-			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
-		} catch (TimeoutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	// [a-z]+ ambiguous
-	private SFA<CharPred, Character> getEpsUnambSFA(UnaryCharIntervalSolver ba) {
-
-		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
-		transitionsA.add(new SFAEpsilon<CharPred, Character>(0, 1));
-		try {
-			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1), ba);
-		} catch (TimeoutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	// [a-z]* with epsilon transition
+	
+    // [a-z]* with epsilon transition
 	private SFA<CharPred, Character> getSFAa(UnaryCharIntervalSolver ba) {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
@@ -414,24 +104,7 @@ public class SRAUnitTest {
 		return null;
 	}
 
-	// [a-z]+
-	private SFA<CharPred, Character> getSFAtoMin2(UnaryCharIntervalSolver ba) {
-
-		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
-
-		transitionsA.add(new SFAInputMove<CharPred, Character>(0, 1, alpha));
-		transitionsA.add(new SFAInputMove<CharPred, Character>(1, 2, alpha));
-		transitionsA.add(new SFAInputMove<CharPred, Character>(2, 2, alpha));
-		try {
-			return SFA.MkSFA(transitionsA, 0, Arrays.asList(1, 2), ba);
-		} catch (TimeoutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	// [a-z]*
+    // [a-z]*
 	private SFA<CharPred, Character> getSFAc(UnaryCharIntervalSolver ba) {
 
 		Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
