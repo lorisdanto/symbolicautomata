@@ -6,6 +6,8 @@
  */
 package automata.sra;
 
+import java.util.LinkedList;
+
 import org.sat4j.specs.TimeoutException;
 
 import theory.BooleanAlgebra;
@@ -20,7 +22,7 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
     /**
 	 * Constructs an SRA Fresh Transition that starts from state <code>from</code> and ends at state
 	 * <code>to</code> with input <code>input</code>
-     * Fresh transitions only happen iff the predicate is true and the input symbol is different from all the registers
+     * Fresh transitions happen iff the predicate is true and the input symbol is different from all the registers.
      * If this is true, then the input symbol is stored in the register mentioned
 	 */
 	public SRAFreshMove(Integer from, Integer to, P guard, Integer register) {
@@ -28,13 +30,29 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 	}
 	
 	@Override
-	public boolean isSatisfiable(BooleanAlgebra<P, S> boolal) throws TimeoutException {
-        // FIXME: Requires knowledge of the registers at time of transition.
-        //        Possible solution: let guard = guard AND a not in R.
-		return boolal.IsSatisfiable(guard);
+	public boolean isSatisfiable(BooleanAlgebra<P, S> boolal, LinkedList<S> registers) throws TimeoutException {
+        P registerPredicates = boolal.True();
+        for (S registerData : registers)
+            registerPredicates = boolal.MkAnd(registerPredicates, boolal.MkNot(boolal.MkAtom(registerData)));
+		return boolal.IsSatisfiable(boolal.MkAnd(guard, registerPredicates));
 	}
-	
-	
+
+    @Override
+    public S getWitness(BooleanAlgebra<P, S> boolal, LinkedList<S> registers) throws TimeoutException {
+        P registerPredicates = boolal.True();
+        for (S registerData : registers)
+            registerPredicates = boolal.MkAnd(registerPredicates, boolal.MkNot(boolal.MkAtom(registerData)));
+        return boolal.generateWitness(boolal.MkAnd(guard, registerPredicates));
+    }
+
+    @Override
+    public boolean hasModel(S input, BooleanAlgebra<P, S> boolal, LinkedList<S> registers) throws TimeoutException {
+        P registerPredicates = boolal.True();
+        for (S registerData : registers)
+            registerPredicates = boolal.MkAnd(registerPredicates, boolal.MkNot(boolal.MkAtom(registerData)));
+        return boolal.HasModel(boolal.MkAnd(guard, registerPredicates), input);
+    }
+
 	@Override
 	public boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		if (from.equals(t.from)) {
@@ -73,15 +91,7 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 		  return new SRACheckMove<P, S>(from, to, guard, register);
 	}
 
-	@Override
-	public S getWitness(BooleanAlgebra<P, S> ba) throws TimeoutException {
-        // FIXME: Again, does the witness need to be equal to the register at time of transition?
-		return ba.generateWitness(guard);
-	}
-
-	@Override
-	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) throws TimeoutException {
-		return ba.HasModel(guard, el);
-	}
-	
+    public boolean isFresh() {
+        return true;
+    }
 }

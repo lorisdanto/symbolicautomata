@@ -6,6 +6,8 @@
  */
 package automata.sra;
 
+import java.util.LinkedList;
+
 import org.sat4j.specs.TimeoutException;
 
 import theory.BooleanAlgebra;
@@ -27,12 +29,20 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
     }	
 
 	@Override
-	public boolean isSatisfiable(BooleanAlgebra<P, S> boolal) throws TimeoutException {
-        // FIXME: Requires knowledge of the registers at time of transition.
-        //        Possible solution: let guard = guard AND R[register]
-		return boolal.IsSatisfiable(guard);
+	public boolean isSatisfiable(BooleanAlgebra<P, S> boolal, LinkedList<S> registers) throws TimeoutException {
+		return boolal.IsSatisfiable(boolal.MkAnd(guard, boolal.MkAtom(registers.get(register))));
 	}
-	
+
+    @Override
+    public S getWitness(BooleanAlgebra<P, S> boolal, LinkedList<S> registers) throws TimeoutException {
+        return boolal.generateWitness(boolal.MkAnd(guard, boolal.MkAtom(registers.get(register))));
+    }
+
+    @Override
+    public boolean hasModel(S input, BooleanAlgebra<P, S> boolal, LinkedList<S> registers) throws TimeoutException {
+        return boolal.HasModel(boolal.MkAnd(guard, boolal.MkAtom(registers.get(register))), input);
+    }
+
 	@Override
 	public boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		if (from.equals(t.from)) {
@@ -60,7 +70,7 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 	public boolean equals(Object other) {
 		if (other instanceof SRACheckMove<?, ?>) {
 			SRACheckMove<?, ?> otherCasted = (SRACheckMove<?, ?>) other;
-			return otherCasted.from==from && otherCasted.to==to && otherCasted.guard==guard && otherCasted.register == register;
+			return otherCasted.from == from && otherCasted.to == to && otherCasted.guard == guard && otherCasted.register == register;
 		}
 
 		return false;
@@ -70,16 +80,8 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 	public Object clone(){
 		  return new SRACheckMove<P, S>(from, to, guard, register);
 	}
-
-	@Override
-	public S getWitness(BooleanAlgebra<P, S> ba) throws TimeoutException {
-        // FIXME: Again, does the witness need to be equal to the register at time of transition?
-		return ba.generateWitness(guard);
-	}
-
-	@Override
-	public boolean hasModel(S el, BooleanAlgebra<P, S> ba) throws TimeoutException {
-		return ba.HasModel(guard, el);
-	}
 	
+    public boolean isFresh() {
+        return false;
+    }
 }

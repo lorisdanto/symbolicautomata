@@ -6,19 +6,21 @@
  */
 package automata.sra;
 
+import java.util.LinkedList;
+
 import theory.BooleanAlgebra;
 
 import org.sat4j.specs.TimeoutException;
-
-import automata.Move;
 
 /**
  * Abstract SRA Move
  * @param <P> set of predicates over the domain S
  * @param <S> domain of the automaton alphabet
  */
-public abstract class SRAMove<P, S> extends Move<P, S> {
+public abstract class SRAMove<P, S> {
 
+    public Integer from;
+    public Integer to;
     public P guard;
     public Integer register;
 
@@ -27,23 +29,42 @@ public abstract class SRAMove<P, S> extends Move<P, S> {
 	 * ends at state <code>to</code> with input <code>input</code>
 	 */
 	public SRAMove(Integer from, Integer to, P guard, Integer register) {
-		super(from, to);
+		this.from = from;
+        this.to = to;
         this.guard = guard;
         this.register = register;
 	}
 
 	/**
+	 * @return whether the transition can ever be enabled
+	 * @throws TimeoutException 
+	 */
+	public abstract boolean isSatisfiable(BooleanAlgebra<P, S> ba, LinkedList<S> registers) throws TimeoutException;
+
+	/**
+	 * @return an input triggering the transition
+	 * @throws TimeoutException 
+	 */
+	public abstract S getWitness(BooleanAlgebra<P, S> ba, LinkedList<S> registers) throws TimeoutException;
+
+	/**
+	 * @return true iff <code>input</code> can trigger the transition
+	 * @throws TimeoutException 
+	 */
+	public abstract boolean hasModel(S input, BooleanAlgebra<P, S> ba, LinkedList<S> registers) throws TimeoutException;
+
+	/**
+	 * Create the dot representation of the move
+	 */
+	public abstract String toDotString();
+
+	/**
 	 * Checks if the move is disjoint from the move <code>t</code> (they are not from same state on same predicate)
 	 * @throws TimeoutException 
 	 */
-	public abstract boolean isDisjointFrom(SRAMove<P, S> t,
-			BooleanAlgebra<P, S> ba) throws TimeoutException;
+	public abstract boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException;
 
-	@Override
 	public abstract Object clone();
 
-    @Override
-	public boolean isEpsilonTransition() {
-		return false;
-	}
+    public abstract boolean isFresh();
 }
