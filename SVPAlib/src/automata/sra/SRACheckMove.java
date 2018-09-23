@@ -6,6 +6,7 @@
  */
 package automata.sra;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import org.sat4j.specs.TimeoutException;
@@ -24,29 +25,29 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 	 * <code>to</code> with input <code>input</code>
      * Check transitions happen iff the predicate is true and the register mentioned matches the input symbol.
 	 */
-	public SRACheckMove(Integer from, Integer to, P guard, Integer register) {
-		super(from, to, guard, register);
+	public SRACheckMove(Integer from, Integer to, P guard, Integer registerIndex) {
+		super(from, to, guard, Arrays.asList(registerIndex));
     }	
 
 	@Override
-	public boolean isSatisfiable(BooleanAlgebra<P, S> boolal, LinkedList<S> registers) throws TimeoutException {
-		return boolal.IsSatisfiable(boolal.MkAnd(guard, boolal.MkAtom(registers.get(register))));
+	public boolean isSatisfiable(BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
+		return boolal.IsSatisfiable(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(registerIndexes.iterator().next()))));
 	}
 
     @Override
-    public S getWitness(BooleanAlgebra<P, S> boolal, LinkedList<S> registers) throws TimeoutException {
-        return boolal.generateWitness(boolal.MkAnd(guard, boolal.MkAtom(registers.get(register))));
+    public S getWitness(BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
+        return boolal.generateWitness(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(registerIndexes.iterator().next()))));
     }
 
     @Override
-    public boolean hasModel(S input, BooleanAlgebra<P, S> boolal, LinkedList<S> registers) throws TimeoutException {
-        return boolal.HasModel(boolal.MkAnd(guard, boolal.MkAtom(registers.get(register))), input);
+    public boolean hasModel(S input, BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
+        return boolal.HasModel(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(registerIndexes.iterator().next()))), input);
     }
 
 	@Override
 	public boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		if (from.equals(t.from)) {
-            if (register != t.register) {
+            if (registerIndexes != t.registerIndexes) {
                 return true;
             }
 			SRACheckMove<P, S> ct = (SRACheckMove<P, S>) t;
@@ -58,30 +59,39 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 
 	@Override
 	public String toString() {
-		return String.format("S: %s -%s/%s-> %s", from, guard, register, to);
+		return String.format("S: %s -%s/%s-> %s", from, guard, registerIndexes.iterator().next(), to);
 	}
 
 	@Override
 	public String toDotString() {
-		return String.format("%s -> %s [label=\"%s/%s\"]\n", from, to, guard, register);
+		return String.format("%s -> %s [label=\"%s/%s\"]\n", from, to, guard, registerIndexes.iterator().next());
 	}
 
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof SRACheckMove<?, ?>) {
 			SRACheckMove<?, ?> otherCasted = (SRACheckMove<?, ?>) other;
-			return otherCasted.from == from && otherCasted.to == to && otherCasted.guard == guard && otherCasted.register == register;
+			return otherCasted.from == from && otherCasted.to == to && otherCasted.guard == guard && otherCasted.registerIndexes == registerIndexes;
 		}
 
 		return false;
 	}
 
 	@Override
-	public Object clone(){
-		  return new SRACheckMove<P, S>(from, to, guard, register);
+	public Object clone() {
+		  return new SRACheckMove<P, S>(from, to, guard, registerIndexes.iterator().next());
 	}
-	
+
+    @Override
+    public MSRAMove<P, S> asMultipleAssignment() {
+       return new MSRAMove<P, S>(from, to, guard, registerIndexes, new LinkedList<Integer>());
+    }
+
     public boolean isFresh() {
         return false;
     }
+
+	public boolean isMultipleAssignment() {
+		return false;
+	}
 }

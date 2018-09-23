@@ -7,6 +7,7 @@
 package automata.sra;
 
 import java.util.LinkedList;
+import java.util.Collection;
 
 import theory.BooleanAlgebra;
 
@@ -22,17 +23,17 @@ public abstract class SRAMove<P, S> {
     public Integer from;
     public Integer to;
     public P guard;
-    public Integer register;
+    public Collection<Integer> registerIndexes;
 
 	/**
 	 * Constructs an SRA Transition that starts from state <code>from</code> and
 	 * ends at state <code>to</code> with input <code>input</code>
 	 */
-	public SRAMove(Integer from, Integer to, P guard, Integer register) {
+	public SRAMove(Integer from, Integer to, P guard, Collection<Integer> registerIndexes) {
 		this.from = from;
         this.to = to;
         this.guard = guard;
-        this.register = register;
+        this.registerIndexes = registerIndexes;
 	}
 
 	/**
@@ -66,5 +67,9 @@ public abstract class SRAMove<P, S> {
 
 	public abstract Object clone();
 
+    public abstract MSRAMove<P, S> asMultipleAssignment();
+
     public abstract boolean isFresh();
+
+	public abstract boolean isMultipleAssignment();
 }
