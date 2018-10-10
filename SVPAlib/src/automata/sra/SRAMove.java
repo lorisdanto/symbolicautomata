@@ -40,7 +40,7 @@ public abstract class SRAMove<P, S> {
 	 * @return whether the transition can ever be enabled
 	 * @throws TimeoutException 
 	 */
-	public abstract boolean isSatisfiable(BooleanAlgebra<P, S> ba, LinkedList<S> registers) throws TimeoutException;
+	public abstract boolean isSatisfiable(BooleanAlgebra<P, S> ba) throws TimeoutException;
 
 	/**
 	 * @return an input triggering the transition

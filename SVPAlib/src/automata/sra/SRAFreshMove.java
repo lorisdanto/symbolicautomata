@@ -31,18 +31,16 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 	}
 	
 	@Override
-	public boolean isSatisfiable(BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
-        P registerPredicates = boolal.True();
-        for (S registerData : registerValues)
-            registerPredicates = boolal.MkAnd(registerPredicates, boolal.MkNot(boolal.MkAtom(registerData)));
-		return boolal.IsSatisfiable(boolal.MkAnd(guard, registerPredicates));
+	public boolean isSatisfiable(BooleanAlgebra<P, S> boolal) throws TimeoutException {
+		return boolal.IsSatisfiable(guard);
 	}
 
     @Override
     public S getWitness(BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
         P registerPredicates = boolal.True();
         for (S registerData : registerValues)
-            registerPredicates = boolal.MkAnd(registerPredicates, boolal.MkNot(boolal.MkAtom(registerData)));
+			if (registerData != null)
+            	registerPredicates = boolal.MkAnd(registerPredicates, boolal.MkNot(boolal.MkAtom(registerData)));
         S witness = boolal.generateWitness(boolal.MkAnd(guard, registerPredicates));
         if (witness != null)
 			registerValues.set(registerIndexes.iterator().next(), witness);
@@ -53,7 +51,8 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
     public boolean hasModel(S input, BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
         P registerPredicates = boolal.True();
         for (S registerData : registerValues)
-            registerPredicates = boolal.MkAnd(registerPredicates, boolal.MkNot(boolal.MkAtom(registerData)));
+			if (registerData != null)
+            	registerPredicates = boolal.MkAnd(registerPredicates, boolal.MkNot(boolal.MkAtom(registerData)));
         return boolal.HasModel(boolal.MkAnd(guard, registerPredicates), input);
     }
 

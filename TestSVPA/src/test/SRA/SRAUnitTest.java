@@ -105,7 +105,7 @@ public class SRAUnitTest {
     // [a-z]*
 	private SRA<CharPred, Character> getSRAa(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>();
-        registers.add('z');
+        registers.add(null);
 		Collection<SRAMove<CharPred, Character>> transitionsA = new LinkedList<SRAMove<CharPred, Character>>();
 		transitionsA.add(new SRACheckMove<CharPred, Character>(0, 0, alpha, 0));
         transitionsA.add(new SRAFreshMove<CharPred, Character>(0, 0, alpha, 0));
@@ -121,7 +121,7 @@ public class SRAUnitTest {
 	// [a-z][0-9]*
 	private SRA<CharPred, Character> getSRAb(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>();
-        registers.add('z');
+        registers.add(null);
 		Collection<SRAMove<CharPred, Character>> transitionsB = new LinkedList<SRAMove<CharPred, Character>>();
 		transitionsB.add(new SRACheckMove<CharPred, Character>(0, 1, alpha, 0));
         transitionsB.add(new SRAFreshMove<CharPred, Character>(0, 1, alpha, 0));

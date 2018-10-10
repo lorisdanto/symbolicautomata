@@ -30,18 +30,22 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
     }	
 
 	@Override
-	public boolean isSatisfiable(BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
-		return boolal.IsSatisfiable(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(registerIndexes.iterator().next()))));
+	public boolean isSatisfiable(BooleanAlgebra<P, S> boolal) throws TimeoutException {
+		return boolal.IsSatisfiable(guard);
 	}
 
     @Override
     public S getWitness(BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
-        return boolal.generateWitness(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(registerIndexes.iterator().next()))));
+		if (registerValues.get(registerIndexes.iterator().next()) != null)
+        	return boolal.generateWitness(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(registerIndexes.iterator().next()))));
+		return null;
     }
 
     @Override
     public boolean hasModel(S input, BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
-        return boolal.HasModel(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(registerIndexes.iterator().next()))), input);
+		if (registerValues.get(registerIndexes.iterator().next()) != null)
+        	return boolal.HasModel(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(registerIndexes.iterator().next()))), input);
+		return false;
     }
 
 	@Override

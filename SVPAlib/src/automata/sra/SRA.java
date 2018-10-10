@@ -23,6 +23,7 @@ import org.omg.CORBA.INTERNAL;
 import org.sat4j.specs.TimeoutException;
 
 import theory.BooleanAlgebra;
+import theory.BooleanAlgebraSubst;
 import utilities.Block;
 import utilities.Pair;
 import utilities.Timers;
@@ -252,7 +253,7 @@ public class SRA<P, S> {
 	
 	// Adds a transition to the SRA
 	private void addTransition(SRAMove<P, S> transition, BooleanAlgebra<P, S> ba, boolean skipSatCheck) throws TimeoutException {
-		if (skipSatCheck || transition.isSatisfiable(ba, registers)) {
+		if (skipSatCheck || transition.isSatisfiable(ba)) {
 
 			transitionCount++;
 
@@ -476,9 +477,7 @@ public class SRA<P, S> {
 	 * Set of moves from state
 	 */
 	public Collection<SRAMove<P, S>> getMovesFrom(Integer state) {
-		Collection<SRAMove<P, S>> transitions = new LinkedList<SRAMove<P, S>>();
-		transitions.addAll(getTransitionsFrom(state));
-		return transitions;
+		return new LinkedList<SRAMove<P, S>>(getTransitionsFrom(state));
 	}
 
     /**
@@ -741,7 +740,7 @@ public class SRA<P, S> {
                     MSRAMove<A, B> transition = new MSRAMove<A, B>(currentStateID, null, intersGuard, intersE, intersU);
 
                     // if it is satisfiable, add nextStateID and update iteration lists.
-                    if (transition.isSatisfiable(ba, registers)) {
+                    if (transition.isSatisfiable(ba)) {
                         Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(ct1.to, ct2.to);
                         transition.to = getStateId(nextState, reached, toVisit);
                         if (aut1.finalStates.contains(ct1.to) || aut2.finalStates.contains(ct2.to))
@@ -917,7 +916,21 @@ public class SRA<P, S> {
 	// ------------------------------------------------------
 	// Other automata operations
 	// ------------------------------------------------------
-    
+
+    /**
+     * @return a new reduced SRA.
+     * @throws TimeoutException
+     */
+	public SRA<P, S> mkReduced(BooleanAlgebra<P, S> ba) throws TimeoutException {
+        // 1: Get all transitions from SRA.
+        // 2: Get all possible combinations of minterms (keyword *possible*)
+        // 3: Get transitions from q0.
+        // 3: Apply AND of phi0 (from q0) on set of possible combinations of predicates and register req.
+        //    (==registers[rIndex] for check transitions or registers.contains(Input) == false)
+        // 4: If the transition can happen, add transition from q0 to final state in original SRA transition.
+        // 5:
+		return null;
+    }
 //       /**
 //     * @return a new total equivalent total SRA (with one transition for each
 //     *         symbol out of every state)
@@ -1123,258 +1136,6 @@ public class SRA<P, S> {
 //
 //        return new Pair<Boolean, List<A>>(true, null);
 //    }
-//
-//    /**
-//     * Checks whether the automaton accepts the same language as aut using Hopcroft-Karp algorithm
-//     * @assume the two automata are deterministic
-//     * @throws TimeoutException
-//     */
-//    public boolean isHopcroftKarpEquivalentTo(SRA<P, S> aut, BooleanAlgebra<P, S> ba)
-//            throws TimeoutException {
-//
-//        return areHKEquivalentNondet(this.mkTotal(ba).normalize(ba),
-//                aut.mkTotal(ba).normalize(ba), ba, Long.MAX_VALUE);
-//    }
-//
-//    /**
-//     * Checks whether the automaton accepts the same language as aut using Hopcroft-Karp algorithm
-//     * @assume the two automata are deterministic
-//     * @throws TimeoutException
-//     */
-//    public boolean isHopcroftKarpEquivalentTo(SRA<P, S> aut, BooleanAlgebra<P, S> ba, long timeout)
-//            throws TimeoutException {
-//
-//        long startTime = System.currentTimeMillis();
-//        SRA<P, S> tmp1 = this.mkTotal(ba);
-//        long leftover = System.currentTimeMillis() - startTime;
-//
-//        startTime = System.currentTimeMillis();
-//        tmp1 = tmp1.normalize(ba);
-//        leftover = leftover - (System.currentTimeMillis() - startTime);
-//
-//        startTime = System.currentTimeMillis();
-//        SRA<P, S> tmp2 = aut.mkTotal(ba);
-//        leftover = leftover - (System.currentTimeMillis() - startTime);
-//
-//        startTime = System.currentTimeMillis();
-//        tmp2 = tmp2.normalize(ba);
-//        leftover = leftover - (System.currentTimeMillis() - startTime);
-//
-//        return areHKEquivalentNondet(tmp1, tmp2, ba, leftover);
-//    }
-//
-//
-//    /**
-//     * checks whether aut1 is equivalent to aut2 using Hopcroft Karp's algorithm
-//     * @assume automata are deterministic
-//     * @throws TimeoutException
-//     */
-//    @SuppressWarnings("unused")
-//    private static <A, B> boolean areHopcroftKarpEquivalent(SRA<A, B> aut1, SRA<A, B> aut2,
-//            BooleanAlgebra<A, B> ba, long timeout) throws TimeoutException {
-//
-//        Timers.setForCongruence();
-//
-//        long startTime = System.currentTimeMillis();
-//        UnionFindHopKarp<B> ds = new UnionFindHopKarp<>();
-//        int offset = aut1.stateCount();
-//
-//        boolean isF1=aut1.isFinalState(aut1.initialState);
-//        boolean isF2=aut2.isFinalState(aut2.initialState);
-//        if(isF1!=isF2)
-//            return false;
-//
-//        ds.add(aut1.initialState, isF1);
-//        ds.add(aut2.initialState + offset, isF2);
-//        ds.mergeSets(aut1.initialState, aut2.initialState + offset);
-//
-//        LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<>();
-//        toVisit.add(new Pair<Integer, Integer>(aut1.initialState, aut2.initialState));
-//        while (!toVisit.isEmpty()) {
-//            Timers.oneMoreState();
-//
-//            if (System.currentTimeMillis() - startTime > timeout)
-//                throw new TimeoutException();
-//
-//            Pair<Integer, Integer> curr = toVisit.removeFirst();
-//            for (SRAMove<A, B> move1 : aut1.getMovesFrom(curr.first))
-//                for (SRAMove<A, B> move2 : aut2.getMovesFrom(curr.second)) {
-//                    A conj = ba.MkAnd(move1.guard, move2.guard);
-//                    if (ba.IsSatisfiable(conj)) {
-//                        int r1 = move1.to;
-//                        int r2 = move2.to + offset;
-//
-//                        if (!ds.contains(r1))
-//                            ds.add(r1, aut1.isFinalState(move1.to));
-//                        if (!ds.contains(r2))
-//                            ds.add(r2, aut2.isFinalState(move2.to));
-//
-//                        if (!ds.areInSameSet(r1, r2)) {
-//                            if (!ds.mergeSets(r1, r2))
-//                                return false;
-//                            toVisit.add(new Pair<Integer, Integer>(move1.to, move2.to));
-//                        }
-//                    }
-//                }
-//        }
-//
-//        return true;
-//    }
-//
-//     /**
-//     * Lazy Hopcroft-Karp plus determinization
-//     * @throws TimeoutException
-//    */
-//    public static <A, B> boolean areHKEquivalentNondet(SRA<A,B> aut1, SRA<A,B> aut2,
-//            BooleanAlgebra<A, B> ba, long timeout) throws TimeoutException
-//    {
-//        Timers.setForCongruence();
-//        long startTime = System.currentTimeMillis();
-//
-//        UnionFindHopKarp<B> ds = new UnionFindHopKarp<>();
-//
-//        HashMap<Integer, Integer> reached1 = new HashMap<Integer, Integer>();
-//        HashMap<Integer, Integer> reached2 = new HashMap<Integer, Integer>();
-//
-//        LinkedList<Pair<Integer, Integer>> toVisit = new LinkedList<Pair<Integer, Integer>>();
-//
-//        LinkedList<Integer> aut1States = new LinkedList<Integer>();
-//        aut1States.addAll(aut1.getStates());
-//        //PowerSetStateBuilder dfaStateBuilderForAut1 = PowerSetStateBuilder.Create(aut1States.ToArray());
-//
-//        LinkedList<Integer> aut2States = new LinkedList<Integer>();
-//        aut2States.addAll(aut2.getStates());
-//        //PowerSetStateBuilder dfaStateBuilderForAut2 = PowerSetStateBuilder.Create(aut2States.ToArray());
-//
-//
-//        HashMap<HashSet<Integer>, Integer> reachedStates1 = new HashMap<HashSet<Integer>, Integer>();
-//        HashMap<Integer, HashSet<Integer>> idToStates1 = new HashMap<Integer, HashSet<Integer>>();
-//
-//        HashMap<HashSet<Integer>, Integer> reachedStates2 = new HashMap<HashSet<Integer>, Integer>();
-//        HashMap<Integer, HashSet<Integer>> idToStates2 = new HashMap<Integer, HashSet<Integer>>();
-//
-//        HashSet<Integer> detInitialState1 = new HashSet<Integer>();
-//        detInitialState1.add(aut1.getInitialState());
-//        reachedStates1.put(detInitialState1, 0);
-//        idToStates1.put(0, detInitialState1);
-//
-//        HashSet<Integer> detInitialState2 = new HashSet<Integer>();
-//        detInitialState2.add(aut2.getInitialState());
-//        reachedStates2.put(detInitialState2, 0);
-//        idToStates2.put(0, detInitialState2);
-//
-//        int st1 = 0;
-//        int st2 = 0;
-//
-//        reached1.put(st1, 0);
-//        reached2.put(st2, 1);
-//
-//        toVisit.add(new Pair<Integer, Integer>(st1, st2));
-//
-//        boolean isIn1Final = aut1.isFinalConfiguration(detInitialState1);
-//        boolean isIn2Final = aut2.isFinalConfiguration(detInitialState2);
-//
-//        if (isIn1Final != isIn2Final)
-//            return false;
-//
-//        ds.add(0, isIn1Final);
-//        ds.add(1, isIn2Final);
-//        ds.mergeSets(0, 1);
-//
-//        while (toVisit.size() > 0)
-//        {
-//            Timers.oneMoreState();
-//
-//            if (System.currentTimeMillis() - startTime > timeout)
-//                throw new TimeoutException();
-//
-//            Pair<Integer,Integer> curr = toVisit.get(0);
-//            toVisit.removeFirst();
-//
-//            HashSet<Integer> curr1 = idToStates1.get(curr.first);
-//            HashSet<Integer> curr2 = idToStates2.get(curr.second);
-//
-//            ArrayList<SRAMove<A, B>> movesFromCurr1 = new ArrayList<>();
-//            movesFromCurr1.addAll(aut1.getMovesFrom(curr1));
-//            ArrayList<SRAMove<A, B>> movesFromCurr2 = new ArrayList<>();
-//            movesFromCurr2.addAll(aut2.getMovesFrom(curr2));
-//
-//
-//
-//            ArrayList<A> predicates1 = new ArrayList<>();
-//            for(SRAMove<A, B> m: movesFromCurr1)
-//                predicates1.add(m.guard);
-//
-//            ArrayList<A> predicates2 = new ArrayList<>();
-//            for(SRAMove<A, B> m: movesFromCurr2)
-//                predicates2.add(m.guard);
-//
-//            Collection<Pair<A, ArrayList<Integer>>> minterms1 = ba.GetMinterms(predicates1);
-//            Collection<Pair<A, ArrayList<Integer>>> minterms2 = ba.GetMinterms(predicates2);
-//
-//
-//            for (Pair<A, ArrayList<Integer>> minterm1: minterms1)
-//            {
-//                for (Pair<A, ArrayList<Integer>> minterm2: minterms2)
-//                {
-//                    A conj = ba.MkAnd(minterm1.first, minterm2.first);
-//                    if (ba.IsSatisfiable(conj))
-//                    {
-//                        HashSet<Integer> to1 = new HashSet<Integer>();
-//                        for (int i = 0; i < minterm1.second.size(); i++)
-//                            if (minterm1.second.get(i)==1 && ba.IsSatisfiable(ba.MkAnd(movesFromCurr1.get(i).guard, conj)))
-//                                to1.add(movesFromCurr1.get(i).to);
-//
-//                        LinkedList<HashSet<Integer>> l1 = new LinkedList<HashSet<Integer>>();
-//                        int to1st = getStateId(to1, reachedStates1, l1);
-//                        if(!l1.isEmpty())
-//                            idToStates1.put(reachedStates1.size()-1,to1);
-//
-//                        HashSet<Integer> to2 = new HashSet<Integer>();
-//                        for (int i = 0; i < minterm2.second.size(); i++)
-//                            if (minterm2.second.get(i)==1 && ba.IsSatisfiable(ba.MkAnd(movesFromCurr2.get(i).guard, conj)))
-//                                to2.add(movesFromCurr2.get(i).to);
-//
-//                        LinkedList<HashSet<Integer>> l2 = new LinkedList<HashSet<Integer>>();
-//                        int to2st = getStateId(to2, reachedStates2, l2);
-//                        if(!l2.isEmpty())
-//                            idToStates2.put(reachedStates2.size()-1,to2);
-//
-//                        // If not in union find add them
-//                        int r1 = 0, r2 = 0;
-//                        if (!reached1.containsKey(to1st))
-//                        {
-//                            r1 = ds.getNumberOfElements();
-//                            reached1.put(to1st, r1);
-//                            ds.add(r1, aut1.isFinalConfiguration(to1));
-//                        }
-//                        else
-//                            r1 = reached1.get(to1st);
-//
-//                        if (!reached2.containsKey(to2st))
-//                        {
-//                            r2 = ds.getNumberOfElements();
-//                            reached2.put(to2st, r2);
-//                            ds.add(r2, aut2.isFinalConfiguration(to2));
-//                        }
-//                        else
-//                            r2 = reached2.get(to2st);
-//
-//                        // Check whether are in simulation relation
-//                        if (!ds.areInSameSet(r1, r2))
-//                        {
-//                            if (!ds.mergeSets(r1, r2))
-//                                return false;
-//
-//                            toVisit.add(new Pair<Integer, Integer>(to1st, to2st));
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return true;
-//    }
-//
 //
 //    /**
 //     * concatenation with aut

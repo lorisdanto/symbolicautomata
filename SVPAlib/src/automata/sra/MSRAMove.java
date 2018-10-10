@@ -35,16 +35,8 @@ public class MSRAMove<P, S> extends SRAMove<P, S> {
     }
 
 	@Override
-	public boolean isSatisfiable(BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
-        P predicates = boolal.True();
-        // Must be "in" all E registers, i.e. must be equal to the values in all E registers.
-        for (Integer ERegister : E)
-            predicates = boolal.MkAnd(predicates, boolal.MkAtom(registerValues.get(ERegister)));
-        // Must not be "in" any U registers, i.e. must not be equal to any value in U registers.
-        for (Integer URegister : U)
-            predicates = boolal.MkAnd(predicates, boolal.MkNot(boolal.MkAtom(registerValues.get(URegister))));
-        
-        return boolal.IsSatisfiable(boolal.MkAnd(guard, predicates));
+	public boolean isSatisfiable(BooleanAlgebra<P, S> boolal) throws TimeoutException {
+        return boolal.IsSatisfiable(guard);
 	}
 
     @Override
@@ -52,10 +44,14 @@ public class MSRAMove<P, S> extends SRAMove<P, S> {
         P predicates = boolal.True();
         // Must be "in" all E registers, i.e. must be equal to the values in all E registers.
         for (Integer ERegister : E)
-            predicates = boolal.MkAnd(predicates, boolal.MkAtom(registerValues.get(ERegister)));
+        	if (registerValues.get(ERegister) != null)
+            	predicates = boolal.MkAnd(predicates, boolal.MkAtom(registerValues.get(ERegister)));
+        	else
+				predicates = boolal.MkAnd(predicates, boolal.False());
         // Must not be "in" any U registers, i.e. must not be equal to any value in U registers.
         for (Integer URegister : U)
-            predicates = boolal.MkAnd(predicates, boolal.MkNot(boolal.MkAtom(registerValues.get(URegister))));
+			if (registerValues.get(URegister) != null)
+            	predicates = boolal.MkAnd(predicates, boolal.MkNot(boolal.MkAtom(registerValues.get(URegister))));
         
         return boolal.generateWitness(boolal.MkAnd(guard, predicates)); 
     }
@@ -65,10 +61,14 @@ public class MSRAMove<P, S> extends SRAMove<P, S> {
         P predicates = boolal.True();
         // Must be "in" all E registers, i.e. must be equal to the values in all E registers.
         for (Integer ERegister : E)
-            predicates = boolal.MkAnd(predicates, boolal.MkAtom(registerValues.get(ERegister)));
+			if (registerValues.get(ERegister) != null)
+            	predicates = boolal.MkAnd(predicates, boolal.MkAtom(registerValues.get(ERegister)));
+			else
+				predicates = boolal.MkAnd(predicates, boolal.False());
         // Must not be "in" any U registers, i.e. must not be equal to any value in U registers.
         for (Integer URegister : U)
-            predicates = boolal.MkAnd(predicates, boolal.MkNot(boolal.MkAtom(registerValues.get(URegister))));
+			if (registerValues.get(URegister) != null)
+            	predicates = boolal.MkAnd(predicates, boolal.MkNot(boolal.MkAtom(registerValues.get(URegister))));
         
         return boolal.HasModel(boolal.MkAnd(guard, predicates), input); 
     }
