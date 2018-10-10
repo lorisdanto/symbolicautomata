@@ -96,9 +96,40 @@ public class BDDSolver extends BooleanAlgebra<BDD, BDD> {
 		throw new UnsupportedOperationException();
 	}
 
+	private BDD extractWitness(BDD p) {
+		BDD res = factory.one();
+		BDD copy = p;
+		//res = res.and(factory.ithVar(0));
+		//res.and(factory.ithVar(1));
+		//res.printDot();
+		//factory.ithVar(1).and(factory.ithVar(0)).printDot();
+		Integer index = 0;
+		res = factory.one();
+		for (int i = 0; i < factory.varNum(); i++) {
+			if (!factory.ithVar(i).and(copy).equals(factory.zero())) {
+				res = res.and(factory.ithVar(index));			;
+				copy = copy.and(factory.ithVar(index));
+			} else {
+				res = res.and(factory.nithVar(index));
+				copy = copy.and(factory.nithVar(index));
+			}
+			index ++;
+		}
+		return res;
+	}
+	
 	@Override
 	public BDD generateWitness(BDD p1) {
-		return p1.satOne();
+		BDD sat = extractWitness(p1);//p1.satOne();
+		/*
+		sat.not().printDot();
+		if (!sat.not().and(p1).equals(factory.zero())) {
+			throw new AssertionError("Witness is buggy 1");
+		}
+		if (sat.and(p1).equals(factory.zero())) {
+			throw new AssertionError("Witness is buggy 2");
+		}*/		
+		return sat;
 	}
 
 	@Override
