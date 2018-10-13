@@ -4,11 +4,14 @@ package learning_symbolic_ce.sfa;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import utilities.Pair;
 
 import java.lang.Integer;
 
@@ -47,11 +50,14 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 
 	public SFA<P, S> learn(SymbolicOracle<P, S> o, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		ObsTable table = new ObsTable(ba.generateWitness(ba.True()), ba);
+		long fulltime = System.nanoTime();
 		
 		SFA<P, S> conjecture = null;
 		
 		//Counterexamples are now lists of predicates
 		List<P> cx = null;
+		HashSet<Pair<List<P>, Boolean>> counterexamples = new HashSet<Pair<List<P>, Boolean>>();
+		//HashMap<List<S>, Boolean> membershipQueries;
 		
 		while (true) {
 			table.fill(o);
@@ -64,16 +70,19 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 				//so after it is run we need to
 				//(i)  fill the table
 				//(ii) check closed again
-				if (consflag)
-					consflag = table.make_consistent();
 				if (consflag) {
+					consflag = table.make_consistent();
+				}
+				if (consflag) {
+					
 					table.fill(o);
 					
 					//this.log("TBL after mkcons", table);
 
 					boolean distflag = table.distribute();
-					if (distflag)
+					if (distflag) {
 						table.fill(o);
+					}
 					
 					closeflag = true;
 				}
@@ -81,34 +90,58 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 				//so after it is run we need to
 				//(i)  fill the table
 				//(ii) check consistency again
-				if (closeflag)
+				if (closeflag) {
 					closeflag = table.close(o);
+				}
 				if (closeflag) {
 					table.fill(o);
 					consflag = true;
 				}
 				//note that evidence-closure is handled by the other subroutines
-				
-				consflag = table.completeObservedPartition(o);
+				assert true;
+				consflag = (table.completeObservedPartition(o)) || consflag;
 				table.fill(o);
 			} while (consflag || closeflag);
 			
 			this.log("Obs Table", table);
 			
-			//table.completeObservedPartition(o);
 			conjecture = table.buildSFA(ba);
-			//System.out.println("total");
 			conjecture = conjecture.mkTotal(ba);
-			//System.out.println("finished");
 
 			this.log("SFA guess", conjecture);
 
 			//System.out.println("sanity checking consistency");
 			//checkArgument(table.consistent(conjecture, ba));
 			//System.out.println("passed");
-
+			
 			cx = o.checkEquivalence(conjecture);
+			
+			//Can't guarantee that a repeated counterexample is still maximal single-path 
+			/*
+			Boolean repeatCE = false; 
+			for(Pair<List<P>, Boolean> ce : counterexamples) {
+				if(!conjecture.accepts(ce.first, ba).equals(ce.second)) {
+					cx = ce.first;
+					repeatCE = true;
+					break;
+				}
+			}
+			if(!repeatCE) {
+				cx = o.checkEquivalence(conjecture);
+				List<P> cx2 = new ArrayList<P>(cx);
+				Pair<List<P>, Boolean> cxPair = new Pair<List<P>, Boolean>(cx2, !conjecture.accepts(cx2, ba))
+				counterexamples.add();
+				
+			}
+			//cx = checkEquivWithRepeats(conjecture, counterexamples, o);
+			counterexamples.add(cx);
+			*/
+			
+			//!!UPDATE THE PARTITIONS AFTER EACH NEW CE YOU IDIOT
+			
+			//System.out.println(cx);
 			if (cx == null) {
+				System.out.println(String.valueOf(System.nanoTime() - fulltime));
 				this.log("statistics", 
 						"# equiv: " + o.getNumEquivalence() + 
 						"\n# mem: " + o.getNumMembership());
@@ -118,7 +151,7 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 			this.log("counterex", (cx == null ? "none" : cx));
 			
 			//process the counterexample
-			table.process(cx, ba, table);
+			table.process(cx, ba, table, o);
 			Boolean b = false;
 			b = !b;
 			//this.log("TBLpostCX", table);
@@ -128,11 +161,14 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 		}
 	}
 	
+	//List<P> checkEquivalenceWithPast(SFA<P, S> conj, HashSet<List<P>> counterexamples, (SymbolicOracle<P, S> o)
+	
 	private class ObsTable {
 		public List<List<S>> S, R, E, SUR;
 		public Map<List<S>, Boolean> f;
 		public S arbchar;
 		public BooleanAlgebra<P, S> ba;
+		public int fillMems = 0;
 				
 		//maps an integer representing a state to an "observed partition"
 		//observed partition is a list of predicate/state pairs
@@ -141,10 +177,17 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 		
 		//returns the string in S with the same row as aString. 
 		//returns null if no such state exists.  
-		public List<S> getAccessString(List<S> aString) {
-			List<Boolean> row1 = row(aString);
+		public List<S> getAccessString(List<S> aString, SymbolicOracle<P,S> o) throws TimeoutException{
+			List<Boolean> row1 = safeRow(aString,o);
+			if(row1 == null) {
+				assert false;
+			}
 			for(List<S> s : S) {
-				if(row1.equals(row(s))) {
+				List<Boolean> sRow = row(s);
+				if(row(s) == null) {
+					assert false;
+				}
+				if(row1.equals(sRow)) {
 					return s;
 				}
 			}
@@ -221,13 +264,15 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 		}
 		*/
 
-		public void process(List<P> cx, BooleanAlgebra<P,S> ba, ObsTable table) throws TimeoutException{
+		public void process(List<P> cx, BooleanAlgebra<P,S> ba, ObsTable table, SymbolicOracle<P,S> o) throws TimeoutException{
 			//HashMap<List<S>, ArrayList<Triple<P, List<S>, S>>> newPartitions = new HashMap<List<S>, ArrayList<Triple<P, List<S>, S>>>(partitions);
  			//HashMap<List<S>, P> newNullMap = new HashMap<List<S>, P>(nullMap);
- 			List<S> ceString = new ArrayList<S>();
+ 			//System.out.println(String.valueOf(this.S.size()));
+ 			//System.out.println(this);
+			List<S> ceString = new ArrayList<S>();
  			boolean changedPred = false; 
 			for(int i=0; i<cx.size(); i++) {
-				List<S> accessString = getAccessString(ceString);
+				List<S> accessString = getAccessString(ceString, o);
 				ceString.add(ba.generateWitness(cx.get(i)));
 				P currentPred = cx.get(i);
 				boolean foundOverlap = false;
@@ -242,14 +287,25 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 					if (ba.IsSatisfiable(ba.MkAnd(currentPred, part.first))) {
 						foundOverlap = true;
 						//ArrayList<Triple<P, List<S>, S>> currPart = table.partitions.get(accessString); 
-						newPart.add(new Triple<P, List<S>, S>(ba.MkAnd(part.first, currentPred), null, null));
-						newPart.add(new Triple<P, List<S>, S>(ba.MkAnd(part.first, ba.MkNot(currentPred)), null, null));
+						P firstPred = ba.MkAnd(part.first, currentPred);
+						if(ba.IsSatisfiable(firstPred)) {
+							newPart.add(new Triple<P, List<S>, S>(firstPred, null, null));
+						} else {
+						//	assert false;
+						}
+						P secPred = ba.MkAnd(part.first, ba.MkNot(currentPred));
+						if(ba.IsSatisfiable(secPred)) {
+							newPart.add(new Triple<P, List<S>, S>(secPred, null, null));
+						} else {
+							//assert false;
+						}
 						newPart.remove(part);
 						currentPred = ba.MkAnd(currentPred, ba.MkNot(part.first));
 						changedPred = true;
 					}
 				}
 				partitions.put(accessString, newPart);
+				extendByPartitions(accessString, newPart);
 				assert foundOverlap : "partitions are not complete";
 				//only change the outgoing predicate for a single state
 				//maybe change later
@@ -258,12 +314,47 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 			if(!changedPred) {
 				assert false : "no difference was found between counter-example and hypothesis";
 			}
-			List<S> newExperiment = new ArrayList<S>();
-			for(int i=cx.size()-1;i>=0; i--) {
-				newExperiment.add(0,ba.generateWitness(cx.get(i)));
-				table.E.add(new ArrayList<S>(newExperiment));
+			List<S> newR = new ArrayList<S>();
+			//!! changed to add all prefixes to R 
+			for(int i=0; i < cx.size(); i++) {
+				//System.out.println("1");
+				newR.add(ba.generateWitness(cx.get(i)));
+				table.R.add(new ArrayList<S>(newR)); //!! probably where things went wrong wrt evidence closure
+				table.SUR.add(new ArrayList<S>(newR)); 
 			}
 			
+		}
+		
+		//!! make more efficient in terms of new elements added to R
+		//Ensures that accessString is extended in R by a representative element from each partition.  
+		public void extendByPartitions(List<S> accessString,  ArrayList<Triple<P, List<S>, S>> newPart) throws TimeoutException{
+			//List<Boolean> sRow = row(accessString);
+			for(Triple<P, List<S>, S> part : newPart){
+				Boolean extensionExists = false;
+				for(List<S> extension : SUR) {
+					if(extension.size() == 0) {continue;}
+					//List<Boolean> eRow = row(extension.subList(0, extension.size()-1));
+					//assert eRow != null;
+					//if(!eRow.equals(sRow)) {continue;}
+					if(!extension.subList(0, extension.size()-1).equals(accessString)) {continue;}
+					if(ba.HasModel(part.first, extension.get(extension.size()-1))){
+						extensionExists = true;
+					}			
+				}
+				if(!extensionExists) {
+					S ext = ba.generateWitness(part.first);
+					if(ext == null) {
+						assert false;
+					}
+					List<S> newR = new ArrayList<S>(accessString);
+					newR.add(ext);
+					List<S> newSUR = new ArrayList<S>(newR);
+					R.add(newR);
+					SUR.add(newSUR);
+					assert newR.get(0) != null;
+					assert newSUR.get(0) != null;
+				}
+			}
 		}
 		
 		//sanity check to verify a conjectured automaton
@@ -287,14 +378,19 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 			SUR.add(stateString);
 			f.put(stateString, o.checkMembership(stateString));
 			
-			//checks that the immediate prefix of S is in S
-			List<S> pref = new ArrayList<S>(stateString);
+			//checks that the immediate prefix of stateString is in S
+			/*List<S> pref = new ArrayList<S>(stateString);
 			pref.remove(pref.size() - 1);
-			assert S.contains(pref);
+			if(!S.contains(pref)) {
+				assert false;
+			}*/
 			
 			partitions = new HashMap<List<S>, ArrayList<Triple<P, List<S>, S>>>();
 			nullMap = new HashMap<List<S>, P>();
 			
+			
+			
+			//!! inefficient (just need to reset partitions where state has split)
 			for(List<S> accessString : S) {
 				Triple<P, List<S>, S> part = new Triple<P, List<S>, S>(ba.True(), null, null);
 				
@@ -304,9 +400,49 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 				partitions.put(accessString, part2);
 			}
 			
-			//completeObservedPartition(o, ba);
 			
+			//handle evidence-closure
+			for (List<S> e : E) { 
+				List<S> se = new ArrayList<S>(stateString);
+				se.addAll(e);
+				if (!SUR.contains(se)) {
+					R.add(se);
+					SUR.add(se);
+				}
+			}
+			
+			//in case all the e in E are more than single char,
+			//ensure continuation r.a in SUR
+			boolean cont = false;
+			for (List<S> w : SUR) {
+				if (w.size() != stateString.size() + 1)
+					continue;
+				if (isPrefix(stateString, w)) {
+					cont = true;
+					break;
+				}
+			}
+			if (!cont) {
+				List<S> sa = new ArrayList<S>(stateString);
+				sa.add(arbchar);
+				R.add(sa);
+				SUR.add(sa);
+			}
+			//completeObservedPartition(o, ba);
+			assert true;
 			//fill(o); //!! maybe don't need this here.
+		}
+		
+		public void addExperiment(List<S> ex) {
+			E.add(ex);
+			for(List<S> s : S) {
+				List<S> se = new ArrayList<S>(s);
+				se.addAll(ex);
+				if(!SUR.contains(se)) {
+					this.SUR.add(se);
+					this.R.add(se);
+				}
+			}
 		}
 		
 		//returns true if a new state was added
@@ -329,16 +465,19 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 					//assert pred.size() != 0 : "empty pred";
 					if(pred.third == null) {
 						
+						//!! avoid reusing witnesses check if a member of pred.first extends the access string 
+						//to an element of SUR
+						
 						S wit = ba.generateWitness(pred.first);
 						assert wit != null;
 						List<S> extension = new ArrayList<S>(accessString);
 						extension.add(wit);
 					
-						List<Boolean> predRow = row(extension);
+						List<Boolean> predRow = safeRow(extension, o);
 						
 						/*if(predRow == null) { //adding a new string to S
 							addState(extension, o);
-							E.add(Arrays.asList(wit));
+							addExperiment(Arrays.asList(wit));
 							return true;
 						}*/
 						if(predRow == null) { //!! inefficient. don't want to recall fill/consistent/close each time
@@ -348,7 +487,8 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 						} else if (states.get(predRow) == null) {
 							//assert false;
 							addState(extension, o);
-							E.add(Arrays.asList(wit));
+							//System.out.println("0");
+							addExperiment(Arrays.asList(wit));
 							return true;
 						} else if(pred.second == null){ //need to find
 							List<S> targetState = states.get(predRow);
@@ -419,7 +559,9 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 			}
 			
 			Integer init = S.indexOf(new ArrayList<S>());
-			assert init == 0;
+			if( !init.equals(0)) {
+				assert false;
+			}
 			
 			
 			SFA<P,S> aut = SFA.MkSFA(moves, init, fin, ba);
@@ -504,13 +646,59 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 			return ret;
 		}
 		
-		public void fill(SymbolicOracle<P, S> o) throws TimeoutException { 
+		//returns a row of w when it is not guaranteed that f contains we
+		public List<Boolean> safeRow(List<S> w, SymbolicOracle<P,S> o) throws TimeoutException {
+			List<Boolean> ret = new ArrayList<Boolean>();
+			for(List<S> e : E) {
+				List<S> we = new ArrayList<S>(w);
+				we.addAll(e);
+				if(f.get(we) != null) {
+					ret.add(f.get(we));
+				} else {
+					Boolean mem = o.checkMembership(we);
+					f.put(we, mem);
+					ret.add(mem);
+				}
+			}
+			if (ret.contains(null)) {
+				return null;
+			}
+			return ret;
+		}
+		
+		public void fill(SymbolicOracle<P, S> o) throws TimeoutException {
+			//removes duplicates before filling in table
+			SUR = new ArrayList<List<S>>(new LinkedHashSet<List<S>>(SUR));
+			S = new ArrayList<List<S>>(new LinkedHashSet<List<S>>(S));
+			R = new ArrayList<List<S>>(new LinkedHashSet<List<S>>(R));
+			R.removeAll(S);
+			E = new ArrayList<List<S>>(new LinkedHashSet<List<S>>(E)); //!! need to maintain order in E.
+			
+			//SUR = new ArrayList<List<S>>(new HashSet<List<S>>(SUR));
+			//S = new ArrayList<List<S>>(new HashSet<List<S>>(S));
+			//R = new ArrayList<List<S>>(new HashSet<List<S>>(R));
+			//E = new ArrayList<List<S>>(new HashSet<List<S>>(E));
+			//S.remove(new ArrayList<S>());
+			//S.add(0, new ArrayList<S>());
+			//E.remove(new ArrayList<S>());
+			//E.add(0, new ArrayList<S>());
+			if(f.containsKey(new ArrayList<S>())) {
+				assert true;
+			}
 			for (List<S> w : SUR) {
+				//System.out.println(w);
 				for (List<S> e : E) {
 					List<S> we = new ArrayList<S>(w);
 					we.addAll(e);
-					if (!f.containsKey(we))
+					if(!f.containsKey(we)){
+						//System.out.println(we);
+						if(!we.isEmpty() && we.get(0) == null) {
+							assert true;
+							assert true;
+						}
+						fillMems++;
 						f.put(we, o.checkMembership(we));
+					}
 				}
 			}
 		}
@@ -522,7 +710,8 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 				sigs.add(row(s));
 			List<S> best_r = null;
 			for (List<S> r : R) {
-				if (!sigs.contains(row(r))) {
+				List<Boolean> rRow = row(r);
+				if (!sigs.contains(rRow)) {
 					//for membership query efficiency,
 					//instead of just moving r to S, move the shortest r' with row(r) = row(r')
 					best_r = r;
@@ -543,34 +732,7 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 			List<S> r = best_r;
 			this.addState(r,o);
 			R.remove(r);
-			
-			//handle evidence-closure
-			for (List<S> e : E) { 
-				List<S> re = new ArrayList<S>(r);
-				re.addAll(e);
-				if (!SUR.contains(re)) {
-					R.add(re);
-					SUR.add(re);
-				}
-			}
-			
-			//in case all the e in E are more than single char,
-			//ensure continuation r.a in SUR
-			boolean cont = false;
-			for (List<S> w : SUR) {
-				if (w.size() != r.size() + 1)
-					continue;
-				if (isPrefix(r, w)) {
-					cont = true;
-					break;
-				}
-			}
-			if (!cont) {
-				List<S> ra = new ArrayList<S>(r);
-				ra.add(arbchar);
-				R.add(ra);
-				SUR.add(ra);
-			}
+		
 			
 			return true;
 		}
@@ -581,8 +743,9 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 				for (int j = i + 1; j < SUR.size(); j++) {
 					List<S> w1 = SUR.get(i);
 					List<S> w2 = SUR.get(j);
-					if (!row(w1).equals(row(w2)))
+					if (!row(w1).equals(row(w2))) {
 						continue;
+					}
 					Set<List<S>> cont1 = new HashSet<List<S>>();
 					Set<List<S>> cont2 = new HashSet<List<S>>();
 					for (List<S> wa : SUR) {
@@ -595,8 +758,9 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 						List<S> suffix1 = getSuffix(w1, w1a);
 						for (List<S> w2a : cont2) {
 							List<S> suffix2 = getSuffix(w2, w2a);
-							if (!suffix1.equals(suffix2))
+							if (!suffix1.equals(suffix2)) {
 								continue;
+							}
 							List<Boolean> r1 = row(w1a);
 							List<Boolean> r2 = row(w2a);
 							if (!r1.equals(r2)) {
@@ -610,20 +774,21 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 										break;
 									}
 								}
-								E.add(e);
+								//System.out.println("2");
+								addExperiment(e);
 								//distribute the old evidence in a separate function
 								//i.e. find pairs u1,u2 in SUR with row(u1) = row(u2)
 								//     but after adding e to E, row(u1) != row(u2)
 								//this requires filling the table, first
 								//handle evidence-closure
-								for (List<S> s : S) {
+								/*for (List<S> s : S) {
 									List<S> se = new ArrayList<S>(s);
 									se.addAll(e);
 									if (!SUR.contains(se)) {
 										R.add(se);
 										SUR.add(se);
 									}
-								}
+								}*/
 								return true;
 							}
 						}
@@ -710,6 +875,24 @@ public class SymbolicLearner<P, S> extends Learner<P, S>{
 			R.addAll(toAdd);
 			SUR.addAll(toAdd);
 			return toAdd.size() > 0;
+		}
+		
+		//When a new state S is added, a new experiment e is added. 
+		//Finds all S' that agree with S on everything but e (i.e., states that may have been split from S)
+		// 
+		public List<List<S>> findSplitStates(List<S> newState, SymbolicOracle<P,S> o) throws TimeoutException{
+			List<List<S>> splitStates = new ArrayList<List<S>>();
+			List<Boolean> newRow = this.safeRow(newState, o);
+			newRow.remove(newRow.size()-1);
+			for(List<S> state : S) {
+				List<Boolean> stateRow = this.safeRow(state, o);
+				stateRow.remove(stateRow.size() - 1);
+				if(stateRow.equals(newRow)) {
+					splitStates.add(new ArrayList<S>(state));
+				}
+			}
+			
+			return splitStates;
 		}
 		
 		@Override

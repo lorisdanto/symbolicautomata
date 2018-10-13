@@ -32,7 +32,7 @@ import utilities.Pair;
 
 public class TestSymbolicCE {
 	
-/*
+
 	@Test
 	public void testSinglePathOracle() throws TimeoutException{
 		BooleanAlgebra<IntPred, Integer> ba = new BoundedIntegerSolver(0,null);
@@ -82,7 +82,7 @@ public class TestSymbolicCE {
 
 		List<IntPred> ce = o.checkEquivalence(hyp);
 		assertTrue(ce.equals(Arrays.asList(new IntPred(0,9))));
-	}*/
+	}
 	
 	@Test
 	public void testLearning1() throws TimeoutException {
@@ -105,7 +105,7 @@ public class TestSymbolicCE {
 
 	}
 	
-	/*
+	
 	@Test
 	public void testLearning2() throws TimeoutException {
 		BooleanAlgebra<IntPred, Integer> ba = new BoundedIntegerSolver(0,null);
@@ -149,7 +149,7 @@ public class TestSymbolicCE {
 
 	}
 	
-	
+	/*
 	@Test
 	public void testPaperExample() throws TimeoutException {
 		BooleanAlgebra<IntPred, Integer> ba = new BoundedIntegerSolver(0,null);
@@ -173,7 +173,7 @@ public class TestSymbolicCE {
 		
 		assertTrue(SFA.areEquivalent(given, learned, ba));
 		assertTrue(learned.getStates().size() <= given.getStates().size());
-	}
+	}*/
 	
 	@Test
 	public void testMMExample() throws TimeoutException {
@@ -284,7 +284,7 @@ public class TestSymbolicCE {
 		assertTrue(learned1.getStates().size() == learned2.getStates().size());
 	}
 	
-	*/
+	
 
 }
 
