@@ -3,19 +3,11 @@ package test.SRA;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
+import automata.sra.*;
 import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
-
-import automata.sra.SRA;
-import automata.sra.SRACheckMove;
-import automata.sra.SRAFreshMove;
-import automata.sra.SRAMove;
 
 import theory.intervals.IntPred;
 import theory.intervals.IntegerSolver;
@@ -50,19 +42,20 @@ public class SRAUnitTest {
 		assertTrue(autA.getTransitionCount() == 2);
 
 		assertTrue(autB.stateCount() == 2);
-		assertTrue(autB.getTransitionCount() == 2);
+		assertTrue(autB.getTransitionCount() == 4);
 	}
 
     @Test public void testIntersection() throws TimeoutException {
         SRA<CharPred, Character> intersection = autA.intersectionWith(autB, ba);
-
+		boolean check = intersection.createDotFile("intersection", "");
+		assertTrue(check);
         assertTrue(autA.accepts(la, ba));
         assertFalse(autA.accepts(lb, ba));
         assertTrue(autA.accepts(lab, ba));
         assertFalse(autA.accepts(lnot, ba));
 
         assertFalse(autB.accepts(la, ba));
-        assertFalse(autB.accepts(lb, ba));
+        assertTrue(autB.accepts(lb, ba));
         assertTrue(autB.accepts(lab, ba));
         assertFalse(autB.accepts(lnot, ba));
 
@@ -79,6 +72,14 @@ public class SRAUnitTest {
         assertTrue(autIntTwo.accepts(Arrays.asList(1), intBa));
     }
 
+    @Test
+    public void testSRACompilation() throws TimeoutException {
+        boolean check1 = msraAut.createDotFile("msra", "");
+        boolean check2 = msraAut.compileToSRA(ba, Long.MAX_VALUE).createDotFile("toSra", "");
+        assertTrue(check1);
+        assertTrue(check2);
+    }
+
     // ---------------------------------------
 	// Predicates
 	// ---------------------------------------
@@ -93,6 +94,7 @@ public class SRAUnitTest {
 
 	SRA<CharPred, Character> autA = getSRAa(ba);
 	SRA<CharPred, Character> autB = getSRAb(ba);
+	SRA<CharPred, Character> msraAut = getMSRA(ba);
     SRA<IntPred, Integer> autIntOne = getSRAIntOne(intBa);
     SRA<IntPred, Integer> autIntTwo = getSRAIntTwo(intBa);
 
@@ -127,10 +129,8 @@ public class SRAUnitTest {
         transitionsB.add(new SRAFreshMove<CharPred, Character>(0, 1, alpha, 0));
 		transitionsB.add(new SRACheckMove<CharPred, Character>(1, 1, num, 0));
         transitionsB.add(new SRAFreshMove<CharPred, Character>(1, 1, num, 0));
-		transitionsB.add(new SRACheckMove<CharPred, Character>(0, 2, allAlpha, 0));
-        transitionsB.add(new SRAFreshMove<CharPred, Character>(0, 2, allAlpha, 0));
 		try {
-			return SRA.MkSRA(transitionsB, 0, Arrays.asList(2), registers, ba);
+			return SRA.MkSRA(transitionsB, 0, Arrays.asList(1), registers, ba);
 		} catch (TimeoutException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -159,6 +159,24 @@ public class SRAUnitTest {
         try {
             return SRA.MkSRA(transitions, 0, Arrays.asList(1), registers, ba);
         } catch (TimeoutException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private SRA<CharPred, Character> getMSRA(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>();
+        registers.add(null);
+        registers.add(null);
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions.add(new MSRAMove<CharPred, Character>(0, 1, alpha, Arrays.asList(), Collections.singletonList(0)));
+        transitions.add(new MSRAMove<CharPred, Character>(1, 2, alpha, Collections.singletonList(0), Collections.singletonList(1)));
+        transitions.add(new MSRAMove<CharPred, Character>(2, 3, alpha, Arrays.asList(0, 1), Arrays.asList()));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Arrays.asList(3), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return null;

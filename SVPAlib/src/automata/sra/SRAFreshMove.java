@@ -7,6 +7,7 @@
 package automata.sra;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 
 import org.sat4j.specs.TimeoutException;
@@ -27,7 +28,7 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
      * If this is true, then the input symbol is stored in the register mentioned
 	 */
 	public SRAFreshMove(Integer from, Integer to, P guard, Integer registerIndex) {
-		super(from, to, guard, Arrays.asList(registerIndex));
+		super(from, to, guard, Collections.singletonList(registerIndex));
 	}
 	
 	@Override
@@ -71,6 +72,7 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 
 	@Override
 	public String toString() {
+		// TODO: Change fresh * to dot.
 		return String.format("S: %s -%s/%s*-> %s", from, guard, registerIndexes.iterator().next(), to);
 	}
 

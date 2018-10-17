@@ -79,8 +79,8 @@ public class SRA<P, S> {
 		aut.isDeterministic = true;
 		aut.isEmpty = true;
 		aut.maxStateId = 1;
-		aut.addTransition(new SRAFreshMove<A, B>(0, 0, ba.True(), 0), ba, true);
-        aut.addTransition(new SRACheckMove<A, B>(0, 0, ba.True(), 0), ba, true);
+		aut.addTransition(new SRAFreshMove<A, B>(0, 0, ba.True(), 0), ba, false);
+        aut.addTransition(new SRACheckMove<A, B>(0, 0, ba.True(), 0), ba, false);
 		return aut;
 	}
 
@@ -100,8 +100,8 @@ public class SRA<P, S> {
 		aut.isDeterministic = true;
 		aut.isEmpty = false;
 		aut.maxStateId = 1;
-		aut.addTransition(new SRAFreshMove<A, B>(0, 0, ba.True(), 0), ba, true);
-        aut.addTransition(new SRACheckMove<A, B>(0, 0, ba.True(), 0), ba, true);
+		aut.addTransition(new SRAFreshMove<A, B>(0, 0, ba.True(), 0), ba, false);
+        aut.addTransition(new SRACheckMove<A, B>(0, 0, ba.True(), 0), ba, false);
 		return aut;
 	}
 
@@ -268,13 +268,11 @@ public class SRA<P, S> {
             if (transition.isMultipleAssignment()) {
                 MSRAMove<P, S> mTransition = transition.asMultipleAssignment();
                 if (mTransition.E.size() == 1 && mTransition.U.isEmpty()) {
-                    transition.registerIndexes.add(mTransition.E.iterator().next());
-                    getCheckMovesFrom(transition.from).add((SRACheckMove<P, S>) transition);
-                    getCheckMovesTo(transition.to).add((SRACheckMove<P, S>) transition);
+                    getCheckMovesFrom(transition.from).add((new SRACheckMove<P, S>(transition.from, transition.to, transition.guard, mTransition.E.iterator().next())));
+                    getCheckMovesTo(transition.to).add((new SRACheckMove<P, S>(transition.from, transition.to, transition.guard, mTransition.E.iterator().next())));
                 } else if (mTransition.E.isEmpty() && mTransition.U.size() == 1) {
-                    transition.registerIndexes.add(mTransition.U.iterator().next());
-                    getFreshMovesFrom(transition.from).add((SRAFreshMove<P, S>) transition);
-                    getFreshMovesTo(transition.to).add((SRAFreshMove<P, S>) transition);
+                    getFreshMovesFrom(transition.from).add((new SRAFreshMove<P, S>(transition.from, transition.to, transition.guard, mTransition.U.iterator().next())));
+                    getFreshMovesTo(transition.to).add((new SRAFreshMove<P, S>(transition.from, transition.to, transition.guard, mTransition.U.iterator().next())));
                 } else {
                     getMAMovesFrom(transition.from).add(mTransition);
                     getMAMovesTo(transition.to).add(mTransition);
@@ -451,6 +449,7 @@ public class SRA<P, S> {
 	 * @throws TimeoutException 
 	 */
 	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba) throws TimeoutException {
+	    LinkedList<S> cleanRegisters = new LinkedList<S>(registers);
 		Collection<Integer> currConf = new LinkedList<Integer>();
         currConf.add(getInitialState());
 		for (S el : input) {
@@ -458,7 +457,7 @@ public class SRA<P, S> {
 			if (currConf.isEmpty())
 				return false;
 		}
-
+        registers = cleanRegisters;
 		return isFinalConfiguration(currConf);
 	}
 
@@ -596,16 +595,146 @@ public class SRA<P, S> {
 	protected Collection<Integer> getNextState(Collection<Integer> currState, S inputElement, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		Collection<Integer> nextState = new HashSet<Integer>();
 		for (SRAMove<P, S> t : getMovesFrom(currState)) {
-			if (t.hasModel(inputElement, ba, registers))
-				nextState.add(t.to);
-			if (t.isMultipleAssignment())
-                for (Integer index : t.asMultipleAssignment().U)
-                    registers.set(index, inputElement);
-            if (t.isFresh())
-                registers.set(t.registerIndexes.iterator().next(), inputElement);
+			if (t.hasModel(inputElement, ba, registers)) {
+                nextState.add(t.to);
+                if (t.isMultipleAssignment())
+                    for (Integer index : t.asMultipleAssignment().U)
+                        registers.set(index, inputElement);
+                if (t.isFresh())
+                    registers.set(t.registerIndexes.iterator().next(), inputElement);
+            }
 		}
 		return nextState;
 	}
+
+
+	public SRA<P, S> compileToSRA(BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
+
+        long startTime = System.currentTimeMillis();
+
+        // If the automaton doesn't contain MA moves, it's already an SRA
+        if (getMAMovesFrom(states).isEmpty() && getMAMovesTo(states).isEmpty())
+            return MkSRA(getTransitions(), initialState, finalStates, registers, ba);
+
+        // If one of the automata is empty return the empty SRA
+        if (isEmpty)
+            return getEmptySRA(ba);
+
+        // components of new SRA
+        Collection<SRAMove<P, S>> transitions = new ArrayList<SRAMove<P, S>>();
+        LinkedList<S> newRegisters = new LinkedList<S>(registers);
+        Collection<Integer> newFinalStates = new ArrayList<Integer>();
+
+        HashMap<S, ArrayList<Integer>> valueToRegisters = new HashMap<S, ArrayList<Integer>>();
+        for (Integer index = 0; index < registers.size(); index++) {
+            S registerValue = registers.get(index);
+            if (valueToRegisters.containsKey(registerValue)) {
+                valueToRegisters.get(registerValue).add(index);
+            } else {
+         //       if (registerValue != null) {
+                    ArrayList<Integer> registersForValue = new ArrayList<Integer>();
+                    registersForValue.add(index);
+                    valueToRegisters.put(registerValue, registersForValue);
+          //      }
+            }
+        }
+
+        HashMap<Integer, Integer> initialMap = new HashMap<Integer, Integer>();
+        for (ArrayList<Integer> repeatedRegisters : valueToRegisters.values()) {
+            Integer firstElement = repeatedRegisters.get(0);
+            initialMap.put(firstElement, firstElement);
+
+            for (int i = 1; i < repeatedRegisters.size(); i++) {
+                initialMap.put(repeatedRegisters.get(i), firstElement);
+                newRegisters.set(repeatedRegisters.get(i), null);
+            }
+        }
+
+
+        // reached contains the product states (p1,p2) we discovered and maps
+        // them to a stateId
+        HashMap<Pair<Integer, HashMap<Integer,Integer>>, Integer> reached = new HashMap<Pair<Integer, HashMap<Integer,Integer>>, Integer>();
+        // toVisit contains the product states we still have not explored
+        LinkedList<Pair<Integer, HashMap<Integer,Integer>>> toVisit = new LinkedList<Pair<Integer, HashMap<Integer,Integer>>>();
+
+        // The initial state is the pair consisting of the initial
+        // states of aut1 and aut2
+        Pair<Integer, HashMap<Integer,Integer>> initPair = new Pair<Integer, HashMap<Integer,Integer>>(initialState, initialMap);
+        reached.put(initPair, 0);
+        toVisit.add(initPair);
+
+        // Explore the product automaton until no new states can be reached
+        while (!toVisit.isEmpty()) {
+
+            Pair<Integer, HashMap<Integer, Integer>> currentState = toVisit.removeFirst();
+            int currentStateID = reached.get(currentState);
+            HashMap<Integer, Integer> currentMap = currentState.second;
+
+            // Try to pair transitions out of both automata
+            for (MSRAMove<P, S> ct1 : getMovesFromAsMA(currentState.first)) {
+                LinkedList<SRAMove<P, S>> SRAMoves = new LinkedList<SRAMove<P, S>>();
+
+                if (System.currentTimeMillis() - startTime > timeout)
+                    throw new TimeoutException();
+
+                if (!ct1.E.isEmpty()) {
+                    // Case 1 in the paper
+                    LinkedList<Integer> repeatedRegisters = new LinkedList<>();
+                    for (Integer registerE : ct1.E) {
+                        Integer registerEImg = currentMap.get(registerE);
+                        if (registerEImg != null)
+                            repeatedRegisters.add(registerEImg);
+                    }
+
+                    if (repeatedRegisters.size() == 1)
+                        SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct1.guard, repeatedRegisters.get(0)));
+                } else {
+                    // Case 2 in the paper
+
+                    for (Integer registerU : ct1.U) {
+                        Integer registerUImg = currentMap.get(registerU);
+
+                        if (registerUImg != null) {
+                            SRAMoves.add(new SRAFreshMove<P, S>(currentStateID, null, ct1.guard, registerUImg));
+                            break;
+                        }
+                    }
+
+                    // Case 3 in the paper
+                    Set<Integer> registerInImg = new HashSet<Integer>(currentMap.values());
+                    Set<Integer> allRegisters = new HashSet<Integer>();
+
+                    for (Integer i = 0; i < registers.size(); i++)
+                        allRegisters.add(i);
+
+                    allRegisters.removeAll(registerInImg);
+
+                    for (Integer registerCheck : allRegisters)
+                        SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct1.guard, registerCheck));
+                }
+
+
+                for (SRAMove<P, S> transition : SRAMoves) {
+                    if (transition.isSatisfiable(ba)) {
+                        HashMap<Integer, Integer> nextMap = new HashMap<Integer, Integer>(currentMap);
+                        Integer transitionRegister = transition.registerIndexes.iterator().next();
+
+                        for (Integer registersToUpdate : ct1.U)
+                            nextMap.put(registersToUpdate, transitionRegister);
+
+                        Pair<Integer, HashMap<Integer, Integer>> nextState = new Pair<Integer, HashMap<Integer, Integer>>(ct1.to, nextMap);
+                        transition.to = getStateId(nextState, reached, toVisit);
+                        if (finalStates.contains(ct1.to))
+                            finalStates.add(transition.to);
+                        transitions.add(transition);
+                    }
+                }
+
+            }
+        }
+        return MkSRA(transitions, initialState, finalStates, newRegisters, ba);
+
+    }
 
 	/**
 	 * If <code>state<code> belongs to reached returns reached(state) otherwise
@@ -1046,13 +1175,9 @@ public class SRA<P, S> {
 //     *
 //     * @throws TimeoutException
 //     */
+//
 //    public static <A, B> Pair<Boolean, List<B>> areEquivalentPlusWitness(SRA<A, B> aut1, SRA<A, B> aut2, BooleanAlgebra<A, B> ba, long timeout)
 //            throws TimeoutException {
-//        if(!aut1.isDeterministic)
-//            aut1 = aut1.determinize(ba);
-//        if(!aut2.isDeterministic)
-//            aut2 = aut2.determinize(ba);
-//
 //
 //        SRA<A, B> tmp1 = collapseMultipleTransitions(aut1, ba, timeout);
 //        SRA<A, B> tmp2 = collapseMultipleTransitions(aut2, ba, timeout);

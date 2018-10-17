@@ -6,6 +6,7 @@
  */
 package automata.sra;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Collection;
 
@@ -40,6 +41,7 @@ public class MSRAMove<P, S> extends SRAMove<P, S> {
 	}
 
     @Override
+    //TODO
     public S getWitness(BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
         P predicates = boolal.True();
         // Must be "in" all E registers, i.e. must be equal to the values in all E registers.
@@ -52,7 +54,7 @@ public class MSRAMove<P, S> extends SRAMove<P, S> {
         for (Integer URegister : U)
 			if (registerValues.get(URegister) != null)
             	predicates = boolal.MkAnd(predicates, boolal.MkNot(boolal.MkAtom(registerValues.get(URegister))));
-        
+
         return boolal.generateWitness(boolal.MkAnd(guard, predicates)); 
     }
 
@@ -60,17 +62,15 @@ public class MSRAMove<P, S> extends SRAMove<P, S> {
     public boolean hasModel(S input, BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
         P predicates = boolal.True();
         // Must be "in" all E registers, i.e. must be equal to the values in all E registers.
-        for (Integer ERegister : E)
-			if (registerValues.get(ERegister) != null)
-            	predicates = boolal.MkAnd(predicates, boolal.MkAtom(registerValues.get(ERegister)));
-			else
-				predicates = boolal.MkAnd(predicates, boolal.False());
-        // Must not be "in" any U registers, i.e. must not be equal to any value in U registers.
-        for (Integer URegister : U)
-			if (registerValues.get(URegister) != null)
-            	predicates = boolal.MkAnd(predicates, boolal.MkNot(boolal.MkAtom(registerValues.get(URegister))));
-        
-        return boolal.HasModel(boolal.MkAnd(guard, predicates), input); 
+        if (E.isEmpty() && U.isEmpty())
+            return false;
+
+        LinkedList<Integer> registersWithInput = new LinkedList<>();
+        for (int index = 0; index < registerValues.size(); index++)
+            if(registerValues.get(index) != null && registerValues.get(index).equals(input))
+                registersWithInput.add(index);
+         return new HashSet<>(registersWithInput).equals(new HashSet<>(E)) && boolal.HasModel(guard, input);
+
     }
 
 	@Override
