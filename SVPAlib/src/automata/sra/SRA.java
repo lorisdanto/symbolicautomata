@@ -44,6 +44,7 @@ public class SRA<P, S> {
     protected boolean isEmpty;
     protected boolean isDeterministic;
     protected boolean isTotal;
+    protected boolean isMSRA;
 
 	private Integer initialState;
     private LinkedList<S> registers;
@@ -142,6 +143,7 @@ public class SRA<P, S> {
         isEmpty = false;
         isDeterministic = false;
         isTotal = false;
+        isMSRA = false;
 		finalStates = new HashSet<Integer>();
 		states = new HashSet<Integer>();
         registers = new LinkedList<S>();
@@ -274,6 +276,7 @@ public class SRA<P, S> {
                     getFreshMovesFrom(transition.from).add((new SRAFreshMove<P, S>(transition.from, transition.to, transition.guard, mTransition.U.iterator().next())));
                     getFreshMovesTo(transition.to).add((new SRAFreshMove<P, S>(transition.from, transition.to, transition.guard, mTransition.U.iterator().next())));
                 } else {
+                	isMSRA = true;
                     getMAMovesFrom(transition.from).add(mTransition);
                     getMAMovesTo(transition.to).add(mTransition);
                 }
@@ -613,7 +616,7 @@ public class SRA<P, S> {
         long startTime = System.currentTimeMillis();
 
         // If the automaton doesn't contain MA moves, it's already an SRA
-        if (getMAMovesFrom(states).isEmpty() && getMAMovesTo(states).isEmpty())
+        if (!isMSRA)
             return MkSRA(getTransitions(), initialState, finalStates, registers, ba);
 
         // If one of the automata is empty return the empty SRA
