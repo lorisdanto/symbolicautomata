@@ -670,69 +670,80 @@ public class SRA<P, S> {
             int currentStateID = reached.get(currentState);
             HashMap<Integer, Integer> currentMap = currentState.second;
 
-            // Try to pair transitions out of both automata
-            for (MSRAMove<P, S> ct1 : getMovesFromAsMA(currentState.first)) {
+            for (MSRAMove<P, S> ct : getMovesFromAsMA(currentState.first)) { // I like the function getMovesFromAsMA, we can have an analogous one for reduced SRA
                 LinkedList<SRAMove<P, S>> SRAMoves = new LinkedList<SRAMove<P, S>>();
 
                 if (System.currentTimeMillis() - startTime > timeout)
                     throw new TimeoutException();
 
-                if (!ct1.E.isEmpty()) {
-                    // Case 1 in the paper
-                    LinkedList<Integer> repeatedRegisters = new LinkedList<>();
-                    for (Integer registerE : ct1.E) {
+                if (!ct.E.isEmpty()) {
+                    // Case 1 in the paper: check whether there is a register r such that currentMap(E) = r
+                    Set<Integer> repeatedRegisters = new HashSet<>();
+                    for (Integer registerE : ct.E) {
                         Integer registerEImg = currentMap.get(registerE);
                         if (registerEImg != null)
                             repeatedRegisters.add(registerEImg);
                     }
 
                     if (repeatedRegisters.size() == 1)
-                        SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct1.guard, repeatedRegisters.get(0)));
+                        SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct.guard, repeatedRegisters.iterator().next()));
                 } else {
-                    // Case 2 in the paper
 
-                    for (Integer registerU : ct1.U) {
-                        Integer registerUImg = currentMap.get(registerU);
+					// Compute inverse
+					HashMap<Integer, LinkedList<Integer>> inverseMap = new HashMap<>();
 
-                        if (registerUImg != null) {
-                            SRAMoves.add(new SRAFreshMove<P, S>(currentStateID, null, ct1.guard, registerUImg));
-                            break;
-                        }
-                    }
+					for (Integer i = 0; i < registers.size(); i++) {
+						Integer registerImg = currentMap.get(i);
 
-                    // Case 3 in the paper
-                    Set<Integer> registerInImg = new HashSet<Integer>(currentMap.values());
-                    Set<Integer> allRegisters = new HashSet<Integer>();
+						LinkedList<Integer> inverseImg;
 
-                    for (Integer i = 0; i < registers.size(); i++)
-                        allRegisters.add(i);
+						if (inverseMap.get(registerImg) == null) {
+							inverseImg = new LinkedList<>();
+							inverseMap.put(registerImg, inverseImg);
+						}
+						else
+							inverseImg = inverseMap.get(registerImg);
 
-                    allRegisters.removeAll(registerInImg);
+						inverseImg.add(i);
+					}
 
-                    for (Integer registerCheck : allRegisters)
-                        SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct1.guard, registerCheck));
+					// Case 2 in the paper: check whether inverseMap(r) is included in U, for some r
+					for (Integer i = 0; i < registers.size(); i++) {
+						LinkedList<Integer> inverseImg = inverseMap.get(i);
+
+						if (inverseImg == null || ct.U.containsAll(inverseImg)) {
+							SRAMoves.add(new SRAFreshMove<P, S>(currentStateID, null, ct.guard, i));
+							break;
+						}
+					}
+
+
+                    // Case 3 in the paper: check whether inverseMap(r) is empty, for some r
+					for (Integer i = 0; i < registers.size(); i++)
+						if (inverseMap.get(i) == null)
+	                        SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct.guard, i));
                 }
 
 
                 for (SRAMove<P, S> transition : SRAMoves) {
                     if (transition.isSatisfiable(ba)) {
-                        HashMap<Integer, Integer> nextMap = new HashMap<Integer, Integer>(currentMap);
+                        HashMap<Integer, Integer> nextMap = new HashMap<>(currentMap);
                         Integer transitionRegister = transition.registerIndexes.iterator().next();
 
-                        for (Integer registersToUpdate : ct1.U)
+                        for (Integer registersToUpdate : ct.U)
                             nextMap.put(registersToUpdate, transitionRegister);
 
-                        Pair<Integer, HashMap<Integer, Integer>> nextState = new Pair<Integer, HashMap<Integer, Integer>>(ct1.to, nextMap);
+                        Pair<Integer, HashMap<Integer, Integer>> nextState = new Pair<>(ct.to, nextMap);
                         transition.to = getStateId(nextState, reached, toVisit);
-                        if (finalStates.contains(ct1.to))
-                            finalStates.add(transition.to);
+                        if (finalStates.contains(ct.to))
+                            newFinalStates.add(transition.to);
                         transitions.add(transition);
                     }
                 }
 
             }
         }
-        return MkSRA(transitions, initialState, finalStates, newRegisters, ba);
+        return MkSRA(transitions, initialState, newFinalStates, newRegisters, ba);
 
     }
 

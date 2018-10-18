@@ -32,6 +32,18 @@ public class TestSRAExperiments {
         assertFalse(SSNCheckerMSRA.accepts(invalidName3, ba));
     }
 
+    @Test
+    public void testSSNCheckerMSRAtoSRA() throws TimeoutException {
+        SRA<CharPred, Character> toSRA = SSNCheckerMSRA.compileToSRA(ba, Long.MAX_VALUE);
+        toSRA.createDotFile("ssnSra", "");
+        assertTrue(toSRA.accepts(validName1, ba));
+        assertTrue(toSRA.accepts(validName2, ba));
+        assertFalse(toSRA.accepts(invalidName1, ba));
+        assertFalse(toSRA.accepts(invalidName2, ba));
+        assertFalse(toSRA.accepts(invalidName3, ba));
+    }
+
+
 //    @Test
 //    public void testXMLCheckerSRA() throws TimeoutException {
 //        boolean check = XMLCheckerSRA.createDotFile("xml", "");

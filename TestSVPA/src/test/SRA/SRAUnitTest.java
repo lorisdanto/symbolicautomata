@@ -75,7 +75,8 @@ public class SRAUnitTest {
     @Test
     public void testSRACompilation() throws TimeoutException {
         boolean check1 = msraAut.createDotFile("msra", "");
-        boolean check2 = msraAut.compileToSRA(ba, Long.MAX_VALUE).createDotFile("toSra", "");
+        SRA<CharPred, Character> toSRA = msraAut.compileToSRA(ba, Long.MAX_VALUE);
+        boolean check2 = toSRA.createDotFile("toSra", "");
         assertTrue(check1);
         assertTrue(check2);
     }
