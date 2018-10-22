@@ -98,6 +98,36 @@ public abstract class BooleanAlgebra<P, S> {
 	 */
 	public abstract Pair<S, S> generateWitnesses(P p1) throws TimeoutException;
 
+
+	/**
+	 * @return true iff there are at least <code>numOfWitnesses</code> many witnesses that satisfy <code>predicate</code>
+	 */
+	public boolean hasNDistinctWitnesses(P predicate, Integer numOfWitnesses) {
+		// generate as many witnesses as requested
+		for (int witnessID = 0; witnessID < numOfWitnesses; witnessID++) {
+			try {
+				// generate a witness for the predicate
+				S witness = generateWitness(predicate);
+
+				// If it's satisfiable:
+				if (witness != null) {
+					// Update the predicate to exclude the current witness.
+					predicate = MkAnd(predicate, MkNot(MkAtom(witness)));
+				} else {
+					// If it isn't then we don't have enough witnesses.
+					return false;
+				}
+			} catch (TimeoutException e) {
+				e.printStackTrace();
+				System.out.println("Distinct witnesses check timeout.");
+				return false;
+			}
+		}
+		// If we get here then we have generated enough witnesses.
+		return true;
+	}
+
+
 	/**
 	 * Given a set of <code>predicates</code>, returns all the satisfiable
 	 * Boolean combinations
@@ -116,6 +146,8 @@ public abstract class BooleanAlgebra<P, S> {
 			return null;
 		}
 	}
+
+
 	
 	/**
 	 * Given a set of <code>predicates</code>, returns all the satisfiable

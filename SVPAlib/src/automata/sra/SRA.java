@@ -8,6 +8,7 @@ package automata.sra;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.security.UnrecoverableEntryException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -614,14 +615,14 @@ public class SRA<P, S> {
 	/**
 	 * Returns the set of moves from a state in reduced form
 	 */
-	public Collection<SRAMove<P, S>> getMovesFromAsR(Integer state) {
-		Collection<SRAMove<P, S>> transitions = new LinkedList<MSRAMove<P, S>>();
-		for (SRAMove<P, S> transition : getTransitionsFrom(state))
-			transitions.add(transition.asMultipleAssignment());
-		return transitions;
-	}
+//	public Collection<SRAMove<P, S>> getMovesFromAsR(Integer state) {
+//		Collection<SRAMove<P, S>> transitions = new LinkedList<MSRAMove<P, S>>();
+//		for (SRAMove<P, S> transition : getTransitionsFrom(state))
+//			transitions.add(transition.asMultipleAssignment());
+//		return transitions;
+//	}
 
-	private ArrayList<P> getSRAMovePredicates(long timeout) {
+	private ArrayList<P> getAllPredicates(long timeout) {
 		ArrayList<P> predicates = new ArrayList<>();
 
 		HashMap<Integer, Integer> reached = new HashMap<>();
@@ -658,6 +659,64 @@ public class SRA<P, S> {
 		return predicates;
 	}
 
+
+	protected class MinTerm<P> extends Pair<P, ArrayList<Integer>> {
+
+		public MinTerm(P pred, ArrayList<Integer> bitVec) {
+			super(pred, bitVec);
+		}
+
+		public boolean equals(MinTerm<P> mt) {
+			return this.second.equals(mt.second);
+		}
+
+//		public static MinTerm<P> MkMinterms(Collection<Pair<P, ArrayList<Integer>>> mintCollection) {
+//			LinkedList<MinTerm<P>> minTerms = new LinkedList<>();
+//
+//			for (Pair<P, ArrayList<Integer>> mint: mintCollection) {
+//
+//			}
+//		}
+
+	}
+
+	// Breaks down a SRA move into minterms
+	private HashMap<SRAMove<P, S>, MinTerm<P>> toRedSRAMoves(BooleanAlgebra<P, S> ba,
+													HashMap<Integer, MinTerm<P>> regAbs,
+													HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicate,
+													SRAMove<P, S> move,
+													Integer stateFrom) {
+		HashMap<SRAMove<P, S>, MinTerm<P>> movesAndMinterms = new HashMap<>();
+		LinkedList<MinTerm<P>> minterms = mintermsForPredicate.get(move.guard);
+
+		Integer register = move.registerIndexes.iterator().next();
+
+		if (move instanceof SRACheckMove) {
+			MinTerm<P> registerMintInAbs = regAbs.get(register);
+
+			if (minterms.contains(registerMintInAbs))
+				movesAndMinterms.put(new SRACheckMove<>(stateFrom, null, registerMintInAbs.first, register), registerMintInAbs);
+		}
+		else {
+			for (MinTerm<P> mint: minterms) {
+				Integer neededWitnessesForMint = 0;
+
+				for (Integer r = 0; r < registers.size(); r++) {
+					Pair<P, ArrayList<Integer>> regMint = regAbs.get(r);
+
+					if (regMint.equals(mint))
+						neededWitnessesForMint++;
+				}
+
+				if (ba.hasNDistinctWitnesses(mint.first, neededWitnessesForMint))
+					movesAndMinterms.put(new SRACheckMove<>(stateFrom, null, mint.first, register), mint);
+			}
+		}
+
+		return movesAndMinterms;
+	}
+
+
 	public boolean languageIsEmpty(BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
 
 		long startTime = System.currentTimeMillis();
@@ -665,28 +724,105 @@ public class SRA<P, S> {
 		if (isEmpty)
 			return true;
 
-		SRA<P, S> toCheck;
-		if (isMSRA)
-			toCheck = compileToSRA(ba, timeout);
-		else
-			toCheck = this;
+//		SRA<P, S> toCheck;
+//		if (isMSRA)
+//			toCheck = compileToSRA(ba, timeout);
+//		else
+//			toCheck = this;
 
 		// Compute all minterms
-		ArrayList<P> allPredicates = getSRAMovePredicates(timeout);
+		ArrayList<P> allPredicates = getAllPredicates(timeout);
+		Integer initValPos = allPredicates.size();
 
-		for (S regVal: registers)
+
+		for (S regVal: registers) // Add initial register values to predicates
 			if (regVal != null)
 				allPredicates.add(ba.MkAtom(regVal));
 
-		Collection<Pair<P, ArrayList<Integer>>> minTerms = ba.GetMinterms(allPredicates);
+		// TODO: check if we can directly add atomic predicates to the collection below
+		LinkedList<MinTerm<P>> minTerms = new LinkedList<>();
 
-		ArrayList<SRAMove<P,S>> moves = new ArrayList<>();
-		moves.addAll(get);
+		for(Pair<P, ArrayList<Integer>> minBA: ba.GetMinterms(allPredicates))
+			minTerms.add(new MinTerm<>(minBA.first, minBA.second));
 
-		ArrayList<P> predicates = new ArrayList<>();
-		for(SRACheckMove<A, B> m: movesFromCurr1)
-			predicates.add(m.guard);
 
+		// Compute minterms where predicates are non-negated
+		HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicate = new HashMap<>();
+
+		for (P pred: allPredicates) {
+			LinkedList<MinTerm<P>> mintList = new LinkedList<>();
+
+			Integer predicateIndex = allPredicates.indexOf(pred);
+
+			for (MinTerm<P> mint: minTerms) {
+				if (mint.second.get(predicateIndex) == 1) // pred is non-negated in mint
+					mintList.add(mint);
+			}
+
+			mintermsForPredicate.put(pred, mintList);
+		}
+
+		// Create initial register abstraction
+		HashMap<Integer, MinTerm<P>> initRegAb = new HashMap<>();
+
+		for(Integer r = 0; r < registers.size(); r++)
+			if (registers.get(r) != null)
+			{
+				P atom = allPredicates.get(initValPos + r);
+				initRegAb.put(r, mintermsForPredicate.get(atom).get(0)); // There should be only 1 minterm for atom
+			}
+
+		// Create initial state of the reduced SRA
+		Pair<Integer, HashMap<Integer, MinTerm<P>>> initRedState = new Pair<>(initialState, initRegAb);
+		// TODO: this should go into an inner class: the type is too complicated
+
+		// reached contains the product states (p,theta) we discovered and maps
+		// them to a stateId
+		HashMap<Pair<Integer, HashMap<Integer, MinTerm<P>>>, Integer> reached = new HashMap<>();
+		// toVisit contains the product states we still have not explored
+		LinkedList<Pair<Integer, HashMap<Integer, MinTerm<P>>>> toVisit = new LinkedList<>();
+
+
+		while (!toVisit.isEmpty()) {
+			Pair<Integer, HashMap<Integer, MinTerm<P>>> currentState = toVisit.removeFirst();
+
+			if (finalStates.contains(currentState.first))
+				return true;
+
+			int currentStateID = reached.get(currentState);
+
+			HashMap<Integer, MinTerm<P>> currentRegAbs = currentState.second;
+
+
+			for (SRAMove<P, S> move: getMovesFrom(currentState.first)) {
+				HashMap<SRAMove<P, S>, MinTerm<P>> redMovesWithMint =
+						toRedSRAMoves(ba, currentState.second, mintermsForPredicate, move, currentStateID);
+
+				if (System.currentTimeMillis() - startTime > timeout)
+					throw new TimeoutException();
+
+				for (SRAMove<P, S> redMove: redMovesWithMint.keySet()) {
+					HashMap<Integer, MinTerm<P>> newRegAbs = new HashMap<>(currentRegAbs);
+					newRegAbs.put(move.registerIndexes.iterator().next(), redMovesWithMint.get(redMove));
+
+					Pair<Integer, HashMap<Integer, MinTerm<P>>> newState = new Pair<>(move.to, newRegAbs);
+					getStateId(newState, reached, toVisit);
+				}
+
+
+
+			}
+
+
+//			for (SRAMove<P, S> ct : )
+//			MovesFromAsMA(currentState.first)) { // I like the function getMovesFromAsMA, we can have an analogous one for reduced SRA
+//				LinkedList<SRAMove<P, S>> SRAMoves = new LinkedList<SRAMove<P, S>>();
+//
+//				if (System.currentTimeMillis() - startTime > timeout)
+//					throw new TimeoutException();
+		}
+
+		return false;
 	}
 
 
@@ -733,7 +869,7 @@ public class SRA<P, S> {
         }
 
 
-        // reached contains the product states (p,f) we discovered and maps
+        // reached contains the states (p,f) we discovered and maps
         // them to a stateId
         HashMap<Pair<Integer, HashMap<Integer,Integer>>, Integer> reached = new HashMap<Pair<Integer, HashMap<Integer,Integer>>, Integer>();
         // toVisit contains the product states we still have not explored
@@ -752,10 +888,10 @@ public class SRA<P, S> {
             HashMap<Integer, Integer> currentMap = currentState.second;
 
             for (MSRAMove<P, S> ct : getMovesFromAsMA(currentState.first)) { // I like the function getMovesFromAsMA, we can have an analogous one for reduced SRA
-                LinkedList<SRAMove<P, S>> SRAMoves = new LinkedList<SRAMove<P, S>>();
+				LinkedList<SRAMove<P, S>> SRAMoves = new LinkedList<>();
 
-                if (System.currentTimeMillis() - startTime > timeout)
-                    throw new TimeoutException();
+				if (System.currentTimeMillis() - startTime > timeout)
+					throw new TimeoutException();
 
                 if (!ct.E.isEmpty()) {
                     // Case 1 in the paper: check whether there is a register r such that currentMap(E) = r

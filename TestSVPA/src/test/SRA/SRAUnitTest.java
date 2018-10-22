@@ -64,6 +64,18 @@ public class SRAUnitTest {
         assertFalse(intersection.accepts(lab, ba));
         assertFalse(intersection.accepts(lnot, ba));
     }
+
+    @Test
+    public void testEmptiness() throws TimeoutException {
+        LinkedList<Character> registers = new LinkedList<Character>();
+        registers.add('a');
+        registers.add('b');
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions.add(new SRAFreshMove<CharPred, Character>(0, 1, ba.MkOr(new CharPred('a'), new CharPred('b')), 0));
+        SRA<CharPred, Character> testSRA = SRA.MkSRA(transitions, 0, Arrays.asList(1), registers, ba);
+        assertTrue(testSRA.languageIsEmpty(ba, Long.MAX_VALUE));
+    }
+
     @Test
     public void testAcceptance() throws TimeoutException {
         assertTrue(autIntOne.accepts(Arrays.asList(6), intBa));
