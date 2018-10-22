@@ -502,6 +502,7 @@ public class SRA<P, S> {
         return transitions;
     }
 
+
     /**
      * Returns the set of moves from a set of states as multiple assignment form
      */
@@ -610,6 +611,84 @@ public class SRA<P, S> {
 		return nextState;
 	}
 
+	/**
+	 * Returns the set of moves from a state in reduced form
+	 */
+	public Collection<SRAMove<P, S>> getMovesFromAsR(Integer state) {
+		Collection<SRAMove<P, S>> transitions = new LinkedList<MSRAMove<P, S>>();
+		for (SRAMove<P, S> transition : getTransitionsFrom(state))
+			transitions.add(transition.asMultipleAssignment());
+		return transitions;
+	}
+
+	private ArrayList<P> getSRAMovePredicates(long timeout) {
+		ArrayList<P> predicates = new ArrayList<>();
+
+		HashMap<Integer, Integer> reached = new HashMap<>();
+		// toVisit contains the product states we still have not explored
+		LinkedList<Integer> toVisit = new LinkedList<>();
+
+		reached.put(initialState, 0);
+		toVisit.add(initialState);
+
+		while (!toVisit.isEmpty()) {
+			Integer curState = toVisit.removeFirst();
+
+			for (SRAMove<P, S> ct : getCheckMovesFrom(curState)) {
+				predicates.add(ct.guard);
+
+				if (!reached.containsKey(ct.to)) {
+					toVisit.add(ct.to);
+					reached.put(ct.to, reached.size() + 1);
+				}
+
+			}
+
+			for (SRAMove<P, S> ct : getFreshMovesFrom(curState)) {
+				predicates.add(ct.guard);
+
+				if (!reached.containsKey(ct.to)) {
+					toVisit.add(ct.to);
+					reached.put(ct.to, reached.size() + 1);
+				}
+
+			}
+		}
+
+		return predicates;
+	}
+
+	public boolean languageIsEmpty(BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
+
+		long startTime = System.currentTimeMillis();
+
+		if (isEmpty)
+			return true;
+
+		SRA<P, S> toCheck;
+		if (isMSRA)
+			toCheck = compileToSRA(ba, timeout);
+		else
+			toCheck = this;
+
+		// Compute all minterms
+		ArrayList<P> allPredicates = getSRAMovePredicates(timeout);
+
+		for (S regVal: registers)
+			if (regVal != null)
+				allPredicates.add(ba.MkAtom(regVal));
+
+		Collection<Pair<P, ArrayList<Integer>>> minTerms = ba.GetMinterms(allPredicates);
+
+		ArrayList<SRAMove<P,S>> moves = new ArrayList<>();
+		moves.addAll(get);
+
+		ArrayList<P> predicates = new ArrayList<>();
+		for(SRACheckMove<A, B> m: movesFromCurr1)
+			predicates.add(m.guard);
+
+	}
+
 
 	public SRA<P, S> compileToSRA(BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
 
@@ -619,11 +698,11 @@ public class SRA<P, S> {
         if (!isMSRA)
             return MkSRA(getTransitions(), initialState, finalStates, registers, ba);
 
-        // If one of the automata is empty return the empty SRA
+        // If the automaton is empty return the empty SRA
         if (isEmpty)
             return getEmptySRA(ba);
 
-        // components of new SRA
+        // components of target SRA
         Collection<SRAMove<P, S>> transitions = new ArrayList<SRAMove<P, S>>();
         LinkedList<S> newRegisters = new LinkedList<S>(registers);
         Collection<Integer> newFinalStates = new ArrayList<Integer>();
@@ -654,14 +733,13 @@ public class SRA<P, S> {
         }
 
 
-        // reached contains the product states (p1,p2) we discovered and maps
+        // reached contains the product states (p,f) we discovered and maps
         // them to a stateId
         HashMap<Pair<Integer, HashMap<Integer,Integer>>, Integer> reached = new HashMap<Pair<Integer, HashMap<Integer,Integer>>, Integer>();
         // toVisit contains the product states we still have not explored
         LinkedList<Pair<Integer, HashMap<Integer,Integer>>> toVisit = new LinkedList<Pair<Integer, HashMap<Integer,Integer>>>();
 
-        // The initial state is the pair consisting of the initial
-        // states of aut1 and aut2
+        // The initial state is the pair consisting of the initial state (q0,f0)
         Pair<Integer, HashMap<Integer,Integer>> initPair = new Pair<Integer, HashMap<Integer,Integer>>(initialState, initialMap);
         reached.put(initPair, 0);
         toVisit.add(initPair);
