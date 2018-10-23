@@ -66,14 +66,50 @@ public class SRAUnitTest {
     }
 
     @Test
-    public void testEmptiness() throws TimeoutException {
+    public void testEmptinessDisabledBecauseInitAssignment() throws TimeoutException {
         LinkedList<Character> registers = new LinkedList<Character>();
         registers.add('a');
         registers.add('b');
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAFreshMove<CharPred, Character>(0, 1, ba.MkOr(new CharPred('a'), new CharPred('b')), 0));
         SRA<CharPred, Character> testSRA = SRA.MkSRA(transitions, 0, Arrays.asList(1), registers, ba);
-        assertTrue(testSRA.languageIsEmpty(ba, Long.MAX_VALUE));
+        assertTrue(SRA.checkEmptiness(testSRA, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testEmptinessFreshDisable() throws TimeoutException {
+        LinkedList<Character> registers = new LinkedList<Character>();
+        registers.add(null);
+        registers.add(null);
+
+        CharPred abPred = ba.MkOr(new CharPred('a'), new CharPred('b'));
+
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions.add(new SRAFreshMove<CharPred, Character>(0, 1, abPred, 0));
+        transitions.add(new SRAFreshMove<CharPred, Character>(1, 2, abPred, 1));
+        transitions.add(new SRAFreshMove<CharPred, Character>(2, 3, abPred, 1));
+
+
+        SRA<CharPred, Character> testSRA = SRA.MkSRA(transitions, 0, Arrays.asList(3), registers, ba);
+        assertTrue(SRA.checkEmptiness(testSRA, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testEmptinessFreshEnable() throws TimeoutException {
+        LinkedList<Character> registers = new LinkedList<Character>();
+        registers.add(null);
+        registers.add(null);
+
+        CharPred abPred = ba.MkOr(new CharPred('a'), new CharPred('b'));
+
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions.add(new SRAFreshMove<CharPred, Character>(0, 1, abPred, 0));
+        transitions.add(new SRAFreshMove<CharPred, Character>(1, 2, abPred, 1));
+        transitions.add(new SRAFreshMove<CharPred, Character>(2, 3, alpha, 1));
+
+
+        SRA<CharPred, Character> testSRA = SRA.MkSRA(transitions, 0, Arrays.asList(3), registers, ba);
+        assertFalse(SRA.checkEmptiness(testSRA, ba, Long.MAX_VALUE));
     }
 
     @Test
@@ -91,6 +127,12 @@ public class SRAUnitTest {
         boolean check2 = toSRA.createDotFile("toSra", "");
         assertTrue(check1);
         assertTrue(check2);
+    }
+
+    @Test
+    public void testSRACompilationAndEmptiness() throws TimeoutException {
+        SRA<CharPred, Character> toSRA = msraAut.compileToSRA(ba, Long.MAX_VALUE);
+        assertFalse(SRA.checkEmptiness(toSRA, ba, Long.MAX_VALUE));
     }
 
     // ---------------------------------------
