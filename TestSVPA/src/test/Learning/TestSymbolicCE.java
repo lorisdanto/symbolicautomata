@@ -59,13 +59,14 @@ public class TestSymbolicCE {
 		SFA<RealPred, Double> learned = ell.learn(o, ba);
 		assertTrue(learned.isEquivalentTo(given, ba));
 		
-		
+		/*
 		SFAMembershipOracle <RealPred, Double> memb = new SFAMembershipOracle<>(given, ba);  
 		SFAEquivalenceOracle <RealPred, Double> equiv = new SFAEquivalenceOracle<>(given, ba); 
 		EqualityAlgebraLearnerFactory <RealPred, Double> eqFactory = new EqualityAlgebraLearnerFactory <>(ba);
 		SFAAlgebraLearner <RealPred, Double> learner = new SFAAlgebraLearner<>(memb, ba, eqFactory);
 		SFA<RealPred, Double> learned2 = learner.getModelFinal(equiv);
 		assertTrue(learned2.isEquivalentTo(given, ba));
+		*/
 	}
 	
 	@Test
