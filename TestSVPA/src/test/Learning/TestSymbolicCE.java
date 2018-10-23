@@ -11,6 +11,10 @@ import java.util.List;
 import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
 
+import algebralearning.equality.EqualityAlgebraLearnerFactory;
+import algebralearning.sfa.SFAAlgebraLearner;
+import algebralearning.sfa.SFAEquivalenceOracle;
+import algebralearning.sfa.SFAMembershipOracle;
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
@@ -29,8 +33,60 @@ import theory.cartesian.CartesianProduct;
 import theory.intervals.BoundedIntegerSolver;
 import theory.intervals.IntPred;
 import utilities.Pair;
+import java.lang.Math.*;
+
+import theory.intervals.RealPred;
+import theory.intervals.RealSolver;
 
 public class TestSymbolicCE {
+	
+	@Test
+	public void testPiPaperExample() throws TimeoutException{
+		RealSolver ba = new RealSolver();
+		
+		Integer init = 0;
+		List<Integer> fin = Arrays.asList(0,1,2,3);
+		List<SFAMove<RealPred, Double>> trans = new ArrayList<SFAMove<RealPred, Double>>();
+		trans.add(new SFAInputMove<RealPred, Double>(0, 1, new RealPred(0.0, false, Math.PI / 2, true)));
+		trans.add(new SFAInputMove<RealPred, Double>(1, 2, new RealPred(Math.PI / 2, false, Math.PI, true)));
+		trans.add(new SFAInputMove<RealPred, Double>(2, 3, new RealPred(Math.PI, false, 3 * Math.PI / 2, true)));
+		trans.add(new SFAInputMove<RealPred, Double>(3, 0, new RealPred(3 * Math.PI / 2, false, 2 * Math.PI, true)));
+
+		SFA<RealPred, Double> given = SFA.MkSFA(trans, init, fin, ba, false);
+		
+		SymbolicLearner<RealPred, Double> ell = new SymbolicLearner<RealPred, Double>();
+		SymbolicOracle<RealPred, Double> o = new SinglePathSFAOracle<RealPred, Double>(given, ba);
+		SFA<RealPred, Double> learned = ell.learn(o, ba);
+		assertTrue(learned.isEquivalentTo(given, ba));
+		
+		
+		SFAMembershipOracle <RealPred, Double> memb = new SFAMembershipOracle<>(given, ba);  
+		SFAEquivalenceOracle <RealPred, Double> equiv = new SFAEquivalenceOracle<>(given, ba); 
+		EqualityAlgebraLearnerFactory <RealPred, Double> eqFactory = new EqualityAlgebraLearnerFactory <>(ba);
+		SFAAlgebraLearner <RealPred, Double> learner = new SFAAlgebraLearner<>(memb, ba, eqFactory);
+		SFA<RealPred, Double> learned2 = learner.getModelFinal(equiv);
+		assertTrue(learned2.isEquivalentTo(given, ba));
+	}
+	
+	@Test
+	public void testPiPaperExample2() throws TimeoutException{
+		RealSolver ba = new RealSolver();
+		
+		Integer init = 0;
+		List<Integer> fin = Arrays.asList(0,1,2,3);
+		List<SFAMove<RealPred, Double>> trans = new ArrayList<SFAMove<RealPred, Double>>();
+		trans.add(new SFAInputMove<RealPred, Double>(0, 1, new RealPred(0.0, false, Math.PI / 2, true)));
+		trans.add(new SFAInputMove<RealPred, Double>(1, 2, new RealPred(Math.PI / 2, false, Math.PI, true)));
+		trans.add(new SFAInputMove<RealPred, Double>(2, 3, new RealPred(Math.PI, false, 3 * Math.PI / 2, true)));
+		trans.add(new SFAInputMove<RealPred, Double>(3, 0, new RealPred(3 * Math.PI / 2, false, 2 * Math.PI, true)));
+
+		SFA<RealPred, Double> given = SFA.MkSFA(trans, init, fin, ba, false);
+		
+		SymbolicLearner<RealPred, Double> ell = new SymbolicLearner<RealPred, Double>();
+		SymbolicOracle<RealPred, Double> o = new SinglePathSFAOracle<RealPred, Double>(given, ba);
+		SFA<RealPred, Double> learned = ell.learn(o, ba);
+		assertTrue(learned.isEquivalentTo(given, ba));
+	}
 	
 
 	@Test
