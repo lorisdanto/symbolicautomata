@@ -8,27 +8,14 @@ package automata.sra;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.security.UnrecoverableEntryException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
-import org.omg.CORBA.INTERNAL;
 import org.sat4j.specs.TimeoutException;
 
+
+import sun.awt.image.ImageWatched;
 import theory.BooleanAlgebra;
-import theory.BooleanAlgebraSubst;
-import utilities.Block;
-import utilities.Pair;
-import utilities.Timers;
-import utilities.UnionFindHopKarp;
+import utilities.*;
 
 /**
  * Symbolic Register Automaton
@@ -612,15 +599,7 @@ public class SRA<P, S> {
 		return nextState;
 	}
 
-	/**
-	 * Returns the set of moves from a state in reduced form
-	 */
-//	public Collection<SRAMove<P, S>> getMovesFromAsR(Integer state) {
-//		Collection<SRAMove<P, S>> transitions = new LinkedList<MSRAMove<P, S>>();
-//		for (SRAMove<P, S> transition : getTransitionsFrom(state))
-//			transitions.add(transition.asMultipleAssignment());
-//		return transitions;
-//	}
+
 
 	private ArrayList<P> getAllPredicates(long timeout) {
 		ArrayList<P> predicates = new ArrayList<>();
@@ -651,34 +630,116 @@ public class SRA<P, S> {
 		return predicates;
 	}
 
+	// ------------------------------------------------------
+	// Utility functions and classes for reduced SRA
+	// ------------------------------------------------------
 
+	// TODO: Should all these be static?
+
+	// Encapsulates minterm
 	protected static class MinTerm<P> extends Pair<P, ArrayList<Integer>> {
 
-		public MinTerm(P pred, ArrayList<Integer> bitVec) {
+		protected MinTerm(P pred, ArrayList<Integer> bitVec) {
 			super(pred, bitVec);
 		}
 
-		public boolean equals(MinTerm<P> mt) {
+		protected boolean equals(MinTerm<P> mt) {
 			return this.second.equals(mt.second);
 		}
 
-//		public static MinTerm<P> MkMinterms(Collection<Pair<P, ArrayList<Integer>>> mintCollection) {
-//			LinkedList<MinTerm<P>> minTerms = new LinkedList<>();
-//
-//			for (Pair<P, ArrayList<Integer>> mint: mintCollection) {
-//
-//			}
-//		}
+		protected P getPredicate() {
+			return this.first;
+		}
+
+		protected ArrayList<Integer> getBitVector() {
+			return this.second;
+		}
 
 	}
 
+	// Encapsulates reduced SRA state
+	protected  static class RedSRAState<P> extends Pair<Integer, HashMap<Integer, MinTerm<P>>> {
+
+		protected RedSRAState(Integer stateID, HashMap<Integer, MinTerm<P>> regAbs) {
+			super(stateID, regAbs);
+		}
+
+		protected boolean equals(RedSRAState<P> rs) {
+			return this.first.equals(rs.first) && this.second.equals(rs.second);
+		}
+
+		protected Integer getStateId() {
+			return this.first;
+		}
+
+		protected HashMap<Integer, MinTerm<P>> getRegAbs() {
+			return this.second;
+		}
+	}
+
+	protected static class RedSRAMove<P> {
+		public RedSRAState<P> from;
+		public RedSRAState<P> to;
+		public MinTerm<P> guard;
+		public Integer register;
+
+		public RedSRAMove(RedSRAState<P> from, RedSRAState<P> to, MinTerm<P> guard, Integer register) {
+			this.from = from;
+			this.to = to;
+			this.guard = guard;
+			this.register = register;
+		}
+	}
+
+	protected static class RedSRACheckMove<P> extends RedSRAMove<P> {
+
+		public RedSRACheckMove(RedSRAState<P> from, RedSRAState<P> to, MinTerm<P> guard, Integer register) {
+			super(from, to, guard, register);
+		}
+
+	}
+
+	protected static class RedSRAFreshMove<P> extends RedSRAMove<P> {
+
+		public RedSRAFreshMove(RedSRAState<P> from, RedSRAState<P> to, MinTerm<P> guard, Integer register) {
+			super(from, to, guard, register);
+		}
+
+	}
+
+	// Encapsulates a reduced bisimulation triple
+	protected  static class RedBisimTriple<P> extends Triple<RedSRAState<P>, RedSRAState<P>, HashMap<Integer, Integer>> {
+
+		protected RedBisimTriple(RedSRAState<P> redState1, RedSRAState<P> redState2, HashMap<Integer, Integer> regMap) {
+			super(redState1, redState2, regMap);
+		}
+
+//		protected boolean equals(RedSRAState<P> rs) {
+//			return this.first.equals(rs.first) && this.second.equals(rs.second) &&
+//		}
+
+		protected RedSRAState<P> getState1() {
+			return this.first;
+		}
+
+		protected RedSRAState<P> getState2() {
+			return this.second;
+		}
+
+		protected HashMap<Integer, Integer> getRegMap(){
+			return this.third;
+		}
+	}
+
+
 	// Breaks down a SRA move into minterms
-	private HashMap<SRAMove<P, S>, MinTerm<P>> toRedSRAMoves(BooleanAlgebra<P, S> ba,
-													HashMap<Integer, MinTerm<P>> regAbs,
-													HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicate,
-													SRAMove<P, S> move,
-													Integer stateFrom) {
-		HashMap<SRAMove<P, S>, MinTerm<P>> movesAndMinterms = new HashMap<>();
+	private static <P, S> LinkedList<RedSRAMove<P>> toRedSRAMoves(BooleanAlgebra<P, S> ba,
+																  HashMap<Integer, MinTerm<P>> regAbs,
+																  HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicate,
+																  SRAMove<P, S> move,
+																  RedSRAState<P> from) {
+
+		LinkedList<RedSRAMove<P>> redMoves = new LinkedList<>();
 		LinkedList<MinTerm<P>> minterms = mintermsForPredicate.get(move.guard);
 
 		Integer register = move.registerIndexes.iterator().next();
@@ -686,28 +747,76 @@ public class SRA<P, S> {
 		if (move instanceof SRACheckMove) {
 			MinTerm<P> registerMintInAbs = regAbs.get(register);
 
-			if (registerMintInAbs != null && minterms.contains(registerMintInAbs))
-				movesAndMinterms.put(new SRACheckMove<>(stateFrom, null, registerMintInAbs.first, register), registerMintInAbs);
+			if (registerMintInAbs != null && minterms.contains(registerMintInAbs)) {
+				HashMap<Integer, MinTerm<P>> newRegAbs = new HashMap<>(regAbs);
+				RedSRAState<P> targetState = new RedSRAState<>(move.to, newRegAbs);
+
+				redMoves.add(new RedSRACheckMove<>(from, targetState, registerMintInAbs, register));
+			}
 		}
 		else {
 			for (MinTerm<P> mint: minterms) {
 				Integer neededWitnessesForMint = 1;
 
-				for (Integer r = 0; r < registers.size(); r++) {
+				for (Integer r: regAbs.keySet()) {
 					Pair<P, ArrayList<Integer>> regMint = regAbs.get(r);
 
 					if (regMint != null && regMint.equals(mint))
 						neededWitnessesForMint++;
 				}
 
-				if (ba.hasNDistinctWitnesses(mint.first, neededWitnessesForMint))
-					movesAndMinterms.put(new SRAFreshMove<>(stateFrom, null, mint.first, register), mint);
+				if (ba.hasNDistinctWitnesses(mint.getPredicate(), neededWitnessesForMint)) {
+					HashMap<Integer, MinTerm<P>> newRegAbs = new HashMap<>(regAbs);
+					newRegAbs.put(move.registerIndexes.iterator().next(), mint);
+					RedSRAState<P> targetState = new RedSRAState<>(move.to, newRegAbs);
+
+					redMoves.add(new RedSRAFreshMove<>(from, targetState, mint, register));
+				}
 			}
 		}
 
-		return movesAndMinterms;
+		return redMoves;
 	}
 
+
+	// Compute minterms where predicates are non-negated
+	private static <P> HashMap<P, LinkedList<MinTerm<P>>> getMintermsForPredicates(List<P> allPredicates, List<MinTerm<P>> minTerms) {
+		HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicates = new HashMap<>();
+
+		for (P pred: allPredicates) {
+			LinkedList<MinTerm<P>> mintList = new LinkedList<>();
+
+			Integer predicateIndex = allPredicates.indexOf(pred);
+
+			for (MinTerm<P> mint: minTerms) {
+				if (mint.getBitVector().get(predicateIndex) == 1) // pred is non-negated in mint
+					mintList.add(mint);
+			}
+
+			mintermsForPredicates.put(pred, mintList);
+		}
+
+		return mintermsForPredicates;
+	}
+
+	// Create initial register abstraction
+	private HashMap<Integer, MinTerm<P>> getInitialRegAbs(List<P> allPredicates,
+														  Integer initValAtomsIndex,
+														  HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicates) {
+		HashMap<Integer, MinTerm<P>> initRegAb = new HashMap<>();
+
+		for (Integer r = 0; r < registers.size(); r++)
+			if (registers.get(r) != null) {
+				P atom = allPredicates.get(initValAtomsIndex + r);
+				initRegAb.put(r, mintermsForPredicates.get(atom).get(0)); // There should be only 1 minterm for atom
+			}
+
+		return initRegAb;
+	}
+
+
+
+	// Emptyness check
 
 	public static <P, S> boolean checkEmptiness(SRA<P, S> aut, BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
 		long startTime = System.currentTimeMillis();
@@ -733,71 +842,44 @@ public class SRA<P, S> {
 			minTerms.add(new MinTerm<>(minBA.first, minBA.second));
 
 
-		// Compute minterms where predicates are non-negated
-		HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicate = new HashMap<>();
+		HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicates = getMintermsForPredicates(allPredicates, minTerms);
+		HashMap<Integer, MinTerm<P>> initRegAbs = aut.getInitialRegAbs(allPredicates, initValPos, mintermsForPredicates);
 
-		for (P pred: allPredicates) {
-			LinkedList<MinTerm<P>> mintList = new LinkedList<>();
 
-			Integer predicateIndex = allPredicates.indexOf(pred);
-
-			for (MinTerm<P> mint: minTerms) {
-				if (mint.second.get(predicateIndex) == 1) // pred is non-negated in mint
-					mintList.add(mint);
-			}
-
-			mintermsForPredicate.put(pred, mintList);
-		}
-
-		// Create initial register abstraction
-		HashMap<Integer, MinTerm<P>> initRegAb = new HashMap<>();
-
-		for(Integer r = 0; r < aut.registers.size(); r++)
-			if (aut.registers.get(r) != null)
-			{
-				P atom = allPredicates.get(initValPos + r);
-				initRegAb.put(r, mintermsForPredicate.get(atom).get(0)); // There should be only 1 minterm for atom
-			}
 
 		// Create initial state of the reduced SRA
-		Pair<Integer, HashMap<Integer, MinTerm<P>>> initRedState = new Pair<>(aut.initialState, initRegAb);
+		RedSRAState<P> initRedState = new RedSRAState<>(aut.initialState, initRegAbs);
 
 		// reached contains the product states (p,theta) we discovered and maps
 		// them to a stateId
-		HashMap<Pair<Integer, HashMap<Integer, MinTerm<P>>>, Integer> reached = new HashMap<>();
+		HashMap<RedSRAState<P>, Integer> reached = new HashMap<>();
 		// toVisit contains the product states we still have not explored
-		LinkedList<Pair<Integer, HashMap<Integer, MinTerm<P>>>> toVisit = new LinkedList<>();
+		LinkedList<RedSRAState<P>> toVisit = new LinkedList<>();
 
 		toVisit.add(initRedState);
 		reached.put(initRedState, 0);
 
 		while (!toVisit.isEmpty()) {
-			Pair<Integer, HashMap<Integer, MinTerm<P>>> currentState = toVisit.removeFirst();
+			RedSRAState<P> currentState = toVisit.removeFirst();
 
-			if (aut.finalStates.contains(currentState.first))
+			if (aut.finalStates.contains(currentState.getStateId()))
 				return false;
 
 			int currentStateID = reached.get(currentState);
 
-			HashMap<Integer, MinTerm<P>> currentRegAbs = currentState.second;
 
-
-			for (SRAMove<P, S> move: aut.getMovesFrom(currentState.first)) {
-				HashMap<SRAMove<P, S>, MinTerm<P>> redMovesWithMint =
-						aut.toRedSRAMoves(ba, currentState.second, mintermsForPredicate, move, currentStateID);
+			for (SRAMove<P, S> move: aut.getMovesFrom(currentState.getStateId())) {
+				LinkedList<RedSRAMove<P>> redMoves =
+						toRedSRAMoves(ba, currentState.getRegAbs(), mintermsForPredicates, move, null);
 
 				if (System.currentTimeMillis() - startTime > timeout)
 					throw new TimeoutException();
 
-				for (SRAMove<P, S> redMove: redMovesWithMint.keySet()) {
-					HashMap<Integer, MinTerm<P>> newRegAbs = new HashMap<>(currentRegAbs);
-					newRegAbs.put(move.registerIndexes.iterator().next(), redMovesWithMint.get(redMove));
+				for (RedSRAMove<P> redMove: redMoves) {
+					RedSRAState<P> nextState = redMove.to;
 
-					Pair<Integer, HashMap<Integer, MinTerm<P>>> newState = new Pair<>(move.to, newRegAbs);
-					aut.getStateId(newState, reached, toVisit);
+					aut.getStateId(nextState, reached, toVisit);
 				}
-
-
 
 			}
 			
@@ -807,8 +889,214 @@ public class SRA<P, S> {
 	}
 
 
-	public boolean areHKEquivalent(SRA<P,S> aut1, SRA<P,S> aut2, BooleanAlgebra<P, S> ba, long timeout) {
-		return false;
+	public boolean areHKEquivalent(SRA<P,S> aut1, SRA<P,S> aut2, BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
+
+		if(aut1.isMSRA)
+			aut1 = aut1.compileToSRA(ba, timeout);
+
+		if(aut2.isMSRA)
+			aut2 = aut2.compileToSRA(ba, timeout);
+
+
+		// Implement naive HK
+		// TODO: see if we can use union-find
+
+		// Initial register map
+		HashMap<Integer, Integer> initRegMap = new HashMap<>();
+		HashMap<Integer, Integer> initRegMapInv = new HashMap<>();
+
+		for (Integer r1 = 0; r1 < aut1.registers.size(); r1++) {
+			for (Integer r2 = 0; r2 < aut2.registers.size(); r2++) {
+				S r1Content = aut1.registers.get(r1);
+				S r2Content = aut2.registers.get(r2);
+
+				if (r1Content != null && r1Content.equals(r2Content)) {
+					initRegMap.put(r1, r2);
+					initRegMapInv.put(r2, r1);
+				}
+			}
+		}
+
+		// Get all predicates for both automata
+		ArrayList<P> allPredicates = aut1.getAllPredicates(timeout);
+		Integer initValPos1 = allPredicates.size();
+
+		aut2.getAllPredicates(timeout).addAll(allPredicates);
+		Integer initValPos2 = allPredicates.size();
+
+		for (S regVal: aut1.registers) // Add initial register values of aut1 to predicates
+			if (regVal != null)
+				allPredicates.add(ba.MkAtom(regVal));
+
+		for (S regVal: aut2.registers) // Add initial register values of aut2 to predicates
+			if (regVal != null)
+				allPredicates.add(ba.MkAtom(regVal));
+
+
+		// Computer minterms
+		LinkedList<MinTerm<P>> minTerms = new LinkedList<>();
+
+		for(Pair<P, ArrayList<Integer>> minBA: ba.GetMinterms(allPredicates))
+			minTerms.add(new MinTerm<>(minBA.first, minBA.second));
+
+
+		HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicates = getMintermsForPredicates(allPredicates, minTerms);
+		HashMap<Integer, MinTerm<P>> initRegAbs1 = aut1.getInitialRegAbs(allPredicates, initValPos1, mintermsForPredicates);
+		HashMap<Integer, MinTerm<P>> initRegAbs2 = aut2.getInitialRegAbs(allPredicates, initValPos2, mintermsForPredicates);
+
+
+
+		// Create initial triples
+		RedSRAState<P> initRedState1 = new RedSRAState<>(aut1.initialState, initRegAbs1);
+		RedSRAState<P> initRedState2 = new RedSRAState<>(aut2.initialState, initRegAbs2);
+
+		RedBisimTriple<P> initTriple = new RedBisimTriple<>(initRedState1, initRedState2, initRegMap);
+		RedBisimTriple<P> initTripleInv = new RedBisimTriple<>(initRedState2, initRedState1, initRegMapInv);
+
+		// reached contains the triples we have already discovered and maps them to a stateId
+		HashMap<RedBisimTriple<P>, Integer> reached = new HashMap<>();
+		// toVisit contains the triples we have not explored yet
+		LinkedList<RedBisimTriple<P>> toVisit = new LinkedList<>();
+
+		toVisit.add(initTriple);
+		toVisit.add(initTripleInv);
+		reached.put(initTriple, 0);
+		reached.put(initTriple, 1);
+
+		// Keep track of outgoing reduced transitions that have been already generated
+		HashMap<RedSRAState<P>, LinkedList<RedSRAMove<P>>> aut1RedOut = new HashMap<>();
+		HashMap<RedSRAState<P>, LinkedList<RedSRAMove<P>>> aut2RedOut = new HashMap<>();
+
+
+		while (!toVisit.isEmpty()) {
+			RedBisimTriple<P> currentTriple = toVisit.removeFirst();
+
+			RedSRAState<P> aut1RedState = currentTriple.getState1();
+			RedSRAState<P> aut2RedState = currentTriple.getState2();
+			HashMap<Integer, Integer> regMap = currentTriple.getRegMap();
+
+			if (aut1.finalStates.contains(aut1RedState.getStateId()) && !aut2.finalStates.contains(aut2RedState.getStateId()))
+				return false;
+
+			int currentStateID = reached.get(currentTriple);
+
+			HashMap<Integer, MinTerm<P>> currentRegAbs1 = aut1RedState.getRegAbs();
+			HashMap<Integer, MinTerm<P>> currentRegAbs2 = aut2RedState.getRegAbs();
+
+			// Compute all the reduced moves from aut1RedState and aut2RedState
+			LinkedList<RedSRAMove<P>> redMovesFromCurrent1;
+			LinkedList<RedSRAMove<P>> redMovesFromCurrent2;
+
+			if (aut1RedOut.containsKey(aut1RedState))
+				redMovesFromCurrent1 = aut1RedOut.get(aut1RedState);
+			else {
+				redMovesFromCurrent1 = new LinkedList<>();
+
+				for (SRAMove<P, S> move : aut1.getMovesFrom(aut1RedState.getStateId())) {
+					LinkedList<RedSRAMove<P>> partialRedMoves = toRedSRAMoves(ba, currentRegAbs1, mintermsForPredicates,
+							move, aut1RedState);
+
+					redMovesFromCurrent1.addAll(partialRedMoves);
+				}
+			}
+
+			if (aut2RedOut.containsKey(aut2RedState))
+				redMovesFromCurrent1 = aut2RedOut.get(aut2RedState);
+			else {
+				redMovesFromCurrent2 = new LinkedList<>();
+
+				for (SRAMove<P, S> move : aut2.getMovesFrom(aut2RedState.getStateId())) {
+					LinkedList<RedSRAMove<P>> partialRedMoves = toRedSRAMoves(ba, currentRegAbs2, mintermsForPredicates,
+							move, aut2RedState);
+
+					redMovesFromCurrent2.addAll(partialRedMoves);
+				}
+			}
+
+
+
+
+		}
+
+
+		return true;
+	}
+
+
+	// Returns all reduced bisimulation triples that need to be checked in subsequent steps
+	private static <P, S> LinkedList<RedBisimTriple<P>> redBisimSucc(LinkedList<RedSRAMove<P>> redMoves1,
+																	 LinkedList<RedSRAMove<P>> redMoves2,
+																	 HashMap<Integer, Integer> regMap,
+																	 HashMap<Integer, MinTerm<P>> regAbs2,
+																	 Integer regNum1, Integer regNum2) {
+
+		LinkedList<RedBisimTriple<P>> nextTriples = new LinkedList<>();
+
+
+		for (RedSRAMove<P> move1: redMoves1) {
+			if (move1 instanceof RedSRACheckMove) {
+				Integer r1 = move1.register;
+				RedSRAMove<P> matchingMove = null;
+				HashMap<Integer, Integer> newRegMap = null;
+
+				// Case 1(a) in the paper
+				if (regMap.containsKey(r1)){
+					Integer r2 = regMap.get(r1);
+
+					for (RedSRAMove<P> move2: redMoves2) {
+						if (move2 instanceof RedSRACheckMove && move2.register.equals(r2)) { // Guard is the same by construction
+							matchingMove = move2;
+							newRegMap = new HashMap<>(regMap);
+							break;
+						}
+					}
+				}
+				else {
+					// Case 1(b) in the paper
+					for (RedSRAMove<P> move2: redMoves2) {
+						if (move2 instanceof RedSRAFreshMove && move2.guard.equals(move1.guard)) {
+							matchingMove = move2;
+							newRegMap = new HashMap<>(regMap);
+							newRegMap.put(move1.register, move2.register);
+							break;
+						}
+					}
+				}
+
+				if (matchingMove == null)
+					return null;
+
+				nextTriples.add(new RedBisimTriple<>(move1.to, matchingMove.to, newRegMap));
+			}
+			else {
+				// Case 2(a)
+
+				// regInImg(r) = false iff r not in img(regMap)
+				boolean[] regInImg = new boolean[regNum2];
+				Arrays.fill(regInImg, false);
+
+				for (Integer r1: regMap.keySet())
+					regInImg[regMap.get(r1)] = true;
+
+				for (int r2 = 0; r2 < regNum2; r2++) {
+					if (!regInImg[r2] && regAbs2.get(r2).equals(move1.guard)) {
+						RedSRAMove<P> matchinMove;
+						for (RedSRAMove<P> move2: redMoves2) {
+							if (move2 instanceof Red SRAFreshMove && move2.guard.equals(move1.guard)) {
+								matchingMove = move2;
+								newRegMap = new HashMap<>(regMap);
+								newRegMap.put(move1.register, move2.register);
+								break;
+							}
+						}
+					}
+
+				}
+			}
+
+		}
+
+		return null;
 	}
 
 
