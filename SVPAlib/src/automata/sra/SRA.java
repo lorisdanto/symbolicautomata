@@ -13,7 +13,6 @@ import java.util.*;
 import org.sat4j.specs.TimeoutException;
 
 
-import sun.awt.image.ImageWatched;
 import theory.BooleanAlgebra;
 import utilities.*;
 
@@ -600,9 +599,9 @@ public class SRA<P, S> {
 	}
 
 
-
+	// Gets list of predicates without duplicates
 	private ArrayList<P> getAllPredicates(long timeout) {
-		ArrayList<P> predicates = new ArrayList<>();
+		HashSet<P> predicatesSet = new HashSet<>();
 
 		HashMap<Integer, Integer> reached = new HashMap<>();
 		// toVisit contains the product states we still have not explored
@@ -615,8 +614,8 @@ public class SRA<P, S> {
 			Integer curState = toVisit.removeFirst();
 
 			for (SRAMove<P, S> ct : getMovesFrom(curState)) {
-				if (!predicates.contains(ct.guard))
-					predicates.add(ct.guard);
+				if (!predicatesSet.contains(ct.guard))
+					predicatesSet.add(ct.guard);
 
 				if (!reached.containsKey(ct.to)) {
 					toVisit.add(ct.to);
@@ -627,7 +626,7 @@ public class SRA<P, S> {
 
 		}
 
-		return predicates;
+		return new ArrayList<>(predicatesSet);
 	}
 
 	// ------------------------------------------------------
@@ -805,11 +804,14 @@ public class SRA<P, S> {
 														  HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicates) {
 		HashMap<Integer, MinTerm<P>> initRegAb = new HashMap<>();
 
-		for (Integer r = 0; r < registers.size(); r++)
-			if (registers.get(r) != null) {
-				P atom = allPredicates.get(initValAtomsIndex + r);
+		for (Integer r = 0; r < registers.size(); r++) {
+			P atom = allPredicates.get(initValAtomsIndex + r);
+
+			if (atom == null)
+				initRegAb.put(r, null);
+			else
 				initRegAb.put(r, mintermsForPredicates.get(atom).get(0)); // There should be only 1 minterm for atom
-			}
+		}
 
 		return initRegAb;
 	}
@@ -818,7 +820,7 @@ public class SRA<P, S> {
 
 	// Emptyness check
 
-	public static <P, S> boolean checkEmptiness(SRA<P, S> aut, BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
+	public static <P, S> boolean isLanguageEmpty(SRA<P, S> aut, BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
 		long startTime = System.currentTimeMillis();
 
 		if (aut.isEmpty)
@@ -865,8 +867,6 @@ public class SRA<P, S> {
 			if (aut.finalStates.contains(currentState.getStateId()))
 				return false;
 
-			int currentStateID = reached.get(currentState);
-
 
 			for (SRAMove<P, S> move: aut.getMovesFrom(currentState.getStateId())) {
 				LinkedList<RedSRAMove<P>> redMoves =
@@ -878,7 +878,7 @@ public class SRA<P, S> {
 				for (RedSRAMove<P> redMove: redMoves) {
 					RedSRAState<P> nextState = redMove.to;
 
-					aut.getStateId(nextState, reached, toVisit);
+					getStateId(nextState, reached, toVisit);
 				}
 
 			}
@@ -889,7 +889,8 @@ public class SRA<P, S> {
 	}
 
 
-	public boolean areHKEquivalent(SRA<P,S> aut1, SRA<P,S> aut2, BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
+	public static <P, S> boolean areEquivalent(SRA<P,S> aut1, SRA<P,S> aut2, BooleanAlgebra<P, S> ba, long timeout)
+			throws TimeoutException {
 
 		if(aut1.isMSRA)
 			aut1 = aut1.compileToSRA(ba, timeout);
@@ -898,8 +899,7 @@ public class SRA<P, S> {
 			aut2 = aut2.compileToSRA(ba, timeout);
 
 
-		// Implement naive HK
-		// TODO: see if we can use union-find
+		// Implement synchronised visit
 
 		// Initial register map
 		HashMap<Integer, Integer> initRegMap = new HashMap<>();
@@ -921,7 +921,10 @@ public class SRA<P, S> {
 		ArrayList<P> allPredicates = aut1.getAllPredicates(timeout);
 		Integer initValPos1 = allPredicates.size();
 
-		aut2.getAllPredicates(timeout).addAll(allPredicates);
+		for (P predicate: aut2.getAllPredicates(timeout))
+			if (!allPredicates.contains(predicate)) // Add without duplicates
+				allPredicates.add(predicate);
+
 		Integer initValPos2 = allPredicates.size();
 
 		for (S regVal: aut1.registers) // Add initial register values of aut1 to predicates
@@ -942,7 +945,7 @@ public class SRA<P, S> {
 
 		HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicates = getMintermsForPredicates(allPredicates, minTerms);
 		HashMap<Integer, MinTerm<P>> initRegAbs1 = aut1.getInitialRegAbs(allPredicates, initValPos1, mintermsForPredicates);
-		HashMap<Integer, MinTerm<P>> initRegAbs2 = aut2.getInitialRegAbs(allPredicates, initValPos2, mintermsForPredicates);
+ye		HashMap<Integer, MinTerm<P>> initRegAbs2 = aut2.getInitialRegAbs(allPredicates, initValPos2, mintermsForPredicates);
 
 
 
@@ -998,10 +1001,12 @@ public class SRA<P, S> {
 
 					redMovesFromCurrent1.addAll(partialRedMoves);
 				}
+
+				aut1RedOut.put(aut1RedState, redMovesFromCurrent1);
 			}
 
 			if (aut2RedOut.containsKey(aut2RedState))
-				redMovesFromCurrent1 = aut2RedOut.get(aut2RedState);
+				redMovesFromCurrent2 = aut2RedOut.get(aut2RedState);
 			else {
 				redMovesFromCurrent2 = new LinkedList<>();
 
@@ -1011,10 +1016,19 @@ public class SRA<P, S> {
 
 					redMovesFromCurrent2.addAll(partialRedMoves);
 				}
+
+				aut2RedOut.put(aut2RedState, redMovesFromCurrent2);
 			}
 
+			// Get new bisimilarity triples
+			LinkedList<RedBisimTriple<P>> newTriples = redBisimSucc(ba, redMovesFromCurrent1, redMovesFromCurrent2,
+					regMap, currentRegAbs1, currentRegAbs2);
 
+			if (newTriples == null)
+				return false;
 
+			for (RedBisimTriple<P> triple: newTriples)
+				getStateId(triple, reached, toVisit);
 
 		}
 
@@ -1024,11 +1038,12 @@ public class SRA<P, S> {
 
 
 	// Returns all reduced bisimulation triples that need to be checked in subsequent steps
-	private static <P, S> LinkedList<RedBisimTriple<P>> redBisimSucc(LinkedList<RedSRAMove<P>> redMoves1,
+	private static <P, S> LinkedList<RedBisimTriple<P>> redBisimSucc(BooleanAlgebra<P, S> ba,
+																	 LinkedList<RedSRAMove<P>> redMoves1,
 																	 LinkedList<RedSRAMove<P>> redMoves2,
 																	 HashMap<Integer, Integer> regMap,
-																	 HashMap<Integer, MinTerm<P>> regAbs2,
-																	 Integer regNum1, Integer regNum2) {
+																	 HashMap<Integer, MinTerm<P>> regAbs1,
+																	 HashMap<Integer, MinTerm<P>> regAbs2) {
 
 		LinkedList<RedBisimTriple<P>> nextTriples = new LinkedList<>();
 
@@ -1072,6 +1087,7 @@ public class SRA<P, S> {
 				// Case 2(a)
 
 				// regInImg(r) = false iff r not in img(regMap)
+				Integer regNum2 = regAbs2.size();
 				boolean[] regInImg = new boolean[regNum2];
 				Arrays.fill(regInImg, false);
 
@@ -1080,23 +1096,58 @@ public class SRA<P, S> {
 
 				for (int r2 = 0; r2 < regNum2; r2++) {
 					if (!regInImg[r2] && regAbs2.get(r2).equals(move1.guard)) {
-						RedSRAMove<P> matchinMove;
+						RedSRAMove<P> matchingMove = null;
+						HashMap<Integer, Integer> newRegMap = null;
+
 						for (RedSRAMove<P> move2: redMoves2) {
-							if (move2 instanceof Red SRAFreshMove && move2.guard.equals(move1.guard)) {
+							if (move2 instanceof RedSRACheckMove && move2.register.equals(r2)) { // Guard must be the same
 								matchingMove = move2;
 								newRegMap = new HashMap<>(regMap);
 								newRegMap.put(move1.register, move2.register);
-								break;
 							}
+						}
+
+						if (matchingMove == null)
+							return null;
+
+						nextTriples.add(new RedBisimTriple<>(move1.to, matchingMove.to, newRegMap));
+					}
+				}
+
+				// Case 2(b)
+				Integer howManyEqualToGuard1 = 0;
+
+				for (Integer reg: regAbs1.keySet())
+					if (regAbs1.get(reg).equals(move1.guard))
+						howManyEqualToGuard1++;
+
+				for (Integer reg: regAbs2.keySet())
+					if (regAbs2.get(reg).equals(move1.guard))
+						howManyEqualToGuard1++;
+
+				if (ba.hasNDistinctWitnesses(move1.guard.getPredicate(), howManyEqualToGuard1 + 1)) {
+					RedSRAMove<P> matchingMove = null;
+					HashMap<Integer, Integer> newRegMap = null;
+
+					for (RedSRAMove<P> move2: redMoves2) {
+						if (move2 instanceof RedSRAFreshMove && move2.guard.equals(move1.guard)) { // Guard must be the same
+							matchingMove = move2;
+							newRegMap = new HashMap<>(regMap);
+							newRegMap.put(move1.register, move2.register);
+							break;
 						}
 					}
 
+					if (matchingMove == null)
+						return null;
+
+					nextTriples.add(new RedBisimTriple<>(move1.to, matchingMove.to, newRegMap));
 				}
 			}
 
 		}
 
-		return null;
+		return nextTriples;
 	}
 
 

@@ -73,7 +73,7 @@ public class SRAUnitTest {
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAFreshMove<CharPred, Character>(0, 1, ba.MkOr(new CharPred('a'), new CharPred('b')), 0));
         SRA<CharPred, Character> testSRA = SRA.MkSRA(transitions, 0, Arrays.asList(1), registers, ba);
-        assertTrue(SRA.checkEmptiness(testSRA, ba, Long.MAX_VALUE));
+        assertTrue(SRA.isLanguageEmpty(testSRA, ba, Long.MAX_VALUE));
     }
 
     @Test
@@ -91,7 +91,7 @@ public class SRAUnitTest {
 
 
         SRA<CharPred, Character> testSRA = SRA.MkSRA(transitions, 0, Arrays.asList(3), registers, ba);
-        assertTrue(SRA.checkEmptiness(testSRA, ba, Long.MAX_VALUE));
+        assertTrue(SRA.isLanguageEmpty(testSRA, ba, Long.MAX_VALUE));
     }
 
     @Test
@@ -109,7 +109,7 @@ public class SRAUnitTest {
 
 
         SRA<CharPred, Character> testSRA = SRA.MkSRA(transitions, 0, Arrays.asList(3), registers, ba);
-        assertFalse(SRA.checkEmptiness(testSRA, ba, Long.MAX_VALUE));
+        assertFalse(SRA.isLanguageEmpty(testSRA, ba, Long.MAX_VALUE));
     }
 
     @Test
@@ -132,7 +132,12 @@ public class SRAUnitTest {
     @Test
     public void testSRACompilationAndEmptiness() throws TimeoutException {
         SRA<CharPred, Character> toSRA = msraAut.compileToSRA(ba, Long.MAX_VALUE);
-        assertFalse(SRA.checkEmptiness(toSRA, ba, Long.MAX_VALUE));
+        assertFalse(SRA.isLanguageEmpty(toSRA, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testEquivalenceReflexive() throws TimeoutException {
+        assertTrue(SRA.areEquivalent(getSRAa(ba), getSRAb(ba), ba, Long.MAX_VALUE));
     }
 
     // ---------------------------------------
