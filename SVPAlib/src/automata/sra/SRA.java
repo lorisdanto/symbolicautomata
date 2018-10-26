@@ -719,11 +719,11 @@ public class SRA<P, S> {
 	}
 
 	// Encapsulates a reduced bisimulation triple
-	protected  static class RedSimTriple<P> {
+	protected  static class NormSimTriple<P> {
 		Triple<NormSRAState<P>, NormSRAState<P>, HashMap<Integer, Integer>> data;
 
-		protected RedSimTriple(NormSRAState<P> redState1, NormSRAState<P> redState2, HashMap<Integer, Integer> regMap) {
-			data = new Triple<>(redState1, redState2, regMap);
+		protected NormSimTriple(NormSRAState<P> NormState1, NormSRAState<P> NormState2, HashMap<Integer, Integer> regMap) {
+			data = new Triple<>(NormState1, NormState2, regMap);
 		}
 
 //		protected boolean equals(NormSRAState<P> rs) {
@@ -746,7 +746,7 @@ public class SRA<P, S> {
 		public boolean equals(Object o) {
 			if (this == o) return true;
 			if (o == null || getClass() != o.getClass()) return false;
-			RedSimTriple<?> that = (RedSimTriple<?>) o;
+			NormSimTriple<?> that = (NormSimTriple<?>) o;
 			return Objects.equals(data, that.data);
 		}
 
@@ -764,7 +764,7 @@ public class SRA<P, S> {
 																  SRAMove<P, S> move,
 																  NormSRAState<P> from) {
 
-		LinkedList<NormSRAMove<P>> redMoves = new LinkedList<>();
+		LinkedList<NormSRAMove<P>> normMoves = new LinkedList<>();
 		LinkedList<MinTerm<P>> minterms = mintermsForPredicate.get(move.guard);
 
 		Integer register = move.registerIndexes.iterator().next();
@@ -776,7 +776,7 @@ public class SRA<P, S> {
 				HashMap<Integer, MinTerm<P>> newRegAbs = new HashMap<>(regAbs);
 				NormSRAState<P> targetState = new NormSRAState<>(move.to, newRegAbs);
 
-				redMoves.add(new NormSRACheckMove<>(from, targetState, registerMintInAbs, register));
+				normMoves.add(new NormSRACheckMove<>(from, targetState, registerMintInAbs, register));
 			}
 		}
 		else {
@@ -795,12 +795,12 @@ public class SRA<P, S> {
 					newRegAbs.put(move.registerIndexes.iterator().next(), mint);
 					NormSRAState<P> targetState = new NormSRAState<>(move.to, newRegAbs);
 
-					redMoves.add(new NormSRAFreshMove<>(from, targetState, mint, register));
+					normMoves.add(new NormSRAFreshMove<>(from, targetState, mint, register));
 				}
 			}
 		}
 
-		return redMoves;
+		return normMoves;
 	}
 
 
@@ -880,7 +880,7 @@ public class SRA<P, S> {
 
 
 		// Create initial state of the normalised SRA
-		NormSRAState<P> initRedState = new NormSRAState<>(aut.initialState, initRegAbs);
+		NormSRAState<P> initNormState = new NormSRAState<>(aut.initialState, initRegAbs);
 
 		// reached contains the product states (p,theta) we discovered and maps
 		// them to a stateId
@@ -888,8 +888,8 @@ public class SRA<P, S> {
 		// toVisit contains the product states we still have not explored
 		LinkedList<NormSRAState<P>> toVisit = new LinkedList<>();
 
-		toVisit.add(initRedState);
-		reached.put(initRedState, 0);
+		toVisit.add(initNormState);
+		reached.put(initNormState, 0);
 
 		while (!toVisit.isEmpty()) {
 			NormSRAState<P> currentState = toVisit.removeFirst();
@@ -899,14 +899,14 @@ public class SRA<P, S> {
 
 
 			for (SRAMove<P, S> move: aut.getMovesFrom(currentState.getStateId())) {
-				LinkedList<NormSRAMove<P>> redMoves =
+				LinkedList<NormSRAMove<P>> normMoves =
 						toNormSRAMoves(ba, currentState.getRegAbs(), mintermsForPredicates, move, null);
 
 				if (System.currentTimeMillis() - startTime > timeout)
 					throw new TimeoutException();
 
-				for (NormSRAMove<P> redMove: redMoves) {
-					NormSRAState<P> nextState = redMove.to;
+				for (NormSRAMove<P> normMove: normMoves) {
+					NormSRAState<P> nextState = normMove.to;
 
 					getStateId(nextState, reached, toVisit);
 				}
@@ -916,6 +916,15 @@ public class SRA<P, S> {
 		}
 
 		return true;
+	}
+
+	private static HashMap<Integer, Integer> getRegMapInv(HashMap<Integer, Integer> regMap) {
+		HashMap<Integer, Integer> invRegMap = new HashMap<>();
+
+		for (Integer r: regMap.keySet())
+			invRegMap.put(regMap.get(r), r);
+
+		return invRegMap;
 	}
 
 
@@ -955,11 +964,11 @@ public class SRA<P, S> {
 			if (!allPredicates.contains(predicate)) // Add without duplicates
 				allPredicates.add(predicate);
 
-		Integer initValPos2 = allPredicates.size();
-
 		for (S regVal: aut1.registers) // Add initial register values of aut1 to predicates
 			if (regVal != null)
 				allPredicates.add(ba.MkAtom(regVal));
+
+		Integer initValPos2 = allPredicates.size();
 
 		for (S regVal: aut2.registers) // Add initial register values of aut2 to predicates
 			if (regVal != null)
@@ -980,85 +989,94 @@ public class SRA<P, S> {
 
 
 		// Create initial triples
-		NormSRAState<P> initRedState1 = new NormSRAState<>(aut1.initialState, initRegAbs1);
-		NormSRAState<P> initRedState2 = new NormSRAState<>(aut2.initialState, initRegAbs2);
+		NormSRAState<P> initNormState1 = new NormSRAState<>(aut1.initialState, initRegAbs1);
+		NormSRAState<P> initNormState2 = new NormSRAState<>(aut2.initialState, initRegAbs2);
 
-		RedSimTriple<P> initTriple = new RedSimTriple<>(initRedState1, initRedState2, initRegMap);
-		// RedBisimTriple<P> initTripleInv = new RedBisimTriple<>(initRedState2, initRedState1, initRegMapInv);
+		NormSimTriple<P> initTriple = new NormSimTriple<>(initNormState1, initNormState2, initRegMap);
 
 		// reached contains the triples we have already discovered and maps them to a stateId
-		HashMap<RedSimTriple<P>, Integer> reached = new HashMap<>();
+		HashMap<NormSimTriple<P>, Integer> reached = new HashMap<>();
 		// toVisit contains the triples we have not explored yet
-		LinkedList<RedSimTriple<P>> toVisit = new LinkedList<>();
+		LinkedList<NormSimTriple<P>> toVisit = new LinkedList<>();
+		// LinkedList<NormSimTriple<P>> toVisitInv = new LinkedList<>();
 
 		toVisit.add(initTriple);
-		//toVisit.add(initTripleInv);
+		// toVisitInv.add()
 		reached.put(initTriple, 0);
-		//reached.put(initTriple, 1);
+
+
 
 		// Keep track of outgoing reduced transitions that have already been generated
-		HashMap<NormSRAState<P>, LinkedList<NormSRAMove<P>>> aut1RedOut = new HashMap<>();
-		HashMap<NormSRAState<P>, LinkedList<NormSRAMove<P>>> aut2RedOut = new HashMap<>();
+		HashMap<NormSRAState<P>, LinkedList<NormSRAMove<P>>> aut1NormOut = new HashMap<>();
+		HashMap<NormSRAState<P>, LinkedList<NormSRAMove<P>>> aut2NormOut = new HashMap<>();
 
 
 		while (!toVisit.isEmpty()) {
-			RedSimTriple<P> currentTriple = toVisit.removeFirst();
+			NormSimTriple<P> currentTriple = toVisit.removeLast(); // BFS visit
 
-			NormSRAState<P> aut1RedState = currentTriple.getState1();
-			NormSRAState<P> aut2RedState = currentTriple.getState2();
+			NormSRAState<P> aut1NormState = currentTriple.getState1();
+			NormSRAState<P> aut2NormState = currentTriple.getState2();
 			HashMap<Integer, Integer> regMap = currentTriple.getRegMap();
 
-			if (aut1.finalStates.contains(aut1RedState.getStateId()) &&
-					!aut2.finalStates.contains(aut2RedState.getStateId()))
+			if (aut1.finalStates.contains(aut1NormState.getStateId()) &&
+					!aut2.finalStates.contains(aut2NormState.getStateId()))
 				return false;
 
-			int currentStateID = reached.get(currentTriple);
+			// int currentStateID = reached.get(currentTriple);
 
-			HashMap<Integer, MinTerm<P>> currentRegAbs1 = aut1RedState.getRegAbs();
-			HashMap<Integer, MinTerm<P>> currentRegAbs2 = aut2RedState.getRegAbs();
+			HashMap<Integer, MinTerm<P>> currentRegAbs1 = aut1NormState.getRegAbs();
+			HashMap<Integer, MinTerm<P>> currentRegAbs2 = aut2NormState.getRegAbs();
 
-			// Compute all the reduced moves from aut1RedState and aut2RedState
-			LinkedList<NormSRAMove<P>> redMovesFromCurrent1;
-			LinkedList<NormSRAMove<P>> redMovesFromCurrent2;
+			// Compute all the reduced moves from aut1NormState and aut2NormState
+			LinkedList<NormSRAMove<P>> normMovesFromCurrent1;
+			LinkedList<NormSRAMove<P>> normMovesFromCurrent2;
 
-			if (aut1RedOut.containsKey(aut1RedState))
-				redMovesFromCurrent1 = aut1RedOut.get(aut1RedState);
+			if (aut1NormOut.containsKey(aut1NormState))
+				normMovesFromCurrent1 = aut1NormOut.get(aut1NormState);
 			else {
-				redMovesFromCurrent1 = new LinkedList<>();
+				normMovesFromCurrent1 = new LinkedList<>();
 
-				for (SRAMove<P, S> move : aut1.getMovesFrom(aut1RedState.getStateId())) {
-					LinkedList<NormSRAMove<P>> partialRedMoves = toNormSRAMoves(ba, currentRegAbs1, mintermsForPredicates,
-							move, aut1RedState);
+				for (SRAMove<P, S> move : aut1.getMovesFrom(aut1NormState.getStateId())) {
+					LinkedList<NormSRAMove<P>> partialnormMoves = toNormSRAMoves(ba, currentRegAbs1, mintermsForPredicates,
+							move, aut1NormState);
 
-					redMovesFromCurrent1.addAll(partialRedMoves);
+					normMovesFromCurrent1.addAll(partialnormMoves);
 				}
 
-				aut1RedOut.put(aut1RedState, redMovesFromCurrent1);
+				aut1NormOut.put(aut1NormState, normMovesFromCurrent1);
 			}
 
-			if (aut2RedOut.containsKey(aut2RedState))
-				redMovesFromCurrent2 = aut2RedOut.get(aut2RedState);
+			if (aut2NormOut.containsKey(aut2NormState))
+				normMovesFromCurrent2 = aut2NormOut.get(aut2NormState);
 			else {
-				redMovesFromCurrent2 = new LinkedList<>();
+				normMovesFromCurrent2 = new LinkedList<>();
 
-				for (SRAMove<P, S> move : aut2.getMovesFrom(aut2RedState.getStateId())) {
-					LinkedList<NormSRAMove<P>> partialRedMoves = toNormSRAMoves(ba, currentRegAbs2, mintermsForPredicates,
-							move, aut2RedState);
+				for (SRAMove<P, S> move : aut2.getMovesFrom(aut2NormState.getStateId())) {
+					LinkedList<NormSRAMove<P>> partialnormMoves = toNormSRAMoves(ba, currentRegAbs2, mintermsForPredicates,
+							move, aut2NormState);
 
-					redMovesFromCurrent2.addAll(partialRedMoves);
+					normMovesFromCurrent2.addAll(partialnormMoves);
 				}
 
-				aut2RedOut.put(aut2RedState, redMovesFromCurrent2);
+				aut2NormOut.put(aut2NormState, normMovesFromCurrent2);
 			}
 
 			// Get new bisimilarity triples
-			LinkedList<RedSimTriple<P>> newTriples = redBisimSucc(ba, redMovesFromCurrent1, redMovesFromCurrent2,
+			LinkedList<NormSimTriple<P>> newTriples = normSimSucc(ba, normMovesFromCurrent1, normMovesFromCurrent2,
 					regMap, currentRegAbs1, currentRegAbs2);
 
 			if (newTriples == null)
 				return false;
 
-			for (RedSimTriple<P> triple: newTriples)
+			if (bisimulation) {
+				LinkedList<NormSimTriple<P>> invTriples = normSimSucc(ba, normMovesFromCurrent2, normMovesFromCurrent1,
+						getRegMapInv(regMap), currentRegAbs2, currentRegAbs1);
+
+				if (invTriples == null)
+					return false;
+			}
+
+			for (NormSimTriple<P> triple: newTriples)
 				getStateId(triple, reached, toVisit);
 
 		}
@@ -1068,18 +1086,21 @@ public class SRA<P, S> {
 	}
 
 
+
+
+
 	// Returns all reduced bisimulation triples that need to be checked in subsequent steps
-	private static <P, S> LinkedList<RedSimTriple<P>> redBisimSucc(BooleanAlgebra<P, S> ba,
-																	 LinkedList<NormSRAMove<P>> redMoves1,
-																	 LinkedList<NormSRAMove<P>> redMoves2,
-																	 HashMap<Integer, Integer> regMap,
-																	 HashMap<Integer, MinTerm<P>> regAbs1,
-																	 HashMap<Integer, MinTerm<P>> regAbs2) {
+	private static <P, S> LinkedList<NormSimTriple<P>> normSimSucc(BooleanAlgebra<P, S> ba,
+															   	   LinkedList<NormSRAMove<P>> normMoves1,
+																   LinkedList<NormSRAMove<P>> normMoves2,
+																   HashMap<Integer, Integer> regMap,
+																   HashMap<Integer, MinTerm<P>> regAbs1,
+																   HashMap<Integer, MinTerm<P>> regAbs2) {
 
-		LinkedList<RedSimTriple<P>> nextTriples = new LinkedList<>();
+		LinkedList<NormSimTriple<P>> nextTriples = new LinkedList<>();
 
 
-		for (NormSRAMove<P> move1: redMoves1) {
+		for (NormSRAMove<P> move1: normMoves1) {
 			if (move1 instanceof NormSRACheckMove) {
 				Integer r1 = move1.register;
 				NormSRAMove<P> matchingMove = null;
@@ -1089,7 +1110,7 @@ public class SRA<P, S> {
 				if (regMap.containsKey(r1)){
 					Integer r2 = regMap.get(r1);
 
-					for (NormSRAMove<P> move2: redMoves2) {
+					for (NormSRAMove<P> move2: normMoves2) {
 						if (move2 instanceof NormSRACheckMove && move2.register.equals(r2)) { // Guard is the same by construction
 							matchingMove = move2;
 							newRegMap = new HashMap<>(regMap);
@@ -1099,7 +1120,7 @@ public class SRA<P, S> {
 				}
 				else {
 					// Case 1(b) in the paper
-					for (NormSRAMove<P> move2: redMoves2) {
+					for (NormSRAMove<P> move2: normMoves2) {
 						if (move2 instanceof NormSRAFreshMove && move2.guard.equals(move1.guard)) {
 							matchingMove = move2;
 							newRegMap = new HashMap<>(regMap);
@@ -1112,7 +1133,7 @@ public class SRA<P, S> {
 				if (matchingMove == null)
 					return null;
 
-				nextTriples.add(new RedSimTriple<>(move1.to, matchingMove.to, newRegMap));
+				nextTriples.add(new NormSimTriple<>(move1.to, matchingMove.to, newRegMap));
 			}
 			else {
 				// Case 2(a)
@@ -1132,7 +1153,7 @@ public class SRA<P, S> {
 						NormSRAMove<P> matchingMove = null;
 						HashMap<Integer, Integer> newRegMap = null;
 
-						for (NormSRAMove<P> move2: redMoves2) {
+						for (NormSRAMove<P> move2: normMoves2) {
 							if (move2 instanceof NormSRACheckMove && move2.register.equals(r2)) { // Guard must be the same
 								matchingMove = move2;
 								newRegMap = new HashMap<>(regMap);
@@ -1143,7 +1164,7 @@ public class SRA<P, S> {
 						if (matchingMove == null)
 							return null;
 
-						nextTriples.add(new RedSimTriple<>(move1.to, matchingMove.to, newRegMap));
+						nextTriples.add(new NormSimTriple<>(move1.to, matchingMove.to, newRegMap));
 					}
 				}
 
@@ -1168,7 +1189,7 @@ public class SRA<P, S> {
 					NormSRAMove<P> matchingMove = null;
 					HashMap<Integer, Integer> newRegMap = null;
 
-					for (NormSRAMove<P> move2: redMoves2) {
+					for (NormSRAMove<P> move2: normMoves2) {
 						if (move2 instanceof NormSRAFreshMove && move2.guard.equals(move1.guard)) { // Guard must be the same
 							matchingMove = move2;
 							newRegMap = new HashMap<>(regMap);
@@ -1180,7 +1201,7 @@ public class SRA<P, S> {
 					if (matchingMove == null)
 						return null;
 
-					nextTriples.add(new RedSimTriple<>(move1.to, matchingMove.to, newRegMap));
+					nextTriples.add(new NormSimTriple<>(move1.to, matchingMove.to, newRegMap));
 				}
 			}
 
@@ -1195,7 +1216,7 @@ public class SRA<P, S> {
 	 *
 	 * @throws TimeoutException
 	 */
-	public SRA<P, S> compileToSRA(BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
+	public SRA<P, S> toSRA(BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
 
         long startTime = System.currentTimeMillis();
 
@@ -1252,7 +1273,7 @@ public class SRA<P, S> {
         // Explore the product automaton until no new states can be reached
         while (!toVisit.isEmpty()) {
 
-            Pair<Integer, HashMap<Integer, Integer>> currentState = toVisit.removeFirst();
+            Pair<Integer, HashMap<Integer, Integer>> currentState = toVisit.removeLast(); // BFS visit
             int currentStateID = reached.get(currentState);
             HashMap<Integer, Integer> currentMap = currentState.second;
 
@@ -2566,8 +2587,8 @@ public class SRA<P, S> {
 		if (!reached.contains(state)) {
 			reached.add(state);
 			for (SRAMove<P, S> t : this.getTransitionsTo(state)) {
-				Integer predState = t.from;
-				visitBackward(predState, reached);
+				Integer pNormState = t.from;
+				visitBackward(pNormState, reached);
 			}
 		}
 	}

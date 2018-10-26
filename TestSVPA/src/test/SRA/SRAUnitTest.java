@@ -137,7 +137,92 @@ public class SRAUnitTest {
 
     @Test
     public void testSimulation() throws TimeoutException {
-        assertTrue(SRA.simulation(getSRAa(ba), getSRAb(ba), ba, false, Long.MAX_VALUE));
+        assertTrue(SRA.canSimulate(getSRAa(ba), getSRAb(ba), ba, false, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testSimulationCase3CornerCase() throws TimeoutException {
+        CharPred abcPred = ba.MkOr(Arrays.asList(new CharPred('a'), new CharPred('b'), new CharPred('c')));
+
+        // SRA1
+        LinkedList<Character> registers1 = new LinkedList<Character>();
+
+        registers1.add('a');
+        registers1.add('b');
+
+        Collection<SRAMove<CharPred, Character>> transitions1 = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions1.add(new SRAFreshMove<>(0, 1, abcPred, 0));
+
+        SRA<CharPred, Character> sra1 = SRA.MkSRA(transitions1, 0, Arrays.asList(1), registers1, ba);
+
+        // SRA2
+        LinkedList<Character> registers2 = new LinkedList<Character>();
+
+        registers2.add('c');
+        registers2.add('d');
+
+        Collection<SRAMove<CharPred, Character>> transitions2 = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions2.add(new SRACheckMove<>(0, 1, abcPred, 0));
+
+        SRA<CharPred, Character> sra2 = SRA.MkSRA(transitions2, 0, Arrays.asList(1), registers2, ba);
+
+        assertTrue(SRA.canSimulate(sra1, sra2, ba, true, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testSimulationCase3CornerCaseDifferent() throws TimeoutException {
+        CharPred abcPred = ba.MkOr(Arrays.asList(new CharPred('a'), new CharPred('b'), new CharPred('c')));
+
+        // SRA1
+        LinkedList<Character> registers1 = new LinkedList<Character>();
+
+        registers1.add('a');
+        registers1.add('b');
+
+        Collection<SRAMove<CharPred, Character>> transitions1 = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions1.add(new SRAFreshMove<>(0, 1, abcPred, 0));
+
+        SRA<CharPred, Character> sra1 = SRA.MkSRA(transitions1, 0, Arrays.asList(1), registers1, ba);
+
+        // SRA2
+        LinkedList<Character> registers2 = new LinkedList<Character>();
+
+        registers2.add('c');
+        registers2.add('d');
+
+        Collection<SRAMove<CharPred, Character>> transitions2 = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions2.add(new SRACheckMove<>(0, 1, abcPred, 0));
+
+        SRA<CharPred, Character> sra2 = SRA.MkSRA(transitions2, 0, new LinkedHashSet<>(), registers2, ba);
+
+        assertFalse(SRA.canSimulate(sra1, sra2, ba, true, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testSimilarButNotBisimilar() throws TimeoutException {
+        CharPred abcPred = ba.MkOr(Arrays.asList(new CharPred('a'), new CharPred('b'), new CharPred('c')));
+
+        // SRA1
+        LinkedList<Character> registers1 = new LinkedList<Character>();
+
+        registers1.add('a');
+
+        Collection<SRAMove<CharPred, Character>> transitions1 = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions1.add(new SRACheckMove<>(0, 1, abcPred, 0));
+
+        SRA<CharPred, Character> sra1 = SRA.MkSRA(transitions1, 0, Arrays.asList(1), registers1, ba);
+
+        // SRA2
+        LinkedList<Character> registers2 = new LinkedList<Character>();
+
+        registers2.add(null);
+
+        Collection<SRAMove<CharPred, Character>> transitions2 = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions2.add(new SRAFreshMove<>(0, 1, abcPred, 0));
+
+        SRA<CharPred, Character> sra2 = SRA.MkSRA(transitions2, 0, Arrays.asList(1), registers2, ba);
+
+        assertFalse(SRA.canSimulate(sra1, sra2, ba, true, Long.MAX_VALUE));
     }
 
     // ---------------------------------------
