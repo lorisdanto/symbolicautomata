@@ -136,8 +136,8 @@ public class SRAUnitTest {
     }
 
     @Test
-    public void testEquivalenceReflexive() throws TimeoutException {
-        assertTrue(SRA.areEquivalent(getSRAa(ba), getSRAb(ba), ba, Long.MAX_VALUE));
+    public void testSimulation() throws TimeoutException {
+        assertTrue(SRA.simulation(getSRAa(ba), getSRAb(ba), ba, false, Long.MAX_VALUE));
     }
 
     // ---------------------------------------
