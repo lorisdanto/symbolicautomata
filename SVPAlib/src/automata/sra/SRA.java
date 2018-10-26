@@ -857,7 +857,7 @@ public class SRA<P, S> {
 			return true;
 
 		if (aut.isMSRA)
-			aut = aut.compileToSRA(ba, timeout);
+			aut = aut.toSRA(ba, timeout);
 
 		// Compute all minterms
 		ArrayList<P> allPredicates = aut.getAllPredicates(timeout);
@@ -932,10 +932,10 @@ public class SRA<P, S> {
 			throws TimeoutException {
 
 		if(aut1.isMSRA)
-			aut1 = aut1.compileToSRA(ba, timeout);
+			aut1 = aut1.toSRA(ba, timeout);
 
 		if(aut2.isMSRA)
-			aut2 = aut2.compileToSRA(ba, timeout);
+			aut2 = aut2.toSRA(ba, timeout);
 
 
 		// Implement synchronised visit

@@ -34,7 +34,7 @@ public class TestSRAExperiments {
 
     @Test
     public void testSSNCheckerMSRAtoSRA() throws TimeoutException {
-        SRA<CharPred, Character> toSRA = SSNCheckerMSRA.compileToSRA(ba, Long.MAX_VALUE);
+        SRA<CharPred, Character> toSRA = SSNCheckerMSRA.toSRA(ba, Long.MAX_VALUE);
         toSRA.createDotFile("ssnSra", "");
         assertTrue(toSRA.accepts(validName1, ba));
         assertTrue(toSRA.accepts(validName2, ba));
@@ -186,41 +186,41 @@ public class TestSRAExperiments {
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
 
         // Read the first initial and store it in register 0
-        transitions.add(new MSRAMove<CharPred, Character>(0, 1, upperAlpha, Collections.emptyList(), Collections.singleton(0)));
+        transitions.add(new MSRAMove<CharPred, Character>(0, 1, upperAlpha, Collections.emptyList(), Collections.singletonList(0)));
 
         // Read an unbound number of lowercase characters
-        transitions.add(new MSRAMove<CharPred, Character>(1, 1, lowerAlpha, Collections.emptyList(), Collections.singleton(2)));
-        transitions.add(new MSRAMove<CharPred, Character>(1, 1, lowerAlpha, Collections.singleton(2), Collections.emptyList()));
+        transitions.add(new MSRAMove<CharPred, Character>(1, 1, lowerAlpha, Collections.emptyList(), Collections.singletonList(2)));
+        transitions.add(new MSRAMove<CharPred, Character>(1, 1, lowerAlpha, Collections.singletonList(2), Collections.emptyList()));
 
         // Read a comma
-        transitions.add(new MSRAMove<CharPred, Character>(1, 2, comma, Collections.emptyList(), Collections.singleton(2)));
+        transitions.add(new MSRAMove<CharPred, Character>(1, 2, comma, Collections.emptyList(), Collections.singletonList(2)));
 
         // Read an unbound number of spaces
-        transitions.add(new MSRAMove<CharPred, Character>(2, 2, space, Collections.emptyList(), Collections.singleton(2)));
-        transitions.add(new MSRAMove<CharPred, Character>(2, 2, space, Collections.singleton(2), Collections.emptyList()));
+        transitions.add(new MSRAMove<CharPred, Character>(2, 2, space, Collections.emptyList(), Collections.singletonList(2)));
+        transitions.add(new MSRAMove<CharPred, Character>(2, 2, space, Collections.singletonList(2), Collections.emptyList()));
 
         // Read a different second initial or a repeated second initial and store it in 1
-        transitions.add(new MSRAMove<CharPred, Character>(2, 3, upperAlpha, Collections.singleton(0), Collections.singleton(1)));
-        transitions.add(new MSRAMove<CharPred, Character>(2, 3, upperAlpha, Collections.emptyList(), Collections.singleton(1)));
+        transitions.add(new MSRAMove<CharPred, Character>(2, 3, upperAlpha, Collections.singletonList(0), Collections.singletonList(1)));
+        transitions.add(new MSRAMove<CharPred, Character>(2, 3, upperAlpha, Collections.emptyList(), Collections.singletonList(1)));
 
         // Read an unbound number of lowercase characters
-        transitions.add(new MSRAMove<CharPred, Character>(3, 3, lowerAlpha, Collections.emptyList(), Collections.singleton(2)));
-        transitions.add(new MSRAMove<CharPred, Character>(3, 3, lowerAlpha, Collections.singleton(2), Collections.emptyList()));
+        transitions.add(new MSRAMove<CharPred, Character>(3, 3, lowerAlpha, Collections.emptyList(), Collections.singletonList(2)));
+        transitions.add(new MSRAMove<CharPred, Character>(3, 3, lowerAlpha, Collections.singletonList(2), Collections.emptyList()));
 
         // Read a comma
-        transitions.add(new MSRAMove<CharPred, Character>(3, 4, comma, Collections.emptyList(), Collections.singleton(2)));
+        transitions.add(new MSRAMove<CharPred, Character>(3, 4, comma, Collections.emptyList(), Collections.singletonList(2)));
 
         // Read an unbound number of spaces
-        transitions.add(new MSRAMove<CharPred, Character>(4, 4, space, Collections.emptyList(), Collections.singleton(2)));
-        transitions.add(new MSRAMove<CharPred, Character>(4, 4, space, Collections.singleton(2), Collections.emptyList()));
+        transitions.add(new MSRAMove<CharPred, Character>(4, 4, space, Collections.emptyList(), Collections.singletonList(2)));
+        transitions.add(new MSRAMove<CharPred, Character>(4, 4, space, Collections.singletonList(2), Collections.emptyList()));
 
         // Read a capital that matches both registers or a capital that matches the first register
         transitions.add(new MSRAMove<CharPred, Character>(4, 5, upperAlpha, Arrays.asList(0, 1), Collections.emptyList()));
-        transitions.add(new MSRAMove<CharPred, Character>(4, 5, upperAlpha, Collections.singleton(0), Collections.emptyList()));
+        transitions.add(new MSRAMove<CharPred, Character>(4, 5, upperAlpha, Collections.singletonList(0), Collections.emptyList()));
 
         // Read a capital that matches both registers or a capital that matches the second register
         transitions.add(new MSRAMove<CharPred, Character>(5, 6, upperAlpha, Arrays.asList(0, 1), Collections.emptyList()));
-        transitions.add(new MSRAMove<CharPred, Character>(5, 6, upperAlpha, Collections.singleton(1), Collections.emptyList()));
+        transitions.add(new MSRAMove<CharPred, Character>(5, 6, upperAlpha, Collections.singletonList(1), Collections.emptyList()));
 
         try {
             return SRA.MkSRA(transitions, 0, Collections.singleton(6), registers, ba);
