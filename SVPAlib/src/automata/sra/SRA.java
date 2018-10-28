@@ -1021,13 +1021,20 @@ public class SRA<P, S> {
 			if (aut1.finalStates.contains(aut1NormState.getStateId()) &&
 					!aut2.finalStates.contains(aut2NormState.getStateId()))
 				return false;
+			
+
+			if (bisimulation)
+				if (aut2.finalStates.contains(aut2NormState.getStateId()) &&
+						!aut1.finalStates.contains(aut1NormState.getStateId()))
+					return false;
+
 
 			// int currentStateID = reached.get(currentTriple);
 
 			HashMap<Integer, MinTerm<P>> currentRegAbs1 = aut1NormState.getRegAbs();
 			HashMap<Integer, MinTerm<P>> currentRegAbs2 = aut2NormState.getRegAbs();
 
-			// Compute all the reduced moves from aut1NormState and aut2NormState
+			// Compute all the normalised moves from aut1NormState and aut2NormState
 			LinkedList<NormSRAMove<P>> normMovesFromCurrent1;
 			LinkedList<NormSRAMove<P>> normMovesFromCurrent2;
 

@@ -136,9 +136,15 @@ public class SRAUnitTest {
     }
 
     @Test
-    public void testSimulation() throws TimeoutException {
-        assertTrue(SRA.canSimulate(getSRAa(ba), getSRAb(ba), ba, false, Long.MAX_VALUE));
+    public void testNotSimilar() throws TimeoutException {
+        assertFalse(SRA.canSimulate(getSRAa(ba), getSRAb(ba), ba, false, Long.MAX_VALUE));
     }
+
+    @Test
+    public void testBisimilarityReflexive() throws TimeoutException {
+        assertTrue(SRA.canSimulate(getSRAa(ba), getSRAa(ba), ba, true, Long.MAX_VALUE));
+    }
+
 
     @Test
     public void testSimulationCase3CornerCase() throws TimeoutException {
