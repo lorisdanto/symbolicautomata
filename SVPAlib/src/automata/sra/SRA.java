@@ -8,8 +8,10 @@ package automata.sra;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 
+import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
 
 
@@ -186,6 +188,7 @@ public class SRA<P, S> {
 
 		aut.initialState = initialState;
 		aut.finalStates = finalStates;
+
 		if (finalStates.isEmpty())
 			return getEmptySRA(ba);
 
@@ -928,6 +931,96 @@ public class SRA<P, S> {
 	}
 
 
+
+	public HashMap<Pair<Integer, Integer>, P> getPredMap(BooleanAlgebra<P, S> ba) throws TimeoutException {
+		HashMap<Pair<Integer, Integer>, P> predMap = new HashMap<>();
+		Integer regSize = registers.size();
+
+		HashMap<Integer, Integer> reached = new HashMap<>();
+		LinkedList<Integer> toVisit = new LinkedList<>();
+
+		reached.put(initialState, 0);
+		toVisit.add(initialState);
+
+		while (!toVisit.isEmpty()) {
+			Integer curState = toVisit.removeLast();
+			Pair<Integer, Integer> newKey;
+			boolean[] defReg = new boolean[regSize + 1];
+			Arrays.fill(defReg, false);
+
+			for (SRAMove<P, S> ct : getMovesFrom(curState)) {
+				Integer moveReg;
+
+				if (ct instanceof SRACheckMove)
+					moveReg = ct.registerIndexes.iterator().next();
+				else
+					moveReg = regSize; // Conventionally for fresh moves
+
+				defReg[moveReg] = true;
+				newKey = new Pair<>(curState, moveReg);
+
+				if (predMap.containsKey(newKey)) {
+					P curPred = predMap.get(newKey);
+					curPred = ba.MkOr(curPred, ct.guard);
+					predMap.put(newKey, curPred);
+				} else {
+					predMap.put(newKey, ct.guard);
+				}
+
+
+				if (!reached.containsKey(ct.to)) {
+					toVisit.add(ct.to);
+					reached.put(ct.to, reached.size() + 1);
+				}
+			}
+
+			// Put True in all other positions
+			for (Integer i = 0; i <= regSize; i++) {
+				if (!defReg[i]) {
+					newKey = new Pair<>(curState, i);
+					predMap.put(newKey, ba.False());
+				}
+			}
+		}
+
+		return predMap;
+	}
+
+
+	public void complete(BooleanAlgebra<P, S> ba) throws TimeoutException {
+
+		if (isEmpty)
+			return; // empty SRA is already complete
+
+		HashMap<Pair<Integer, Integer>, P> predMap = getPredMap(ba);
+		Integer sinkState = stateCount();
+		Integer regSize = registers.size();
+		Integer chosenReg = 0;
+
+
+		for (Pair<Integer, Integer> key: predMap.keySet()) {
+			Integer state = key.first;
+			Integer reg = key.second;
+			P negPred = ba.MkNot(predMap.get(key));
+			SRAMove<P, S> newMove;
+
+			if (reg != regSize)
+				newMove = new SRACheckMove<>(state, sinkState, negPred, reg);
+			else
+				newMove = new SRAFreshMove<>(state, sinkState, negPred, chosenReg);
+
+
+			addTransition(newMove, ba, false);
+		}
+
+		SRAMove<P,S> checkSinkLoop = new SRACheckMove<>(sinkState, sinkState, ba.True(), chosenReg);
+		SRAMove<P,S> freshSinkLoop = new SRAFreshMove<>(sinkState, sinkState, ba.True(), chosenReg);
+
+		addTransition(checkSinkLoop, ba, false);
+		addTransition(freshSinkLoop, ba, false);
+	}
+
+
 	public static <P, S> boolean canSimulate(SRA<P,S> aut1, SRA<P,S> aut2, BooleanAlgebra<P, S> ba, boolean bisimulation, long timeout)
 			throws TimeoutException {
 
@@ -1021,7 +1114,7 @@ public class SRA<P, S> {
 			if (aut1.finalStates.contains(aut1NormState.getStateId()) &&
 					!aut2.finalStates.contains(aut2NormState.getStateId()))
 				return false;
-			
+
 
 			if (bisimulation)
 				if (aut2.finalStates.contains(aut2NormState.getStateId()) &&
@@ -1044,14 +1137,17 @@ public class SRA<P, S> {
 				normMovesFromCurrent1 = new LinkedList<>();
 
 				for (SRAMove<P, S> move : aut1.getMovesFrom(aut1NormState.getStateId())) {
-					LinkedList<NormSRAMove<P>> partialnormMoves = toNormSRAMoves(ba, currentRegAbs1, mintermsForPredicates,
+					LinkedList<NormSRAMove<P>> partialNormMoves = toNormSRAMoves(ba, currentRegAbs1, mintermsForPredicates,
 							move, aut1NormState);
 
-					normMovesFromCurrent1.addAll(partialnormMoves);
+					normMovesFromCurrent1.addAll(partialNormMoves);
 				}
 
 				aut1NormOut.put(aut1NormState, normMovesFromCurrent1);
 			}
+
+			if (normMovesFromCurrent1.isEmpty()) // we don't need to find matching moves from aut2
+				continue;
 
 			if (aut2NormOut.containsKey(aut2NormState))
 				normMovesFromCurrent2 = aut2NormOut.get(aut2NormState);
@@ -1059,16 +1155,16 @@ public class SRA<P, S> {
 				normMovesFromCurrent2 = new LinkedList<>();
 
 				for (SRAMove<P, S> move : aut2.getMovesFrom(aut2NormState.getStateId())) {
-					LinkedList<NormSRAMove<P>> partialnormMoves = toNormSRAMoves(ba, currentRegAbs2, mintermsForPredicates,
+					LinkedList<NormSRAMove<P>> partialNormMoves = toNormSRAMoves(ba, currentRegAbs2, mintermsForPredicates,
 							move, aut2NormState);
 
-					normMovesFromCurrent2.addAll(partialnormMoves);
+					normMovesFromCurrent2.addAll(partialNormMoves);
 				}
 
 				aut2NormOut.put(aut2NormState, normMovesFromCurrent2);
 			}
 
-			// Get new bisimilarity triples
+			// Get new similarity triples
 			LinkedList<NormSimTriple<P>> newTriples = normSimSucc(ba, normMovesFromCurrent1, normMovesFromCurrent2,
 					regMap, currentRegAbs1, currentRegAbs2);
 
@@ -1076,6 +1172,9 @@ public class SRA<P, S> {
 				return false;
 
 			if (bisimulation) {
+				if (normMovesFromCurrent2.isEmpty()) // we don't need to find matching moves from aut1
+					continue;
+
 				LinkedList<NormSimTriple<P>> invTriples = normSimSucc(ba, normMovesFromCurrent2, normMovesFromCurrent1,
 						getRegMapInv(regMap), currentRegAbs2, currentRegAbs1);
 
@@ -1229,7 +1328,7 @@ public class SRA<P, S> {
 
         // If the automaton doesn't contain MA moves, it's already an SRA
         if (!isMSRA)
-            return MkSRA(getTransitions(), initialState, finalStates, registers, ba);
+            return MkSRA(getTransitions(), initialState, finalStates, getRegisters(), ba);
 
         // If the automaton is empty return the empty SRA
         if (isEmpty)
