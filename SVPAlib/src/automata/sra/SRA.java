@@ -974,7 +974,7 @@ public class SRA<P, S> {
 				}
 			}
 
-			// Put True in all other positions
+			// Put False in all other positions
 			for (Integer i = 0; i <= regSize; i++) {
 				if (!defReg[i]) {
 					newKey = new Pair<>(curState, i);
