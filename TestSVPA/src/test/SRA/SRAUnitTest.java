@@ -229,37 +229,37 @@ public class SRAUnitTest {
         assertFalse(SRA.canSimulate(sra1, sra2, ba, true, Long.MAX_VALUE));
     }
 
-    @Test
-    public void testSimilarButNotBisimilar() throws TimeoutException {
-        CharPred abcPred = ba.MkOr(Arrays.asList(new CharPred('a'), new CharPred('b'), new CharPred('c')));
-
-        // SRA1
-        LinkedList<Character> registers1 = new LinkedList<Character>();
-
-        registers1.add('a');
-
-        Collection<SRAMove<CharPred, Character>> transitions1 = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions1.add(new SRACheckMove<>(0, 1, abcPred, 0));
-
-        SRA<CharPred, Character> sra1 = SRA.MkSRA(transitions1, 0, Collections.emptyList(), registers1, ba, false);
-
-        // SRA2
-        LinkedList<Character> registers2 = new LinkedList<Character>();
-
-        registers2.add(null);
-
-        Collection<SRAMove<CharPred, Character>> transitions2 = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions2.add(new SRAFreshMove<>(0, 1, abcPred, 0));
-
-        SRA<CharPred, Character> sra2 = SRA.MkSRA(transitions2, 0, Collections.singleton(1), registers2, ba, false);
-
-        sra1.createDotFile("sra1", "");
-        sra2.createDotFile("sra2", "");
-
-
-        assertTrue(SRA.canSimulate(sra1, sra2, ba, false, Long.MAX_VALUE));
-        assertFalse(SRA.canSimulate(sra1, sra2, ba, true, Long.MAX_VALUE));
-    }
+//    @Test
+//    public void testSimilarButNotBisimilar() throws TimeoutException {
+//        CharPred abcPred = ba.MkOr(Arrays.asList(new CharPred('a'), new CharPred('b'), new CharPred('c')));
+//
+//        // SRA1
+//        LinkedList<Character> registers1 = new LinkedList<Character>();
+//
+//        registers1.add('a');
+//
+//        Collection<SRAMove<CharPred, Character>> transitions1 = new LinkedList<SRAMove<CharPred, Character>>();
+//        transitions1.add(new SRACheckMove<>(0, 1, abcPred, 0));
+//
+//        SRA<CharPred, Character> sra1 = SRA.MkSRA(transitions1, 0, Collections.emptyList(), registers1, ba, false);
+//
+//        // SRA2
+//        LinkedList<Character> registers2 = new LinkedList<Character>();
+//
+//        registers2.add(null);
+//
+//        Collection<SRAMove<CharPred, Character>> transitions2 = new LinkedList<SRAMove<CharPred, Character>>();
+//        transitions2.add(new SRAFreshMove<>(0, 1, abcPred, 0));
+//
+//        SRA<CharPred, Character> sra2 = SRA.MkSRA(transitions2, 0, Collections.singleton(1), registers2, ba, false);
+//
+//        sra1.createDotFile("sra1", "");
+//        sra2.createDotFile("sra2", "");
+//
+//
+//        assertTrue(SRA.canSimulate(sra1, sra2, ba, false, Long.MAX_VALUE));
+//        assertFalse(SRA.canSimulate(sra1, sra2, ba, true, Long.MAX_VALUE));
+//    }
 
     @Test
     public void testLanguageInclusion() throws TimeoutException {
