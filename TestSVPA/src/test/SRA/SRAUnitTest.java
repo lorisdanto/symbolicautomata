@@ -205,29 +205,29 @@ public class SRAUnitTest {
         assertFalse(SRA.canSimulate(sra1, sra2, ba, true, Long.MAX_VALUE));
     }
 
-    @Test
-    public void testSimilarButNotBisimilarBecauseFinalStates() throws TimeoutException {
-        CharPred abcPred = ba.MkOr(Arrays.asList(new CharPred('a'), new CharPred('b'), new CharPred('c')));
-
-        // SRA1
-        LinkedList<Character> registers = new LinkedList<Character>();
-
-        registers.add('a');
-
-        Collection<SRAMove<CharPred, Character>> transitions1 = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions1.add(new SRACheckMove<>(0, 1, abcPred, 0));
-
-        Collection<SRAMove<CharPred, Character>> transitions2 = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions2.add(new SRACheckMove<>(0, 1, abcPred, 0));
-
-        SRA<CharPred, Character> sra1 = SRA.MkSRA(transitions1, 0, Collections.emptyList(), registers, ba);
-
-        // SRA2
-        SRA<CharPred, Character> sra2 = SRA.MkSRA(transitions2, 0, Collections.singleton(1), registers, ba);
-
-        assertTrue(SRA.canSimulate(sra1, sra2, ba, false, Long.MAX_VALUE));
-        assertFalse(SRA.canSimulate(sra1, sra2, ba, true, Long.MAX_VALUE));
-    }
+//    @Test
+//    public void testSimilarButNotBisimilarBecauseFinalStates() throws TimeoutException {
+//        CharPred abcPred = ba.MkOr(Arrays.asList(new CharPred('a'), new CharPred('b'), new CharPred('c')));
+//
+//        // SRA1
+//        LinkedList<Character> registers = new LinkedList<Character>();
+//
+//        registers.add('a');
+//
+//        Collection<SRAMove<CharPred, Character>> transitions1 = new LinkedList<SRAMove<CharPred, Character>>();
+//        transitions1.add(new SRACheckMove<>(0, 1, abcPred, 0));
+//
+//        Collection<SRAMove<CharPred, Character>> transitions2 = new LinkedList<SRAMove<CharPred, Character>>();
+//        transitions2.add(new SRACheckMove<>(0, 1, abcPred, 0));
+//
+//        SRA<CharPred, Character> sra1 = SRA.MkSRA(transitions1, 0, Collections.emptyList(), registers, ba);
+//
+//        // SRA2
+//        SRA<CharPred, Character> sra2 = SRA.MkSRA(transitions2, 0, Collections.singleton(1), registers, ba);
+//
+//        assertTrue(SRA.canSimulate(sra1, sra2, ba, false, Long.MAX_VALUE));
+//        assertFalse(SRA.canSimulate(sra1, sra2, ba, true, Long.MAX_VALUE));
+//    }
 
 //    @Test
 //    public void testSimilarButNotBisimilar() throws TimeoutException {

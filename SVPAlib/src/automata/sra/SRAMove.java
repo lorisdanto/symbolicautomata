@@ -6,8 +6,9 @@
  */
 package automata.sra;
 
+import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Collection;
+import java.util.Set;
 
 import theory.BooleanAlgebra;
 
@@ -23,13 +24,13 @@ public abstract class SRAMove<P, S> {
     public Integer from;
     public Integer to;
     public P guard;
-    public Collection<Integer> registerIndexes;
+    public Set<Integer> registerIndexes;
 
 	/**
 	 * Constructs an SRA Transition that starts from state <code>from</code> and
 	 * ends at state <code>to</code> with input <code>input</code>
 	 */
-	public SRAMove(Integer from, Integer to, P guard, Collection<Integer> registerIndexes) {
+	public SRAMove(Integer from, Integer to, P guard, Set<Integer> registerIndexes) {
 		this.from = from;
         this.to = to;
         this.guard = guard;
@@ -46,13 +47,13 @@ public abstract class SRAMove<P, S> {
 	 * @return an input triggering the transition
 	 * @throws TimeoutException 
 	 */
-	public abstract S getWitness(BooleanAlgebra<P, S> ba, LinkedList<S> registers) throws TimeoutException;
+	public abstract S getWitness(BooleanAlgebra<P, S> ba, LinkedList<S> registerValues) throws TimeoutException;
 
 	/**
 	 * @return true iff <code>input</code> can trigger the transition
 	 * @throws TimeoutException 
 	 */
-	public abstract boolean hasModel(S input, BooleanAlgebra<P, S> ba, LinkedList<S> registers) throws TimeoutException;
+	public abstract boolean hasModel(S input, BooleanAlgebra<P, S> ba, LinkedList<S> registerValues) throws TimeoutException;
 
 	/**
 	 * Create the dot representation of the move
@@ -67,9 +68,33 @@ public abstract class SRAMove<P, S> {
 
 	public abstract Object clone();
 
-    public abstract MSRAMove<P, S> asMultipleAssignment();
+	/**
+	 * Returns the powerset of <code>originalSet</code> - O(n^2)
+	 */
+	static <S> HashSet<HashSet<Integer>> getPowerset(HashSet<Integer> originalSet) {
+		HashSet<HashSet<Integer>> sets = new HashSet<HashSet<Integer>>();
+		if (originalSet.isEmpty()) {
+			sets.add(new HashSet<Integer>());
+			return sets;
+		}
+		LinkedList<Integer> list = new LinkedList<Integer>(originalSet);
+		Integer head = list.get(0);
+		HashSet<Integer> rest = new HashSet<Integer>(list.subList(1, list.size()));
+		for (HashSet<Integer> set : getPowerset(rest)) {
+			HashSet<Integer> newSet = new HashSet<Integer>();
+			newSet.add(head);
+			newSet.addAll(set);
+			sets.add(newSet);
+			sets.add(set);
+		}
+		return sets;
+	}
+
+    public abstract LinkedList<MSRAMove<P, S>> asMultipleAssignment(LinkedList<S> registerValues);
 
     public abstract boolean isFresh();
+
+	public abstract boolean isStore();
 
 	public abstract boolean isMultipleAssignment();
 }

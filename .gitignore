@@ -3,6 +3,7 @@
 /TestSVPA/target/
 /TestSVPA/*.dot
 /TestSVPA/*.pdf
+*.dot
 
 BooleanAlgebras/bin/test/TestCharTheory.class
 BooleanAlgebras/bin/theory/CharConstant.class

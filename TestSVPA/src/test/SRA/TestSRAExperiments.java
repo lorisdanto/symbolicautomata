@@ -15,26 +15,26 @@ import static org.junit.Assert.assertTrue;
 public class TestSRAExperiments {
 
     @Test
-    public void testSSNCheckerSRA() throws TimeoutException {
-        assertTrue(SSNCheckerSRA.accepts(validName1, ba));
-        assertTrue(SSNCheckerSRA.accepts(validName2, ba));
-        assertFalse(SSNCheckerSRA.accepts(invalidName1, ba));
-        assertFalse(SSNCheckerSRA.accepts(invalidName2, ba));
-        assertFalse(SSNCheckerSRA.accepts(invalidName3, ba));
+    public void testSSNParserSRA() throws TimeoutException {
+        assertTrue(SSNParserSRA.accepts(validName1, ba));
+        assertTrue(SSNParserSRA.accepts(validName2, ba));
+        assertFalse(SSNParserSRA.accepts(invalidName1, ba));
+        assertFalse(SSNParserSRA.accepts(invalidName2, ba));
+        assertFalse(SSNParserSRA.accepts(invalidName3, ba));
     }
 
     @Test
-    public void testSSNCheckerMSRA() throws TimeoutException {
-        assertTrue(SSNCheckerMSRA.accepts(validName1, ba));
-        assertTrue(SSNCheckerMSRA.accepts(validName2, ba));
-        assertFalse(SSNCheckerMSRA.accepts(invalidName1, ba));
-        assertFalse(SSNCheckerMSRA.accepts(invalidName2, ba));
-        assertFalse(SSNCheckerMSRA.accepts(invalidName3, ba));
+    public void testSSNParserMSRA() throws TimeoutException {
+        assertTrue(SSNParserMSRA.accepts(validName1, ba));
+        assertTrue(SSNParserMSRA.accepts(validName2, ba));
+        assertFalse(SSNParserMSRA.accepts(invalidName1, ba));
+        assertFalse(SSNParserMSRA.accepts(invalidName2, ba));
+        assertFalse(SSNParserMSRA.accepts(invalidName3, ba));
     }
 
     @Test
-    public void testSSNCheckerMSRAtoSRA() throws TimeoutException {
-        SRA<CharPred, Character> toSRA = SSNCheckerMSRA.toSRA(ba, Long.MAX_VALUE);
+    public void testSSNParserMSRAtoSRA() throws TimeoutException {
+        SRA<CharPred, Character> toSRA = SSNParserMSRA.toSRA(ba, Long.MAX_VALUE);
         toSRA.createDotFile("ssnSra", "");
         assertTrue(toSRA.accepts(validName1, ba));
         assertTrue(toSRA.accepts(validName2, ba));
@@ -43,25 +43,31 @@ public class TestSRAExperiments {
         assertFalse(toSRA.accepts(invalidName3, ba));
     }
 
+    @Test
+    public void testIPPacketParserSRA() throws TimeoutException {
+        IPPacketParserSRA.createDotFile("IPSRA", "");
+        assertTrue(IPPacketParserSRA.accepts(validIPPacket, ba));
+    }
+
 
 //    @Test
-//    public void testXMLCheckerSRA() throws TimeoutException {
-//        boolean check = XMLCheckerSRA.createDotFile("xml", "");
+//    public void testXMLParserSRA() throws TimeoutException {
+//        boolean check = XMLParserSRA.createDotFile("xml", "");
 //        assertTrue(check);
-//        assertTrue(XMLCheckerSRA.accepts(validXML1, ba));
-//        assertTrue(XMLCheckerSRA.accepts(validXML2, ba));
-//        assertTrue(XMLCheckerSRA.accepts(validXML3, ba));
-//        assertTrue(XMLCheckerSRA.accepts(validXML4, ba));
-//        assertTrue(XMLCheckerSRA.accepts(validXML5, ba));
-//        assertTrue(XMLCheckerSRA.accepts(validXML6, ba));
-//        assertTrue(XMLCheckerSRA.accepts(validXML7, ba));
-//        assertFalse(XMLCheckerSRA.accepts(invalidXML1, ba));
-//        assertFalse(XMLCheckerSRA.accepts(invalidXML2, ba));
-//        assertFalse(XMLCheckerSRA.accepts(invalidXML3, ba));
-//        assertFalse(XMLCheckerSRA.accepts(invalidXML4, ba));
-//        assertFalse(XMLCheckerSRA.accepts(invalidXML5, ba));
-//        assertFalse(XMLCheckerSRA.accepts(invalidXML6, ba));
-//        assertFalse(XMLCheckerSRA.accepts(invalidXML7, ba));
+//        assertTrue(XMLParserSRA.accepts(validXML1, ba));
+//        assertTrue(XMLParserSRA.accepts(validXML2, ba));
+//        assertTrue(XMLParserSRA.accepts(validXML3, ba));
+//        assertTrue(XMLParserSRA.accepts(validXML4, ba));
+//        assertTrue(XMLParserSRA.accepts(validXML5, ba));
+//        assertTrue(XMLParserSRA.accepts(validXML6, ba));
+//        assertTrue(XMLParserSRA.accepts(validXML7, ba));
+//        assertFalse(XMLParserSRA.accepts(invalidXML1, ba));
+//        assertFalse(XMLParserSRA.accepts(invalidXML2, ba));
+//        assertFalse(XMLParserSRA.accepts(invalidXML3, ba));
+//        assertFalse(XMLParserSRA.accepts(invalidXML4, ba));
+//        assertFalse(XMLParserSRA.accepts(invalidXML5, ba));
+//        assertFalse(XMLParserSRA.accepts(invalidXML6, ba));
+//        assertFalse(XMLParserSRA.accepts(invalidXML7, ba));
 //    }
 
     // ---------------------------------------
@@ -69,9 +75,11 @@ public class TestSRAExperiments {
     // ---------------------------------------
     private UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
     private CharPred alpha = StdCharPred.ALPHA;
+    private CharPred num = StdCharPred.NUM;
     private CharPred alphaNum = StdCharPred.ALPHA_NUM;
     private CharPred lowerAlpha = StdCharPred.LOWER_ALPHA;
     private CharPred upperAlpha = StdCharPred.UPPER_ALPHA;
+    private CharPred dot = new CharPred('.');
     private CharPred comma = new CharPred(',');
     private CharPred space = new CharPred(' ');
     private CharPred open = new CharPred('<');
@@ -79,39 +87,43 @@ public class TestSRAExperiments {
     private CharPred slash = new CharPred('/');
 
     // SSN test strings
-    private List<Character> validName1 = lOfS("Tiago, Ferreira, TF"); // accepted by SSNChecker
-    private List<Character> validName2 = lOfS("Thomas, Thomson, TT"); // accepted by SSNChecker
-    private List<Character> invalidName1 = lOfS("Tiago, Ferreira, TA"); // not accepted by SSNChecker
-    private List<Character> invalidName2 = lOfS("Tiago, Ferreira, AA"); // not accepted by SSNChecker
-    private List<Character> invalidName3 = lOfS("Tiago, Ferreira, A"); // not accepted by SSNChecker
+    private List<Character> validName1 = lOfS("Tiago, Ferreira, TF"); // accepted by SSNParser
+    private List<Character> validName2 = lOfS("Thomas, Thomson, TT"); // accepted by SSNParser
+    private List<Character> invalidName1 = lOfS("Tiago, Ferreira, TA"); // not accepted by SSNParser
+    private List<Character> invalidName2 = lOfS("Tiago, Ferreira, AA"); // not accepted by SSNParser
+    private List<Character> invalidName3 = lOfS("Tiago, Ferreira, A"); // not accepted by SSNParser
 
     // XML test strings
-    private List<Character> validXML1 = lOfS("<A></A>"); // accepted by XMLChecker
-    private List<Character> validXML2 = lOfS("<AB></AB>"); // accepted by XMLChecker
-    private List<Character> validXML3 = lOfS("<BB></BB>"); // accepted by XMLChecker
-    private List<Character> validXML4 = lOfS("<ABB></ABB>"); // accepted by XMLChecker
-    private List<Character> validXML5 = lOfS("<ABA></ABA>"); // accepted by XMLChecker
-    private List<Character> validXML6 = lOfS("<AAB></AAB>"); // accepted by XMLChecker
-    private List<Character> validXML7 = lOfS("<ABC></ABC>"); // accepted by XMLChecker
-    private List<Character> invalidXML1 = lOfS("<A></>"); // not accepted by XMLChecker
-    private List<Character> invalidXML2 = lOfS("<A><AB/>"); // not accepted by XMLChecker
-    private List<Character> invalidXML3 = lOfS("<></A>"); // not accepted by XMLChecker
-    private List<Character> invalidXML4 = lOfS("<A><A>"); // not accepted by XMLChecker
-    private List<Character> invalidXML5 = lOfS("<AA></AB>"); // not accepted by XMLChecker
-    private List<Character> invalidXML6 = lOfS("<AAA></CCC>"); // not accepted by XMLChecker
-    private List<Character> invalidXML7 = lOfS("<ABA></ABC>"); // not accepted by XMLChecker
+    private List<Character> validXML1 = lOfS("<A></A>"); // accepted by XMLParser
+    private List<Character> validXML2 = lOfS("<AB></AB>"); // accepted by XMLParser
+    private List<Character> validXML3 = lOfS("<BB></BB>"); // accepted by XMLParser
+    private List<Character> validXML4 = lOfS("<ABB></ABB>"); // accepted by XMLParser
+    private List<Character> validXML5 = lOfS("<ABA></ABA>"); // accepted by XMLParser
+    private List<Character> validXML6 = lOfS("<AAB></AAB>"); // accepted by XMLParser
+    private List<Character> validXML7 = lOfS("<ABC></ABC>"); // accepted by XMLParser
+    private List<Character> invalidXML1 = lOfS("<A></>"); // not accepted by XMLParser
+    private List<Character> invalidXML2 = lOfS("<A><AB/>"); // not accepted by XMLParser
+    private List<Character> invalidXML3 = lOfS("<></A>"); // not accepted by XMLParser
+    private List<Character> invalidXML4 = lOfS("<A><A>"); // not accepted by XMLParser
+    private List<Character> invalidXML5 = lOfS("<AA></AB>"); // not accepted by XMLParser
+    private List<Character> invalidXML6 = lOfS("<AAA></CCC>"); // not accepted by XMLParser
+    private List<Character> invalidXML7 = lOfS("<ABA></ABC>"); // not accepted by XMLParser
+
+    // IP Packet test strings
+    private List<Character> validIPPacket = lOfS("srcip:192.168.123.192 prt:40 dstip:192.168.123.224 prt:50 pload:'hello'"); // accepted by IPPacketParser
 
     // Automata
-    private SRA<CharPred, Character> SSNCheckerSRA = getSSNCheckerSRA(ba);
-    private SRA<CharPred, Character> SSNCheckerMSRA = getSSNCheckerMSRA(ba);
-    private SRA<CharPred, Character> XMLCheckerSRA = getXMLCheckerSRA(ba);
+    private SRA<CharPred, Character> SSNParserSRA = getSSNParserSRA(ba);
+    private SRA<CharPred, Character> SSNParserMSRA = getSSNParserMSRA(ba);
+    private SRA<CharPred, Character> XMLParserSRA = getXMLParserSRA(ba);
+    private SRA<CharPred, Character> IPPacketParserSRA = getIPPacketParserSRA(ba);
 
     // TODO: Run over CSV, generate CSV data.
     // TODO: IP packets in the same subnet.
     // TODO: ISBN-10
     // https://regexr.com
 
-	private SRA<CharPred, Character> getSSNCheckerSRA(UnaryCharIntervalSolver ba) {
+	private SRA<CharPred, Character> getSSNParserSRA(UnaryCharIntervalSolver ba) {
 		LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null));
 
 		Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -181,7 +193,7 @@ public class TestSRAExperiments {
 		return null;
 	}
 
-    private SRA<CharPred, Character> getSSNCheckerMSRA(UnaryCharIntervalSolver ba) {
+    private SRA<CharPred, Character> getSSNParserMSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null));
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
 
@@ -231,7 +243,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getXMLCheckerSRA(UnaryCharIntervalSolver ba) {
+    private SRA<CharPred, Character> getXMLParserSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -294,6 +306,79 @@ public class TestSRAExperiments {
 
         try {
             return SRA.MkSRA(transitions, 0, Collections.singleton(12), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private SRA<CharPred, Character> getIPPacketParserSRA(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null, null, null, null, null, null));
+
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+
+        for (int index = 0; index < "srcip:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index, index + 1, new CharPred("srcip:".charAt(index)), 9));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, num, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, num, 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, dot, 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, num, 5));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, dot, 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, num, 6));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, num, 7));
+        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, num, 8));
+        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, dot, 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, num, 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, num, 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, num, 9));
+
+        for (int index = 0; index < " prt:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 21, index + 22, new CharPred(" prt:".charAt(index)), 9));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, num, 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 27, num, 9));
+
+        for (int index = 0; index < " dstip:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 27, index + 28, new CharPred(" dstip:".charAt(index)), 9));
+
+        transitions.add(new SRACheckMove<CharPred, Character>(34, 35, num, 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(35, 36, num, 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(36, 37, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(37, 38, dot, 9));
+        transitions.add(new SRACheckMove<CharPred, Character>(38, 39, num, 3));
+        transitions.add(new SRACheckMove<CharPred, Character>(39, 40, num, 4));
+        transitions.add(new SRACheckMove<CharPred, Character>(40, 41, num, 5));
+        transitions.add(new SRACheckMove<CharPred, Character>(41, 42, dot, 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(41, 42, dot, 9));
+        transitions.add(new SRACheckMove<CharPred, Character>(42, 43, num, 6));
+        transitions.add(new SRACheckMove<CharPred, Character>(43, 44, num, 7));
+        transitions.add(new SRACheckMove<CharPred, Character>(44, 45, num, 8));
+        transitions.add(new SRAStoreMove<CharPred, Character>(45, 46, dot, 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(46, 47, num, 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(47, 48, num, 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(48, 49, num, 9));
+
+        for (int index = 0; index < " prt:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 49, index + 50, new CharPred(" prt:".charAt(index)), 9));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(54, 55, num, 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(55, 55, num, 9));
+
+        for (int index = 0; index < " pload:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 55, index + 56, new CharPred(" pload:".charAt(index)), 9));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(62, 63, new CharPred('\''), 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(63, 64, alphaNum, 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(64, 64, alphaNum, 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(64, 65, new CharPred('\''), 9));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Collections.singleton(65), registers, ba);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

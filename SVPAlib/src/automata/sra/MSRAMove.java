@@ -6,9 +6,11 @@
  */
 package automata.sra;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Collection;
+import java.util.Arrays;
 
 import org.sat4j.specs.TimeoutException;
 
@@ -30,7 +32,7 @@ public class MSRAMove<P, S> extends SRAMove<P, S> {
      * MSRA transitions happen iff the input symbol is in all E, if this is the case the input is assigned to all U.
 	 */
 	public MSRAMove(Integer from, Integer to, P guard, Collection<Integer> e, Collection<Integer> u) {
-		super(from, to, guard, null);
+		super(from, to, guard, Collections.emptySet());
         this.E = e;
         this.U = u;
     }
@@ -100,10 +102,11 @@ public class MSRAMove<P, S> extends SRAMove<P, S> {
 	public boolean equals(Object other) {
 		if (other instanceof MSRAMove<?, ?>) {
 			MSRAMove<?, ?> otherCasted = (MSRAMove<?, ?>) other;
-			return otherCasted.from == from && otherCasted.to == to &&
-                   otherCasted.guard == guard &&
-                   otherCasted.registerIndexes == registerIndexes &&
-                   otherCasted.E == E && otherCasted. U == U;
+			return otherCasted.from.equals(from) && otherCasted.to.equals(to) &&
+                   otherCasted.guard.equals(guard) &&
+                   otherCasted.registerIndexes.equals(registerIndexes) &&
+                   otherCasted.E.equals(E) &&
+				   otherCasted.U.equals(U);
 		}
 
 		return false;
@@ -115,13 +118,17 @@ public class MSRAMove<P, S> extends SRAMove<P, S> {
 	}
 
     @Override
-    public MSRAMove<P, S> asMultipleAssignment() {
-        return this;
+    public LinkedList<MSRAMove<P, S>> asMultipleAssignment(LinkedList<S> registerValues) {
+        return (new LinkedList<MSRAMove<P, S>>(Collections.singletonList(this)));
     }
 
     public boolean isFresh() {
         return false;
     }
+
+	public boolean isStore() {
+		return false;
+	}
 
     public boolean isMultipleAssignment() {
         return true;

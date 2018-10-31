@@ -6,7 +6,7 @@
  */
 package automata.sra;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 
 import org.sat4j.specs.TimeoutException;
@@ -26,7 +26,7 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
      * Check transitions happen iff the predicate is true and the register mentioned matches the input symbol.
 	 */
 	public SRACheckMove(Integer from, Integer to, P guard, Integer registerIndex) {
-		super(from, to, guard, Arrays.asList(registerIndex));
+		super(from, to, guard, Collections.singleton(registerIndex));
     }	
 
 	@Override
@@ -55,8 +55,7 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
                 return true;
             }
 			SRACheckMove<P, S> ct = (SRACheckMove<P, S>) t;
-			if(ba.IsSatisfiable(ba.MkAnd(guard,ct.guard)))
-				return false;
+			return !ba.IsSatisfiable(ba.MkAnd(guard,ct.guard));
 		}
 		return true;
 	}
@@ -75,7 +74,10 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 	public boolean equals(Object other) {
 		if (other instanceof SRACheckMove<?, ?>) {
 			SRACheckMove<?, ?> otherCasted = (SRACheckMove<?, ?>) other;
-			return otherCasted.from == from && otherCasted.to == to && otherCasted.guard == guard && otherCasted.registerIndexes == registerIndexes;
+			return otherCasted.from.equals(from) &&
+				   otherCasted.to.equals(to) &&
+				   otherCasted.guard.equals(guard) &&
+				   otherCasted.registerIndexes.equals(registerIndexes);
 		}
 
 		return false;
@@ -87,13 +89,20 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 	}
 
     @Override
-    public MSRAMove<P, S> asMultipleAssignment() {
-       return new MSRAMove<P, S>(from, to, guard, registerIndexes, new LinkedList<Integer>());
+    public LinkedList<MSRAMove<P, S>> asMultipleAssignment(LinkedList<S> registerValues) {
+		// FIXME: Inaccurate translation.
+		LinkedList<MSRAMove<P, S>> maTransitions = new LinkedList<MSRAMove<P, S>>();
+        maTransitions.add(new MSRAMove<P, S>(from, to, guard, registerIndexes, new LinkedList<Integer>()));
+        return maTransitions;
     }
 
     public boolean isFresh() {
         return false;
     }
+
+	public boolean isStore() {
+		return false;
+	}
 
 	public boolean isMultipleAssignment() {
 		return false;
