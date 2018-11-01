@@ -34,7 +34,7 @@ public class TestSRAExperiments {
 
     @Test
     public void testSSNParserMSRAtoSRA() throws TimeoutException {
-        SRA<CharPred, Character> toSRA = SSNParserMSRA.toSRA(ba, Long.MAX_VALUE);
+        SRA<CharPred, Character> toSRA = SSNParserMSRA.toSingleAssignmentSRA(ba, Long.MAX_VALUE);
         toSRA.createDotFile("ssnSra", "");
         assertTrue(toSRA.accepts(validName1, ba));
         assertTrue(toSRA.accepts(validName2, ba));

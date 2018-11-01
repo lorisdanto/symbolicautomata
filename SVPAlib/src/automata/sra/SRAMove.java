@@ -6,6 +6,7 @@
  */
 package automata.sra;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -88,6 +89,18 @@ public abstract class SRAMove<P, S> {
 			sets.add(set);
 		}
 		return sets;
+	}
+
+	static <S> HashSet<HashSet<Integer>> getPowersetIncluding(HashSet<Integer> originalSet,
+                                                              Set<Integer> toInclude ) {
+		HashSet<Integer> setWithoutReg = new HashSet<>(originalSet);
+		setWithoutReg.removeAll(toInclude);
+
+        HashSet<HashSet<Integer>> powSet = getPowerset(setWithoutReg);
+        for (HashSet<Integer> set: powSet)
+            set.addAll(toInclude);
+
+        return powSet;
 	}
 
     public abstract LinkedList<MSRAMove<P, S>> asMultipleAssignment(LinkedList<S> registerValues);

@@ -15,7 +15,6 @@ import theory.intervals.IntegerSolver;
 import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 import theory.intervals.UnaryCharIntervalSolver;
-import utilities.Pair;
 
 public class SRAUnitTest {
 
@@ -124,7 +123,7 @@ public class SRAUnitTest {
     @Test
     public void testSRACompilation() throws TimeoutException {
         boolean check1 = msraAut.createDotFile("msra", "");
-        SRA<CharPred, Character> toSRA = msraAut.toSRA(ba, Long.MAX_VALUE);
+        SRA<CharPred, Character> toSRA = msraAut.toSingleAssignmentSRA(ba, Long.MAX_VALUE);
         boolean check2 = toSRA.createDotFile("toSra", "");
         assertTrue(check1);
         assertTrue(check2);
@@ -132,7 +131,7 @@ public class SRAUnitTest {
 
     @Test
     public void testSRACompilationAndEmptiness() throws TimeoutException {
-        SRA<CharPred, Character> toSRA = msraAut.toSRA(ba, Long.MAX_VALUE);
+        SRA<CharPred, Character> toSRA = msraAut.toSingleAssignmentSRA(ba, Long.MAX_VALUE);
         assertFalse(SRA.isLanguageEmpty(toSRA, ba, Long.MAX_VALUE));
     }
 

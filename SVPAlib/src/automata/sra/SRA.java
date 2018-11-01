@@ -8,10 +8,8 @@ package automata.sra;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 
-import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
 
 
@@ -766,7 +764,7 @@ public class SRA<P, S> {
 			return true;
 
 		if (aut.isMSRA)
-			aut = aut.toSRA(ba, timeout);
+			aut = aut.toSingleAssignmentSRA(ba, timeout);
 
 		// Compute all minterms
 		ArrayList<P> allPredicates = aut.getAllPredicates(timeout);
@@ -932,10 +930,10 @@ public class SRA<P, S> {
 			throws TimeoutException {
 
 		if(aut1.isMSRA)
-			aut1 = aut1.toSRA(ba, timeout);
+			aut1 = aut1.toSingleAssignmentSRA(ba, timeout);
 
 		if(aut2.isMSRA)
-			aut2 = aut2.toSRA(ba, timeout);
+			aut2 = aut2.toSingleAssignmentSRA(ba, timeout);
 
 
 		// Implement synchronised visit
@@ -1225,11 +1223,11 @@ public class SRA<P, S> {
 
 
 	/**
-	 * Compiles <code>this</code> down to an equivalent SRA
+	 * Compiles <code>this</code> down to an equivalent Single-assignment SRA
 	 *
 	 * @throws TimeoutException
 	 */
-	public SRA<P, S> toSRA(BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
+	public SRA<P, S> toSingleAssignmentSRA(BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
 
         long startTime = System.currentTimeMillis();
 
