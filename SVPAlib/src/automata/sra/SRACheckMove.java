@@ -7,6 +7,7 @@
 package automata.sra;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 import org.sat4j.specs.TimeoutException;
@@ -90,10 +91,19 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 
     @Override
     public LinkedList<MSRAMove<P, S>> asMultipleAssignment(LinkedList<S> registerValues) {
-		// FIXME: Inaccurate translation.
+		// FIXME: Inaccurate translation. Should be fixed now?
+		// LinkedList<MSRAMove<P, S>> maTransitions = new LinkedList<MSRAMove<P, S>>();
+
+		// maTransitions.add(new MSRAMove<P, S>(from, to, guard, registerIndexes, new LinkedList<Integer>()));
+		// return maTransitions;
+		HashSet<Integer> indexesSet = new HashSet<Integer>();
+		for (Integer index = 0; index < registerValues.size(); index++)
+			indexesSet.add(index);
+
 		LinkedList<MSRAMove<P, S>> maTransitions = new LinkedList<MSRAMove<P, S>>();
-        maTransitions.add(new MSRAMove<P, S>(from, to, guard, registerIndexes, new LinkedList<Integer>()));
-        return maTransitions;
+		for (HashSet<Integer> set : getPowersetIncluding(indexesSet, registerIndexes))
+			maTransitions.add(new MSRAMove<P, S>(from, to, guard, set, new HashSet<>()));
+		return maTransitions;
     }
 
     public boolean isFresh() {

@@ -8,10 +8,8 @@ package automata.sra;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 
-import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
 
 
@@ -34,6 +32,7 @@ public class SRA<P, S> {
     protected boolean isDeterministic;
     protected boolean isTotal;
     protected boolean isMSRA;
+	protected boolean isSingleValued;
 
 	private Integer initialState;
     private LinkedList<S> registers;
@@ -70,6 +69,7 @@ public class SRA<P, S> {
         aut.registers.add(null);
 		aut.isDeterministic = true;
 		aut.isEmpty = true;
+		aut.isSingleValued = true;
 		aut.maxStateId = 1;
         aut.addTransition(new SRAStoreMove<A, B>(0, 0, ba.True(), 0), ba, false);
 		return aut;
@@ -91,6 +91,7 @@ public class SRA<P, S> {
 		aut.isDeterministic = true;
 		aut.isEmpty = false;
 		aut.maxStateId = 1;
+		aut.isSingleValued = true;
         aut.addTransition(new SRAStoreMove<A, B>(0, 0, ba.True(), 0), ba, false);
 		return aut;
 	}
@@ -133,6 +134,7 @@ public class SRA<P, S> {
         isDeterministic = false;
         isTotal = false;
         isMSRA = false;
+        isSingleValued = false;
 		finalStates = new HashSet<Integer>();
 		states = new HashSet<Integer>();
         registers = new LinkedList<S>();
@@ -194,10 +196,28 @@ public class SRA<P, S> {
 		if (finalStates.isEmpty())
 			return getEmptySRA(ba);
 
-        aut.registers = registers;
+		aut.registers = registers;
+
+		// Check if there are duplicated values
+		aut.isSingleValued = false;
+		HashSet<B> nonEmptyRegValues = new HashSet<>();
+		for (B regValue: registers) {
+			if (regValue != null) {
+				if (nonEmptyRegValues.contains(regValue)) {
+					aut.isSingleValued = false;
+					break;
+				}
+				else nonEmptyRegValues.add(regValue);
+			}
+		}
+
+
 		
-        for (SRAMove<A, B> t : transitions)
+        for (SRAMove<A, B> t : transitions) {
 			aut.addTransition(t, ba, false);
+			if (aut.isSingleValued && t.isStore())
+				aut.isSingleValued = false;
+		}
 
 		if (normalize)
 			aut = aut.normalize(ba);
@@ -230,8 +250,25 @@ public class SRA<P, S> {
 
         aut.registers = registers;
 
-		for (SRAMove<A, B> t : transitions)
+		// Check if there are duplicated values
+		aut.isSingleValued = false;
+		HashSet<B> nonEmptyRegValues = new HashSet<>();
+		for (B regValue: registers) {
+			if (regValue != null) {
+				if (nonEmptyRegValues.contains(regValue)) {
+					aut.isSingleValued = false;
+					break;
+				}
+				else nonEmptyRegValues.add(regValue);
+			}
+		}
+
+		for (SRAMove<A, B> t : transitions) {
 			aut.addTransition(t, ba, true);
+
+			if (aut.isSingleValued && t.isStore())
+				aut.isSingleValued = false;
+		}
 
 		if (normalize)
 			aut = aut.normalize(ba);
@@ -261,6 +298,8 @@ public class SRA<P, S> {
 
             if (transition.isMultipleAssignment()) {
                 // TODO: Check accuracy of translation.
+				// FIXME: the following translation assumes isSingleValued = true
+				// FIXME: if this is not the case, we need to translate all moves to MSRA moves explicitly
                 MSRAMove<P, S> mTransition = transition.asMultipleAssignment(registers).getFirst();
                 if (mTransition.E.size() == 1 && mTransition.U.isEmpty()) {
                     getCheckMovesFrom(transition.from).add((new SRACheckMove<P, S>(transition.from, transition.to, transition.guard, mTransition.E.iterator().next())));
@@ -270,6 +309,7 @@ public class SRA<P, S> {
                     getFreshMovesTo(transition.to).add((new SRAFreshMove<P, S>(transition.from, transition.to, transition.guard, mTransition.U.iterator().next())));
                 } else {
                 	isMSRA = true;
+                	isSingleValued = false;
                     getMAMovesFrom(transition.from).add(mTransition);
                     getMAMovesTo(transition.to).add(mTransition);
                 }
@@ -277,6 +317,7 @@ public class SRA<P, S> {
                 getFreshMovesFrom(transition.from).add((SRAFreshMove<P, S>) transition);
                 getFreshMovesTo(transition.to).add((SRAFreshMove<P, S>) transition);
             } else if (transition.isStore()) {
+            	isSingleValued = false; // Store moves are not allowed for non single-valued SRAs
                 getStoreMovesFrom(transition.from).add((SRAStoreMove<P, S>) transition);
                 getStoreMovesTo(transition.to).add((SRAStoreMove<P, S>) transition);
             } else {
@@ -565,7 +606,7 @@ public class SRA<P, S> {
 
 	}
 
-	// Encapsulates  SRA state
+	// Encapsulates normal SRA state
 	protected  static class NormSRAState<P> {
 		private Pair<Integer, HashMap<Integer, MinTerm<P>>> data;
 
@@ -666,7 +707,8 @@ public class SRA<P, S> {
 	}
 
 
-	// Breaks down a SRA move into minterms
+	// Breaks down a SRA move into minterms.
+	// Only for single-valued SRAs
 	private static <P, S> LinkedList<NormSRAMove<P>> toNormSRAMoves(BooleanAlgebra<P, S> ba,
 																  HashMap<Integer, MinTerm<P>> regAbs,
 																  HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicate,
@@ -766,7 +808,8 @@ public class SRA<P, S> {
 			return true;
 
 		if (aut.isMSRA)
-			aut = aut.toSRA(ba, timeout);
+			aut = aut.toSingleValuedSRA(ba, timeout);
+
 
 		// Compute all minterms
 		ArrayList<P> allPredicates = aut.getAllPredicates(timeout);
@@ -904,7 +947,7 @@ public class SRA<P, S> {
 		Integer regSize = registers.size();
 		Integer chosenReg = 0;
 
-        // TODO: Check case for store moves.
+        // TODO: Check case for store moves. This is only for single-assignment SRAs, for which these moves are not allowed
 		for (Pair<Integer, Integer> key: predMap.keySet()) {
 			Integer state = key.first;
 			Integer reg = key.second;
@@ -932,10 +975,10 @@ public class SRA<P, S> {
 			throws TimeoutException {
 
 		if(aut1.isMSRA)
-			aut1 = aut1.toSRA(ba, timeout);
+			aut1 = aut1.toSingleValuedSRA(ba, timeout);
 
 		if(aut2.isMSRA)
-			aut2 = aut2.toSRA(ba, timeout);
+			aut2 = aut2.toSingleValuedSRA(ba, timeout);
 
 
 		// Implement synchronised visit
@@ -1225,16 +1268,17 @@ public class SRA<P, S> {
 
 
 	/**
-	 * Compiles <code>this</code> down to an equivalent SRA
+	 * Compiles <code>this</code> down to an equivalent Single-valued SRA
 	 *
 	 * @throws TimeoutException
 	 */
-	public SRA<P, S> toSRA(BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
+	public SRA<P, S> toSingleValuedSRA(BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
 
         long startTime = System.currentTimeMillis();
 
-        // If the automaton doesn't contain MA moves, it's already an SRA
-        if (!isMSRA)
+        // FIXME: check that isMSRA is false if and only if isSingleValued is true
+		// FIXME: check that, when isSingleValued == false, moves gets translated properly
+        if (isSingleValued)
             return MkSRA(getTransitions(), initialState, finalStates, getRegisters(), ba);
 
         // If the automaton is empty return the empty SRA
@@ -1290,7 +1334,7 @@ public class SRA<P, S> {
             int currentStateID = reached.get(currentState);
             HashMap<Integer, Integer> currentMap = currentState.second;
 
-            for (MSRAMove<P, S> ct : getMovesFromAsMA(currentState.first)) { // I like the function getMovesFromAsMA, we can have an analogous one for normalised SRA
+            for (MSRAMove<P, S> ct : getMovesFromAsMA(currentState.first)) {
 				LinkedList<SRAMove<P, S>> SRAMoves = new LinkedList<>();
 
 				if (System.currentTimeMillis() - startTime > timeout)
