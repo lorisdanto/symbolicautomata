@@ -72,10 +72,8 @@ public class SRA<P, S> {
 		aut.isTotal = true;
 		aut.isSingleValued = true;
 		aut.maxStateId = 1;
-		// TODO: better keep fresh/check, so that the SRA is already single-valued
 		aut.addTransition(new SRACheckMove<>(0, 0, ba.True(), 0), ba, false);
-		aut.addTransition(new SRAFreshMove<>(0, 0, ba.True(), 0), ba, false);
-        // aut.addTransition(new SRAStoreMove<A, B>(0, 0, ba.True(), 0), ba, false);
+		aut.addTransition(new SRAFreshMove<>(0, 0, ba.True(), 0, aut.registers.size()), ba, false);
 		return aut;
 	}
 
@@ -96,7 +94,8 @@ public class SRA<P, S> {
 		aut.isEmpty = false;
 		aut.maxStateId = 1;
 		aut.isSingleValued = false;
-        aut.addTransition(new SRAStoreMove<A, B>(0, 0, ba.True(), 0), ba, false);
+		aut.addTransition(new SRACheckMove<>(0, 0, ba.True(), 0), ba, false);
+		aut.addTransition(new SRAFreshMove<>(0, 0, ba.True(), 0, aut.registers.size()), ba, false);
 		return aut;
 	}
 
@@ -309,8 +308,8 @@ public class SRA<P, S> {
                     getCheckMovesFrom(transition.from).add((new SRACheckMove<P, S>(transition.from, transition.to, transition.guard, mTransition.E.iterator().next())));
                     getCheckMovesTo(transition.to).add((new SRACheckMove<P, S>(transition.from, transition.to, transition.guard, mTransition.E.iterator().next())));
                 } else if (mTransition.E.isEmpty() && mTransition.U.size() == 1) {
-                    getFreshMovesFrom(transition.from).add((new SRAFreshMove<P, S>(transition.from, transition.to, transition.guard, mTransition.U.iterator().next())));
-                    getFreshMovesTo(transition.to).add((new SRAFreshMove<P, S>(transition.from, transition.to, transition.guard, mTransition.U.iterator().next())));
+                    getFreshMovesFrom(transition.from).add((new SRAFreshMove<P, S>(transition.from, transition.to, transition.guard, mTransition.U.iterator().next(), registers.size())));
+                    getFreshMovesTo(transition.to).add((new SRAFreshMove<P, S>(transition.from, transition.to, transition.guard, mTransition.U.iterator().next(), registers.size())));
                 } else {
                 	isMSRA = true;
                 	isSingleValued = false;
@@ -547,7 +546,7 @@ public class SRA<P, S> {
                     for (Integer index : t.asMultipleAssignment(registers).getFirst().U)
                         registers.set(index, inputElement);
                 if (t.isFresh() || t.isStore())
-                    registers.set(t.registerIndexes.iterator().next(), inputElement);
+                    registers.set(t.U.iterator().next(), inputElement);
             }
 		}
 		return nextState;
@@ -722,9 +721,11 @@ public class SRA<P, S> {
 		LinkedList<NormSRAMove<P>> normMoves = new LinkedList<>();
 		LinkedList<MinTerm<P>> minterms = mintermsForPredicate.get(move.guard);
 
-		Integer register = move.registerIndexes.iterator().next();
+		// TODO: Needs to be reviewed, which register do we use here?
+
 
 		if (move instanceof SRACheckMove) {
+            Integer register = move.E.iterator().next();
 			MinTerm<P> registerMintInAbs = regAbs.get(register);
 
 			if (registerMintInAbs != null && minterms.contains(registerMintInAbs)) {
@@ -951,24 +952,23 @@ public class SRA<P, S> {
 		Integer regSize = registers.size();
 		Integer chosenReg = 0;
 
-        // TODO: Check case for store moves. This is only for single-assignment SRAs, for which these moves are not allowed
 		for (Pair<Integer, Integer> key: predMap.keySet()) {
 			Integer state = key.first;
 			Integer reg = key.second;
 			P negPred = ba.MkNot(predMap.get(key));
 			SRAMove<P, S> newMove;
 
-			if (reg != regSize)
+			if (reg.equals(regSize))
 				newMove = new SRACheckMove<>(state, sinkState, negPred, reg);
 			else
-				newMove = new SRAFreshMove<>(state, sinkState, negPred, chosenReg);
+				newMove = new SRAFreshMove<>(state, sinkState, negPred, chosenReg, regSize);
 
 
 			addTransition(newMove, ba, false);
 		}
 
 		SRAMove<P,S> checkSinkLoop = new SRACheckMove<>(sinkState, sinkState, ba.True(), chosenReg);
-		SRAMove<P,S> freshSinkLoop = new SRAFreshMove<>(sinkState, sinkState, ba.True(), chosenReg);
+		SRAMove<P,S> freshSinkLoop = new SRAFreshMove<>(sinkState, sinkState, ba.True(), chosenReg, regSize);
 
 		addTransition(checkSinkLoop, ba, false);
 		addTransition(freshSinkLoop, ba, false);
@@ -1438,7 +1438,7 @@ public class SRA<P, S> {
 						LinkedList<Integer> inverseImg = inverseMap.get(i);
 
 						if (inverseImg == null || ct.U.containsAll(inverseImg)) {
-							SRAMoves.add(new SRAFreshMove<P, S>(currentStateID, null, ct.guard, i));
+							SRAMoves.add(new SRAFreshMove<P, S>(currentStateID, null, ct.guard, i, registers.size()));
 							break;
 						}
 					}
@@ -1514,8 +1514,6 @@ public class SRA<P, S> {
     // ------------------------------------------------------
     // Boolean automata operations
     // ------------------------------------------------------
-    // FIXME: At the moment I doubt most of these work.
-    //        We need to get basic transition operations working first.
 
     /**
      * Computes the intersection with <code>aut</code> as a new SRA
@@ -1590,13 +1588,13 @@ public class SRA<P, S> {
                     A intersGuard = ba.MkAnd(ct1.guard, ct2.guard);
 
                     // create union of the two E sets.
-                    Collection<Integer> intersE = new HashSet<Integer>();
+                    Set<Integer> intersE = new HashSet<Integer>();
                     intersE.addAll(ct1.E);
                     for (Integer registerE : ct2.E)
                         intersE.add(registerE + ct1.E.size());
 
                     // create union fo the two U sets.
-                    Collection<Integer> intersU = new HashSet<Integer>();
+                    Set<Integer> intersU = new HashSet<Integer>();
                     intersU.addAll(ct1.U);
                     for (Integer registerU : ct2.U)
                         intersU.add(registerU + ct1.U.size());
@@ -1621,22 +1619,6 @@ public class SRA<P, S> {
 	// ------------------------------------------------------
 	// Other automata operations
 	// ------------------------------------------------------
-
-    /**
-     * @return a new normalised SRA.
-     * @throws TimeoutException
-     */
-    // TODO: Implement translation to normal SRA.
-	public SRA<P, S> toNormal(BooleanAlgebra<P, S> ba) throws TimeoutException {
-        // 1: Get all transitions from SRA.
-        // 2: Get all possible combinations of minterms (keyword *possible*)
-        // 3: Get transitions from q0.
-        // 3: Apply AND of phi0 (from q0) on set of possible combinations of predicates and register req.
-        //    (==registers[rIndex] for check transitions or registers.contains(Input) == false)
-        // 4: If the transition can happen, add transition from q0 to final state in original SRA transition.
-        // 5:
-		return null;
-    }
 
     /**
      * Creates a normalized copy of the SRA where all transitions between states
@@ -1669,33 +1651,33 @@ public class SRA<P, S> {
         Map<Pair<Integer, Integer>, Pair<A, Integer>> checkMoves = new HashMap<Pair<Integer, Integer>, Pair<A, Integer>>();
         Map<Pair<Integer, Integer>, Pair<A, Integer>> freshMoves = new HashMap<Pair<Integer, Integer>, Pair<A, Integer>>();
         Map<Pair<Integer, Integer>, Pair<A, Integer>> storeMoves = new HashMap<Pair<Integer, Integer>, Pair<A, Integer>>();
-        Map<Pair<Integer, Integer>, Pair<A, Pair<Collection<Integer>, Collection<Integer>>>> MAMoves = new HashMap<Pair<Integer, Integer>, Pair<A, Pair<Collection<Integer>, Collection<Integer>>>>();
+        Map<Pair<Integer, Integer>, Pair<A, Pair<Set<Integer>, Set<Integer>>>> MAMoves = new HashMap<Pair<Integer, Integer>, Pair<A, Pair<Set<Integer>, Set<Integer>>>>();
 
         // Create disjunction of all rules between same state and with the same operation
         for (SRAMove<A, B> move : aut.getMovesFrom(aut.states)) {
             Pair<Integer, Integer> fromTo = new Pair<Integer, Integer>(move.from, move.to);
             if (move.isMultipleAssignment()) {
                 if (MAMoves.containsKey(fromTo))
-                    MAMoves.put(fromTo, new Pair<A, Pair<Collection<Integer>, Collection<Integer>>>(ba.MkOr(move.guard, MAMoves.get(fromTo).first),
-                            new Pair<Collection<Integer>, Collection<Integer>>(move.asMultipleAssignment(registers).getFirst().E, move.asMultipleAssignment(registers).getFirst().U)));
+                    MAMoves.put(fromTo, new Pair<A, Pair<Set<Integer>, Set<Integer>>>(ba.MkOr(move.guard, MAMoves.get(fromTo).first),
+                            new Pair<Set<Integer>, Set<Integer>>(move.asMultipleAssignment(registers).getFirst().E, move.asMultipleAssignment(registers).getFirst().U)));
                 else
-                    MAMoves.put(fromTo, new Pair<A, Pair<Collection<Integer>, Collection<Integer>>>(move.guard,
-                            new Pair<Collection<Integer>, Collection<Integer>>(move.asMultipleAssignment(registers).getFirst().E, move.asMultipleAssignment(registers).getFirst().U)));
+                    MAMoves.put(fromTo, new Pair<A, Pair<Set<Integer>, Set<Integer>>>(move.guard,
+                            new Pair<Set<Integer>, Set<Integer>>(move.asMultipleAssignment(registers).getFirst().E, move.asMultipleAssignment(registers).getFirst().U)));
             } else if (move.isFresh()) {
                 if (freshMoves.containsKey(fromTo))
-                    freshMoves.put(fromTo, new Pair<A, Integer>(ba.MkOr(move.guard, freshMoves.get(fromTo).first), move.registerIndexes.iterator().next()));
+                    freshMoves.put(fromTo, new Pair<A, Integer>(ba.MkOr(move.guard, freshMoves.get(fromTo).first), move.U.iterator().next()));
                 else
-                    freshMoves.put(fromTo, new Pair<A, Integer>(move.guard, move.registerIndexes.iterator().next()));
+                    freshMoves.put(fromTo, new Pair<A, Integer>(move.guard, move.U.iterator().next()));
             } else if (move.isStore()) {
                 if (storeMoves.containsKey(fromTo))
-                    storeMoves.put(fromTo, new Pair<A, Integer>(ba.MkOr(move.guard, storeMoves.get(fromTo).first), move.registerIndexes.iterator().next()));
+                    storeMoves.put(fromTo, new Pair<A, Integer>(ba.MkOr(move.guard, storeMoves.get(fromTo).first), move.U.iterator().next()));
                 else
-                    storeMoves.put(fromTo, new Pair<A, Integer>(move.guard, move.registerIndexes.iterator().next()));
+                    storeMoves.put(fromTo, new Pair<A, Integer>(move.guard, move.U.iterator().next()));
             } else {
                 if (checkMoves.containsKey(fromTo))
-                    checkMoves.put(fromTo, new Pair<A, Integer>(ba.MkOr(move.guard, checkMoves.get(fromTo).first), move.registerIndexes.iterator().next()));
+                    checkMoves.put(fromTo, new Pair<A, Integer>(ba.MkOr(move.guard, checkMoves.get(fromTo).first), move.E.iterator().next()));
                 else
-                    checkMoves.put(fromTo, new Pair<A, Integer>(move.guard, move.registerIndexes.iterator().next()));
+                    checkMoves.put(fromTo, new Pair<A, Integer>(move.guard, move.E.iterator().next()));
             }
         }
 
@@ -1703,7 +1685,7 @@ public class SRA<P, S> {
         for (Pair<Integer, Integer> p : checkMoves.keySet())
             transitions.add(new SRACheckMove<A, B>(p.first, p.second, checkMoves.get(p).first, checkMoves.get(p).second));
         for (Pair<Integer, Integer> p : freshMoves.keySet())
-            transitions.add(new SRAFreshMove<A, B>(p.first, p.second, freshMoves.get(p).first, freshMoves.get(p).second));
+            transitions.add(new SRAFreshMove<A, B>(p.first, p.second, freshMoves.get(p).first, freshMoves.get(p).second, registers.size()));
         for (Pair<Integer, Integer> p : storeMoves.keySet())
             transitions.add(new SRAStoreMove<A, B>(p.first, p.second, storeMoves.get(p).first, storeMoves.get(p).second));
         for (Pair<Integer, Integer> p : MAMoves.keySet())

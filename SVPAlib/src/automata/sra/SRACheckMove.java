@@ -27,7 +27,7 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
      * Check transitions happen iff the predicate is true and the register mentioned matches the input symbol.
 	 */
 	public SRACheckMove(Integer from, Integer to, P guard, Integer registerIndex) {
-		super(from, to, guard, Collections.singleton(registerIndex));
+		super(from, to, guard, Collections.singleton(registerIndex), Collections.emptySet(), Collections.emptySet());
     }	
 
 	@Override
@@ -37,22 +37,22 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 
     @Override
     public S getWitness(BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
-		if (registerValues.get(registerIndexes.iterator().next()) != null)
-        	return boolal.generateWitness(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(registerIndexes.iterator().next()))));
+		if (registerValues.get(E.iterator().next()) != null)
+        	return boolal.generateWitness(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(E.iterator().next()))));
 		return null;
     }
 
     @Override
     public boolean hasModel(S input, BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
-		if (registerValues.get(registerIndexes.iterator().next()) != null)
-        	return boolal.HasModel(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(registerIndexes.iterator().next()))), input);
+		if (registerValues.get(E.iterator().next()) != null)
+        	return boolal.HasModel(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(E.iterator().next()))), input);
 		return false;
     }
 
 	@Override
 	public boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		if (from.equals(t.from)) {
-            if (registerIndexes != t.registerIndexes) {
+            if (E != t.E) {
                 return true;
             }
 			SRACheckMove<P, S> ct = (SRACheckMove<P, S>) t;
@@ -63,12 +63,12 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 
 	@Override
 	public String toString() {
-		return String.format("S: %s -%s/%s-> %s", from, guard, registerIndexes.iterator().next(), to);
+		return String.format("S: %s -%s/%s-> %s", from, guard, E.iterator().next(), to);
 	}
 
 	@Override
 	public String toDotString() {
-		return String.format("%s -> %s [label=\"%s/%s\"]\n", from, to, guard, registerIndexes.iterator().next());
+		return String.format("%s -> %s [label=\"%s/%s\"]\n", from, to, guard, E.iterator().next());
 	}
 
 	@Override
@@ -78,7 +78,9 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 			return otherCasted.from.equals(from) &&
 				   otherCasted.to.equals(to) &&
 				   otherCasted.guard.equals(guard) &&
-				   otherCasted.registerIndexes.equals(registerIndexes);
+				   otherCasted.E.equals(E) &&
+				   otherCasted.I.equals(I) &&
+				   otherCasted.U.equals(U);
 		}
 
 		return false;
@@ -86,7 +88,7 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 
 	@Override
 	public Object clone() {
-		  return new SRACheckMove<P, S>(from, to, guard, registerIndexes.iterator().next());
+		  return new SRACheckMove<P, S>(from, to, guard, E.iterator().next());
 	}
 
     @Override
@@ -101,7 +103,7 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 			indexesSet.add(index);
 
 		LinkedList<MSRAMove<P, S>> maTransitions = new LinkedList<MSRAMove<P, S>>();
-		for (HashSet<Integer> set : getPowersetIncluding(indexesSet, registerIndexes))
+		for (HashSet<Integer> set : getPowersetIncluding(indexesSet, E))
 			maTransitions.add(new MSRAMove<P, S>(from, to, guard, set, new HashSet<>()));
 		return maTransitions;
     }

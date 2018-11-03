@@ -71,7 +71,7 @@ public class SRAUnitTest {
         registers.add('a');
         registers.add('b');
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions.add(new SRAFreshMove<CharPred, Character>(0, 1, ba.MkOr(new CharPred('a'), new CharPred('b')), 0));
+        transitions.add(new SRAFreshMove<CharPred, Character>(0, 1, ba.MkOr(new CharPred('a'), new CharPred('b')), 0, registers.size()));
         SRA<CharPred, Character> testSRA = SRA.MkSRA(transitions, 0, Collections.singleton(1), registers, ba);
         assertTrue(SRA.isLanguageEmpty(testSRA, ba, Long.MAX_VALUE));
     }
@@ -85,9 +85,9 @@ public class SRAUnitTest {
         CharPred abPred = ba.MkOr(new CharPred('a'), new CharPred('b'));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions.add(new SRAFreshMove<CharPred, Character>(0, 1, abPred, 0));
-        transitions.add(new SRAFreshMove<CharPred, Character>(1, 2, abPred, 1));
-        transitions.add(new SRAFreshMove<CharPred, Character>(2, 3, abPred, 1));
+        transitions.add(new SRAFreshMove<CharPred, Character>(0, 1, abPred, 0, registers.size()));
+        transitions.add(new SRAFreshMove<CharPred, Character>(1, 2, abPred, 1, registers.size()));
+        transitions.add(new SRAFreshMove<CharPred, Character>(2, 3, abPred, 1, registers.size()));
 
 
         SRA<CharPred, Character> testSRA = SRA.MkSRA(transitions, 0, Collections.singleton(3), registers, ba);
@@ -103,9 +103,9 @@ public class SRAUnitTest {
         CharPred abPred = ba.MkOr(new CharPred('a'), new CharPred('b'));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions.add(new SRAFreshMove<CharPred, Character>(0, 1, abPred, 0));
-        transitions.add(new SRAFreshMove<CharPred, Character>(1, 2, abPred, 1));
-        transitions.add(new SRAFreshMove<CharPred, Character>(2, 3, alpha, 1));
+        transitions.add(new SRAFreshMove<CharPred, Character>(0, 1, abPred, 0, registers.size()));
+        transitions.add(new SRAFreshMove<CharPred, Character>(1, 2, abPred, 1, registers.size()));
+        transitions.add(new SRAFreshMove<CharPred, Character>(2, 3, alpha, 1, registers.size()));
 
 
         SRA<CharPred, Character> testSRA = SRA.MkSRA(transitions, 0, Collections.singleton(3), registers, ba);
@@ -157,7 +157,7 @@ public class SRAUnitTest {
         registers1.add('b');
 
         Collection<SRAMove<CharPred, Character>> transitions1 = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions1.add(new SRAFreshMove<>(0, 1, abcPred, 0));
+        transitions1.add(new SRAFreshMove<>(0, 1, abcPred, 0, registers1.size()));
 
         SRA<CharPred, Character> sra1 = SRA.MkSRA(transitions1, 0, Collections.singleton(1), registers1, ba);
 
@@ -186,7 +186,7 @@ public class SRAUnitTest {
         registers1.add('b');
 
         Collection<SRAMove<CharPred, Character>> transitions1 = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions1.add(new SRAFreshMove<>(0, 1, abcPred, 0));
+        transitions1.add(new SRAFreshMove<>(0, 1, abcPred, 0, registers1.size()));
 
         SRA<CharPred, Character> sra1 = SRA.MkSRA(transitions1, 0, Collections.singleton(1), registers1, ba);
 
@@ -280,7 +280,7 @@ public class SRAUnitTest {
         registers2.add(null);
 
         Collection<SRAMove<CharPred, Character>> transitions2 = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions2.add(new SRAFreshMove<>(0, 1, abcPred, 0));
+        transitions2.add(new SRAFreshMove<>(0, 1, abcPred, 0, registers2.size()));
 
         SRA<CharPred, Character> sra2 = SRA.MkSRA(transitions2, 0, Collections.singleton(1), registers2, ba);
 
@@ -337,7 +337,7 @@ public class SRAUnitTest {
         registers.add(null);
 		Collection<SRAMove<CharPred, Character>> transitionsA = new LinkedList<SRAMove<CharPred, Character>>();
 		transitionsA.add(new SRACheckMove<CharPred, Character>(0, 0, alpha, 0));
-        transitionsA.add(new SRAFreshMove<CharPred, Character>(0, 0, alpha, 0));
+        transitionsA.add(new SRAFreshMove<CharPred, Character>(0, 0, alpha, 0, registers.size()));
 		try {
 			return SRA.MkSRA(transitionsA, 0, Collections.singleton(0), registers, ba);
 		} catch (TimeoutException e) {
@@ -353,9 +353,9 @@ public class SRAUnitTest {
         registers.add(null);
 		Collection<SRAMove<CharPred, Character>> transitionsB = new LinkedList<SRAMove<CharPred, Character>>();
 		transitionsB.add(new SRACheckMove<CharPred, Character>(0, 1, alpha, 0));
-        transitionsB.add(new SRAFreshMove<CharPred, Character>(0, 1, alpha, 0));
+        transitionsB.add(new SRAFreshMove<CharPred, Character>(0, 1, alpha, 0, registers.size()));
 		transitionsB.add(new SRACheckMove<CharPred, Character>(1, 1, num, 0));
-        transitionsB.add(new SRAFreshMove<CharPred, Character>(1, 1, num, 0));
+        transitionsB.add(new SRAFreshMove<CharPred, Character>(1, 1, num, 0, registers.size()));
 		try {
 			return SRA.MkSRA(transitionsB, 0, Collections.singleton(1), registers, ba);
 		} catch (TimeoutException e) {
@@ -369,7 +369,7 @@ public class SRAUnitTest {
         LinkedList<Integer> registers = new LinkedList<Integer>();
         registers.add(0);
         Collection<SRAMove<IntPred, Integer>> transitions = new LinkedList<SRAMove<IntPred, Integer>>();
-        transitions.add(new SRAFreshMove<IntPred, Integer>(0, 1, new IntPred(5, null), 0));
+        transitions.add(new SRAFreshMove<IntPred, Integer>(0, 1, new IntPred(5, null), 0, registers.size()));
         try {
             return SRA.MkSRA(transitions, 0, Collections.singleton(1), registers, ba);
         } catch (TimeoutException e) {
@@ -382,7 +382,7 @@ public class SRAUnitTest {
         LinkedList<Integer> registers = new LinkedList<Integer>();
         registers.add(2);
         Collection<SRAMove<IntPred, Integer>> transitions = new LinkedList<SRAMove<IntPred, Integer>>();
-        transitions.add(new SRAFreshMove<IntPred, Integer>(0, 1, new IntPred(0, null), 0));
+        transitions.add(new SRAFreshMove<IntPred, Integer>(0, 1, new IntPred(0, null), 0, registers.size()));
         try {
             return SRA.MkSRA(transitions, 0, Collections.singleton(1), registers, ba);
         } catch (TimeoutException e) {
@@ -396,9 +396,9 @@ public class SRAUnitTest {
         registers.add(null);
         registers.add(null);
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions.add(new MSRAMove<CharPred, Character>(0, 1, alpha, Collections.emptyList(), Collections.singletonList(0)));
-        transitions.add(new MSRAMove<CharPred, Character>(1, 2, alpha, Collections.singletonList(0), Collections.singletonList(1)));
-        transitions.add(new MSRAMove<CharPred, Character>(2, 3, alpha, Arrays.asList(0, 1), Collections.emptyList()));
+        transitions.add(new MSRAMove<CharPred, Character>(0, 1, alpha, Collections.emptySet(), Collections.singleton(0)));
+        transitions.add(new MSRAMove<CharPred, Character>(1, 2, alpha, Collections.singleton(0), Collections.singleton(1)));
+        transitions.add(new MSRAMove<CharPred, Character>(2, 3, alpha, new HashSet<>(Arrays.asList(0, 1)), Collections.emptySet()));
 
         try {
             return SRA.MkSRA(transitions, 0, Collections.singleton(3), registers, ba);

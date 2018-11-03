@@ -28,7 +28,7 @@ public class SRAStoreMove<P, S> extends SRAMove<P, S> {
      * If this is true, then the input symbol is stored in the register mentioned.
      */
     public SRAStoreMove(Integer from, Integer to, P guard, Integer registerIndex) {
-        super(from, to, guard, Collections.singleton(registerIndex));
+        super(from, to, guard, Collections.emptySet(), Collections.emptySet(), Collections.singleton(registerIndex));
     }
 
     @Override
@@ -49,7 +49,7 @@ public class SRAStoreMove<P, S> extends SRAMove<P, S> {
     @Override
     public boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException {
         if (from.equals(t.from)) {
-            if (registerIndexes != t.registerIndexes) {
+            if (U != t.U) {
                 return true;
             }
             SRAStoreMove<P, S> ct = (SRAStoreMove<P, S>) t;
@@ -60,12 +60,12 @@ public class SRAStoreMove<P, S> extends SRAMove<P, S> {
 
     @Override
     public String toString() {
-        return String.format("S: %s -%s/%s=-> %s", from, guard, registerIndexes.iterator().next(), to);
+        return String.format("S: %s -%s/%s=-> %s", from, guard, U.iterator().next(), to);
     }
 
     @Override
     public String toDotString() {
-        return String.format("%s -> %s [label=\"%s/%s=\"]\n", from, to, guard, registerIndexes.iterator().next());
+        return String.format("%s -> %s [label=\"%s/%s=\"]\n", from, to, guard, U.iterator().next());
     }
 
     @Override
@@ -75,7 +75,7 @@ public class SRAStoreMove<P, S> extends SRAMove<P, S> {
             return otherCasted.from.equals(from) &&
                    otherCasted.to.equals(to) &&
                    otherCasted.guard.equals(guard) &&
-                   otherCasted.registerIndexes.equals(registerIndexes);
+                   otherCasted.U.equals(U);
         }
 
         return false;
@@ -83,7 +83,7 @@ public class SRAStoreMove<P, S> extends SRAMove<P, S> {
 
     @Override
     public Object clone(){
-        return new SRAStoreMove<P, S>(from, to, guard, registerIndexes.iterator().next());
+        return new SRAStoreMove<P, S>(from, to, guard, U.iterator().next());
     }
 
     @Override
@@ -94,7 +94,7 @@ public class SRAStoreMove<P, S> extends SRAMove<P, S> {
 
         LinkedList<MSRAMove<P, S>> maTransitions = new LinkedList<MSRAMove<P, S>>();
         for (HashSet<Integer> set : getPowerset(indexesSet))
-            maTransitions.add(new MSRAMove<P, S>(from, to, guard, set, registerIndexes));
+            maTransitions.add(new MSRAMove<P, S>(from, to, guard, set, U));
         return maTransitions;
     }
 

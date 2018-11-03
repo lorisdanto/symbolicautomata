@@ -9,8 +9,7 @@ package automata.sra;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Collection;
-import java.util.Arrays;
+import java.util.Set;
 
 import org.sat4j.specs.TimeoutException;
 
@@ -23,18 +22,13 @@ import theory.BooleanAlgebra;
  */
 public class MSRAMove<P, S> extends SRAMove<P, S> {
 
-    public Collection<Integer> E;
-    public Collection<Integer> U;
-
 	/**
 	 * Constructs a multiple assignment SRA Transition that starts from state <code>from</code> and ends at state
 	 * <code>to</code> with input <code>input</code>
      * MSRA transitions happen iff the input symbol is in all E, if this is the case the input is assigned to all U.
 	 */
-	public MSRAMove(Integer from, Integer to, P guard, Collection<Integer> e, Collection<Integer> u) {
-		super(from, to, guard, Collections.emptySet());
-        this.E = e;
-        this.U = u;
+	public MSRAMove(Integer from, Integer to, P guard, Set<Integer> E, Set<Integer> U) {
+		super(from, to, guard, E, Collections.emptySet(), U);
     }
 
 	@Override
@@ -78,7 +72,7 @@ public class MSRAMove<P, S> extends SRAMove<P, S> {
 	@Override
 	public boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		if (from.equals(t.from)) {
-            if (registerIndexes != t.registerIndexes) {
+            if (E != t.E || U != t.U) {
                 return true;
             }
 			MSRAMove<P, S> MSRAt = (MSRAMove<P, S>) t;
@@ -104,8 +98,8 @@ public class MSRAMove<P, S> extends SRAMove<P, S> {
 			MSRAMove<?, ?> otherCasted = (MSRAMove<?, ?>) other;
 			return otherCasted.from.equals(from) && otherCasted.to.equals(to) &&
                    otherCasted.guard.equals(guard) &&
-                   otherCasted.registerIndexes.equals(registerIndexes) &&
                    otherCasted.E.equals(E) &&
+                   otherCasted.I.equals(I) &&
 				   otherCasted.U.equals(U);
 		}
 

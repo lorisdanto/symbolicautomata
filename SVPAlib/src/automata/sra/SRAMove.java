@@ -25,17 +25,21 @@ public abstract class SRAMove<P, S> {
     public Integer from;
     public Integer to;
     public P guard;
-    public Set<Integer> registerIndexes;
+    public Set<Integer> E;
+	public Set<Integer> I;
+	public Set<Integer> U;
 
 	/**
 	 * Constructs an SRA Transition that starts from state <code>from</code> and
-	 * ends at state <code>to</code> with input <code>input</code>
+	 * ends at state <code>to</code> with predicate <code>guard</code> and registers <code>E, I, U</code>
 	 */
-	public SRAMove(Integer from, Integer to, P guard, Set<Integer> registerIndexes) {
+	public SRAMove(Integer from, Integer to, P guard, Set<Integer> E, Set<Integer> I, Set<Integer> U) {
 		this.from = from;
         this.to = to;
         this.guard = guard;
-        this.registerIndexes = registerIndexes;
+        this.E = E;
+		this.I = I;
+		this.U = U;
 	}
 
 	/**

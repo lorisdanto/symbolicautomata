@@ -8,6 +8,7 @@ package automata.sra;
 
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.HashSet;
 
 import org.sat4j.specs.TimeoutException;
 
@@ -26,8 +27,11 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
      * Fresh transitions happen iff the predicate is true and the input symbol is different from all the registers.
      * If this is true, then the input symbol is stored in the register mentioned
 	 */
-	public SRAFreshMove(Integer from, Integer to, P guard, Integer registerIndex) {
-		super(from, to, guard, Collections.singleton(registerIndex));
+	public SRAFreshMove(Integer from, Integer to, P guard, Integer registerIndex, Integer registerCount) {
+		super(from, to, guard, Collections.emptySet(), new HashSet<Integer>(), Collections.singleton(registerIndex));
+		for (Integer index = 0; index < registerCount; index++)
+			I.add(index);
+
 	}
 	
 	@Override
@@ -43,7 +47,7 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
             	registerPredicates = boolal.MkAnd(registerPredicates, boolal.MkNot(boolal.MkAtom(registerData)));
         S witness = boolal.generateWitness(boolal.MkAnd(guard, registerPredicates));
         if (witness != null)
-			registerValues.set(registerIndexes.iterator().next(), witness);
+			registerValues.set(U.iterator().next(), witness);
         return boolal.generateWitness(boolal.MkAnd(guard, registerPredicates));
     }
 
@@ -59,7 +63,7 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 	@Override
 	public boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		if (from.equals(t.from)) {
-            if (registerIndexes != t.registerIndexes) {
+            if (U != t.U) {
                 return true;
             }
 			SRAFreshMove<P, S> ct = (SRAFreshMove<P, S>) t;
@@ -71,12 +75,12 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 	@Override
 	public String toString() {
 		// TODO: Change fresh * to dot.
-		return String.format("S: %s -%s/%s*-> %s", from, guard, registerIndexes.iterator().next(), to);
+		return String.format("S: %s -%s/%s*-> %s", from, guard, U.iterator().next(), to);
 	}
 
 	@Override
 	public String toDotString() {
-		return String.format("%s -> %s [label=\"%s/%s*\"]\n", from, to, guard, registerIndexes.iterator().next());
+		return String.format("%s -> %s [label=\"%s/%s*\"]\n", from, to, guard, U.iterator().next());
 	}
 
 	@Override
@@ -86,7 +90,9 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 			return otherCasted.from.equals(from) &&
 				   otherCasted.to.equals(to) &&
 				   otherCasted.guard.equals(guard) &&
-				   otherCasted.registerIndexes.equals(registerIndexes);
+				   otherCasted.E.equals(E) &&
+				   otherCasted.I.equals(I) &&
+				   otherCasted.U.equals(U);
 		}
 
 		return false;
@@ -94,14 +100,14 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 
 	@Override
 	public Object clone(){
-		  return new SRAFreshMove<P, S>(from, to, guard, registerIndexes.iterator().next());
+		  return new SRAFreshMove<P, S>(from, to, guard, U.iterator().next(), I.size());
 	}
 
     @Override
 	public LinkedList<MSRAMove<P, S>> asMultipleAssignment(LinkedList<S> registerValues) {
 		// FIXME: Inaccurate translation.
 		LinkedList<MSRAMove<P, S>> maTransitions = new LinkedList<MSRAMove<P, S>>();
-		maTransitions.add(new MSRAMove<P, S>(from, to, guard, new LinkedList<Integer>(), registerIndexes));
+		maTransitions.add(new MSRAMove<P, S>(from, to, guard, Collections.emptySet(), U));
 		return maTransitions;
     }
 
