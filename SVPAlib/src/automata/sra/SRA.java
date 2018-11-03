@@ -69,9 +69,13 @@ public class SRA<P, S> {
         aut.registers.add(null);
 		aut.isDeterministic = true;
 		aut.isEmpty = true;
+		aut.isTotal = true;
 		aut.isSingleValued = true;
 		aut.maxStateId = 1;
-        aut.addTransition(new SRAStoreMove<A, B>(0, 0, ba.True(), 0), ba, false);
+		// TODO: better keep fresh/check, so that the SRA is already single-valued
+		aut.addTransition(new SRACheckMove<>(0, 0, ba.True(), 0), ba, false);
+		aut.addTransition(new SRAFreshMove<>(0, 0, ba.True(), 0), ba, false);
+        // aut.addTransition(new SRAStoreMove<A, B>(0, 0, ba.True(), 0), ba, false);
 		return aut;
 	}
 
@@ -91,7 +95,7 @@ public class SRA<P, S> {
 		aut.isDeterministic = true;
 		aut.isEmpty = false;
 		aut.maxStateId = 1;
-		aut.isSingleValued = true;
+		aut.isSingleValued = false;
         aut.addTransition(new SRAStoreMove<A, B>(0, 0, ba.True(), 0), ba, false);
 		return aut;
 	}
@@ -968,16 +972,74 @@ public class SRA<P, S> {
 
 		addTransition(checkSinkLoop, ba, false);
 		addTransition(freshSinkLoop, ba, false);
+
+		isTotal = true;
 	}
 
+	public boolean isLanguageEquivalent(SRA<P,S> aut, BooleanAlgebra<P,S> ba, long timeout) throws TimeoutException {
+		SRA<P,S> me = this;
+
+		if (!isSingleValued)
+			me = toSingleValuedSRA(ba, timeout);
+
+		if (!aut.isSingleValued)
+			aut = aut.toSingleValuedSRA(ba, timeout);
+
+//		if (!me.isTotal)
+//			me.complete(ba);
+//
+//		if (!aut.isTotal)
+//			aut.complete(ba);
+
+		return canSimulate(me, aut, ba, true, timeout);
+	}
+
+	public boolean languageIncludes(SRA<P,S> aut, BooleanAlgebra<P,S> ba, long timeout) throws TimeoutException {
+		SRA<P,S> me = this;
+
+		if (!isSingleValued)
+			me = toSingleValuedSRA(ba, timeout);
+
+		if (!aut.isSingleValued)
+			aut = aut.toSingleValuedSRA(ba, timeout);
+
+//		System.out.print("completed");
+//		me.createDotFile("complete1","");
+//		aut.createDotFile("complete2","");
+
+
+//
+//		if (!me.isTotal)
+//			me.complete(ba);
+//
+//		if (!aut.isTotal)
+//			aut.complete(ba);
+//
+//		System.out.println("Here");
+//
+//
+		return canSimulate(aut, me, ba, false, timeout);
+	}
+
+//	public static <P, S> SRA<P, S> getPruned(SRA<P,S> aut) {
+//
+//	}
 
 	public static <P, S> boolean canSimulate(SRA<P,S> aut1, SRA<P,S> aut2, BooleanAlgebra<P, S> ba, boolean bisimulation, long timeout)
 			throws TimeoutException {
 
-		if(aut1.isMSRA)
+		if (aut1.isEmpty) {
+			if (bisimulation && !aut2.isEmpty)
+				return false;
+
+			return true;
+		}
+
+
+		if(!aut1.isSingleValued)
 			aut1 = aut1.toSingleValuedSRA(ba, timeout);
 
-		if(aut2.isMSRA)
+		if(!aut2.isSingleValued)
 			aut2 = aut2.toSingleValuedSRA(ba, timeout);
 
 
@@ -1279,7 +1341,7 @@ public class SRA<P, S> {
         // FIXME: check that isMSRA is false if and only if isSingleValued is true
 		// FIXME: check that, when isSingleValued == false, moves gets translated properly
         if (isSingleValued)
-            return MkSRA(getTransitions(), initialState, finalStates, getRegisters(), ba);
+            return MkSRA(getTransitions(), initialState, finalStates, getRegisters(), ba, false);
 
         // If the automaton is empty return the empty SRA
         if (isEmpty)
@@ -1408,7 +1470,6 @@ public class SRA<P, S> {
             }
         }
         return MkSRA(transitions, initialState, newFinalStates, newRegisters, ba);
-
     }
 
 	/**

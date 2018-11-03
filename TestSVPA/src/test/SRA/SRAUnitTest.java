@@ -261,7 +261,7 @@ public class SRAUnitTest {
 //    }
 
     @Test
-    public void testLanguageInclusion() throws TimeoutException {
+    public void testLanguageInclusionAndEquivalence() throws TimeoutException {
         CharPred abcPred = ba.MkOr(Arrays.asList(new CharPred('a'), new CharPred('b'), new CharPred('c')));
 
         // SRA1
@@ -284,14 +284,10 @@ public class SRAUnitTest {
 
         SRA<CharPred, Character> sra2 = SRA.MkSRA(transitions2, 0, Collections.singleton(1), registers2, ba);
 
-        sra1.complete(ba);
-        sra2.complete(ba);
-
-        sra1.createDotFile("sra1", "");
-        sra2.createDotFile("sra2", "");
-
-        assertTrue(SRA.canSimulate(sra1, sra2, ba, false, Long.MAX_VALUE));
-        assertFalse(SRA.canSimulate(sra1, sra2, ba, true, Long.MAX_VALUE));
+        assertTrue(sra2.languageIncludes(sra1, ba, Long.MAX_VALUE));
+        assertFalse(sra1.languageIncludes(sra2, ba, Long.MAX_VALUE));
+        assertFalse(sra1.isLanguageEquivalent(sra2, ba, Long.MAX_VALUE));
+        assertFalse(sra2.isLanguageEquivalent(sra1, ba, Long.MAX_VALUE));
     }
 
     @Test

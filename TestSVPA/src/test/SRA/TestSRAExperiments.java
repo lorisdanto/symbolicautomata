@@ -263,6 +263,51 @@ public class TestSRAExperiments {
         return null;
     }
 
+    private SRA<CharPred, Character> getSmallXMLParserSRA(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList('<', '>', '/', null, null, null));
+        Integer garbageReg = registers.size() - 1;
+
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+
+        // Read opening character
+        transitions.add(new SRACheckMove<CharPred, Character>(0, 1, open, 0));
+
+        // Read tag
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, alpha, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, alpha, 4));
+        //transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, alpha, 5));
+
+        // Read closing character
+        transitions.add(new SRACheckMove<CharPred, Character>(2, 5, close, 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(3, 5, close, 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(4, 5, close, 1));
+
+        // Read any content (or not)
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 5, alphaNum, garbageReg));
+
+        // Read opening character and slash
+        transitions.add(new SRACheckMove<CharPred, Character>(5, 6, open, 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(6, 7, slash, 2));
+
+        // Read repeated tag (AAA, BBB, ...)
+        transitions.add(new SRACheckMove<CharPred, Character>(7, 8, alpha, 3));
+        transitions.add(new SRACheckMove<CharPred, Character>(8, 9, alpha, 4));
+        //transitions.add(new SRACheckMove<CharPred, Character>(9, 10, alpha, 5));
+
+        // Read closing character
+        transitions.add(new SRACheckMove<CharPred, Character>(8, 11, close, 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(9, 11, close, 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(10, 11, close, 1));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Collections.singleton(11), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private SRA<CharPred, Character> getXMLParserSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null));
 
@@ -450,6 +495,17 @@ public class TestSRAExperiments {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Test
+    public void testLanguageInclusionSmallXML() throws TimeoutException {
+        SRA<CharPred, Character> smallXMLParserSRA = getSmallXMLParserSRA(ba);
+        assertTrue(smallXMLParserSRA.isLanguageEquivalent(smallXMLParserSRA, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testLanguageInclusionIP() throws TimeoutException {
+	    assertTrue(IP6PacketParserSRA.languageIncludes(IP9PacketParserSRA, ba, Long.MAX_VALUE));
     }
 
 	// -------------------------
