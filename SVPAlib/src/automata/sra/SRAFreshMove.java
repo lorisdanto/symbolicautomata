@@ -34,44 +34,6 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 		this.registerIndex = registerIndex;
 
 	}
-	
-	@Override
-	public boolean isSatisfiable(BooleanAlgebra<P, S> boolal) throws TimeoutException {
-		return boolal.IsSatisfiable(guard);
-	}
-
-    @Override
-    public S getWitness(BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
-        P registerPredicates = boolal.True();
-        for (S registerData : registerValues)
-			if (registerData != null)
-            	registerPredicates = boolal.MkAnd(registerPredicates, boolal.MkNot(boolal.MkAtom(registerData)));
-        S witness = boolal.generateWitness(boolal.MkAnd(guard, registerPredicates));
-        if (witness != null)
-			registerValues.set(U.iterator().next(), witness);
-        return boolal.generateWitness(boolal.MkAnd(guard, registerPredicates));
-    }
-
-    @Override
-    public boolean hasModel(S input, BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
-        P registerPredicates = boolal.True();
-        for (S registerData : registerValues)
-			if (registerData != null)
-            	registerPredicates = boolal.MkAnd(registerPredicates, boolal.MkNot(boolal.MkAtom(registerData)));
-        return boolal.HasModel(boolal.MkAnd(guard, registerPredicates), input);
-    }
-
-	@Override
-	public boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException {
-		if (from.equals(t.from)) {
-            if (U != t.U) {
-                return true;
-            }
-			SRAFreshMove<P, S> ct = (SRAFreshMove<P, S>) t;
-			return !ba.IsSatisfiable(ba.MkAnd(guard,ct.guard));
-		}
-		return true;
-	}
 
 	@Override
 	public String toString() {
@@ -85,35 +47,11 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 	}
 
 	@Override
-	public boolean equals(Object other) {
-		if (other instanceof SRAFreshMove<?, ?>) {
-			SRAFreshMove<?, ?> otherCasted = (SRAFreshMove<?, ?>) other;
-			return otherCasted.from.equals(from) &&
-				   otherCasted.to.equals(to) &&
-				   otherCasted.guard.equals(guard) &&
-				   otherCasted.registerIndex.equals(registerIndex) &&
-				   otherCasted.E.equals(E) &&
-				   otherCasted.I.equals(I) &&
-				   otherCasted.U.equals(U);
-		}
-
-		return false;
-	}
-
-	@Override
 	public Object clone(){
 		  return new SRAFreshMove<P, S>(from, to, guard, registerIndex, I.size());
 	}
 
-    @Override
-	public LinkedList<MSRAMove<P, S>> asMultipleAssignment(LinkedList<S> registerValues) {
-		// FIXME: Inaccurate translation.
-		LinkedList<MSRAMove<P, S>> maTransitions = new LinkedList<MSRAMove<P, S>>();
-		maTransitions.add(new MSRAMove<P, S>(from, to, guard, Collections.emptySet(), U));
-		return maTransitions;
-    }
-
-    public boolean isFresh() {
+	public boolean isFresh() {
         return true;
     }
 

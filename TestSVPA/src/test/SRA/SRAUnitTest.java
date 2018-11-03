@@ -114,6 +114,14 @@ public class SRAUnitTest {
 
     @Test
     public void testAcceptance() throws TimeoutException {
+        assertTrue(autA.accepts(la, ba));
+        assertFalse(autA.accepts(lb, ba));
+        assertTrue(autA.accepts(lab, ba));
+        assertFalse(autA.accepts(lnot, ba));
+        assertFalse(autB.accepts(la, ba));
+        assertTrue(autB.accepts(lb, ba));
+        assertTrue(autB.accepts(lab, ba));
+        assertFalse(autB.accepts(lnot, ba));
         assertTrue(autIntOne.accepts(Collections.singletonList(6), intBa));
         assertFalse(autIntOne.accepts(Collections.singletonList(2), intBa));
         assertFalse(autIntTwo.accepts(Collections.singletonList(2), intBa));
@@ -396,9 +404,9 @@ public class SRAUnitTest {
         registers.add(null);
         registers.add(null);
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions.add(new MSRAMove<CharPred, Character>(0, 1, alpha, Collections.emptySet(), Collections.singleton(0)));
-        transitions.add(new MSRAMove<CharPred, Character>(1, 2, alpha, Collections.singleton(0), Collections.singleton(1)));
-        transitions.add(new MSRAMove<CharPred, Character>(2, 3, alpha, new HashSet<>(Arrays.asList(0, 1)), Collections.emptySet()));
+        transitions.add(new SRAMove<CharPred, Character>(0, 1, alpha, Collections.emptySet(), Collections.emptySet(), Collections.singleton(0)));
+        transitions.add(new SRAMove<CharPred, Character>(1, 2, alpha, Collections.singleton(0), Collections.emptySet(), Collections.singleton(1)));
+        transitions.add(new SRAMove<CharPred, Character>(2, 3, alpha, new HashSet<>(Arrays.asList(0, 1)), Collections.emptySet(),  Collections.emptySet()));
 
         try {
             return SRA.MkSRA(transitions, 0, Collections.singleton(3), registers, ba);

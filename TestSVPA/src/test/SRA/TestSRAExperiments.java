@@ -102,6 +102,17 @@ public class TestSRAExperiments {
         assertFalse(IP9PacketParserSRA.accepts(dependentIPPacket1, ba));
     }
 
+//    @Test
+//    public void testLanguageInclusionSmallXML() throws TimeoutException {
+//        SRA<CharPred, Character> smallXMLParserSRA = getSmallXMLParserSRA(ba);
+//        assertTrue(smallXMLParserSRA.isLanguageEquivalent(smallXMLParserSRA, ba, Long.MAX_VALUE));
+//    }
+//
+//    @Test
+//    public void testLanguageInclusionIP() throws TimeoutException {
+//        assertTrue(IP6PacketParserSRA.languageIncludes(IP9PacketParserSRA, ba, Long.MAX_VALUE));
+//    }
+
     // ---------------------------------------
     // Predicates
     // ---------------------------------------
@@ -241,41 +252,34 @@ public class TestSRAExperiments {
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
 
         // Read the first initial and store it in register 0
-        transitions.add(new MSRAMove<CharPred, Character>(0, 1, upperAlpha, Collections.emptySet(), Collections.singleton(0)));
+        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, upperAlpha, 0));
 
         // Read an unbound number of lowercase characters
-        transitions.add(new MSRAMove<CharPred, Character>(1, 1, lowerAlpha, Collections.emptySet(), Collections.singleton(2)));
-        transitions.add(new MSRAMove<CharPred, Character>(1, 1, lowerAlpha, Collections.singleton(2), Collections.emptySet()));
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 1, lowerAlpha, 2));
 
         // Read a comma
-        transitions.add(new MSRAMove<CharPred, Character>(1, 2, comma, Collections.emptySet(), Collections.singleton(2)));
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, comma, 2));
 
         // Read an unbound number of spaces
-        transitions.add(new MSRAMove<CharPred, Character>(2, 2, space, Collections.emptySet(), Collections.singleton(2)));
-        transitions.add(new MSRAMove<CharPred, Character>(2, 2, space, Collections.singleton(2), Collections.emptySet()));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 2, space, 2));
 
         // Read a different second initial or a repeated second initial and store it in 1
-        transitions.add(new MSRAMove<CharPred, Character>(2, 3, upperAlpha, Collections.singleton(0), Collections.singleton(1)));
-        transitions.add(new MSRAMove<CharPred, Character>(2, 3, upperAlpha, Collections.emptySet(), Collections.singleton(1)));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, upperAlpha, 1));
 
         // Read an unbound number of lowercase characters
-        transitions.add(new MSRAMove<CharPred, Character>(3, 3, lowerAlpha, Collections.emptySet(), Collections.singleton(2)));
-        transitions.add(new MSRAMove<CharPred, Character>(3, 3, lowerAlpha, Collections.singleton(2), Collections.emptySet()));
+        transitions.add(new SRAStoreMove<>(3, 3, lowerAlpha,2));
 
         // Read a comma
-        transitions.add(new MSRAMove<CharPred, Character>(3, 4, comma, Collections.emptySet(), Collections.singleton(2)));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, comma, 2));
 
         // Read an unbound number of spaces
-        transitions.add(new MSRAMove<CharPred, Character>(4, 4, space, Collections.emptySet(), Collections.singleton(2)));
-        transitions.add(new MSRAMove<CharPred, Character>(4, 4, space, Collections.singleton(2), Collections.emptySet()));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 4, space, 2));
 
         // Read a capital that matches both registers or a capital that matches the first register
-        transitions.add(new MSRAMove<CharPred, Character>(4, 5, upperAlpha, new HashSet<>(Arrays.asList(0, 1)), Collections.emptySet()));
-        transitions.add(new MSRAMove<CharPred, Character>(4, 5, upperAlpha, Collections.singleton(0), Collections.emptySet()));
+        transitions.add(new SRACheckMove<CharPred, Character>(4, 5, upperAlpha, 0));
 
         // Read a capital that matches both registers or a capital that matches the second register
-        transitions.add(new MSRAMove<CharPred, Character>(5, 6, upperAlpha, new HashSet<>(Arrays.asList(0, 1)), Collections.emptySet()));
-        transitions.add(new MSRAMove<CharPred, Character>(5, 6, upperAlpha, Collections.singleton(1), Collections.emptySet()));
+        transitions.add(new SRACheckMove<CharPred, Character>(5, 6, upperAlpha, 1));
 
         try {
             return SRA.MkSRA(transitions, 0, Collections.singleton(6), registers, ba);
@@ -298,7 +302,6 @@ public class TestSRAExperiments {
         // Read tag
         transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, alpha, 3));
         transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, alpha, 4));
-        //transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, alpha, 5));
 
         // Read closing character
         transitions.add(new SRACheckMove<CharPred, Character>(2, 5, close, 1));
@@ -315,7 +318,6 @@ public class TestSRAExperiments {
         // Read repeated tag (AAA, BBB, ...)
         transitions.add(new SRACheckMove<CharPred, Character>(7, 8, alpha, 3));
         transitions.add(new SRACheckMove<CharPred, Character>(8, 9, alpha, 4));
-        //transitions.add(new SRACheckMove<CharPred, Character>(9, 10, alpha, 5));
 
         // Read closing character
         transitions.add(new SRACheckMove<CharPred, Character>(8, 11, close, 1));
@@ -381,7 +383,7 @@ public class TestSRAExperiments {
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
 
         for (int index = 0; index < "srcip:".length(); index++)
-            transitions.add(new SRAStoreMove<CharPred, Character>(index, index + 1, new CharPred("srcip:".charAt(index)), 3));
+            transitions.add(new SRAStoreMove<CharPred, Character>(index, index + 1, new CharPred("srcip:".charAt(index)), 2));
 
         transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, num, 0));
         transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, num, 1));
@@ -734,17 +736,6 @@ public class TestSRAExperiments {
             e.printStackTrace();
         }
         return null;
-    }
-
-    @Test
-    public void testLanguageInclusionSmallXML() throws TimeoutException {
-        SRA<CharPred, Character> smallXMLParserSRA = getSmallXMLParserSRA(ba);
-        assertTrue(smallXMLParserSRA.isLanguageEquivalent(smallXMLParserSRA, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testLanguageInclusionIP() throws TimeoutException {
-	    assertTrue(IP6PacketParserSRA.languageIncludes(IP9PacketParserSRA, ba, Long.MAX_VALUE));
     }
 
 	// -------------------------

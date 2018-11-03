@@ -6,10 +6,7 @@
  */
 package automata.sra;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 
 import theory.BooleanAlgebra;
 
@@ -20,7 +17,7 @@ import org.sat4j.specs.TimeoutException;
  * @param <P> set of predicates over the domain S
  * @param <S> domain of the automaton alphabet
  */
-public abstract class SRAMove<P, S> {
+public class SRAMove<P, S> {
 
     public Integer from;
     public Integer to;
@@ -47,32 +44,90 @@ public abstract class SRAMove<P, S> {
 	 * @return whether the transition can ever be enabled
 	 * @throws TimeoutException 
 	 */
-	public abstract boolean isSatisfiable(BooleanAlgebra<P, S> ba) throws TimeoutException;
+	public boolean isSatisfiable(BooleanAlgebra<P, S> ba) throws TimeoutException {
+		return ba.IsSatisfiable(guard);
+	}
 
 	/**
 	 * @return an input triggering the transition
 	 * @throws TimeoutException 
 	 */
-	public abstract S getWitness(BooleanAlgebra<P, S> ba, LinkedList<S> registerValues) throws TimeoutException;
+	public S getWitness(BooleanAlgebra<P, S> ba, LinkedList<S> registerValues) throws TimeoutException {
+		P predicates = ba.True();
+		// Must be "in" all E registers, i.e. must be equal to the values in all E registers.
+		for (Integer ERegister : E)
+			if (registerValues.get(ERegister) != null)
+				predicates = ba.MkAnd(predicates, ba.MkAtom(registerValues.get(ERegister)));
+			else
+				predicates = ba.MkAnd(predicates, ba.False());
+		// Must not be "in" any I registers, i.e. must not be equal to any value in I registers.
+		for (Integer IRegister : I)
+			if (registerValues.get(IRegister) != null)
+				predicates = ba.MkAnd(predicates, ba.MkNot(ba.MkAtom(registerValues.get(IRegister))));
+
+		return ba.generateWitness(ba.MkAnd(guard, predicates));
+	}
 
 	/**
 	 * @return true iff <code>input</code> can trigger the transition
 	 * @throws TimeoutException 
 	 */
-	public abstract boolean hasModel(S input, BooleanAlgebra<P, S> ba, LinkedList<S> registerValues) throws TimeoutException;
+	public boolean hasModel(S input, BooleanAlgebra<P, S> ba, LinkedList<S> registerValues) throws TimeoutException {
+		Set<Integer> registersWithInput = new HashSet<Integer>();
+
+		for (Integer registerE : E)
+			if (registerValues.get(registerE) != null && !registerValues.get(registerE).equals(input))
+				return false;
+
+		for (Integer registerI : I)
+			if (registerValues.get(registerI) != null && registerValues.get(registerI).equals(input))
+				return false;
+
+		return ba.HasModel(guard, input);
+	}
 
 	/**
 	 * Create the dot representation of the move
 	 */
-	public abstract String toDotString();
+	public String toDotString() {
+		return String.format("%s -> %s [label=\"%s/{%s},{%s},{%s}\"]\n", from, to, guard, E, I, U);
+	}
+
+	public String toString() {
+		return String.format("S: %s -%s/{%s},{%s},{%s}-> %s", from, guard, E, I, U, to);
+	}
 
 	/**
 	 * Checks if the move is disjoint from the move <code>t</code> (they are not from same state on same predicate)
 	 * @throws TimeoutException 
 	 */
-	public abstract boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException;
+	public boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException {
+		if (from.equals(t.from)) {
+			if (E != t.E || I != t.I || U != t.U) {
+				return true;
+			}
+			if(ba.IsSatisfiable(ba.MkAnd(guard, t.guard)) || (E == t.E && I == t.I && U == t.U))
+				return false;
+		}
+		return true;
+	}
 
-	public abstract Object clone();
+	public Object clone(){
+		return new SRAMove<P, S>(from, to, guard, E, I, U);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof SRAMove<?, ?>) {
+			SRAMove<?, ?> otherCasted = (SRAMove<?, ?>) other;
+			return otherCasted.from.equals(from) && otherCasted.to.equals(to) &&
+					otherCasted.guard.equals(guard) &&
+					otherCasted.E.equals(E) &&
+					otherCasted.I.equals(I) &&
+					otherCasted.U.equals(U);
+		}
+		return false;
+	}
 
 	/**
 	 * Returns the powerset of <code>originalSet</code> - O(n^2)
@@ -107,12 +162,4 @@ public abstract class SRAMove<P, S> {
 
         return powSet;
 	}
-
-    public abstract LinkedList<MSRAMove<P, S>> asMultipleAssignment(LinkedList<S> registerValues);
-
-    public abstract boolean isFresh();
-
-	public abstract boolean isStore();
-
-	public abstract boolean isMultipleAssignment();
 }

@@ -33,33 +33,6 @@ public class SRAStoreMove<P, S> extends SRAMove<P, S> {
     }
 
     @Override
-    public boolean isSatisfiable(BooleanAlgebra<P, S> boolal) throws TimeoutException {
-        return boolal.IsSatisfiable(guard);
-    }
-
-    @Override
-    public S getWitness(BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
-        return boolal.generateWitness(guard);
-    }
-
-    @Override
-    public boolean hasModel(S input, BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
-        return boolal.HasModel(guard, input);
-    }
-
-    @Override
-    public boolean isDisjointFrom(SRAMove<P, S> t, BooleanAlgebra<P, S> ba) throws TimeoutException {
-        if (from.equals(t.from)) {
-            if (U != t.U) {
-                return true;
-            }
-            SRAStoreMove<P, S> ct = (SRAStoreMove<P, S>) t;
-            return !ba.IsSatisfiable(ba.MkAnd(guard,ct.guard));
-        }
-        return true;
-    }
-
-    @Override
     public String toString() {
         return String.format("S: %s -%s/%s=-> %s", from, guard,registerIndex, to);
     }
@@ -70,36 +43,8 @@ public class SRAStoreMove<P, S> extends SRAMove<P, S> {
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (other instanceof SRAStoreMove<?, ?>) {
-            SRAStoreMove<?, ?> otherCasted = (SRAStoreMove<?, ?>) other;
-            return otherCasted.from.equals(from) &&
-                   otherCasted.to.equals(to) &&
-                   otherCasted.guard.equals(guard) &&
-                   otherCasted.registerIndex.equals(registerIndex) &&
-                   otherCasted.E.equals(E) &&
-                   otherCasted.I.equals(I) &&
-                   otherCasted.U.equals(U);
-        }
-
-        return false;
-    }
-
-    @Override
     public Object clone(){
         return new SRAStoreMove<P, S>(from, to, guard, registerIndex);
-    }
-
-    @Override
-    public LinkedList<MSRAMove<P, S>> asMultipleAssignment(LinkedList<S> registerValues) {
-        HashSet<Integer> indexesSet = new HashSet<Integer>();
-        for (Integer index = 0; index < registerValues.size(); index++)
-            indexesSet.add(index);
-
-        LinkedList<MSRAMove<P, S>> maTransitions = new LinkedList<MSRAMove<P, S>>();
-        for (HashSet<Integer> set : getPowerset(indexesSet))
-            maTransitions.add(new MSRAMove<P, S>(from, to, guard, set, U));
-        return maTransitions;
     }
 
     public boolean isFresh() {
