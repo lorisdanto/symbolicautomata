@@ -65,19 +65,39 @@ public class TestSRAExperiments {
 
     @Test
     public void testIPPacketParserSRA() throws TimeoutException {
-        IP6PacketParserSRA.createDotFile("IP6SRA", "");
+        assertTrue(IP2PacketParserSRA.accepts(validIPPacket1, ba));
+        assertTrue(IP3PacketParserSRA.accepts(validIPPacket1, ba));
+        assertTrue(IP4PacketParserSRA.accepts(validIPPacket1, ba));
         assertTrue(IP6PacketParserSRA.accepts(validIPPacket1, ba));
         assertTrue(IP9PacketParserSRA.accepts(validIPPacket1, ba));
+        assertTrue(IP2PacketParserSRA.accepts(validIPPacket2, ba));
+        assertTrue(IP3PacketParserSRA.accepts(validIPPacket2, ba));
+        assertTrue(IP4PacketParserSRA.accepts(validIPPacket2, ba));
         assertTrue(IP6PacketParserSRA.accepts(validIPPacket2, ba));
         assertTrue(IP9PacketParserSRA.accepts(validIPPacket2, ba));
+        assertTrue(IP2PacketParserSRA.accepts(validIPPacket3, ba));
+        assertTrue(IP3PacketParserSRA.accepts(validIPPacket3, ba));
+        assertTrue(IP4PacketParserSRA.accepts(validIPPacket3, ba));
         assertTrue(IP6PacketParserSRA.accepts(validIPPacket3, ba));
         assertTrue(IP9PacketParserSRA.accepts(validIPPacket3, ba));
+        assertFalse(IP2PacketParserSRA.accepts(invalidIPPacket1, ba));
+        assertFalse(IP3PacketParserSRA.accepts(invalidIPPacket1, ba));
+        assertFalse(IP4PacketParserSRA.accepts(invalidIPPacket1, ba));
         assertFalse(IP6PacketParserSRA.accepts(invalidIPPacket1, ba));
         assertFalse(IP9PacketParserSRA.accepts(invalidIPPacket1, ba));
+        assertFalse(IP2PacketParserSRA.accepts(invalidIPPacket2, ba));
+        assertFalse(IP3PacketParserSRA.accepts(invalidIPPacket2, ba));
+        assertFalse(IP4PacketParserSRA.accepts(invalidIPPacket2, ba));
         assertFalse(IP6PacketParserSRA.accepts(invalidIPPacket2, ba));
         assertFalse(IP9PacketParserSRA.accepts(invalidIPPacket2, ba));
+        assertFalse(IP2PacketParserSRA.accepts(invalidIPPacket3, ba));
+        assertFalse(IP3PacketParserSRA.accepts(invalidIPPacket3, ba));
+        assertFalse(IP4PacketParserSRA.accepts(invalidIPPacket3, ba));
         assertFalse(IP6PacketParserSRA.accepts(invalidIPPacket3, ba));
         assertFalse(IP9PacketParserSRA.accepts(invalidIPPacket3, ba));
+        assertTrue(IP2PacketParserSRA.accepts(dependentIPPacket1, ba));
+        assertTrue(IP3PacketParserSRA.accepts(dependentIPPacket1, ba));
+        assertTrue(IP4PacketParserSRA.accepts(dependentIPPacket1, ba));
         assertTrue(IP6PacketParserSRA.accepts(dependentIPPacket1, ba));
         assertFalse(IP9PacketParserSRA.accepts(dependentIPPacket1, ba));
     }
@@ -134,6 +154,9 @@ public class TestSRAExperiments {
     private SRA<CharPred, Character> SSNParserSRA = getSSNParserSRA(ba);
     private SRA<CharPred, Character> SSNParserMSRA = getSSNParserMSRA(ba);
     private SRA<CharPred, Character> XMLParserSRA = getXMLParserSRA(ba);
+    private SRA<CharPred, Character> IP2PacketParserSRA = getIP2PacketParserSRA(ba);
+    private SRA<CharPred, Character> IP3PacketParserSRA = getIP3PacketParserSRA(ba);
+    private SRA<CharPred, Character> IP4PacketParserSRA = getIP4PacketParserSRA(ba);
     private SRA<CharPred, Character> IP6PacketParserSRA = getIP6PacketParserSRA(ba);
     private SRA<CharPred, Character> IP9PacketParserSRA = getIP9PacketParserSRA(ba);
 
@@ -345,6 +368,222 @@ public class TestSRAExperiments {
 
         try {
             return SRA.MkSRA(transitions, 0, Collections.singleton(11), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private SRA<CharPred, Character> getIP2PacketParserSRA(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null));
+
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+
+        for (int index = 0; index < "srcip:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index, index + 1, new CharPred("srcip:".charAt(index)), 3));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, num, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, num, 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, dot, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, dot, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, dot, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, num, 2));
+
+        for (int index = 0; index < " prt:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 21, index + 22, new CharPred(" prt:".charAt(index)), 2));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(24, 27, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 27, num, 2));
+
+        for (int index = 0; index < " dstip:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 27, index + 28, new CharPred(" dstip:".charAt(index)), 2));
+
+        transitions.add(new SRACheckMove<CharPred, Character>(34, 35, num, 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(35, 36, num, 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(36, 37, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(37, 38, dot, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(38, 39, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(39, 40, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(40, 41, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(41, 42, dot, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(42, 43, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(43, 44, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(44, 45, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(45, 46, dot, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(46, 47, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(47, 48, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(48, 49, num, 2));
+
+        for (int index = 0; index < " prt:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 49, index + 50, new CharPred(" prt:".charAt(index)), 2));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(54, 55, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(55, 55, num, 2));
+
+        for (int index = 0; index < " pload:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 55, index + 56, new CharPred(" pload:".charAt(index)), 2));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(62, 63, new CharPred('\''), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(63, 64, alphaNum, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(64, 64, alphaNum, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(64, 65, new CharPred('\''), 2));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Collections.singleton(65), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private SRA<CharPred, Character> getIP3PacketParserSRA(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null));
+
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+
+        for (int index = 0; index < "srcip:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index, index + 1, new CharPred("srcip:".charAt(index)), 3));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, num, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, num, 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, dot, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, dot, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, dot, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, num, 3));
+
+        for (int index = 0; index < " prt:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 21, index + 22, new CharPred(" prt:".charAt(index)), 3));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(24, 27, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 27, num, 3));
+
+        for (int index = 0; index < " dstip:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 27, index + 28, new CharPred(" dstip:".charAt(index)), 3));
+
+        transitions.add(new SRACheckMove<CharPred, Character>(34, 35, num, 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(35, 36, num, 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(36, 37, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(37, 38, dot, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(38, 39, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(39, 40, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(40, 41, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(41, 42, dot, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(42, 43, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(43, 44, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(44, 45, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(45, 46, dot, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(46, 47, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(47, 48, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(48, 49, num, 3));
+
+        for (int index = 0; index < " prt:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 49, index + 50, new CharPred(" prt:".charAt(index)), 3));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(54, 55, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(55, 55, num, 3));
+
+        for (int index = 0; index < " pload:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 55, index + 56, new CharPred(" pload:".charAt(index)), 3));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(62, 63, new CharPred('\''), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(63, 64, alphaNum, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(64, 64, alphaNum, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(64, 65, new CharPred('\''), 3));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Collections.singleton(65), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private SRA<CharPred, Character> getIP4PacketParserSRA(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null));
+
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+
+        for (int index = 0; index < "srcip:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index, index + 1, new CharPred("srcip:".charAt(index)), 4));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, num, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, num, 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, dot, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, dot, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, dot, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, num, 4));
+
+        for (int index = 0; index < " prt:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 21, index + 22, new CharPred(" prt:".charAt(index)), 4));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(24, 27, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 27, num, 4));
+
+        for (int index = 0; index < " dstip:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 27, index + 28, new CharPred(" dstip:".charAt(index)), 4));
+
+        transitions.add(new SRACheckMove<CharPred, Character>(34, 35, num, 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(35, 36, num, 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(36, 37, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(37, 38, dot, 4));
+        transitions.add(new SRACheckMove<CharPred, Character>(38, 39, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(39, 40, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(40, 41, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(41, 42, dot, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(42, 43, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(43, 44, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(44, 45, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(45, 46, dot, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(46, 47, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(47, 48, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(48, 49, num, 4));
+
+        for (int index = 0; index < " prt:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 49, index + 50, new CharPred(" prt:".charAt(index)), 4));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(54, 55, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(55, 55, num, 4));
+
+        for (int index = 0; index < " pload:".length(); index++)
+            transitions.add(new SRAStoreMove<CharPred, Character>(index + 55, index + 56, new CharPred(" pload:".charAt(index)), 4));
+
+        transitions.add(new SRAStoreMove<CharPred, Character>(62, 63, new CharPred('\''), 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(63, 64, alphaNum, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(64, 64, alphaNum, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(64, 65, new CharPred('\''), 4));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Collections.singleton(65), registers, ba);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

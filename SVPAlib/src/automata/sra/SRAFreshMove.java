@@ -31,6 +31,7 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 		super(from, to, guard, Collections.emptySet(), new HashSet<Integer>(), Collections.singleton(registerIndex));
 		for (Integer index = 0; index < registerCount; index++)
 			I.add(index);
+		this.registerIndex = registerIndex;
 
 	}
 	
@@ -75,12 +76,12 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 	@Override
 	public String toString() {
 		// TODO: Change fresh * to dot.
-		return String.format("S: %s -%s/%s*-> %s", from, guard, U.iterator().next(), to);
+		return String.format("S: %s -%s/%s*-> %s", from, guard, registerIndex, to);
 	}
 
 	@Override
 	public String toDotString() {
-		return String.format("%s -> %s [label=\"%s/%s*\"]\n", from, to, guard, U.iterator().next());
+		return String.format("%s -> %s [label=\"%s/%s*\"]\n", from, to, guard, registerIndex);
 	}
 
 	@Override
@@ -90,6 +91,7 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 			return otherCasted.from.equals(from) &&
 				   otherCasted.to.equals(to) &&
 				   otherCasted.guard.equals(guard) &&
+				   otherCasted.registerIndex.equals(registerIndex) &&
 				   otherCasted.E.equals(E) &&
 				   otherCasted.I.equals(I) &&
 				   otherCasted.U.equals(U);
@@ -100,7 +102,7 @@ public class SRAFreshMove<P, S> extends SRAMove<P, S> {
 
 	@Override
 	public Object clone(){
-		  return new SRAFreshMove<P, S>(from, to, guard, U.iterator().next(), I.size());
+		  return new SRAFreshMove<P, S>(from, to, guard, registerIndex, I.size());
 	}
 
     @Override

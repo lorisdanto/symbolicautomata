@@ -28,6 +28,7 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 	 */
 	public SRACheckMove(Integer from, Integer to, P guard, Integer registerIndex) {
 		super(from, to, guard, Collections.singleton(registerIndex), Collections.emptySet(), Collections.emptySet());
+		this.registerIndex = registerIndex;
     }	
 
 	@Override
@@ -38,14 +39,14 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
     @Override
     public S getWitness(BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
 		if (registerValues.get(E.iterator().next()) != null)
-        	return boolal.generateWitness(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(E.iterator().next()))));
+        	return boolal.generateWitness(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(registerIndex))));
 		return null;
     }
 
     @Override
     public boolean hasModel(S input, BooleanAlgebra<P, S> boolal, LinkedList<S> registerValues) throws TimeoutException {
 		if (registerValues.get(E.iterator().next()) != null)
-        	return boolal.HasModel(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(E.iterator().next()))), input);
+        	return boolal.HasModel(boolal.MkAnd(guard, boolal.MkAtom(registerValues.get(registerIndex))), input);
 		return false;
     }
 
@@ -63,7 +64,7 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 
 	@Override
 	public String toString() {
-		return String.format("S: %s -%s/%s-> %s", from, guard, E.iterator().next(), to);
+		return String.format("S: %s -%s/%s-> %s", from, guard, registerIndex, to);
 	}
 
 	@Override
@@ -78,6 +79,7 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 			return otherCasted.from.equals(from) &&
 				   otherCasted.to.equals(to) &&
 				   otherCasted.guard.equals(guard) &&
+                   otherCasted.registerIndex.equals(registerIndex) &&
 				   otherCasted.E.equals(E) &&
 				   otherCasted.I.equals(I) &&
 				   otherCasted.U.equals(U);
@@ -88,7 +90,7 @@ public class SRACheckMove<P, S> extends SRAMove<P, S> {
 
 	@Override
 	public Object clone() {
-		  return new SRACheckMove<P, S>(from, to, guard, E.iterator().next());
+		  return new SRACheckMove<P, S>(from, to, guard, registerIndex);
 	}
 
     @Override

@@ -29,6 +29,7 @@ public class SRAStoreMove<P, S> extends SRAMove<P, S> {
      */
     public SRAStoreMove(Integer from, Integer to, P guard, Integer registerIndex) {
         super(from, to, guard, Collections.emptySet(), Collections.emptySet(), Collections.singleton(registerIndex));
+        this.registerIndex = registerIndex;
     }
 
     @Override
@@ -60,12 +61,12 @@ public class SRAStoreMove<P, S> extends SRAMove<P, S> {
 
     @Override
     public String toString() {
-        return String.format("S: %s -%s/%s=-> %s", from, guard, U.iterator().next(), to);
+        return String.format("S: %s -%s/%s=-> %s", from, guard,registerIndex, to);
     }
 
     @Override
     public String toDotString() {
-        return String.format("%s -> %s [label=\"%s/%s=\"]\n", from, to, guard, U.iterator().next());
+        return String.format("%s -> %s [label=\"%s/%s=\"]\n", from, to, guard, registerIndex);
     }
 
     @Override
@@ -75,6 +76,9 @@ public class SRAStoreMove<P, S> extends SRAMove<P, S> {
             return otherCasted.from.equals(from) &&
                    otherCasted.to.equals(to) &&
                    otherCasted.guard.equals(guard) &&
+                   otherCasted.registerIndex.equals(registerIndex) &&
+                   otherCasted.E.equals(E) &&
+                   otherCasted.I.equals(I) &&
                    otherCasted.U.equals(U);
         }
 
@@ -83,7 +87,7 @@ public class SRAStoreMove<P, S> extends SRAMove<P, S> {
 
     @Override
     public Object clone(){
-        return new SRAStoreMove<P, S>(from, to, guard, U.iterator().next());
+        return new SRAStoreMove<P, S>(from, to, guard, registerIndex);
     }
 
     @Override

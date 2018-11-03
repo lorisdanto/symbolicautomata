@@ -748,11 +748,9 @@ public class SRA<P, S> {
 
 				if (ba.hasNDistinctWitnesses(mint.getPredicate(), neededWitnessesForMint)) {
 					HashMap<Integer, MinTerm<P>> newRegAbs = new HashMap<>(regAbs);
-					// FIXME: Which register do we refer to now?
-					newRegAbs.put(move.registerIndexes.iterator().next(), mint);
+					newRegAbs.put(move.registerIndex, mint);
 					NormSRAState<P> targetState = new NormSRAState<>(move.to, newRegAbs);
-
-					normMoves.add(new NormSRAFreshMove<>(from, targetState, mint, register));
+					normMoves.add(new NormSRAFreshMove<>(from, targetState, mint, move.registerIndex));
 				}
 			}
 		}
@@ -908,8 +906,7 @@ public class SRA<P, S> {
 
 				// TODO: Check case for store moves.
 				if (ct instanceof SRACheckMove)
-                    // FIXME: Which register do we refer to now?
-					moveReg = ct.registerIndexes.iterator().next();
+					moveReg = ct.registerIndex;
 				else
 					moveReg = regSize; // Conventionally for fresh moves
 
@@ -1456,8 +1453,7 @@ public class SRA<P, S> {
                 for (SRAMove<P, S> transition : SRAMoves) {
                     if (transition.isSatisfiable(ba)) {
                         HashMap<Integer, Integer> nextMap = new HashMap<>(currentMap);
-                        // FIXME: Which register do we refer to now?
-                        Integer transitionRegister = transition.registerIndexes.iterator().next();
+                        Integer transitionRegister = transition.registerIndex;
 
                         for (Integer registersToUpdate : ct.U)
                             nextMap.put(registersToUpdate, transitionRegister);

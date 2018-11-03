@@ -25,6 +25,7 @@ public abstract class SRAMove<P, S> {
     public Integer from;
     public Integer to;
     public P guard;
+    public Integer registerIndex = null;
     public Set<Integer> E;
 	public Set<Integer> I;
 	public Set<Integer> U;
