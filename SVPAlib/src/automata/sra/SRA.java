@@ -399,6 +399,7 @@ public class SRA<P, S> {
 		for (S el : input) {
 			// System.out.print(el + " " + currConf);
 			currConf = getNextConfigurations(currConf, el, ba);
+
 			if (currConf.isEmpty()) {
 				// System.out.println();
 				//registers = cleanRegisters;
@@ -492,6 +493,24 @@ public class SRA<P, S> {
 		public Configuration(Integer state, LinkedList<S> regValues) {
 			this.state = state;
 			this.regValues = regValues;
+		}
+
+		public String toString() {
+			return "(" + state + "," + regValues + ")";
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			Configuration that = (Configuration) o;
+			return Objects.equals(state, that.state) &&
+					Objects.equals(regValues, that.regValues);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(state, regValues);
 		}
 	}
 
