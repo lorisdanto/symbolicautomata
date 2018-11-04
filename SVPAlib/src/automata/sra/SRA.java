@@ -391,20 +391,22 @@ public class SRA<P, S> {
 	 * @throws TimeoutException 
 	 */
 	public boolean accepts(List<S> input, BooleanAlgebra<P, S> ba) throws TimeoutException {
-	    LinkedList<S> cleanRegisters = new LinkedList<S>(registers);
-		Collection<Integer> currConf = new LinkedList<Integer>();
-        currConf.add(getInitialState());
+	    //LinkedList<S> cleanRegisters = new LinkedList<S>(registers);
+		//Collection<Integer> currConf = new LinkedList<Integer>();
+		Collection<Configuration> currConf = new LinkedList<>();
+		currConf.add(new Configuration(initialState, new LinkedList<>(registers)));
+        // currConf.add(getInitialState());
 		for (S el : input) {
 			// System.out.print(el + " " + currConf);
-			currConf = getNextState(currConf, el, ba);
+			currConf = getNextConfigurations(currConf, el, ba);
 			if (currConf.isEmpty()) {
 				// System.out.println();
-				registers = cleanRegisters;
+				//registers = cleanRegisters;
 				return false;
 			}
 		}
 		// System.out.println();
-        registers = cleanRegisters;
+        //registers = cleanRegisters;
 		return isFinalConfiguration(currConf);
 	}
 
@@ -483,12 +485,22 @@ public class SRA<P, S> {
 		return nonFin;
 	}
 
+	private class Configuration {
+		private Integer state;
+		private LinkedList<S> regValues;
+
+		public Configuration(Integer state, LinkedList<S> regValues) {
+			this.state = state;
+			this.regValues = regValues;
+		}
+	}
+
 	/**
 	 * @return true if the set <code>conf</code> contains an initial state
 	 */
-	public boolean isInitialConfiguration(Collection<Integer> conf) {
-		for (Integer state : conf)
-			if (isInitialState(state))
+	public boolean isInitialConfiguration(Collection<Configuration> conf) {
+		for (Configuration c: conf)
+			if (isInitialState(c.state))
 				return true;
 		return false;
 	}
@@ -503,9 +515,9 @@ public class SRA<P, S> {
 	/**
 	 * @return true if <code>conf</code> contains a final state
 	 */
-	public boolean isFinalConfiguration(Collection<Integer> conf) {
-		for (Integer state : conf)
-			if (isFinalState(state))
+	public boolean isFinalConfiguration(Collection<Configuration> conf) {
+		for (Configuration c: conf)
+			if (isFinalState(c.state))
 				return true;
 		return false;
 	}
@@ -517,17 +529,24 @@ public class SRA<P, S> {
 		return getFinalStates().contains(state);
 	}
 
-	protected Collection<Integer> getNextState(Collection<Integer> currState, S inputElement, BooleanAlgebra<P, S> ba) throws TimeoutException {
-		Collection<Integer> nextState = new HashSet<Integer>();
+	protected Collection<Configuration> getNextConfigurations(Collection<Configuration> currConf,
+															  S inputElement, BooleanAlgebra<P, S> ba) throws TimeoutException {
+		Collection<Configuration> nextConfs = new HashSet<>();
 
-		for (SRAMove<P, S> t : getMovesFrom(currState)) {
-			if (t.hasModel(inputElement, ba, registers)) {
-                nextState.add(t.to);
-                for (Integer index : t.U)
-                    registers.set(index, inputElement);
-            }
+		for (Configuration c: currConf) {
+			for (SRAMove<P, S> t : getMovesFrom(c.state)) {
+				if (t.hasModel(inputElement, ba, c.regValues)) {
+					// System.out.println(c.regValues + " " + t + " (" + inputElement + ")");
+					LinkedList<S> updatedReg = new LinkedList<>(c.regValues);
+					for (Integer index : t.U)
+						updatedReg.set(index, inputElement);
+
+					nextConfs.add(new Configuration(t.to, updatedReg));
+				}
+			}
 		}
-		return nextState;
+
+		return nextConfs;
 	}
 
 	// Get list of predicates without duplicates
@@ -969,14 +988,14 @@ public class SRA<P, S> {
 			aut = aut.toSingleValuedSRA(ba, timeout);
 
 		// FIXME: there is something wrong here
-		if (!me.isTotal)
-			me.complete(ba);
-
-		if (!aut.isTotal)
-			aut.complete(ba);
-
-		me.createDotFile("aut1","");
-		aut.createDotFile("aut2","");
+//		if (!me.isTotal)
+//			me.complete(ba);
+//
+//		if (!aut.isTotal)
+//			aut.complete(ba);
+//
+//		me.createDotFile("aut1","");
+//		aut.createDotFile("aut2","");
 
 		return canSimulate(me, aut, ba, true, timeout);
 	}
@@ -1407,7 +1426,8 @@ public class SRA<P, S> {
             int currentStateID = reached.get(currentState);
             HashMap<Integer, Integer> currentMap = currentState.second;
 
-            // if (currentStateID == )
+            if (currentStateID == 22052)
+            	System.out.println("Hello");
 
             for (SRAMove<P, S> ct : getMovesFrom(currentState.first)) {
 				LinkedList<SRAMove<P, S>> SRAMoves = new LinkedList<>();
@@ -1421,36 +1441,42 @@ public class SRA<P, S> {
 					Set<Integer> repeatedRegisters = new HashSet<>();
 
 					// Rule (REG)
-					// Check if there is register such that currentMap(r) = S
+					// Check if there is register such that currentMap(S) = r
 					for (Integer regSet : set) {
-						Integer registerEImg = currentMap.get(regSet);
-						if (registerEImg != null)
-							repeatedRegisters.add(registerEImg);
+						Integer registerImg = currentMap.get(regSet);
+						// if (registerImg != null)
+						repeatedRegisters.add(registerImg);
 					}
 
 					if (repeatedRegisters.size() == 1)
 						SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct.guard, repeatedRegisters.iterator().next()));
 
 					if (set.isEmpty()) {
+						// Compute inverse of currentMap
+						HashMap<Integer, LinkedList<Integer>> inverseMap = new HashMap<>();
+
+						for (Integer i = 0; i < registers.size(); i++) {
+							Integer registerImg = currentMap.get(i);
+
+							LinkedList<Integer> inverseImg;
+
+							if (inverseMap.get(registerImg) == null) {
+								inverseImg = new LinkedList<>();
+								inverseMap.put(registerImg, inverseImg);
+							} else
+								inverseImg = inverseMap.get(registerImg);
+
+							inverseImg.add(i);
+						}
+
+						// Rule (REG): check if there is register r such that r is not in img(currentMap)
+						for (Integer r = 0; r < registers.size(); r++)
+							if (inverseMap.get(r) == null)
+								SRAMoves.add(new SRACheckMove<>(currentStateID, null, ct.guard, r));
+
+
 						if (!ct.U.isEmpty()) {
 							// Rule (FRESH)
-
-							// Compute inverse
-							HashMap<Integer, LinkedList<Integer>> inverseMap = new HashMap<>();
-
-							for (Integer i = 0; i < registers.size(); i++) {
-								Integer registerImg = currentMap.get(i);
-
-								LinkedList<Integer> inverseImg;
-
-								if (inverseMap.get(registerImg) == null) {
-									inverseImg = new LinkedList<>();
-									inverseMap.put(registerImg, inverseImg);
-								} else
-									inverseImg = inverseMap.get(registerImg);
-
-								inverseImg.add(i);
-							}
 
 							// Check whether inverseMap(r) is included in U, for some r
 							// It takes the least r, which guarantees determinism
@@ -1468,11 +1494,6 @@ public class SRA<P, S> {
 							SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct.guard, garbageReg));
 							SRAMoves.add(new SRAFreshMove<P, S>(currentStateID, null, ct.guard, garbageReg, newRegisters.size()));
 						}
-//
-//                    // Case 3 in the paper: check whether inverseMap(r) is empty, for some r
-//					for (Integer i = 0; i < registers.size(); i++)
-//						if (inverseMap.get(i) == null)
-//	                        SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct.guard, i));
 					}
 				}
 
