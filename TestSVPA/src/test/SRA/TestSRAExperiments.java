@@ -65,6 +65,7 @@ public class TestSRAExperiments {
 
     @Test
     public void testIPPacketParserSRA() throws TimeoutException {
+        // IP2PacketParserSRA.createDotFile("ip2","");
         assertTrue(IP2PacketParserSRA.accepts(validIPPacket1, ba));
         assertTrue(IP3PacketParserSRA.accepts(validIPPacket1, ba));
         assertTrue(IP4PacketParserSRA.accepts(validIPPacket1, ba));
@@ -404,7 +405,7 @@ public class TestSRAExperiments {
         for (int index = 0; index < " prt:".length(); index++)
             transitions.add(new SRAStoreMove<CharPred, Character>(index + 21, index + 22, new CharPred(" prt:".charAt(index)), 2));
 
-        transitions.add(new SRAStoreMove<CharPred, Character>(24, 27, num, 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, num, 2));
         transitions.add(new SRAStoreMove<CharPred, Character>(27, 27, num, 2));
 
         for (int index = 0; index < " dstip:".length(); index++)
@@ -476,7 +477,7 @@ public class TestSRAExperiments {
         for (int index = 0; index < " prt:".length(); index++)
             transitions.add(new SRAStoreMove<CharPred, Character>(index + 21, index + 22, new CharPred(" prt:".charAt(index)), 3));
 
-        transitions.add(new SRAStoreMove<CharPred, Character>(24, 27, num, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, num, 3));
         transitions.add(new SRAStoreMove<CharPred, Character>(27, 27, num, 3));
 
         for (int index = 0; index < " dstip:".length(); index++)
@@ -548,7 +549,7 @@ public class TestSRAExperiments {
         for (int index = 0; index < " prt:".length(); index++)
             transitions.add(new SRAStoreMove<CharPred, Character>(index + 21, index + 22, new CharPred(" prt:".charAt(index)), 4));
 
-        transitions.add(new SRAStoreMove<CharPred, Character>(24, 27, num, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, num, 4));
         transitions.add(new SRAStoreMove<CharPred, Character>(27, 27, num, 4));
 
         for (int index = 0; index < " dstip:".length(); index++)

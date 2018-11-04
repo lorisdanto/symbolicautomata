@@ -514,6 +514,7 @@ public class SRA<P, S> {
 
 	protected Collection<Integer> getNextState(Collection<Integer> currState, S inputElement, BooleanAlgebra<P, S> ba) throws TimeoutException {
 		Collection<Integer> nextState = new HashSet<Integer>();
+
 		for (SRAMove<P, S> t : getMovesFrom(currState)) {
 			if (t.hasModel(inputElement, ba, registers)) {
                 nextState.add(t.to);
