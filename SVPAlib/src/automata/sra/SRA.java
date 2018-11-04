@@ -200,7 +200,7 @@ public class SRA<P, S> {
 		aut.registers = registers;
 
 		// Check if there are duplicated values
-		aut.isSingleValued = false;
+		aut.isSingleValued = true;
 		HashSet<B> nonEmptyRegValues = new HashSet<>();
 		for (B regValue: registers) {
 			if (regValue != null) {
@@ -395,10 +395,15 @@ public class SRA<P, S> {
 		Collection<Integer> currConf = new LinkedList<Integer>();
         currConf.add(getInitialState());
 		for (S el : input) {
+			// System.out.print(el + " " + currConf);
 			currConf = getNextState(currConf, el, ba);
-			if (currConf.isEmpty())
+			if (currConf.isEmpty()) {
+				// System.out.println();
+				registers = cleanRegisters;
 				return false;
+			}
 		}
+		// System.out.println();
         registers = cleanRegisters;
 		return isFinalConfiguration(currConf);
 	}
@@ -753,7 +758,7 @@ public class SRA<P, S> {
 
 	// Create initial register abstraction
 	private HashMap<Integer, MinTerm<P>> getInitialRegAbs(List<P> allPredicates,
-														  Integer initValAtomsIndex,
+														  LinkedList<P> initAssAtoms,
 														  HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicates) {
 		HashMap<Integer, MinTerm<P>> initRegAb = new HashMap<>();
 
@@ -764,7 +769,7 @@ public class SRA<P, S> {
 			if (registers.get(r) == null)
 				initRegAb.put(r, null);
 			else {
-				P atom = allPredicates.get(initValAtomsIndex + notNullInd);
+				P atom = initAssAtoms.get(notNullInd);
 				initRegAb.put(r, mintermsForPredicates.get(atom).get(0)); // There should be only 1 minterm for atom
 				notNullInd++;
 			}
@@ -789,12 +794,19 @@ public class SRA<P, S> {
 
 		// Compute all minterms
 		ArrayList<P> allPredicates = aut.getAllPredicates(timeout);
-		Integer initValPos = allPredicates.size();
+		LinkedList<P> initAssAtoms = new LinkedList<>();
 
 
-		for (S regVal: aut.registers) // Add initial register values to predicates
-			if (regVal != null)
-				allPredicates.add(ba.MkAtom(regVal));
+		for (S regVal : aut.registers) // Add initial register values to predicates
+			if (regVal != null) {
+				P atom = ba.MkAtom(regVal);
+
+				if (!allPredicates.contains(atom))
+					allPredicates.add(ba.MkAtom(regVal));
+
+				initAssAtoms.add(atom);
+			}
+
 
 		LinkedList<MinTerm<P>> minTerms = new LinkedList<>();
 
@@ -803,7 +815,7 @@ public class SRA<P, S> {
 
 
 		HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicates = getMintermsForPredicates(allPredicates, minTerms);
-		HashMap<Integer, MinTerm<P>> initRegAbs = aut.getInitialRegAbs(allPredicates, initValPos, mintermsForPredicates);
+		HashMap<Integer, MinTerm<P>> initRegAbs = aut.getInitialRegAbs(allPredicates, initAssAtoms, mintermsForPredicates);
 
 
 
@@ -956,11 +968,15 @@ public class SRA<P, S> {
 		if (!aut.isSingleValued)
 			aut = aut.toSingleValuedSRA(ba, timeout);
 
-//		if (!me.isTotal)
-//			me.complete(ba);
-//
-//		if (!aut.isTotal)
-//			aut.complete(ba);
+		// FIXME: there is something wrong here
+		if (!me.isTotal)
+			me.complete(ba);
+
+		if (!aut.isTotal)
+			aut.complete(ba);
+
+		me.createDotFile("aut1","");
+		aut.createDotFile("aut2","");
 
 		return canSimulate(me, aut, ba, true, timeout);
 	}
@@ -979,12 +995,12 @@ public class SRA<P, S> {
 //		aut.createDotFile("complete2","");
 
 
-//
-//		if (!me.isTotal)
-//			me.complete(ba);
-//
-//		if (!aut.isTotal)
-//			aut.complete(ba);
+
+		if (!me.isTotal)
+			me.complete(ba);
+
+		if (!aut.isTotal)
+			aut.complete(ba);
 //
 //		System.out.println("Here");
 //
@@ -1034,6 +1050,9 @@ public class SRA<P, S> {
 
 		// Get all predicates for both SRA
 		ArrayList<P> allPredicates = aut1.getAllPredicates(timeout);
+		LinkedList<P> initAssAtoms1 = new LinkedList<>();
+		LinkedList<P> initAssAtoms2 = new LinkedList<>();
+
 		Integer initValPos1 = allPredicates.size();
 
 		for (P predicate: aut2.getAllPredicates(timeout))
@@ -1041,14 +1060,26 @@ public class SRA<P, S> {
 				allPredicates.add(predicate);
 
 		for (S regVal: aut1.registers) // Add initial register values of aut1 to predicates
-			if (regVal != null)
-				allPredicates.add(ba.MkAtom(regVal));
+			if (regVal != null) {
+				P atom = ba.MkAtom(regVal);
+
+				if (!allPredicates.contains(atom))
+					allPredicates.add(atom);
+
+				initAssAtoms1.add(atom);
+			}
 
 		Integer initValPos2 = allPredicates.size();
 
 		for (S regVal: aut2.registers) // Add initial register values of aut2 to predicates
-			if (regVal != null)
-				allPredicates.add(ba.MkAtom(regVal));
+			if (regVal != null) {
+				P atom = ba.MkAtom(regVal);
+
+				if (!allPredicates.contains(atom))
+					allPredicates.add(ba.MkAtom(regVal));
+
+				initAssAtoms2.add(atom);
+			}
 
 
 		// Computer minterms
@@ -1059,8 +1090,8 @@ public class SRA<P, S> {
 
 
 		HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicates = getMintermsForPredicates(allPredicates, minTerms);
-		HashMap<Integer, MinTerm<P>> initRegAbs1 = aut1.getInitialRegAbs(allPredicates, initValPos1, mintermsForPredicates);
-		HashMap<Integer, MinTerm<P>> initRegAbs2 = aut2.getInitialRegAbs(allPredicates, initValPos2, mintermsForPredicates);
+		HashMap<Integer, MinTerm<P>> initRegAbs1 = aut1.getInitialRegAbs(allPredicates, initAssAtoms1, mintermsForPredicates);
+		HashMap<Integer, MinTerm<P>> initRegAbs2 = aut2.getInitialRegAbs(allPredicates, initAssAtoms2, mintermsForPredicates);
 
 
 
@@ -1129,7 +1160,7 @@ public class SRA<P, S> {
 				aut1NormOut.put(aut1NormState, normMovesFromCurrent1);
 			}
 
-			if (normMovesFromCurrent1.isEmpty()) // we don't need to find matching moves from aut2
+			if (!bisimulation && normMovesFromCurrent1.isEmpty()) // we don't need to find matching moves from aut2
 				continue;
 
 			if (aut2NormOut.containsKey(aut2NormState))
@@ -1311,16 +1342,23 @@ public class SRA<P, S> {
 
 		// FIXME: check that, when isSingleValued == false, moves gets translated properly
         if (isSingleValued)
-            return MkSRA(getTransitions(), initialState, finalStates, getRegisters(), ba, false);
+            return MkSRA(getTransitions(), initialState, finalStates, getRegisters(), ba, false, false);
 
         // If the automaton is empty return the empty SRA
         if (isEmpty)
             return getEmptySRA(ba);
 
-        // components of target SRA
+
+		// Initialise register indexes
+		HashSet<Integer> regIndexes = new HashSet<>();
+		for (Integer r = 0; r < registers.size(); r++)
+			regIndexes.add(r);
+
+		// components of target SRA
         Collection<SRAMove<P, S>> transitions = new ArrayList<SRAMove<P, S>>();
         LinkedList<S> newRegisters = new LinkedList<S>(registers);
         Collection<Integer> newFinalStates = new ArrayList<Integer>();
+
 
         HashMap<S, ArrayList<Integer>> valueToRegisters = new HashMap<S, ArrayList<Integer>>();
         for (Integer index = 0; index < registers.size(); index++) {
@@ -1347,6 +1385,9 @@ public class SRA<P, S> {
             }
         }
 
+        // Add garbage collector register
+		newRegisters.add(newRegisters.size(), null);
+
 
         // reached contains the states (p,f) we discovered and maps
         // them to a stateId
@@ -1366,60 +1407,74 @@ public class SRA<P, S> {
             int currentStateID = reached.get(currentState);
             HashMap<Integer, Integer> currentMap = currentState.second;
 
+            // if (currentStateID == )
+
             for (SRAMove<P, S> ct : getMovesFrom(currentState.first)) {
 				LinkedList<SRAMove<P, S>> SRAMoves = new LinkedList<>();
 
 				if (System.currentTimeMillis() - startTime > timeout)
 					throw new TimeoutException();
 
-                if (!ct.E.isEmpty()) {
-                    // Case 1 in the paper: check whether there is a register r such that currentMap(E) = r
-                    Set<Integer> repeatedRegisters = new HashSet<>();
-                    for (Integer registerE : ct.E) {
-                        Integer registerEImg = currentMap.get(registerE);
-                        if (registerEImg != null)
-                            repeatedRegisters.add(registerEImg);
-                    }
+				HashSet<HashSet<Integer>> compatibleSets = ct.getCompatibleSets(regIndexes);
 
-                    if (repeatedRegisters.size() == 1)
-                        SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct.guard, repeatedRegisters.iterator().next()));
-                } else {
+				for (HashSet<Integer> set: compatibleSets) {
+					Set<Integer> repeatedRegisters = new HashSet<>();
 
-					// Compute inverse
-					HashMap<Integer, LinkedList<Integer>> inverseMap = new HashMap<>();
-
-					for (Integer i = 0; i < registers.size(); i++) {
-						Integer registerImg = currentMap.get(i);
-
-						LinkedList<Integer> inverseImg;
-
-						if (inverseMap.get(registerImg) == null) {
-							inverseImg = new LinkedList<>();
-							inverseMap.put(registerImg, inverseImg);
-						}
-						else
-							inverseImg = inverseMap.get(registerImg);
-
-						inverseImg.add(i);
+					// Rule (REG)
+					// Check if there is register such that currentMap(r) = S
+					for (Integer regSet : set) {
+						Integer registerEImg = currentMap.get(regSet);
+						if (registerEImg != null)
+							repeatedRegisters.add(registerEImg);
 					}
 
-					// Case 2 in the paper: check whether inverseMap(r) is included in U, for some r
-					for (Integer i = 0; i < registers.size(); i++) {
-						LinkedList<Integer> inverseImg = inverseMap.get(i);
+					if (repeatedRegisters.size() == 1)
+						SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct.guard, repeatedRegisters.iterator().next()));
 
-						if (inverseImg == null || ct.U.containsAll(inverseImg)) {
-							SRAMoves.add(new SRAFreshMove<P, S>(currentStateID, null, ct.guard, i, registers.size()));
-							break;
+					if (set.isEmpty()) {
+						if (!ct.U.isEmpty()) {
+							// Rule (FRESH)
+
+							// Compute inverse
+							HashMap<Integer, LinkedList<Integer>> inverseMap = new HashMap<>();
+
+							for (Integer i = 0; i < registers.size(); i++) {
+								Integer registerImg = currentMap.get(i);
+
+								LinkedList<Integer> inverseImg;
+
+								if (inverseMap.get(registerImg) == null) {
+									inverseImg = new LinkedList<>();
+									inverseMap.put(registerImg, inverseImg);
+								} else
+									inverseImg = inverseMap.get(registerImg);
+
+								inverseImg.add(i);
+							}
+
+							// Check whether inverseMap(r) is included in U, for some r
+							// It takes the least r, which guarantees determinism
+							for (Integer r = 0; r < registers.size(); r++) {
+								LinkedList<Integer> inverseImg = inverseMap.get(r);
+
+								if (inverseImg == null || ct.U.containsAll(inverseImg)) {
+									SRAMoves.add(new SRAFreshMove<P, S>(currentStateID, null, ct.guard, r, newRegisters.size()));
+									break;
+								}
+							}
+						} else {
+							// Rule (NOP)
+							Integer garbageReg = newRegisters.size() - 1;
+							SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct.guard, garbageReg));
+							SRAMoves.add(new SRAFreshMove<P, S>(currentStateID, null, ct.guard, garbageReg, newRegisters.size()));
 						}
+//
+//                    // Case 3 in the paper: check whether inverseMap(r) is empty, for some r
+//					for (Integer i = 0; i < registers.size(); i++)
+//						if (inverseMap.get(i) == null)
+//	                        SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct.guard, i));
 					}
-
-
-                    // Case 3 in the paper: check whether inverseMap(r) is empty, for some r
-					for (Integer i = 0; i < registers.size(); i++)
-						if (inverseMap.get(i) == null)
-	                        SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct.guard, i));
-                }
-
+				}
 
                 for (SRAMove<P, S> transition : SRAMoves) {
                     if (transition.isSatisfiable(ba)) {
@@ -1439,7 +1494,7 @@ public class SRA<P, S> {
 
             }
         }
-        return MkSRA(transitions, initialState, newFinalStates, newRegisters, ba);
+        return MkSRA(transitions, initialState, newFinalStates, newRegisters, ba, false, false);
     }
 
 	/**

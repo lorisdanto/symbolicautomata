@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.*;
 
 import automata.sra.*;
+import logic.ltl.Predicate;
 import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
 
@@ -129,12 +130,89 @@ public class SRAUnitTest {
     }
 
     @Test
-    public void testSRACompilation() throws TimeoutException {
-        boolean check1 = msraAut.createDotFile("msra", "");
-        SRA<CharPred, Character> toSRA = msraAut.toSingleValuedSRA(ba, Long.MAX_VALUE);
-        boolean check2 = toSRA.createDotFile("toSra", "");
-        assertTrue(check1);
-        assertTrue(check2);
+    public void testSRACompilation1() throws TimeoutException {
+        LinkedList<Character> registers = new LinkedList<Character>();
+        registers.add(null);
+        registers.add(null);
+
+        CharPred abPred = ba.MkOr(new CharPred('a'), new CharPred('b'));
+
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions.add(new SRAMove<CharPred, Character>(0, 1, abPred,
+                Collections.singleton(0), Collections.singleton(1), Collections.emptySet()));
+
+        SRA<CharPred, Character> sra = SRA.MkSRA(transitions, 0, Collections.singleton(1), registers, ba);
+        SRA<CharPred, Character> svSRA = sra.toSingleValuedSRA(ba, Long.MAX_VALUE);
+
+        sra.createDotFile("sracomp1","");
+        svSRA.createDotFile("sracomp1sv", "");
+    }
+
+    @Test
+    public void testSRACompilation2() throws TimeoutException {
+        LinkedList<Character> registers = new LinkedList<Character>();
+        registers.add(null);
+        registers.add(null);
+
+        CharPred abPred = ba.MkOr(new CharPred('a'), new CharPred('b'));
+
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions.add(new SRAMove<CharPred, Character>(0, 1, abPred,
+                Collections.singleton(0), Collections.emptySet(), Collections.emptySet()));
+
+        SRA<CharPred, Character> sra = SRA.MkSRA(transitions, 0, Collections.singleton(1), registers, ba);
+        SRA<CharPred, Character> svSRA = sra.toSingleValuedSRA(ba, Long.MAX_VALUE);
+
+        sra.createDotFile("sracomp2","");
+        svSRA.createDotFile("sracomp2sv", "");
+    }
+
+    @Test
+    public void testSRACompilation3() throws TimeoutException {
+        LinkedList<Character> registers = new LinkedList<Character>();
+        registers.add('a');
+        registers.add('a');
+        registers.add('b');
+
+
+
+        CharPred abPred = ba.MkOr(new CharPred('a'), new CharPred('b'));
+
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+
+        transitions.add(new SRAMove<CharPred, Character>(0, 1, abPred,
+                new HashSet<>(Arrays.asList(0)), Collections.emptySet(), Collections.singleton(1)));
+
+        transitions.add(new SRAMove<CharPred, Character>(1, 1, alpha,
+                Collections.emptySet(), new HashSet<>(Arrays.asList(0,1)), Collections.singleton(1)));
+
+        transitions.add(new SRAMove<CharPred, Character>(1, 2, num,
+                Collections.emptySet(), Collections.emptySet(), Collections.singleton(1)));
+//
+        transitions.add(new SRAMove<CharPred, Character>(2, 3, alpha,
+                Collections.emptySet(), Collections.emptySet(), Collections.emptySet()));
+
+
+
+        SRA<CharPred, Character> sra = SRA.MkSRA(transitions, 0, Collections.singleton(3), registers, ba);
+        SRA<CharPred, Character> svSRA = sra.toSingleValuedSRA(ba, Long.MAX_VALUE);
+
+        sra.createDotFile("sracomp3","");
+        svSRA.createDotFile("sracomp3sv", "");
+        assertTrue(SRA.canSimulate(sra, svSRA, ba, true, Long.MAX_VALUE));
+        assertTrue(sra.languageIncludes(svSRA, ba, Long.MAX_VALUE));
+        assertTrue(sra.isLanguageEquivalent(svSRA, ba, Long.MAX_VALUE));
+
+        transitions.add(new SRAMove<CharPred, Character>(3, 4, alpha,
+                Collections.emptySet(), Collections.emptySet(), Collections.emptySet()));
+
+        SRA<CharPred, Character> sra1 = SRA.MkSRA(transitions, 0, new HashSet<>(Arrays.asList(3,4)), registers, ba);
+        SRA<CharPred, Character> svSRA1 = sra1.toSingleValuedSRA(ba, Long.MAX_VALUE);
+
+
+        assertFalse(SRA.canSimulate(svSRA, sra1, ba, true, Long.MAX_VALUE));
+        assertTrue(sra1.languageIncludes(sra, ba, Long.MAX_VALUE));
+        //assertTrue(sra.isLanguageEquivalent(sra1, ba, Long.MAX_VALUE));
     }
 
     @Test

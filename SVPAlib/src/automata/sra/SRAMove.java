@@ -76,8 +76,14 @@ public class SRAMove<P, S> {
 		Set<Integer> registersWithInput = new HashSet<Integer>();
 
 		for (Integer registerE : E)
-			if (registerValues.get(registerE) != null && !registerValues.get(registerE).equals(input))
+		{
+			boolean regIsNull = registerValues.get(registerE) == null;
+			boolean regNotNullAndNotInput = registerValues.get(registerE) != null &&
+					!registerValues.get(registerE).equals(input);
+
+			if (regIsNull || regNotNullAndNotInput)
 				return false;
+		}
 
 		for (Integer registerI : I)
 			if (registerValues.get(registerI) != null && registerValues.get(registerI).equals(input))
@@ -132,7 +138,7 @@ public class SRAMove<P, S> {
 	/**
 	 * Returns the powerset of <code>originalSet</code> - O(n^2)
 	 */
-	static <S> HashSet<HashSet<Integer>> getPowerset(HashSet<Integer> originalSet) {
+	private HashSet<HashSet<Integer>> getPowerset(HashSet<Integer> originalSet) {
 		HashSet<HashSet<Integer>> sets = new HashSet<HashSet<Integer>>();
 		if (originalSet.isEmpty()) {
 			sets.add(new HashSet<Integer>());
@@ -151,14 +157,14 @@ public class SRAMove<P, S> {
 		return sets;
 	}
 
-	static <S> HashSet<HashSet<Integer>> getPowersetIncluding(HashSet<Integer> originalSet,
-                                                              Set<Integer> toInclude ) {
-		HashSet<Integer> setWithoutReg = new HashSet<>(originalSet);
-		setWithoutReg.removeAll(toInclude);
+	public <S> HashSet<HashSet<Integer>> getCompatibleSets(HashSet<Integer> regSet) {
+		HashSet<Integer> setWithoutReg = new HashSet<>(regSet);
+		setWithoutReg.removeAll(E);
+		setWithoutReg.removeAll(I);
 
         HashSet<HashSet<Integer>> powSet = getPowerset(setWithoutReg);
         for (HashSet<Integer> set: powSet)
-            set.addAll(toInclude);
+            set.addAll(E);
 
         return powSet;
 	}
