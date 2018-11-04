@@ -175,7 +175,6 @@ public class SRAUnitTest {
         registers.add('b');
 
 
-
         CharPred abPred = ba.MkOr(new CharPred('a'), new CharPred('b'));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -213,6 +212,41 @@ public class SRAUnitTest {
         assertFalse(SRA.canSimulate(svSRA, sra1, ba, true, Long.MAX_VALUE));
         assertTrue(sra1.languageIncludes(sra, ba, Long.MAX_VALUE));
         //assertTrue(sra.isLanguageEquivalent(sra1, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testCompletion() throws TimeoutException {
+        LinkedList<Character> registers = new LinkedList<Character>();
+        registers.add('a');
+        registers.add('a');
+        registers.add('b');
+
+
+        CharPred abPred = ba.MkOr(new CharPred('a'), new CharPred('b'));
+
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+
+        transitions.add(new SRAMove<CharPred, Character>(0, 1, abPred,
+                new HashSet<>(Arrays.asList(0)), Collections.emptySet(), Collections.singleton(1)));
+
+        transitions.add(new SRAMove<CharPred, Character>(1, 1, alpha,
+                Collections.emptySet(), new HashSet<>(Arrays.asList(0,1)), Collections.singleton(1)));
+
+        transitions.add(new SRAMove<CharPred, Character>(1, 2, num,
+                Collections.emptySet(), Collections.emptySet(), Collections.singleton(1)));
+//
+        transitions.add(new SRAMove<CharPred, Character>(2, 3, alpha,
+                Collections.emptySet(), Collections.emptySet(), Collections.emptySet()));
+
+        SRA<CharPred, Character> sra = SRA.MkSRA(transitions, 0, Collections.singleton(3), registers, ba);
+        SRA<CharPred, Character> svSRA = sra.toSingleValuedSRA(ba, Long.MAX_VALUE);
+
+        svSRA.createDotFile("svSRA","");
+        svSRA.complete(ba);
+
+        // FIXME: something wrong here
+        assertTrue(svSRA.isLanguageEquivalent(svSRA, ba, Long.MAX_VALUE));
+
     }
 
     @Test

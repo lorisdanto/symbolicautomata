@@ -945,6 +945,7 @@ public class SRA<P, S> {
 
 
 	public void complete(BooleanAlgebra<P, S> ba) throws TimeoutException {
+		// FIXME: something wrong here
 
 		if (isEmpty)
 			return; // empty SRA is already complete
@@ -961,9 +962,10 @@ public class SRA<P, S> {
 			SRAMove<P, S> newMove;
 
 			if (reg.equals(regSize))
-				newMove = new SRACheckMove<>(state, sinkState, negPred, reg);
-			else
 				newMove = new SRAFreshMove<>(state, sinkState, negPred, chosenReg, regSize);
+			else
+				newMove = new SRACheckMove<>(state, sinkState, negPred, reg);
+
 
 
 			addTransition(newMove, ba, false);
@@ -1009,21 +1011,17 @@ public class SRA<P, S> {
 		if (!aut.isSingleValued)
 			aut = aut.toSingleValuedSRA(ba, timeout);
 
-//		System.out.print("completed");
-//		me.createDotFile("complete1","");
-//		aut.createDotFile("complete2","");
-
-
 
 		if (!me.isTotal)
 			me.complete(ba);
 
 		if (!aut.isTotal)
 			aut.complete(ba);
-//
-//		System.out.println("Here");
-//
-//
+
+//		System.out.print("completed");
+//		me.createDotFile("complete1","");
+//		aut.createDotFile("complete2","");
+
 		return canSimulate(aut, me, ba, false, timeout);
 	}
 
@@ -1164,9 +1162,9 @@ public class SRA<P, S> {
 			LinkedList<NormSRAMove<P>> normMovesFromCurrent1;
 			LinkedList<NormSRAMove<P>> normMovesFromCurrent2;
 
-			if (aut1NormOut.containsKey(aut1NormState))
-				normMovesFromCurrent1 = aut1NormOut.get(aut1NormState);
-			else {
+//			if (aut1NormOut.containsKey(aut1NormState))
+//				normMovesFromCurrent1 = aut1NormOut.get(aut1NormState);
+//			else {
 				normMovesFromCurrent1 = new LinkedList<>();
 
 				for (SRAMove<P, S> move : aut1.getMovesFrom(aut1NormState.getStateId())) {
@@ -1177,14 +1175,14 @@ public class SRA<P, S> {
 				}
 
 				aut1NormOut.put(aut1NormState, normMovesFromCurrent1);
-			}
+//			}
 
 			if (!bisimulation && normMovesFromCurrent1.isEmpty()) // we don't need to find matching moves from aut2
 				continue;
 
-			if (aut2NormOut.containsKey(aut2NormState))
-				normMovesFromCurrent2 = aut2NormOut.get(aut2NormState);
-			else {
+//			if (aut2NormOut.containsKey(aut2NormState))
+//				normMovesFromCurrent2 = aut2NormOut.get(aut2NormState);
+//			else {
 				normMovesFromCurrent2 = new LinkedList<>();
 
 				for (SRAMove<P, S> move : aut2.getMovesFrom(aut2NormState.getStateId())) {
@@ -1195,7 +1193,7 @@ public class SRA<P, S> {
 				}
 
 				aut2NormOut.put(aut2NormState, normMovesFromCurrent2);
-			}
+//			}
 
 			// Get new similarity triples
 			LinkedList<NormSimTriple<P>> newTriples = normSimSucc(ba, normMovesFromCurrent1, normMovesFromCurrent2,
@@ -1426,8 +1424,6 @@ public class SRA<P, S> {
             int currentStateID = reached.get(currentState);
             HashMap<Integer, Integer> currentMap = currentState.second;
 
-            if (currentStateID == 22052)
-            	System.out.println("Hello");
 
             for (SRAMove<P, S> ct : getMovesFrom(currentState.first)) {
 				LinkedList<SRAMove<P, S>> SRAMoves = new LinkedList<>();

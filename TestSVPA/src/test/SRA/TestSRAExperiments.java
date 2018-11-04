@@ -94,6 +94,38 @@ public class TestSRAExperiments {
     }
 
     @Test
+    public void testIPPacketParserSRASingleValuedComplete() throws TimeoutException {
+        SRA<CharPred, Character> IP2PacketParserSRASS = IP2PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
+        SRA<CharPred, Character> IP3PacketParserSRASS = IP3PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
+        SRA<CharPred, Character> IP4PacketParserSRASS = IP4PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
+
+        IP2PacketParserSRASS.complete(ba);
+        IP3PacketParserSRASS.complete(ba);
+        IP4PacketParserSRASS.complete(ba);
+
+        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket1, ba));
+        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket1, ba));
+        assertTrue(IP2PacketParserSRASS.accepts(validIPPacket2, ba));
+        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket2, ba));
+        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket2, ba));
+        assertTrue(IP2PacketParserSRASS.accepts(validIPPacket3, ba));
+        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket3, ba));
+        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket3, ba));
+        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket1, ba));
+        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket1, ba));
+        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket1, ba));
+        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket2, ba));
+        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket2, ba));
+        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket2, ba));
+        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket3, ba));
+        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket3, ba));
+        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket3, ba));
+        assertTrue(IP2PacketParserSRASS.accepts(dependentIPPacket1, ba));
+        assertTrue(IP3PacketParserSRASS.accepts(dependentIPPacket1, ba));
+        assertTrue(IP4PacketParserSRASS.accepts(dependentIPPacket1, ba));
+    }
+
+    @Test
     public void testIPPacketParserSRA() throws TimeoutException {
         // IP2PacketParserSRA.createDotFile("ip2","")
         assertTrue(IP2PacketParserSRA.accepts(validIPPacket1, ba));
@@ -138,11 +170,12 @@ public class TestSRAExperiments {
         assertTrue(SRA.canSimulate(IP3PacketParserSRA, IP2PacketParserSRA, ba, false, Long.MAX_VALUE));
     }
 //
-//    @Test
-//    public void testLanguageInclusionIP() throws TimeoutException {
-//        assertTrue(SRA.canSimulate(IP3PacketParserSRA, IP2PacketParserSRA, ba, false, Long.MAX_VALUE));
-//        //assertTrue(IP3PacketParserSRA.languageIncludes(IP2PacketParserSRA, ba, Long.MAX_VALUE));
-//    }
+    @Test
+    public void testLanguageInclusionIP() throws TimeoutException {
+        assertTrue(SRA.canSimulate(IP3PacketParserSRA, IP2PacketParserSRA, ba, false, Long.MAX_VALUE));
+        //assertTrue(IP2PacketParserSRA.languageIncludes(IP3PacketParserSRA, ba, Long.MAX_VALUE));
+        //assertTrue(IP3PacketParserSRA.languageIncludes(IP2PacketParserSRA, ba, Long.MAX_VALUE));
+    }
 
     // ---------------------------------------
     // Predicates
