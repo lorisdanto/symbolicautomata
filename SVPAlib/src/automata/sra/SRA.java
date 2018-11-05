@@ -569,7 +569,7 @@ public class SRA<P, S> {
 	}
 
 	// Get list of predicates without duplicates
-	private ArrayList<P> getAllPredicates(long timeout) {
+	private HashSet<P> getAllPredicates(long timeout) {
 		HashSet<P> predicatesSet = new HashSet<>();
 
 		HashMap<Integer, Integer> reached = new HashMap<>();
@@ -593,7 +593,7 @@ public class SRA<P, S> {
 
 		}
 
-		return new ArrayList<>(predicatesSet);
+		return predicatesSet;
 	}
 
 	// ------------------------------------------------------
@@ -796,22 +796,35 @@ public class SRA<P, S> {
 
 	// Create initial register abstraction
 	private HashMap<Integer, MinTerm<P>> getInitialRegAbs(List<P> allPredicates,
-														  LinkedList<P> initAssAtoms,
+														  BooleanAlgebra<P,S> ba,
+														  //LinkedList<P> initAssAtoms,
 														  HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicates) {
 		HashMap<Integer, MinTerm<P>> initRegAb = new HashMap<>();
 
-		Integer notNullInd = 0;
-		for (Integer r = 0; r < registers.size(); r++) {
-			// P atom = allPredicates.get(initValAtomsIndex + r);
+		//Integer notNullInd = 0;
 
-			if (registers.get(r) == null)
+		for (Integer r = 0; r < registers.size(); r++) {
+			S regVal = registers.get(r);
+
+			if (regVal == null)
 				initRegAb.put(r, null);
-			else {
-				P atom = initAssAtoms.get(notNullInd);
-				initRegAb.put(r, mintermsForPredicates.get(atom).get(0)); // There should be only 1 minterm for atom
-				notNullInd++;
+			else
+			{
+				P atom = ba.MkAtom(regVal);
+				initRegAb.put(r, mintermsForPredicates.get(atom).get(0));
 			}
 		}
+//		for (Integer r = 0; r < registers.size(); r++) {
+//			// P atom = allPredicates.get(initValAtomsIndex + r);
+//
+//			if (registers.get(r) == null)
+//				initRegAb.put(r, null);
+//			else {
+//				P atom = initAssAtoms.get(notNullInd);
+//				initRegAb.put(r, mintermsForPredicates.get(atom).get(0)); // There should be only 1 minterm for atom
+//				notNullInd++;
+//			}
+//		}
 
 		return initRegAb;
 	}
@@ -831,21 +844,21 @@ public class SRA<P, S> {
 
 
 		// Compute all minterms
-		ArrayList<P> allPredicates = aut.getAllPredicates(timeout);
-		LinkedList<P> initAssAtoms = new LinkedList<>();
+		HashSet<P> allPredicatesSet = aut.getAllPredicates(timeout);
+		// LinkedList<P> initAssAtoms = new LinkedList<>();
 
 
 		for (S regVal : aut.registers) // Add initial register values to predicates
 			if (regVal != null) {
 				P atom = ba.MkAtom(regVal);
 
-				if (!allPredicates.contains(atom))
-					allPredicates.add(ba.MkAtom(regVal));
+				//if (!allPredicates.contains(atom))
+				allPredicatesSet.add(ba.MkAtom(regVal));
 
-				initAssAtoms.add(atom);
+				//initAssAtoms.add(atom);
 			}
 
-
+		ArrayList<P> allPredicates = new ArrayList<>(allPredicatesSet);
 		LinkedList<MinTerm<P>> minTerms = new LinkedList<>();
 
 		for(Pair<P, ArrayList<Integer>> minBA: ba.GetMinterms(allPredicates))
@@ -853,7 +866,7 @@ public class SRA<P, S> {
 
 
 		HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicates = getMintermsForPredicates(allPredicates, minTerms);
-		HashMap<Integer, MinTerm<P>> initRegAbs = aut.getInitialRegAbs(allPredicates, initAssAtoms, mintermsForPredicates);
+		HashMap<Integer, MinTerm<P>> initRegAbs = aut.getInitialRegAbs(allPredicates, ba, mintermsForPredicates);
 
 
 
@@ -1085,40 +1098,41 @@ public class SRA<P, S> {
 		}
 
 		// Get all predicates for both SRA
-		ArrayList<P> allPredicates = aut1.getAllPredicates(timeout);
-		LinkedList<P> initAssAtoms1 = new LinkedList<>();
-		LinkedList<P> initAssAtoms2 = new LinkedList<>();
+		HashSet<P> allPredicatesSet = aut1.getAllPredicates(timeout);
+		HashSet<P> initAssAtoms1 = new HashSet<>();
+		HashSet<P> initAssAtoms2 = new HashSet<>();
 
-		Integer initValPos1 = allPredicates.size();
+		// Integer initValPos1 = allPredicates.size();
 
 		for (P predicate: aut2.getAllPredicates(timeout))
-			if (!allPredicates.contains(predicate)) // Add without duplicates
-				allPredicates.add(predicate);
+			//if (!allPredicates.contains(predicate)) // Add without duplicates
+				allPredicatesSet.add(predicate);
 
 		for (S regVal: aut1.registers) // Add initial register values of aut1 to predicates
 			if (regVal != null) {
 				P atom = ba.MkAtom(regVal);
 
-				if (!allPredicates.contains(atom))
-					allPredicates.add(atom);
+				//if (!allPredicates.contains(atom))
+				allPredicatesSet.add(atom);
 
 				initAssAtoms1.add(atom);
 			}
 
-		Integer initValPos2 = allPredicates.size();
+		// Integer initValPos2 = allPredicates.size();
 
 		for (S regVal: aut2.registers) // Add initial register values of aut2 to predicates
 			if (regVal != null) {
 				P atom = ba.MkAtom(regVal);
 
-				if (!allPredicates.contains(atom))
-					allPredicates.add(ba.MkAtom(regVal));
+				//if (!allPredicates.contains(atom))
+				allPredicatesSet.add(ba.MkAtom(regVal));
 
 				initAssAtoms2.add(atom);
 			}
 
 
 		// Computer minterms
+		ArrayList<P> allPredicates = new ArrayList<>(allPredicatesSet);
 		LinkedList<MinTerm<P>> minTerms = new LinkedList<>();
 
 		for(Pair<P, ArrayList<Integer>> minBA: ba.GetMinterms(allPredicates))
@@ -1126,8 +1140,8 @@ public class SRA<P, S> {
 
 
 		HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicates = getMintermsForPredicates(allPredicates, minTerms);
-		HashMap<Integer, MinTerm<P>> initRegAbs1 = aut1.getInitialRegAbs(allPredicates, initAssAtoms1, mintermsForPredicates);
-		HashMap<Integer, MinTerm<P>> initRegAbs2 = aut2.getInitialRegAbs(allPredicates, initAssAtoms2, mintermsForPredicates);
+		HashMap<Integer, MinTerm<P>> initRegAbs1 = aut1.getInitialRegAbs(allPredicates, ba, mintermsForPredicates);
+		HashMap<Integer, MinTerm<P>> initRegAbs2 = aut2.getInitialRegAbs(allPredicates, ba, mintermsForPredicates);
 
 
 
@@ -1149,7 +1163,7 @@ public class SRA<P, S> {
 
 
 
-		// Keep track of outgoing reduced transitions that have already been generated
+		// Keep track of outgoing normalised transitions that have already been generated
 		HashMap<NormSRAState<P>, LinkedList<NormSRAMove<P>>> aut1NormOut = new HashMap<>();
 		HashMap<NormSRAState<P>, LinkedList<NormSRAMove<P>>> aut2NormOut = new HashMap<>();
 
