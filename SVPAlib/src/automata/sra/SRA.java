@@ -2060,6 +2060,7 @@ public class SRA<P, S> {
 		cl.isDeterministic = isDeterministic;
 		cl.isTotal = isTotal;
 		cl.isEmpty = isEmpty;
+		cl.isSingleValued = isSingleValued;
 
 		cl.maxStateId = maxStateId;
 		cl.transitionCount = transitionCount;
