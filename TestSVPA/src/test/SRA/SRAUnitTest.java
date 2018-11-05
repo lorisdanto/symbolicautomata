@@ -182,8 +182,8 @@ public class SRAUnitTest {
         transitions.add(new SRAMove<CharPred, Character>(0, 1, abPred,
                 new HashSet<>(Arrays.asList(0)), Collections.emptySet(), Collections.singleton(1)));
 
-        transitions.add(new SRAMove<CharPred, Character>(1, 1, alpha,
-                Collections.emptySet(), new HashSet<>(Arrays.asList(0,1)), Collections.singleton(1)));
+//        transitions.add(new SRAMove<CharPred, Character>(1, 1, alpha,
+//                Collections.emptySet(), new HashSet<>(Arrays.asList(0,1)), Collections.singleton(1)));
 
         transitions.add(new SRAMove<CharPred, Character>(1, 2, num,
                 Collections.emptySet(), Collections.emptySet(), Collections.singleton(1)));
@@ -198,9 +198,11 @@ public class SRAUnitTest {
 
         //sra.createDotFile("sracomp3","");
         //svSRA.createDotFile("sracomp3sv", "");
+        // svSRA.complete(ba);
         assertTrue(SRA.canSimulate(svSRA, svSRA, ba, true, Long.MAX_VALUE));
+
         assertTrue(sra.languageIncludes(svSRA, ba, Long.MAX_VALUE));
-       // assertTrue(svSRA.isLanguageEquivalent(svSRA, ba, Long.MAX_VALUE));
+        assertTrue(svSRA.isLanguageEquivalent(svSRA, ba, Long.MAX_VALUE));
 
         transitions.add(new SRAMove<CharPred, Character>(3, 4, alpha,
                 Collections.emptySet(), Collections.emptySet(), Collections.emptySet()));
@@ -208,10 +210,9 @@ public class SRAUnitTest {
         SRA<CharPred, Character> sra1 = SRA.MkSRA(transitions, 0, new HashSet<>(Arrays.asList(3,4)), registers, ba);
         SRA<CharPred, Character> svSRA1 = sra1.toSingleValuedSRA(ba, Long.MAX_VALUE);
 
-
-        assertFalse(SRA.canSimulate(svSRA, sra1, ba, true, Long.MAX_VALUE));
-        // assertTrue(sra1.languageIncludes(sra, ba, Long.MAX_VALUE));
-        //assertTrue(sra.isLanguageEquivalent(sra1, ba, Long.MAX_VALUE));
+        // FIXME: debug this
+        // assertTrue(SRA.canSimulate(svSRA, svSRA1, ba, false, Long.MAX_VALUE));
+        assertFalse(SRA.canSimulate(svSRA, svSRA1, ba, true, Long.MAX_VALUE));
     }
 
     @Test
@@ -240,13 +241,10 @@ public class SRAUnitTest {
 
         SRA<CharPred, Character> sra = SRA.MkSRA(transitions, 0, Collections.singleton(3), registers, ba);
         SRA<CharPred, Character> svSRA = sra.toSingleValuedSRA(ba, Long.MAX_VALUE);
-
-        svSRA.createDotFile("svSRA","");
+        
         svSRA.complete(ba);
 
-        // FIXME: something wrong here
         assertTrue(svSRA.isLanguageEquivalent(svSRA, ba, Long.MAX_VALUE));
-
     }
 
     @Test
