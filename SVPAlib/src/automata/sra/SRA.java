@@ -1537,6 +1537,7 @@ public class SRA<P, S> {
 
                         Pair<Integer, HashMap<Integer, Integer>> nextState = new Pair<>(ct.to, nextMap);
                         transition.to = getStateId(nextState, reached, toVisit);
+
                         if (finalStates.contains(ct.to))
                             newFinalStates.add(transition.to);
                         transitions.add(transition);

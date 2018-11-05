@@ -1,6 +1,7 @@
 package test.SRA;
 
 import automata.sra.*;
+import logic.ltl.Predicate;
 import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
 import theory.characters.CharPred;
@@ -165,16 +166,19 @@ public class TestSRAExperiments {
         assertFalse(IP9PacketParserSRA.accepts(dependentIPPacket1, ba));
     }
 
-    @Test
-    public void testSimulationIP() throws TimeoutException {
-        assertTrue(SRA.canSimulate(IP3PacketParserSRA, IP2PacketParserSRA, ba, false, Long.MAX_VALUE));
-    }
-
-
-    @Test
-    public void testLanguageInclusion() throws TimeoutException {
-        assertTrue(IP2PacketParserSRA.languageIncludes(IP3PacketParserSRA, ba, Long.MAX_VALUE));
-    }
+//    @Test
+//    public void testSimulationIP() throws TimeoutException {
+//        SRA<CharPred, Character> comp = (SRA<CharPred, Character>) IP2PacketParserSRA.clone();
+//        comp.complete(ba);
+//
+//        assertTrue(SRA.canSimulate(comp, IP2PacketParserSRA, ba, false, Long.MAX_VALUE));
+//    }
+//
+//
+//    @Test
+//    public void testLanguageInclusion() throws TimeoutException {
+//        assertTrue(IP2PacketParserSRA.languageIncludes(IP3PacketParserSRA, ba, Long.MAX_VALUE));
+//    }
 
 
     // ---------------------------------------

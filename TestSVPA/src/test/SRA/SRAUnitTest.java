@@ -212,6 +212,11 @@ public class SRAUnitTest {
         assertFalse(SRA.canSimulate(svSRA, svSRA1, ba, true, Long.MAX_VALUE));
         assertTrue(sra1.languageIncludes(sra, ba, Long.MAX_VALUE));
         assertFalse(sra1.isLanguageEquivalent(sra, ba, Long.MAX_VALUE));
+
+        SRA<CharPred, Character> intSRA = sra.intersectionWith(sra1, ba, Long.MAX_VALUE);
+        assertTrue(sra.languageIncludes(intSRA, ba, Long.MAX_VALUE));
+        assertTrue(sra1.languageIncludes(intSRA, ba, Long.MAX_VALUE));
+        assertFalse(sra1.isLanguageEquivalent(intSRA, ba, Long.MAX_VALUE));
     }
 
     @Test
