@@ -173,7 +173,7 @@ public class TestSRAExperiments {
 
     @Test
     public void testLanguageInclusion() throws TimeoutException {
-        assertTrue(IP3PacketParserSRA.languageIncludes(IP2PacketParserSRA, ba, Long.MAX_VALUE));
+        assertTrue(IP2PacketParserSRA.languageIncludes(IP3PacketParserSRA, ba, Long.MAX_VALUE));
     }
 
 

@@ -1029,15 +1029,6 @@ public class SRA<P, S> {
 		if (!aut.isTotal)
 			aut2.complete(ba);
 
-		// FIXME: there is something wrong here
-//		if (!me.isTotal)
-//			me.complete(ba);
-//
-//		if (!aut.isTotal)
-//			aut.complete(ba);
-//
-//		me.createDotFile("aut1","");
-//		aut.createDotFile("aut2","");
 
 		return canSimulate(aut1, aut2, ba, true, timeout);
 	}
