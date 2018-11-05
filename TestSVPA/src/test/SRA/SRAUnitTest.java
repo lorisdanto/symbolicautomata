@@ -187,14 +187,21 @@ public class SRAUnitTest {
 
         transitions.add(new SRAMove<CharPred, Character>(1, 2, num,
                 Collections.emptySet(), Collections.emptySet(), Collections.singleton(1)));
-//
+
+
         transitions.add(new SRAMove<CharPred, Character>(2, 3, alpha,
-                Collections.emptySet(), Collections.emptySet(), Collections.emptySet()));
+                Collections.singleton(1), Collections.emptySet(), new HashSet<>(Arrays.asList(1,2))));
+
+
+//        transitions.add(new SRAMove<CharPred, Character>(2, 3, alpha,
+//                Collections.emptySet(), Collections.emptySet(), Collections.emptySet()));
 
 
 
         SRA<CharPred, Character> sra = SRA.MkSRA(transitions, 0, Collections.singleton(3), registers, ba);
         SRA<CharPred, Character> svSRA = sra.toSingleValuedSRA(ba, Long.MAX_VALUE);
+
+        svSRA.createDotFile("s1","");
 
         //sra.createDotFile("sracomp3","");
         //svSRA.createDotFile("sracomp3sv", "");
@@ -204,14 +211,23 @@ public class SRAUnitTest {
         assertTrue(sra.languageIncludes(svSRA, ba, Long.MAX_VALUE));
         assertTrue(svSRA.isLanguageEquivalent(svSRA, ba, Long.MAX_VALUE));
 
-        transitions.add(new SRAMove<CharPred, Character>(3, 4, alpha,
-                Collections.emptySet(), Collections.emptySet(), Collections.emptySet()));
+//        transitions.add(new SRAMove<CharPred, Character>(3, 4, alpha,
+//                Collections.emptySet(), Collections.emptySet(), Collections.emptySet()));
 
-        SRA<CharPred, Character> sra1 = SRA.MkSRA(transitions, 0, new HashSet<>(Arrays.asList(3,4)), registers, ba);
+        Collection<SRAMove<CharPred, Character>> transitions2 = new LinkedList<SRAMove<CharPred, Character>>(transitions);
+
+        transitions2.add(new SRAMove<CharPred, Character>(3, 4, alpha,
+                Collections.emptySet(), Collections.emptySet(), Collections.singleton(2)));
+
+
+        SRA<CharPred, Character> sra1 = SRA.MkSRA(transitions2, 0, new HashSet<>(Arrays.asList(3,4)), registers, ba);
         SRA<CharPred, Character> svSRA1 = sra1.toSingleValuedSRA(ba, Long.MAX_VALUE);
 
+
+        svSRA1.createDotFile("s2","");
+
         // FIXME: debug this
-        // assertTrue(SRA.canSimulate(svSRA, svSRA1, ba, false, Long.MAX_VALUE));
+        assertTrue(SRA.canSimulate(svSRA1, svSRA, ba, false, Long.MAX_VALUE));
         assertFalse(SRA.canSimulate(svSRA, svSRA1, ba, true, Long.MAX_VALUE));
     }
 

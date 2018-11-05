@@ -166,16 +166,16 @@ public class TestSRAExperiments {
     }
 
     @Test
-    public void testLanguageInclusion() throws TimeoutException {
+    public void testSimulationIP() throws TimeoutException {
         assertTrue(SRA.canSimulate(IP3PacketParserSRA, IP2PacketParserSRA, ba, false, Long.MAX_VALUE));
     }
-//
+
+
     @Test
-    public void testLanguageInclusionIP() throws TimeoutException {
-        assertTrue(SRA.canSimulate(IP3PacketParserSRA, IP2PacketParserSRA, ba, false, Long.MAX_VALUE));
-        //assertTrue(IP2PacketParserSRA.languageIncludes(IP3PacketParserSRA, ba, Long.MAX_VALUE));
-        //assertTrue(IP3PacketParserSRA.languageIncludes(IP2PacketParserSRA, ba, Long.MAX_VALUE));
+    public void testLanguageInclusion() throws TimeoutException {
+        assertTrue(IP3PacketParserSRA.languageIncludes(IP2PacketParserSRA, ba, Long.MAX_VALUE));
     }
+
 
     // ---------------------------------------
     // Predicates
