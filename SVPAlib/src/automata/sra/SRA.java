@@ -1013,13 +1013,21 @@ public class SRA<P, S> {
 	}
 
 	public boolean isLanguageEquivalent(SRA<P,S> aut, BooleanAlgebra<P,S> ba, long timeout) throws TimeoutException {
-		SRA<P,S> me = this;
+		SRA<P,S> aut1 = (SRA<P,S>) this.clone();
+		SRA<P,S> aut2 = (SRA<P,S>) aut.clone();
 
-		if (!isSingleValued)
-			me = toSingleValuedSRA(ba, timeout);
+		if (!aut1.isSingleValued)
+			aut1 = aut1.toSingleValuedSRA(ba, timeout);
 
 		if (!aut.isSingleValued)
-			aut = aut.toSingleValuedSRA(ba, timeout);
+			aut2 = aut2.toSingleValuedSRA(ba, timeout);
+
+
+		if (!aut1.isTotal)
+			aut1.complete(ba);
+
+		if (!aut.isTotal)
+			aut2.complete(ba);
 
 		// FIXME: there is something wrong here
 //		if (!me.isTotal)
@@ -1031,35 +1039,30 @@ public class SRA<P, S> {
 //		me.createDotFile("aut1","");
 //		aut.createDotFile("aut2","");
 
-		return canSimulate(me, aut, ba, true, timeout);
+		return canSimulate(aut1, aut2, ba, true, timeout);
 	}
 
 	public boolean languageIncludes(SRA<P,S> aut, BooleanAlgebra<P,S> ba, long timeout) throws TimeoutException {
-		SRA<P,S> me = this;
+		SRA<P,S> aut1 = (SRA<P,S>) this.clone();
+		SRA<P,S> aut2 = (SRA<P,S>) aut.clone();
 
-		if (!isSingleValued)
-			me = toSingleValuedSRA(ba, timeout);
+		if (!aut1.isSingleValued)
+			aut1 = aut1.toSingleValuedSRA(ba, timeout);
 
 		if (!aut.isSingleValued)
-			aut = aut.toSingleValuedSRA(ba, timeout);
+			aut2 = aut2.toSingleValuedSRA(ba, timeout);
 
 
-		if (!me.isTotal)
-			me.complete(ba);
+		if (!aut1.isTotal)
+			aut1.complete(ba);
 
 		if (!aut.isTotal)
-			aut.complete(ba);
+			aut2.complete(ba);
 
-//		System.out.print("completed");
-//		me.createDotFile("complete1","");
-//		aut.createDotFile("complete2","");
 
-		return canSimulate(aut, me, ba, false, timeout);
+		return canSimulate(aut, aut1, ba, false, timeout);
 	}
 
-//	public static <P, S> SRA<P, S> getPruned(SRA<P,S> aut) {
-//
-//	}
 
 	public static <P, S> boolean canSimulate(SRA<P,S> aut1, SRA<P,S> aut2, BooleanAlgebra<P, S> ba, boolean bisimulation, long timeout)
 			throws TimeoutException {
@@ -1401,18 +1404,23 @@ public class SRA<P, S> {
 
 		// Initialise register indexes
 		HashSet<Integer> regIndexes = new HashSet<>();
-		for (Integer r = 0; r < registers.size(); r++)
+		Integer regNum = registers.size();
+
+		for (Integer r = 0; r < regNum; r++) // FIXME: no garbage register
 			regIndexes.add(r);
+
 
 		// components of target SRA
         Collection<SRAMove<P, S>> transitions = new ArrayList<SRAMove<P, S>>();
         LinkedList<S> newRegisters = new LinkedList<S>(registers);
         Collection<Integer> newFinalStates = new ArrayList<Integer>();
 
+        // Add garbage collector register
+        //newRegisters.add(registers.size(), null);
 
         HashMap<S, ArrayList<Integer>> valueToRegisters = new HashMap<S, ArrayList<Integer>>();
-        for (Integer index = 0; index < registers.size(); index++) {
-            S registerValue = registers.get(index);
+        for (Integer index = 0; index < regNum; index++) {
+            S registerValue = newRegisters.get(index);
             if (valueToRegisters.containsKey(registerValue)) {
                 valueToRegisters.get(registerValue).add(index);
             } else {
@@ -1435,8 +1443,8 @@ public class SRA<P, S> {
             }
         }
 
-        // Add garbage collector register
-		newRegisters.add(newRegisters.size(), null);
+//
+//		newRegisters.add(newRegisters.size(), null);
 
 
         // reached contains the states (p,f) we discovered and maps
@@ -1484,7 +1492,7 @@ public class SRA<P, S> {
 						// Compute inverse of currentMap
 						HashMap<Integer, LinkedList<Integer>> inverseMap = new HashMap<>();
 
-						for (Integer i = 0; i < registers.size(); i++) {
+						for (Integer i = 0; i < regNum; i++) {
 							Integer registerImg = currentMap.get(i);
 
 							LinkedList<Integer> inverseImg;
@@ -1499,7 +1507,7 @@ public class SRA<P, S> {
 						}
 
 						// Rule (REG): check if there is register r such that r is not in img(currentMap)
-						for (Integer r = 0; r < registers.size(); r++)
+						for (Integer r = 0; r < regNum; r++)
 							if (inverseMap.get(r) == null)
 								SRAMoves.add(new SRACheckMove<>(currentStateID, null, ct.guard, r));
 
@@ -1509,7 +1517,7 @@ public class SRA<P, S> {
 
 							// Check whether inverseMap(r) is included in U, for some r
 							// It takes the least r, which guarantees determinism
-							for (Integer r = 0; r < registers.size(); r++) {
+							for (Integer r = 0; r < regNum; r++) {
 								LinkedList<Integer> inverseImg = inverseMap.get(r);
 
 								if (inverseImg == null || ct.U.containsAll(inverseImg)) {
@@ -1518,10 +1526,12 @@ public class SRA<P, S> {
 								}
 							}
 						} else {
+							System.out.println("Need NOP");
 							// Rule (NOP)
-							Integer garbageReg = newRegisters.size() - 1;
-							SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct.guard, garbageReg));
-							SRAMoves.add(new SRAFreshMove<P, S>(currentStateID, null, ct.guard, garbageReg, newRegisters.size()));
+							// FIXME: have a look at this
+							// Integer garbageReg = newRegisters.size() - 1;
+							// SRAMoves.add(new SRACheckMove<P, S>(currentStateID, null, ct.guard, garbageReg));
+							// SRAMoves.add(new SRAFreshMove<P, S>(currentStateID, null, ct.guard, garbageReg, newRegisters.size()));
 						}
 					}
 				}
@@ -2060,6 +2070,8 @@ public class SRA<P, S> {
 		cl.isDeterministic = isDeterministic;
 		cl.isTotal = isTotal;
 		cl.isEmpty = isEmpty;
+		cl.isSingleValued = isSingleValued;
+		cl.registers = new LinkedList<>(registers);
 
 		cl.maxStateId = maxStateId;
 		cl.transitionCount = transitionCount;
