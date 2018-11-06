@@ -28,6 +28,10 @@ public class TestSRAExperiments {
     public void testSSNParserMSRA() throws TimeoutException {
         assertTrue(SSNParserMSRA.accepts(validName1, ba));
         assertTrue(SSNParserMSRA.accepts(validName2, ba));
+        assertTrue(SSNParserFirst.accepts(validName1, ba));
+        assertTrue(SSNParserFirst.accepts(validName2, ba));
+        assertTrue(SSNParserLast.accepts(validName1, ba));
+        assertTrue(SSNParserLast.accepts(validName2, ba));
         assertFalse(SSNParserMSRA.accepts(invalidName1, ba));
         assertFalse(SSNParserMSRA.accepts(invalidName2, ba));
         assertFalse(SSNParserMSRA.accepts(invalidName3, ba));
@@ -128,7 +132,6 @@ public class TestSRAExperiments {
 
     @Test
     public void testIPPacketParserSRA() throws TimeoutException {
-        // IP2PacketParserSRA.createDotFile("ip2","")
         assertTrue(IP2PacketParserSRA.accepts(validIPPacket1, ba));
         assertTrue(IP3PacketParserSRA.accepts(validIPPacket1, ba));
         assertTrue(IP4PacketParserSRA.accepts(validIPPacket1, ba));
@@ -232,6 +235,8 @@ public class TestSRAExperiments {
     // Automata
     private SRA<CharPred, Character> SSNParserSRA = getSSNParserSRA(ba);
     private SRA<CharPred, Character> SSNParserMSRA = getSSNParserMSRA(ba);
+    private SRA<CharPred, Character> SSNParserFirst = getSSNParserFirst(ba);
+    private SRA<CharPred, Character> SSNParserLast = getSSNParserLast(ba);
     private SRA<CharPred, Character> XMLParserSRA = getXMLParserSRA(ba);
     private SRA<CharPred, Character> IP2PacketParserSRA = getIP2PacketParserSRA(ba);
     private SRA<CharPred, Character> IP3PacketParserSRA = getIP3PacketParserSRA(ba);
@@ -314,6 +319,92 @@ public class TestSRAExperiments {
 		}
 		return null;
 	}
+
+    private SRA<CharPred, Character> getSSNParserFirst(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null));
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+
+        // Read the first initial and store it in register 0
+        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, upperAlpha, 0));
+
+        // Read an unbound number of lowercase characters
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 1, lowerAlpha, 1));
+
+        // Read a comma
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, comma, 1));
+
+        // Read an unbound number of spaces
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 2, space, 1));
+
+        // Read a different second initial or a repeated second initial and store it in 1
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, upperAlpha, 1));
+
+        // Read an unbound number of lowercase characters
+        transitions.add(new SRAStoreMove<>(3, 3, lowerAlpha,1));
+
+        // Read a comma
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, comma, 1));
+
+        // Read an unbound number of spaces
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 4, space, 1));
+
+        // Read a capital that matches both registers or a capital that matches the first register
+        transitions.add(new SRACheckMove<CharPred, Character>(4, 5, upperAlpha, 0));
+
+        // Read a second capital
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, upperAlpha, 1));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Collections.singleton(6), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private SRA<CharPred, Character> getSSNParserLast(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null));
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+
+        // Read the first initial and store it in register 0
+        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, upperAlpha, 1));
+
+        // Read an unbound number of lowercase characters
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 1, lowerAlpha, 1));
+
+        // Read a comma
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, comma, 1));
+
+        // Read an unbound number of spaces
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 2, space, 1));
+
+        // Read a different second initial or a repeated second initial and store it in 1
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, upperAlpha, 0));
+
+        // Read an unbound number of lowercase characters
+        transitions.add(new SRAStoreMove<>(3, 3, lowerAlpha,1));
+
+        // Read a comma
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, comma, 1));
+
+        // Read an unbound number of spaces
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 4, space, 1));
+
+        // Read a capital
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, upperAlpha, 1));
+
+        // Read a capital that matches both registers or a capital that matches the first register
+        transitions.add(new SRACheckMove<CharPred, Character>(5, 6, upperAlpha, 0));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Collections.singleton(6), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     private SRA<CharPred, Character> getSSNParserMSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null));
