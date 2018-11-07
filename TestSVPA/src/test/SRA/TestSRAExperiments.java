@@ -38,6 +38,12 @@ public class TestSRAExperiments {
     }
 
     @Test
+    public void testSSNSimulation() throws TimeoutException {
+        assertTrue(SRA.canSimulate(SSNParserMSRA, SSNParserFirst, ba, false, Long.MAX_VALUE));
+        assertTrue(SSNParserFirst.languageIncludes(SSNParserMSRA, ba, Long.MAX_VALUE));
+    }
+
+    @Test
     public void testSSNParserMSRAtoSRA() throws TimeoutException {
         SRA<CharPred, Character> toSRA = SSNParserMSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
         toSRA.createDotFile("ssnSra", "");
@@ -169,13 +175,19 @@ public class TestSRAExperiments {
         assertFalse(IP9PacketParserSRA.accepts(dependentIPPacket1, ba));
     }
 
-//    @Test
-//    public void testSimulationIP() throws TimeoutException {
-//        SRA<CharPred, Character> comp = (SRA<CharPred, Character>) IP2PacketParserSRA.clone();
-//        comp.complete(ba);
+    @Test
+    public void testSimulationIP() throws TimeoutException {
+        // assertTrue(IP2PacketParserSRA.languageIncludes(IP3PacketParserSRA, ba, Long.MAX_VALUE));
+        assertTrue(IP3PacketParserSRA.languageIncludes(IP4PacketParserSRA, ba, Long.MAX_VALUE));
+        // assertTrue(IP2PacketParserSRA.languageIncludes(IP4PacketParserSRA, ba, Long.MAX_VALUE));
+//        assertTrue(IP6PacketParserSRA.languageIncludes(IP9PacketParserSRA, ba, Long.MAX_VALUE));
 //
-//        assertTrue(SRA.canSimulate(comp, IP2PacketParserSRA, ba, false, Long.MAX_VALUE));
-//    }
+//        assertFalse(IP2PacketParserSRA.isLanguageEquivalent(IP3PacketParserSRA, ba, Long.MAX_VALUE));
+//        assertFalse(IP3PacketParserSRA.isLanguageEquivalent(IP4PacketParserSRA, ba, Long.MAX_VALUE));
+//        assertFalse(IP2PacketParserSRA.isLanguageEquivalent(IP3PacketParserSRA, ba, Long.MAX_VALUE));
+//        assertFalse(IP3PacketParserSRA.isLanguageEquivalent(IP4PacketParserSRA, ba, Long.MAX_VALUE));
+
+    }
 //
 //
 //    @Test
