@@ -698,61 +698,62 @@ public class TestSRAExperiments {
         transitions.add(new SFAInputMove<CharPred, Character>(1, 2, new CharPred(':')));
 
         for (Integer firstDigit = 0; firstDigit < 10; firstDigit++) {
-            transitions.add(new SFAInputMove<CharPred, Character>(2, 3 + firstDigit, new CharPred(firstDigit.toString().charAt(0))));
+            transitions.add(new SFAInputMove<CharPred, Character>(2, (firstDigit * 11) + 3, new CharPred(firstDigit.toString().charAt(0))));
 
             for (Integer secondDigit = 0; secondDigit < 10; secondDigit++) {
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + firstDigit, 4 + firstDigit + secondDigit, new CharPred(secondDigit.toString().charAt(0))));
+                transitions.add(new SFAInputMove<CharPred, Character>((firstDigit * 11) + 3, (firstDigit * 11) + 3 + secondDigit + 1, new CharPred(secondDigit.toString().charAt(0))));
 
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit, 4 + firstDigit + secondDigit + 2, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 1, 4 + firstDigit + secondDigit + 2, dot));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 2, 4 + firstDigit + secondDigit + 3, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 3, 4 + firstDigit + secondDigit + 4, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 4, 4 + firstDigit + secondDigit + 5, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 5, 4 + firstDigit + secondDigit + 6, dot));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 6, 4 + firstDigit + secondDigit + 7, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 7, 4 + firstDigit + secondDigit + 8, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 8, 4 + firstDigit + secondDigit + 9, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 9, 4 + firstDigit + secondDigit + 10, dot));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 10, 4 + firstDigit + secondDigit + 12, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 11, 4 + firstDigit + secondDigit + 13, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 12, 4 + firstDigit + secondDigit + 14, num));
 
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 13, 4 + firstDigit + secondDigit + 14, space));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 14, 4 + firstDigit + secondDigit + 14, ba.MkOr(new CharPred(':'), alphaNum)));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 14, 4 + firstDigit + secondDigit + 15, space));
-
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 15, 4 + firstDigit + secondDigit + 16, new CharPred('d')));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 16, 4 + firstDigit + secondDigit + 17, new CharPred(':')));
-
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 17, 4 + firstDigit + secondDigit + 18 + firstDigit, new CharPred(firstDigit.toString().charAt(0))));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 18, 4 + firstDigit + secondDigit + 19, new CharPred(secondDigit.toString().charAt(0))));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 19, 4 + firstDigit + secondDigit + 20, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 20, 4 + firstDigit + secondDigit + 21, dot));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 21, 4 + firstDigit + secondDigit + 22, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 22, 4 + firstDigit + secondDigit + 23, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 23, 4 + firstDigit + secondDigit + 24, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 24, 4 + firstDigit + secondDigit + 25, dot));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 25, 4 + firstDigit + secondDigit + 26, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 26, 4 + firstDigit + secondDigit + 27, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 27, 4 + firstDigit + secondDigit + 28, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 28, 4 + firstDigit + secondDigit + 29, dot));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 29, 4 + firstDigit + secondDigit + 30, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 30, 4 + firstDigit + secondDigit + 31, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 31, 4 + firstDigit + secondDigit + 32, num));
-
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 32, 4 + firstDigit + secondDigit + 33, space));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 33, 4 + firstDigit + secondDigit + 33, ba.MkOr(new CharPred(':'), alphaNum)));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 33, 4 + firstDigit + secondDigit + 34, space));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit, 4 + firstDigit + secondDigit + 2, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 1, 4 + firstDigit + secondDigit + 2, dot));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 2, 4 + firstDigit + secondDigit + 3, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 3, 4 + firstDigit + secondDigit + 4, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 4, 4 + firstDigit + secondDigit + 5, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 5, 4 + firstDigit + secondDigit + 6, dot));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 6, 4 + firstDigit + secondDigit + 7, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 7, 4 + firstDigit + secondDigit + 8, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 8, 4 + firstDigit + secondDigit + 9, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 9, 4 + firstDigit + secondDigit + 10, dot));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 10, 4 + firstDigit + secondDigit + 12, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 11, 4 + firstDigit + secondDigit + 13, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 12, 4 + firstDigit + secondDigit + 14, num));
+//
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 13, 4 + firstDigit + secondDigit + 14, space));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 14, 4 + firstDigit + secondDigit + 14, ba.MkOr(new CharPred(':'), alphaNum)));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 14, 4 + firstDigit + secondDigit + 15, space));
+//
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 15, 4 + firstDigit + secondDigit + 16, new CharPred('d')));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 16, 4 + firstDigit + secondDigit + 17, new CharPred(':')));
+//
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 17, 4 + firstDigit + secondDigit + 18 + firstDigit, new CharPred(firstDigit.toString().charAt(0))));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 18, 4 + firstDigit + secondDigit + 19, new CharPred(secondDigit.toString().charAt(0))));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 19, 4 + firstDigit + secondDigit + 20, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 20, 4 + firstDigit + secondDigit + 21, dot));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 21, 4 + firstDigit + secondDigit + 22, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 22, 4 + firstDigit + secondDigit + 23, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 23, 4 + firstDigit + secondDigit + 24, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 24, 4 + firstDigit + secondDigit + 25, dot));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 25, 4 + firstDigit + secondDigit + 26, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 26, 4 + firstDigit + secondDigit + 27, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 27, 4 + firstDigit + secondDigit + 28, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 28, 4 + firstDigit + secondDigit + 29, dot));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 29, 4 + firstDigit + secondDigit + 30, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 30, 4 + firstDigit + secondDigit + 31, num));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 31, 4 + firstDigit + secondDigit + 32, num));
+//
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 32, 4 + firstDigit + secondDigit + 33, space));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 33, 4 + firstDigit + secondDigit + 33, ba.MkOr(new CharPred(':'), alphaNum)));
+//            transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 33, 4 + firstDigit + secondDigit + 34, space));
             }
         }
 
-        transitions.add(new SFAInputMove<CharPred, Character>(56, 57, new CharPred('p')));
-        transitions.add(new SFAInputMove<CharPred, Character>(57, 58, new CharPred(':')));
-
-        transitions.add(new SFAInputMove<CharPred, Character>(58, 59, new CharPred('\'')));
-        transitions.add(new SFAInputMove<CharPred, Character>(59, 60, alphaNum));
-        transitions.add(new SFAInputMove<CharPred, Character>(60, 60, alphaNum));
-        transitions.add(new SFAInputMove<CharPred, Character>(60, 61, new CharPred('\'')));
+//        transitions.add(new SFAInputMove<CharPred, Character>(56, 57, new CharPred('p')));
+//        transitions.add(new SFAInputMove<CharPred, Character>(57, 58, new CharPred(':')));
+//
+//        transitions.add(new SFAInputMove<CharPred, Character>(58, 59, new CharPred('\'')));
+//        transitions.add(new SFAInputMove<CharPred, Character>(59, 60, alphaNum));
+//        transitions.add(new SFAInputMove<CharPred, Character>(60, 60, alphaNum));
+//        transitions.add(new SFAInputMove<CharPred, Character>(60, 61, new CharPred('\'')));
 
         try {
             return SFA.MkSFA(transitions, 0, Collections.singletonList(61), ba, false, false);
