@@ -406,11 +406,7 @@ public class SRA<P, S> {
 			if (currConf.size() > 1) {
 				System.out.println("non-det");
 			}
-
-			// System.out.print(el + " ---> " + currConf.iterator().next().state + " ---");
 		}
-		System.out.println();
-        //registers = cleanRegisters;
 		return isFinalConfiguration(currConf);
 	}
 
