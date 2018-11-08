@@ -240,7 +240,7 @@ public class TestSRAExperiments {
 
     // IP Packet test strings
     private List<Character> validIPPacket1 = lOfS("srcip:192.168.123.192 prt:40 dstip:192.168.123.224 prt:50 pload:'hello'"); // accepted by IP9PacketParser
-    private List<Character> validIPPacketSimplified1 = lOfS("s:192.168.123.192 p:40 d:192.168.123.224 p:50 p:'hello'"); // accepted by IP9PacketParser
+    private List<Character> validIPPacketSimplified1 = lOfS("s:192.168.123.192 p:40 d:192.168.123.224 p:50 p:'hello'"); // accepted by IP2PacketParserSimplified
     private List<Character> validIPPacket2 = lOfS("srcip:192.168.123.122 prt:40 dstip:192.168.123.124 prt:5 pload:'hello123'"); // accepted by IP9PacketParser
     private List<Character> validIPPacket3 = lOfS("srcip:192.148.123.122 prt:40 dstip:192.148.123.124 prt:5 pload:'hello123'"); // accepted by IP9PacketParser
     private List<Character> invalidIPPacket1 = lOfS("srcip:12.168.123.122 prt:40 dstip:192.168.123.124 prt:5 pload:'hello123'"); // not accepted by either
@@ -712,7 +712,7 @@ public class TestSRAExperiments {
                 transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 6, 4 + firstDigit + secondDigit + 7, num));
                 transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 7, 4 + firstDigit + secondDigit + 8, num));
                 transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 8, 4 + firstDigit + secondDigit + 9, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 0, 4 + firstDigit + secondDigit + 10, dot));
+                transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 9, 4 + firstDigit + secondDigit + 10, dot));
                 transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 10, 4 + firstDigit + secondDigit + 12, num));
                 transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 11, 4 + firstDigit + secondDigit + 13, num));
                 transitions.add(new SFAInputMove<CharPred, Character>(4 + firstDigit + secondDigit + 12, 4 + firstDigit + secondDigit + 14, num));
