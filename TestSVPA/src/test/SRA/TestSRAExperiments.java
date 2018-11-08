@@ -4,11 +4,13 @@ import automata.sra.*;
 import automata.sfa.*;
 import logic.ltl.Predicate;
 import org.junit.Test;
+import org.omg.CORBA.TIMEOUT;
 import org.sat4j.specs.TimeoutException;
 import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 import theory.intervals.UnaryCharIntervalSolver;
 
+import java.sql.Time;
 import java.util.*;
 
 import static org.junit.Assert.assertFalse;
@@ -140,9 +142,6 @@ public class TestSRAExperiments {
     @Test
     public void testIPPacketParserSRA() throws TimeoutException {
         assertTrue(IP2PacketParserSRA.accepts(validIPPacket1, ba));
-        assertTrue(IP2PacketParserSimplifiedSFA.createDotFile("IP2Simp", ""));
-        assertTrue(IP2PacketParserSimplifiedSRA.accepts(validIPPacketSimplified1, ba));
-        assertFalse(IP2PacketParserSimplifiedSRA.accepts(invalidIPPacketSimplified1, ba));
         assertTrue(IP3PacketParserSRA.accepts(validIPPacket1, ba));
         assertTrue(IP4PacketParserSRA.accepts(validIPPacket1, ba));
         assertTrue(IP6PacketParserSRA.accepts(validIPPacket1, ba));
@@ -177,6 +176,33 @@ public class TestSRAExperiments {
         assertTrue(IP4PacketParserSRA.accepts(dependentIPPacket1, ba));
         assertTrue(IP6PacketParserSRA.accepts(dependentIPPacket1, ba));
         assertFalse(IP9PacketParserSRA.accepts(dependentIPPacket1, ba));
+    }
+
+    @Test
+    public void IP2SRAInfo() throws TimeoutException {
+        System.out.println("IP2 Simplified SRA Info:");
+        System.out.println();
+        System.out.println("Number of states: " + IP2PacketParserSimplifiedSRA.getStates().size());
+        System.out.println("Number of transitions: " + IP2PacketParserSimplifiedSRA.getMoves().size());
+    }
+
+    @Test
+    public void IP2SFAInfo() throws TimeoutException {
+        System.out.println("IP2 Simplified SFA Info:");
+        System.out.println();
+        System.out.println("Number of states: " + IP2PacketParserSimplifiedSFA.getStates().size());
+        System.out.println("Number of transitions: " + IP2PacketParserSimplifiedSFA.getMoves().size());
+    }
+
+    @Test public void IP2SRATiming() throws TimeoutException {
+        assertTrue(IP2PacketParserSimplifiedSRA.accepts(validIPPacketSimplified1, ba));
+        assertFalse(IP2PacketParserSimplifiedSRA.accepts(invalidIPPacketSimplified1, ba));
+    }
+
+    @Test
+    public void IP2SFATiming() throws TimeoutException {
+        assertFalse(IP2PacketParserSimplifiedSFA.accepts(validIPPacketSimplified1, ba)); // Too big, breaks accepts.
+        assertFalse(IP2PacketParserSimplifiedSFA.accepts(invalidIPPacketSimplified1, ba));
     }
 
     @Test
@@ -242,7 +268,7 @@ public class TestSRAExperiments {
     // IP Packet test strings
     private List<Character> validIPPacket1 = lOfS("srcip:192.168.123.192 prt:40 dstip:192.168.123.224 prt:50 pload:'hello'"); // accepted by IP9PacketParser
     private List<Character> validIPPacketSimplified1 = lOfS("s:192.168.123.192 p:40 d:192.168.123.224 p:50 p:'hello'"); // accepted by IP2PacketParserSimplified
-    private List<Character> invalidIPPacketSimplified1 = lOfS("s:172.168.123.192 p:40 d:192.168.123.224 p:50 p:'hello'"); // not accepted by IP2PacketParserSimplified
+    private List<Character> invalidIPPacketSimplified1 = lOfS("s:132.168.123.192 p:40 d:192.168.123.224 p:50 p:'hello'"); // not accepted by IP2PacketParserSimplified
     private List<Character> validIPPacket2 = lOfS("srcip:192.168.123.122 prt:40 dstip:192.168.123.124 prt:5 pload:'hello123'"); // accepted by IP9PacketParser
     private List<Character> validIPPacket3 = lOfS("srcip:192.148.123.122 prt:40 dstip:192.148.123.124 prt:5 pload:'hello123'"); // accepted by IP9PacketParser
     private List<Character> invalidIPPacket1 = lOfS("srcip:12.168.123.122 prt:40 dstip:192.168.123.124 prt:5 pload:'hello123'"); // not accepted by either
@@ -695,69 +721,70 @@ public class TestSRAExperiments {
 
     private SFA<CharPred, Character> getIP2PacketParserSimplifiedSFA(UnaryCharIntervalSolver ba) {
         Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
+        LinkedList<Integer> finalStates = new LinkedList<Integer>();
 
         transitions.add(new SFAInputMove<CharPred, Character>(0, 1, new CharPred('s')));
         transitions.add(new SFAInputMove<CharPred, Character>(1, 2, new CharPred(':')));
 
         for (Integer firstDigit = 0; firstDigit < 10; firstDigit++) {
-            transitions.add(new SFAInputMove<CharPred, Character>(2, (firstDigit * 351) + 3, new CharPred(firstDigit.toString().charAt(0))));
+            transitions.add(new SFAInputMove<CharPred, Character>(2, (firstDigit * 401) + 3, new CharPred(firstDigit.toString().charAt(0))));
 
             for (Integer secondDigit = 0; secondDigit < 10; secondDigit++) {
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351), 3 + (firstDigit * 351) + (secondDigit * 35) + 1, new CharPred(secondDigit.toString().charAt(0))));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 1, 3 + (firstDigit * 351) + (secondDigit * 35) + 2, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 2, 3 + (firstDigit * 351) + (secondDigit * 35) + 3, dot));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 3, 3 + (firstDigit * 351) + (secondDigit * 35) + 4, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 4, 3 + (firstDigit * 351) + (secondDigit * 35) + 5, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 5, 3 + (firstDigit * 351) + (secondDigit * 35) + 6, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 6, 3 + (firstDigit * 351) + (secondDigit * 35) + 7, dot));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401), 3 + (firstDigit * 401) + (secondDigit * 40) + 1, new CharPred(secondDigit.toString().charAt(0))));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 1, 3 + (firstDigit * 401) + (secondDigit * 40) + 2, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 2, 3 + (firstDigit * 401) + (secondDigit * 40) + 3, dot));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 3, 3 + (firstDigit * 401) + (secondDigit * 40) + 4, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 4, 3 + (firstDigit * 401) + (secondDigit * 40) + 5, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 5, 3 + (firstDigit * 401) + (secondDigit * 40) + 6, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 6, 3 + (firstDigit * 401) + (secondDigit * 40) + 7, dot));
 
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 7, 3 + (firstDigit * 351) + (secondDigit * 35) + 8, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 8, 3 + (firstDigit * 351) + (secondDigit * 35) + 9, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 9, 3 + (firstDigit * 351) + (secondDigit * 35) + 10, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 10, 3 + (firstDigit * 351) + (secondDigit * 35) + 11, dot));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 11, 3 + (firstDigit * 351) + (secondDigit * 35) + 12, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 12, 3 + (firstDigit * 351) + (secondDigit * 35) + 13, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 13, 3 + (firstDigit * 351) + (secondDigit * 35) + 14, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 7, 3 + (firstDigit * 401) + (secondDigit * 40) + 8, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 8, 3 + (firstDigit * 401) + (secondDigit * 40) + 9, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 9, 3 + (firstDigit * 401) + (secondDigit * 40) + 10, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 10, 3 + (firstDigit * 401) + (secondDigit * 40) + 11, dot));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 11, 3 + (firstDigit * 401) + (secondDigit * 40) + 12, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 12, 3 + (firstDigit * 401) + (secondDigit * 40) + 13, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 13, 3 + (firstDigit * 401) + (secondDigit * 40) + 14, num));
 
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 14, 3 + (firstDigit * 351) + (secondDigit * 35) + 15, space));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 15, 3 + (firstDigit * 351) + (secondDigit * 35) + 15, ba.MkOr(new CharPred(':'), alphaNum)));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 15, 3 + (firstDigit * 351) + (secondDigit * 35) + 16, space));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 14, 3 + (firstDigit * 401) + (secondDigit * 40) + 15, space));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 15, 3 + (firstDigit * 401) + (secondDigit * 40) + 15, ba.MkOr(new CharPred(':'), alphaNum)));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 15, 3 + (firstDigit * 401) + (secondDigit * 40) + 16, space));
 
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 16, 3 + (firstDigit * 351) + (secondDigit * 35) + 17, new CharPred('d')));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 17, 3 + (firstDigit * 351) + (secondDigit * 35) + 18, new CharPred(':')));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 16, 3 + (firstDigit * 401) + (secondDigit * 40) + 17, new CharPred('d')));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 17, 3 + (firstDigit * 401) + (secondDigit * 40) + 18, new CharPred(':')));
 
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 18, 3 + (firstDigit * 351) + (secondDigit * 35) + 19, new CharPred(firstDigit.toString().charAt(0))));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 19, 3 + (firstDigit * 351) + (secondDigit * 35) + 20, new CharPred(secondDigit.toString().charAt(0))));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 20, 3 + (firstDigit * 351) + (secondDigit * 35) + 21, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 21, 3 + (firstDigit * 351) + (secondDigit * 35) + 22, dot));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 22, 3 + (firstDigit * 351) + (secondDigit * 35) + 23, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 23, 3 + (firstDigit * 351) + (secondDigit * 35) + 24, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 24, 3 + (firstDigit * 351) + (secondDigit * 35) + 25, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 25, 3 + (firstDigit * 351) + (secondDigit * 35) + 26, dot));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 26, 3 + (firstDigit * 351) + (secondDigit * 35) + 27, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 27, 3 + (firstDigit * 351) + (secondDigit * 35) + 28, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 28, 3 + (firstDigit * 351) + (secondDigit * 35) + 29, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 29, 3 + (firstDigit * 351) + (secondDigit * 35) + 30, dot));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 30, 3 + (firstDigit * 351) + (secondDigit * 35) + 31, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 31, 3 + (firstDigit * 351) + (secondDigit * 35) + 32, num));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 32, 3 + (firstDigit * 351) + (secondDigit * 35) + 33, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 18, 3 + (firstDigit * 401) + (secondDigit * 40) + 19, new CharPred(firstDigit.toString().charAt(0))));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 19, 3 + (firstDigit * 401) + (secondDigit * 40) + 20, new CharPred(secondDigit.toString().charAt(0))));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 20, 3 + (firstDigit * 401) + (secondDigit * 40) + 21, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 21, 3 + (firstDigit * 401) + (secondDigit * 40) + 22, dot));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 22, 3 + (firstDigit * 401) + (secondDigit * 40) + 23, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 23, 3 + (firstDigit * 401) + (secondDigit * 40) + 24, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 24, 3 + (firstDigit * 401) + (secondDigit * 40) + 25, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 25, 3 + (firstDigit * 401) + (secondDigit * 40) + 26, dot));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 26, 3 + (firstDigit * 401) + (secondDigit * 40) + 27, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 27, 3 + (firstDigit * 401) + (secondDigit * 40) + 28, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 28, 3 + (firstDigit * 401) + (secondDigit * 40) + 29, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 29, 3 + (firstDigit * 401) + (secondDigit * 40) + 30, dot));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 30, 3 + (firstDigit * 401) + (secondDigit * 40) + 31, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 31, 3 + (firstDigit * 401) + (secondDigit * 40) + 32, num));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 32, 3 + (firstDigit * 401) + (secondDigit * 40) + 33, num));
 
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 33, 3 + (firstDigit * 351) + (secondDigit * 35) + 34, space));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 34, 3 + (firstDigit * 351) + (secondDigit * 35) + 34, ba.MkOr(new CharPred(':'), alphaNum)));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 34, 3 + (firstDigit * 351) + (secondDigit * 35) + 35, space));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 33, 3 + (firstDigit * 401) + (secondDigit * 40) + 34, space));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 34, 3 + (firstDigit * 401) + (secondDigit * 40) + 34, ba.MkOr(new CharPred(':'), alphaNum)));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 34, 3 + (firstDigit * 401) + (secondDigit * 40) + 35, space));
 
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 351) + (secondDigit * 35) + 35, 3513, new CharPred('p')));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 35, 3 + (firstDigit * 401) + (secondDigit * 40) + 36, new CharPred('p')));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 36, 3 + (firstDigit * 401) + (secondDigit * 40) + 37, new CharPred('\'')));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 37, 3 + (firstDigit * 401) + (secondDigit * 40) + 38, new CharPred(':')));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 38, 3 + (firstDigit * 401) + (secondDigit * 40) + 39, alphaNum));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 39, 3 + (firstDigit * 401) + (secondDigit * 40) + 39, alphaNum));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 39, 3 + (firstDigit * 401) + (secondDigit * 40) + 40, new CharPred('\'')));
+                finalStates.add(3 + (firstDigit * 401) + (secondDigit * 40) + 40);
             }
         }
 
-        transitions.add(new SFAInputMove<CharPred, Character>(3513, 3514, new CharPred(':')));
-        transitions.add(new SFAInputMove<CharPred, Character>(3514, 3515, new CharPred('\'')));
-        transitions.add(new SFAInputMove<CharPred, Character>(3515, 3516, alphaNum));
-        transitions.add(new SFAInputMove<CharPred, Character>(3516, 3516, alphaNum));
-        transitions.add(new SFAInputMove<CharPred, Character>(3516, 3517, new CharPred('\'')));
-
         try {
-            return SFA.MkSFA(transitions, 0, Collections.singletonList(3517), ba, false, false);
+            return SFA.MkSFA(transitions, 0,finalStates, ba, false, false);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

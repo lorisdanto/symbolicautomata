@@ -394,8 +394,6 @@ public class SRA<P, S> {
 		Collection<Configuration> currConf = new LinkedList<>();
 		currConf.add(new Configuration(initialState, new LinkedList<>(registers)));
 
-		// System.out.print(initialState + "--- ");
-
 		for (S el : input) {
 			currConf = getNextConfigurations(currConf, el, ba);
 
@@ -404,7 +402,7 @@ public class SRA<P, S> {
 			}
 
 			if (currConf.size() > 1) {
-				System.out.println("non-det");
+				isDeterministic = false;
 			}
 		}
 		return isFinalConfiguration(currConf);
@@ -554,7 +552,6 @@ public class SRA<P, S> {
 		for (Configuration c: currConf) {
 			for (SRAMove<P, S> t : getMovesFrom(c.state)) {
 				if (t.hasModel(inputElement, ba, c.regValues)) {
-					// System.out.println(c.regValues + " " + t + " (" + inputElement + ")");
 					LinkedList<S> updatedReg = new LinkedList<>(c.regValues);
 					for (Integer index : t.U)
 						updatedReg.set(index, inputElement);
@@ -1245,7 +1242,7 @@ public class SRA<P, S> {
 
 			if (aut1.finalStates.contains(aut1NormState.getStateId()) &&
 					!aut2.finalStates.contains(aut2NormState.getStateId())) {
-				printTriples(currentTriple);
+//				printTriples(currentTriple);
 				return false;
 			}
 
@@ -1254,7 +1251,7 @@ public class SRA<P, S> {
 				if (aut2.finalStates.contains(aut2NormState.getStateId()) &&
 						!aut1.finalStates.contains(aut1NormState.getStateId())) {
 
-					printTriples(currentTriple);
+//					printTriples(currentTriple);
 					return false;
 				}
 
@@ -1306,7 +1303,7 @@ public class SRA<P, S> {
 					regMap, currentRegAbs1, currentRegAbs2);
 
 			if (newTriples == null) {
-				printTriples(currentTriple);
+//				printTriples(currentTriple);
 				return false;
 			}
 
@@ -1318,7 +1315,7 @@ public class SRA<P, S> {
 						getRegMapInv(regMap), currentRegAbs2, currentRegAbs1);
 
 				if (invTriples == null) {
-					printTriples(currentTriple);
+//					printTriples(currentTriple);
 					return false;
 				}
 			}
@@ -1620,7 +1617,6 @@ public class SRA<P, S> {
 								}
 							}
 						} else {
-							System.out.println("Need NOP");
 							// Rule (NOP)
 							// FIXME: have a look at this
 							// Integer garbageReg = newRegisters.size() - 1;
