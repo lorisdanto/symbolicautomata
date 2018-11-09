@@ -2,15 +2,12 @@ package test.SRA;
 
 import automata.sra.*;
 import automata.sfa.*;
-import logic.ltl.Predicate;
 import org.junit.Test;
-import org.omg.CORBA.TIMEOUT;
 import org.sat4j.specs.TimeoutException;
 import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 import theory.intervals.UnaryCharIntervalSolver;
 
-import java.sql.Time;
 import java.util.*;
 
 import static org.junit.Assert.assertFalse;
