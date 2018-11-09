@@ -141,6 +141,7 @@ public class TestSRAExperiments {
 
     @Test
     public void testIPPacketParserSRA() throws TimeoutException {
+        assertTrue(IP2PacketParserSimplifiedSFA.createDotFile("IPSFA", ""));
         assertTrue(IP2PacketParserSRA.accepts(validIPPacket1, ba));
         assertTrue(IP3PacketParserSRA.accepts(validIPPacket1, ba));
         assertTrue(IP4PacketParserSRA.accepts(validIPPacket1, ba));
@@ -201,7 +202,7 @@ public class TestSRAExperiments {
 
     @Test
     public void IP2SFATiming() throws TimeoutException {
-        assertFalse(IP2PacketParserSimplifiedSFA.accepts(validIPPacketSimplified1, ba)); // Too big, breaks accepts.
+        assertTrue(IP2PacketParserSimplifiedSFA.accepts(validIPPacketSimplified1, ba));
         assertFalse(IP2PacketParserSimplifiedSFA.accepts(invalidIPPacketSimplified1, ba));
     }
 
@@ -774,8 +775,9 @@ public class TestSRAExperiments {
                 transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 34, 3 + (firstDigit * 401) + (secondDigit * 40) + 35, space));
 
                 transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 35, 3 + (firstDigit * 401) + (secondDigit * 40) + 36, new CharPred('p')));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 36, 3 + (firstDigit * 401) + (secondDigit * 40) + 37, new CharPred('\'')));
-                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 37, 3 + (firstDigit * 401) + (secondDigit * 40) + 38, new CharPred(':')));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 36, 3 + (firstDigit * 401) + (secondDigit * 40) + 37, new CharPred(':')));
+                transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 37, 3 + (firstDigit * 401) + (secondDigit * 40) + 38, new CharPred('\'')));
+
                 transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 38, 3 + (firstDigit * 401) + (secondDigit * 40) + 39, alphaNum));
                 transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 39, 3 + (firstDigit * 401) + (secondDigit * 40) + 39, alphaNum));
                 transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 401) + (secondDigit * 40) + 39, 3 + (firstDigit * 401) + (secondDigit * 40) + 40, new CharPred('\'')));
