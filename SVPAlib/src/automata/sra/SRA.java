@@ -1272,38 +1272,38 @@ public class SRA<P, S> {
 			LinkedList<NormSRAMove<P>> normMovesFromCurrent1;
 			LinkedList<NormSRAMove<P>> normMovesFromCurrent2;
 
-//			if (aut1NormOut.containsKey(aut1NormState))
-//				normMovesFromCurrent1 = aut1NormOut.get(aut1NormState);
-//			else {
-			normMovesFromCurrent1 = new LinkedList<>();
+			if (aut1NormOut.containsKey(aut1NormState))
+				normMovesFromCurrent1 = aut1NormOut.get(aut1NormState);
+			else {
+				normMovesFromCurrent1 = new LinkedList<>();
 
-			for (SRAMove<P, S> move : aut1.getMovesFrom(aut1NormState.getStateId())) {
-				LinkedList<NormSRAMove<P>> partialNormMoves = toNormSRAMoves(ba, currentRegAbs1, mintermsForPredicates,
-						move, aut1NormState);
+				for (SRAMove<P, S> move : aut1.getMovesFrom(aut1NormState.getStateId())) {
+					LinkedList<NormSRAMove<P>> partialNormMoves = toNormSRAMoves(ba, currentRegAbs1, mintermsForPredicates,
+							move, aut1NormState);
 
-				normMovesFromCurrent1.addAll(partialNormMoves);
+					normMovesFromCurrent1.addAll(partialNormMoves);
+				}
+
+				aut1NormOut.put(aut1NormState, normMovesFromCurrent1);
 			}
-
-			aut1NormOut.put(aut1NormState, normMovesFromCurrent1);
-//			}
 
 			if (!bisimulation && normMovesFromCurrent1.isEmpty()) // we don't need to find matching moves from aut2
 				continue;
 
-//			if (aut2NormOut.containsKey(aut2NormState))
-//				normMovesFromCurrent2 = aut2NormOut.get(aut2NormState);
-//			else {
-			normMovesFromCurrent2 = new LinkedList<>();
+			if (aut2NormOut.containsKey(aut2NormState))
+				normMovesFromCurrent2 = aut2NormOut.get(aut2NormState);
+			else {
+				normMovesFromCurrent2 = new LinkedList<>();
 
-			for (SRAMove<P, S> move : aut2.getMovesFrom(aut2NormState.getStateId())) {
-				LinkedList<NormSRAMove<P>> partialNormMoves = toNormSRAMoves(ba, currentRegAbs2, mintermsForPredicates,
-						move, aut2NormState);
+				for (SRAMove<P, S> move : aut2.getMovesFrom(aut2NormState.getStateId())) {
+					LinkedList<NormSRAMove<P>> partialNormMoves = toNormSRAMoves(ba, currentRegAbs2, mintermsForPredicates,
+							move, aut2NormState);
 
-				normMovesFromCurrent2.addAll(partialNormMoves);
+					normMovesFromCurrent2.addAll(partialNormMoves);
+				}
+
+				aut2NormOut.put(aut2NormState, normMovesFromCurrent2);
 			}
-
-			aut2NormOut.put(aut2NormState, normMovesFromCurrent2);
-//			}
 
 			// Get new similarity triples
 			LinkedList<NormSimTriple<P>> newTriples = normSimSucc(ba, normMovesFromCurrent1, normMovesFromCurrent2,
