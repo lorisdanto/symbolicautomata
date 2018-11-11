@@ -1265,38 +1265,38 @@ public class SRA<P, S> {
 			LinkedList<NormSRAMove<P>> normMovesFromCurrent1;
 			LinkedList<NormSRAMove<P>> normMovesFromCurrent2;
 
-//			if (aut1NormOut.containsKey(aut1NormState))
-//				normMovesFromCurrent1 = aut1NormOut.get(aut1NormState);
-//			else {
-			normMovesFromCurrent1 = new LinkedList<>();
+			if (aut1NormOut.containsKey(aut1NormState))
+				normMovesFromCurrent1 = aut1NormOut.get(aut1NormState);
+			else {
+				normMovesFromCurrent1 = new LinkedList<>();
 
-			for (SRAMove<P, S> move : aut1.getMovesFrom(aut1NormState.getStateId())) {
-				LinkedList<NormSRAMove<P>> partialNormMoves = toNormSRAMoves(ba, currentRegAbs1, mintermsForPredicates,
-						move, aut1NormState);
+				for (SRAMove<P, S> move : aut1.getMovesFrom(aut1NormState.getStateId())) {
+					LinkedList<NormSRAMove<P>> partialNormMoves = toNormSRAMoves(ba, currentRegAbs1, mintermsForPredicates,
+							move, aut1NormState);
 
-				normMovesFromCurrent1.addAll(partialNormMoves);
+					normMovesFromCurrent1.addAll(partialNormMoves);
+				}
+
+				aut1NormOut.put(aut1NormState, normMovesFromCurrent1);
 			}
-
-			aut1NormOut.put(aut1NormState, normMovesFromCurrent1);
-//			}
 
 			if (!bisimulation && normMovesFromCurrent1.isEmpty()) // we don't need to find matching moves from aut2
 				continue;
 
-//			if (aut2NormOut.containsKey(aut2NormState))
-//				normMovesFromCurrent2 = aut2NormOut.get(aut2NormState);
-//			else {
-			normMovesFromCurrent2 = new LinkedList<>();
+			if (aut2NormOut.containsKey(aut2NormState))
+				normMovesFromCurrent2 = aut2NormOut.get(aut2NormState);
+			else {
+				normMovesFromCurrent2 = new LinkedList<>();
 
-			for (SRAMove<P, S> move : aut2.getMovesFrom(aut2NormState.getStateId())) {
-				LinkedList<NormSRAMove<P>> partialNormMoves = toNormSRAMoves(ba, currentRegAbs2, mintermsForPredicates,
-						move, aut2NormState);
+				for (SRAMove<P, S> move : aut2.getMovesFrom(aut2NormState.getStateId())) {
+					LinkedList<NormSRAMove<P>> partialNormMoves = toNormSRAMoves(ba, currentRegAbs2, mintermsForPredicates,
+							move, aut2NormState);
 
-				normMovesFromCurrent2.addAll(partialNormMoves);
+					normMovesFromCurrent2.addAll(partialNormMoves);
+				}
+
+				aut2NormOut.put(aut2NormState, normMovesFromCurrent2);
 			}
-
-			aut2NormOut.put(aut2NormState, normMovesFromCurrent2);
-//			}
 
 			// Get new similarity triples
 			LinkedList<NormSimTriple<P>> newTriples = normSimSucc(ba, normMovesFromCurrent1, normMovesFromCurrent2,
@@ -1645,7 +1645,7 @@ public class SRA<P, S> {
 
             }
         }
-        return MkSRA(transitions, initialState, newFinalStates, newRegisters, ba, false, false);
+        return MkSRA(transitions, initialState, newFinalStates, newRegisters, ba);//, false, false);
     }
 
 	/**
@@ -1830,49 +1830,132 @@ public class SRA<P, S> {
         LinkedList<B> registers = aut.registers;
 
         // New moves
-        Map<Pair<Integer, Integer>, Pair<A, Integer>> checkMoves = new HashMap<Pair<Integer, Integer>, Pair<A, Integer>>();
-        Map<Pair<Integer, Integer>, Pair<A, Integer>> freshMoves = new HashMap<Pair<Integer, Integer>, Pair<A, Integer>>();
-        Map<Pair<Integer, Integer>, Pair<A, Integer>> storeMoves = new HashMap<Pair<Integer, Integer>, Pair<A, Integer>>();
-        Map<Pair<Integer, Integer>, Pair<A, LinkedList<Set<Integer>>>> SRAMoves = new HashMap<Pair<Integer, Integer>, Pair<A, LinkedList<Set<Integer>>>>();
+        Map<Pair<Integer, Integer>, Map<Integer, A>> checkMoves = new HashMap<>();
+        Map<Pair<Integer, Integer>, Map<Integer, A>> freshMoves = new HashMap<>();
+        Map<Pair<Integer, Integer>, Map<Integer, A>> storeMoves = new HashMap<>();
+        Map<Pair<Integer, Integer>, Map<List<Set<Integer>>, A>> SRAMoves = new HashMap<>();
 
         // Create disjunction of all rules between same state and with the same operation
         for (SRAMove<A, B> move : aut.getMovesFrom(aut.states)) {
-            Pair<Integer, Integer> fromTo = new Pair<Integer, Integer>(move.from, move.to);
+        	Pair<Integer, Integer> fromTo = new Pair(move.from, move.to);
+			Map<Integer, A> regPredMap = null;
+			Integer reg = null;
+			Map<Pair<Integer, Integer>, Map<Integer, A>> moveMap = null;
+
+
+			boolean isGenericMove = false;
 
             if (move instanceof SRACheckMove<?, ?>) {
-                if (checkMoves.containsKey(fromTo))
-                    checkMoves.put(fromTo, new Pair<A, Integer>(ba.MkOr(move.guard, checkMoves.get(fromTo).first), move.E.iterator().next()));
-                else
-                    checkMoves.put(fromTo, new Pair<A, Integer>(move.guard, move.E.iterator().next()));
-            } else if (move instanceof SRAFreshMove<?, ?>) {
-                if (freshMoves.containsKey(fromTo))
-                    freshMoves.put(fromTo, new Pair<A, Integer>(ba.MkOr(move.guard, freshMoves.get(fromTo).first), move.U.iterator().next()));
-                else
-                    freshMoves.put(fromTo, new Pair<A, Integer>(move.guard, move.U.iterator().next()));
-            } else if (move instanceof SRAStoreMove<?, ?>) {
-                if (storeMoves.containsKey(fromTo))
-                    storeMoves.put(fromTo, new Pair<A, Integer>(ba.MkOr(move.guard, storeMoves.get(fromTo).first), move.U.iterator().next()));
-                else
-                    storeMoves.put(fromTo, new Pair<A, Integer>(move.guard, move.U.iterator().next()));
-            } else {
-                if (SRAMoves.containsKey(fromTo))
-                    SRAMoves.put(fromTo, new Pair<A, LinkedList<Set<Integer>>>(ba.MkOr(move.guard, SRAMoves.get(fromTo).first),
-                            new LinkedList<Set<Integer>>(Arrays.asList(move.E, move.I, move.U))));
-                else
-                    SRAMoves.put(fromTo, new Pair<A, LinkedList<Set<Integer>>>(move.guard,
-                            new LinkedList<Set<Integer>>(Arrays.asList(move.E, move.I, move.U))));
-            }
+				reg = move.E.iterator().next();
+				moveMap = checkMoves;
+			}
+			else if(move instanceof SRAFreshMove) {
+				reg = move.U.iterator().next();
+				moveMap = freshMoves;
+			}
+			else if(move instanceof SRAStoreMove) {
+				reg = move.U.iterator().next();
+				moveMap = storeMoves;
+			}
+			else {
+				isGenericMove = true;
+			}
+
+			if (!isGenericMove) {
+				if (moveMap.containsKey(fromTo)) {
+					regPredMap = moveMap.get(fromTo);
+
+					if (regPredMap.containsKey(reg)) {
+						A guard = regPredMap.get(reg);
+						regPredMap.replace(reg, ba.MkOr(guard, move.guard));
+					}
+				} else {
+					regPredMap = new HashMap<>();
+					regPredMap.put(reg, move.guard);
+					moveMap.put(fromTo, regPredMap);
+				}
+			}
+			else
+			{
+				LinkedList<Set<Integer>> regConstraints = new LinkedList<>(Arrays.asList(move.E, move.I, move.U));
+				Map<List<Set<Integer>>, A> regPredMapGen;
+
+				if (SRAMoves.containsKey(fromTo)) {
+					regPredMapGen = SRAMoves.get(fromTo);
+
+
+					if (regPredMapGen.containsKey(regConstraints)) {
+						A guard = regPredMapGen.get(regConstraints);
+						regPredMapGen.replace(regConstraints, ba.MkOr(guard, move.guard));
+					}
+				} else {
+					regPredMapGen = new HashMap<>();
+					regPredMapGen.put(regConstraints, move.guard);
+					SRAMoves.put(fromTo, regPredMapGen);
+				}
+
+			}
+
+
+//                if (checkMoves.containsKey(fromTo))
+//                    checkMoves.put(fromTo, new Pair<A, Integer>(ba.MkOr(move.guard, checkMoves.get(fromTo).first), move.E.iterator().next()));
+//                else
+//                    checkMoves.put(fromTo, new Pair<A, Integer>(move.guard, move.E.iterator().next()));
+//            } else if (move instanceof SRAFreshMove<?, ?>) {
+//                if (freshMoves.containsKey(fromTo))
+//                    freshMoves.put(fromTo, new Pair<A, Integer>(ba.MkOr(move.guard, freshMoves.get(fromTo).first), move.U.iterator().next()));
+//                else
+//                    freshMoves.put(fromTo, new Pair<A, Integer>(move.guard, move.U.iterator().next()));
+//            } else if (move instanceof SRAStoreMove<?, ?>) {
+//                if (storeMoves.containsKey(fromTo))
+//                    storeMoves.put(fromTo, new Pair<A, Integer>(ba.MkOr(move.guard, storeMoves.get(fromTo).first), move.U.iterator().next()));
+//                else
+//                    storeMoves.put(fromTo, new Pair<A, Integer>(move.guard, move.U.iterator().next()));
+//            } else {
+//                if (SRAMoves.containsKey(fromTo))
+//                    SRAMoves.put(fromTo, new Pair<A, LinkedList<Set<Integer>>>(ba.MkOr(move.guard, SRAMoves.get(fromTo).first),
+//                            new LinkedList<Set<Integer>>(Arrays.asList(move.E, move.I, move.U))));
+//                else
+//                    SRAMoves.put(fromTo, new Pair<A, LinkedList<Set<Integer>>>(move.guard,
+//                            new LinkedList<Set<Integer>>(Arrays.asList(move.E, move.I, move.U))));
+//            }
         }
 
         // Create the new transition function
-        for (Pair<Integer, Integer> p : checkMoves.keySet())
-            transitions.add(new SRACheckMove<A, B>(p.first, p.second, checkMoves.get(p).first, checkMoves.get(p).second));
-        for (Pair<Integer, Integer> p : freshMoves.keySet())
-            transitions.add(new SRAFreshMove<A, B>(p.first, p.second, freshMoves.get(p).first, freshMoves.get(p).second, registers.size()));
-        for (Pair<Integer, Integer> p : storeMoves.keySet())
-            transitions.add(new SRAStoreMove<A, B>(p.first, p.second, storeMoves.get(p).first, storeMoves.get(p).second));
-        for (Pair<Integer, Integer> p : SRAMoves.keySet())
-            transitions.add(new SRAMove<A, B>(p.first, p.second, SRAMoves.get(p).first, SRAMoves.get(p).second.get(0), SRAMoves.get(p).second.get(1), SRAMoves.get(p).second.get(2)));
+        for (Pair<Integer, Integer> p : checkMoves.keySet()) {
+			Map<Integer, A> regPredMap = checkMoves.get(p);
+
+			for (Integer reg: regPredMap.keySet())
+				transitions.add(new SRACheckMove<>(p.first, p.second, regPredMap.get(reg), reg));
+		}
+
+        for (Pair<Integer, Integer> p : freshMoves.keySet()) {
+			Map<Integer, A> regPredMap = freshMoves.get(p);
+
+			for (Integer reg : regPredMap.keySet())
+				transitions.add(new SRAFreshMove<>(p.first, p.second, regPredMap.get(reg), reg, registers.size()));
+		}
+
+        for (Pair<Integer, Integer> p : storeMoves.keySet()) {
+			Map<Integer, A> regPredMap = storeMoves.get(p);
+
+			for (Integer reg : regPredMap.keySet())
+				transitions.add(new SRAStoreMove<>(p.first, p.second, regPredMap.get(reg), reg));
+		}
+
+
+        for (Pair<Integer, Integer> p : SRAMoves.keySet()) {
+			Map<List<Set<Integer>>, A> consPredMap = SRAMoves.get(p);
+
+			for (List<Set<Integer>> regCons : consPredMap.keySet()) {
+				Iterator<Set<Integer>> regConsIt = regCons.iterator();
+				Set<Integer> E = regConsIt.next();
+				Set<Integer> I = regConsIt.next();
+				Set<Integer> U = regConsIt.next();
+
+				transitions.add(new SRAMove<>(p.first, p.second, consPredMap.get(regCons), E, I, U));
+			}
+		}
 
         return MkSRA(transitions, initialState, finalStates, registers, ba, false, false);
     }

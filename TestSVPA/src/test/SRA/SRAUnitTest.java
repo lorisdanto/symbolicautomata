@@ -251,6 +251,15 @@ public class SRAUnitTest {
         assertTrue(svSRA.isLanguageEquivalent(svSRA, ba, Long.MAX_VALUE));
     }
 
+//    @Test
+//    public void testEmptinessPaper() throws TimeoutException {
+//        LinkedList<Integer> registers = new LinkedList<>();
+//        registers.add(0);
+//
+//        Collection<SRAMove<IntPred, Integer>> transitions = new LinkedList<>;
+//       // transitions.add(new SRAFreshMove<>(0, 1, IntPred.))
+//    }
+
     @Test
     public void testIntersectionInclusion() throws TimeoutException {
         SRA<CharPred, Character> intSRA = getSRAa(ba).intersectionWith(getSRAb(ba), ba, Long.MAX_VALUE);
