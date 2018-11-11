@@ -235,11 +235,11 @@ public class TestSRAExperiments {
         assertFalse(IP4PacketParserSimplifiedSFA.accepts(invalidIPPacketSimplified1, ba));
     }
 
-//    @Test
-//    public void testSimulationIP2() throws TimeoutException {
-//        assertTrue(IP2PacketParserSRA.languageIncludes(IP3PacketParserSRA, ba, Long.MAX_VALUE));
-//        assertFalse(IP2PacketParserSRA.isLanguageEquivalent(IP3PacketParserSRA, ba, Long.MAX_VALUE));
-//    }
+    @Test
+    public void testSimulationIP() throws TimeoutException {
+        assertTrue(IP3PacketParserSRA.languageIncludes(IP4PacketParserSRA, ba, Long.MAX_VALUE));
+        assertFalse(IP3PacketParserSRA.isLanguageEquivalent(IP4PacketParserSRA, ba, Long.MAX_VALUE));
+    }
 
     // ---------------------------------------
     // Predicates
