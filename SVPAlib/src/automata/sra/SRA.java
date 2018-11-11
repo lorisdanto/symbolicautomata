@@ -282,8 +282,12 @@ public class SRA<P, S> {
 
 		return aut;
 	}
-	
-	// Adds a transition to the SRA
+
+	/**
+	 * Adds a transition to the SRA.
+	 *
+	 * @throws TimeoutException
+	 */
 	private void addTransition(SRAMove<P, S> transition, BooleanAlgebra<P, S> ba, boolean skipSatCheck) throws TimeoutException {
 		if (skipSatCheck || transition.isSatisfiable(ba)) {
 
@@ -564,7 +568,9 @@ public class SRA<P, S> {
 		return nextConfs;
 	}
 
-	// Get list of predicates without duplicates
+	/**
+	 * @return a list of predicates without duplicates
+	 */
 	private HashSet<P> getAllPredicates(long timeout) {
 		HashSet<P> predicatesSet = new HashSet<>();
 
@@ -598,7 +604,9 @@ public class SRA<P, S> {
 
 	// TODO: Should all these be static?
 
-	// Encapsulates minterm
+	/**
+	 * Encapsulates minterm
+	 */
 	protected static class MinTerm<P> {
 
 		private Pair<P, ArrayList<Integer>> data;
@@ -635,7 +643,9 @@ public class SRA<P, S> {
 
 	}
 
-	// Encapsulates normal SRA state
+	/**
+	 * Encapsulates normal SRA state
+	 */
 	static class NormSRAState<P> {
 		private Pair<Integer, HashMap<Integer, MinTerm<P>>> data;
 
@@ -702,7 +712,9 @@ public class SRA<P, S> {
 
 	}
 
-	// Encapsulates a reduced bisimulation triple
+	/**
+	 * Encapsulates a reduced bisimulation triple
+	 */
 	protected  static class NormSimTriple<P> {
 		Triple<NormSRAState<P>, NormSRAState<P>, HashMap<Integer, Integer>> data;
 		NormSimTriple<P> previousTriple;
@@ -758,8 +770,12 @@ public class SRA<P, S> {
 	}
 
 
-	// Breaks down a SRA move into minterms.
-	// Only for single-valued SRAs
+
+	/**
+	 * Breaks down a SRA move into minterms.
+	 * Only for single-valued SRAs
+	 * @return a LinkedList of <code>NormSRAMove<P></></code>
+	 */
 	private static <P, S> LinkedList<NormSRAMove<P>> toNormSRAMoves(BooleanAlgebra<P, S> ba,
 																  HashMap<Integer, MinTerm<P>> regAbs,
 																  HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicate,
@@ -768,9 +784,6 @@ public class SRA<P, S> {
 
 		LinkedList<NormSRAMove<P>> normMoves = new LinkedList<>();
 		LinkedList<MinTerm<P>> minterms = mintermsForPredicate.get(move.guard);
-
-		// TODO: Needs to be reviewed, which register do we use here?
-
 
 		if (move instanceof SRACheckMove) {
             Integer register = move.E.iterator().next();
@@ -806,8 +819,9 @@ public class SRA<P, S> {
 		return normMoves;
 	}
 
-
-	// Compute minterms where predicates are non-negated
+	/**
+	 * Compute minterms where predicates are non-negated.
+	 */
 	private static <P> HashMap<P, LinkedList<MinTerm<P>>> getMintermsForPredicates(List<P> allPredicates, List<MinTerm<P>> minTerms) {
 		HashMap<P, LinkedList<MinTerm<P>>> mintermsForPredicates = new HashMap<>();
 
@@ -827,7 +841,9 @@ public class SRA<P, S> {
 		return mintermsForPredicates;
 	}
 
-	// Create initial register abstraction
+	/**
+	 * Create initial register abstraction
+	 */
 	private HashMap<Integer, MinTerm<P>> getInitialRegAbs(List<P> allPredicates,
 														  BooleanAlgebra<P,S> ba,
 														  //LinkedList<P> initAssAtoms,
@@ -862,10 +878,10 @@ public class SRA<P, S> {
 		return initRegAb;
 	}
 
-
-
-	// Emptiness check
-
+	/**
+	 * Checks if the language accepted by an SRA is empty.
+	 * @return true if empty, false if not empty.
+	 */
 	public static <P, S> boolean isLanguageEmpty(SRA<P, S> aut, BooleanAlgebra<P, S> ba, long timeout) throws TimeoutException {
 		long startTime = System.currentTimeMillis();
 
@@ -1046,6 +1062,10 @@ public class SRA<P, S> {
 		isTotal = true;
 	}
 
+	/**
+	 * Checks if the language of an SRA is equivalent to the language of another SRA.
+	 * @return true of it is equivalent, false if not.
+	 */
 	public boolean isLanguageEquivalent(SRA<P,S> aut, BooleanAlgebra<P,S> ba, long timeout) throws TimeoutException {
 		SRA<P,S> aut1 = (SRA<P,S>) this.clone();
 		SRA<P,S> aut2 = (SRA<P,S>) aut.clone();
@@ -1067,7 +1087,10 @@ public class SRA<P, S> {
 		return canSimulate(aut1, aut2, ba, true, timeout);
 	}
 
-
+	/**
+	 * Checks if the language of an SRA includes the language of another SRA.
+	 * @return true of it includes the language, false if not.
+	 */
 	public boolean languageIncludes(SRA<P,S> aut, BooleanAlgebra<P,S> ba, long timeout) throws TimeoutException {
 		SRA<P,S> aut1 = (SRA<P,S>) this.clone();
 		SRA<P,S> aut2 = (SRA<P,S>) aut.clone();
@@ -1097,7 +1120,10 @@ public class SRA<P, S> {
 		}
 	}
 
-
+	/**
+	 * Compiles an SRA (multiple assignment or not), into a Normal SRA.
+	 * @return a Normal SRA
+	 */
 	public SRA<P,S> toNormSRA(BooleanAlgebra<P,S> ba, Long timeout) {
 		// Initial register map
 		HashSet<P> allPredicatesSet = getAllPredicates(timeout);
@@ -1135,7 +1161,10 @@ public class SRA<P, S> {
 		return null;
 	}
 
-
+	/**
+	 * Checks if <code>aut1</code> can simulate <code>aut2</code>, checks for bisimulation if <code>bisimulation</code> is set to true.
+	 * @return true if it simulates, false otherwise.
+	 */
 	public static <P, S> boolean canSimulate(SRA<P,S> aut1, SRA<P,S> aut2, BooleanAlgebra<P, S> ba, boolean bisimulation, long timeout)
 			throws TimeoutException {
 
@@ -1330,8 +1359,6 @@ public class SRA<P, S> {
 
 		return true;
 	}
-
-
 
 	private static HashMap<Integer, Integer> updateRegMap(HashMap<Integer, Integer> regMap, Integer r1, Integer r2) {
 		HashMap<Integer, Integer> newRegMap = new HashMap<>(regMap);
@@ -1964,7 +1991,10 @@ public class SRA<P, S> {
 	// Reachability methods
 	// ------------------------------------------------------
 
-	// creates a new SRA where all unreachable or dead states have been removed
+	/**
+	 * Creates a new SRA where all unreachable or dead states have been removed
+	 * @return a minimal SRA.
+	 */
 	private static <A, B> SRA<A, B> removeDeadOrUnreachableStates(SRA<A, B> aut, BooleanAlgebra<A, B> ba)
 			throws TimeoutException {
 
@@ -2005,7 +2035,10 @@ public class SRA<P, S> {
 		return MkSRA(transitions, initialState, finalStates, registers, ba, false, false);
 	}
 
-	// Computes states that reachable from states
+	/**
+	 * Computes states that are reachable from states
+	 * @return a collection of Integers.
+	 */
 	private Collection<Integer> getReachableStatesFrom(Collection<Integer> states) {
 		HashSet<Integer> result = new HashSet<Integer>();
 		for (Integer state : states)
@@ -2013,7 +2046,10 @@ public class SRA<P, S> {
 		return result;
 	}
 
-	// Computes states that can reach states
+	/**
+	 * Computes states that can reach states
+	 * @return a collection of Integers.
+	 */
 	private Collection<Integer> getReachingStates(Collection<Integer> states) {
 		HashSet<Integer> result = new HashSet<Integer>();
 		for (Integer state : states)
@@ -2021,7 +2057,9 @@ public class SRA<P, S> {
 		return result;
 	}
 
-	// DFS accumulates in reached
+	/**
+	 * DFS accumulates in reached
+	 */
 	private void visitForward(Integer state, HashSet<Integer> reached) {
 		if (!reached.contains(state)) {
 			reached.add(state);
@@ -2032,7 +2070,9 @@ public class SRA<P, S> {
 		}
 	}
 
-	// backward DFS accumulates in reached
+	/**
+	 * backward DFS accumulates in reached
+	 */
 	private void visitBackward(Integer state, HashSet<Integer> reached) {
 		if (!reached.contains(state)) {
 			reached.add(state);
