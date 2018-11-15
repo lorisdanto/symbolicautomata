@@ -33,6 +33,27 @@ public class TestSRAExperiments {
     }
 
     @Test
+    public void testSSNSFA() throws TimeoutException {
+        assertTrue(SSNParserSFA.accepts(validName1, ba));
+        assertTrue(SSNParserSFA.accepts(validName2, ba));
+        assertFalse(SSNParserSFA.accepts(invalidName1, ba));
+        assertFalse(SSNParserSFA.accepts(invalidName2, ba));
+        assertFalse(SSNParserSFA.accepts(invalidName3, ba));
+    }
+
+    @Test
+    public void testSSNFirstSFA() throws TimeoutException {
+        assertTrue(SSNParserFirstSFA.accepts(validName1, ba));
+        assertTrue(SSNParserFirstSFA.accepts(validName2, ba));
+    }
+
+    @Test
+    public void testSSNLastSFA() throws TimeoutException {
+        assertTrue(SSNParserLastSFA.accepts(validName1, ba));
+        assertTrue(SSNParserLastSFA.accepts(validName2, ba));
+    }
+
+    @Test
     public void testSSNInclusion() throws TimeoutException {
         assertTrue(SSNParserFirst.languageIncludes(SSNParser, ba, Long.MAX_VALUE));
         assertTrue(SSNParserLast.languageIncludes(SSNParser, ba, Long.MAX_VALUE));
@@ -175,51 +196,112 @@ public class TestSRAExperiments {
         assertFalse(IP9PacketParserSRA.accepts(dependentIPPacket1, ba));
     }
 
+//    @Test
+//    public void testPPCL2Inclusion() throws TimeoutException {
+//        assertTrue(productParserC2.languageIncludes(productParserCL2, ba, Long.MAX_VALUE));
+//    }
+//
     @Test
-    public void testPPCL2Inclusion() throws TimeoutException {
-        assertTrue(productParserCL2.languageIncludes(productParserCL2, ba, Long.MAX_VALUE));
+    public void emptiness() throws TimeoutException {
+        assertFalse();
     }
 
-    @Test
-    public void testPPCL3Inclusion() throws TimeoutException {
-        assertTrue(productParserCL3.languageIncludes(productParserCL3, ba, Long.MAX_VALUE));
-    }
-    @Test
-    public void testPPCL4Inclusion() throws TimeoutException {
-        assertTrue(productParserCL4.languageIncludes(productParserCL4, ba, Long.MAX_VALUE));
-    }
+//    @Test
+//    public void testPPCL3Inclusion() throws TimeoutException {
+//        assertTrue(productParserC3.languageIncludes(productParserCL3, ba, Long.MAX_VALUE));
+//    }
+//
+//    @Test
+//    public void testPPCL4Inclusion() throws TimeoutException {
+//        assertTrue(productParserC9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
+//    }
+//
+//    @Test
+//    public void testPPCL6Inclusion() throws TimeoutException {
+//        assertTrue(productParserC6.languageIncludes(productParserCL6, ba, Long.MAX_VALUE));
+//    }
+//
+//    @Test
+//    public void testPPCL9Inclusion() throws TimeoutException {
+//        assertTrue(productParserC9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
+//    }
+//
+//    @Test
+//    public void testPPCL2Equivalence() throws TimeoutException {
+//        assertTrue(productParserCL2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
+//    }
+//
+//    @Test
+//    public void testPPCL3Equivalence() throws TimeoutException {
+//        assertTrue(productParserCL3.isLanguageEquivalent(productParserCL3, ba, Long.MAX_VALUE));
+//    }
+//    @Test
+//    public void testPPCL4Equivalence() throws TimeoutException {
+//        assertTrue(productParserCL4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
+//    }
+//
+//    @Test
+//    public void testPPCL6Equivalence() throws TimeoutException {
+//        assertTrue(productParserCL6.isLanguageEquivalent(productParserCL6, ba, Long.MAX_VALUE));
+//    }
+//    @Test
+//    public void testPPCL9Equivalence() throws TimeoutException {
+//        assertTrue(productParserCL9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
+//    }
 
-    @Test
-    public void testPPCL6Inclusion() throws TimeoutException {
-        assertTrue(productParserCL6.languageIncludes(productParserCL6, ba, Long.MAX_VALUE));
-    }
-    @Test
-    public void testPPCL9Inclusion() throws TimeoutException {
-        assertTrue(productParserCL9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL2Equivalence() throws TimeoutException {
-        assertTrue(productParserCL2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL3Equivalence() throws TimeoutException {
-        assertTrue(productParserCL3.isLanguageEquivalent(productParserCL3, ba, Long.MAX_VALUE));
-    }
-    @Test
-    public void testPPCL4Equivalence() throws TimeoutException {
-        assertTrue(productParserCL4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL6Equivalence() throws TimeoutException {
-        assertTrue(productParserCL6.isLanguageEquivalent(productParserCL6, ba, Long.MAX_VALUE));
-    }
-    @Test
-    public void testPPCL9Equivalence() throws TimeoutException {
-        assertTrue(productParserCL9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
-    }
+//    @Test
+//    public void testPPAcceptance() throws TimeoutException {
+//        assertTrue(productParserC2.accepts(valid2PP, ba));
+//        assertTrue(productParserC2.accepts(valid2PP10, ba));
+//        assertTrue(productParserC2.accepts(valid2PP100000, ba));
+//        assertTrue(productParserC2.accepts(valid2PP1000000, ba));
+//        assertTrue(productParserC2.accepts(valid2PP10000000, ba));
+//        assertTrue(productParserCL2.accepts(valid2PP, ba));
+//        assertTrue(productParserCL2.accepts(valid2PP10, ba));
+//        assertTrue(productParserCL2.accepts(valid2PP100000, ba));
+//        assertTrue(productParserCL2.accepts(valid2PP1000000, ba));
+//        assertTrue(productParserCL2.accepts(valid2PP10000000, ba));
+//        assertTrue(productParserC3.accepts(valid3PP, ba));
+//        assertTrue(productParserC3.accepts(valid3PP10, ba));
+//        assertTrue(productParserC3.accepts(valid3PP100000, ba));
+//        assertTrue(productParserC3.accepts(valid3PP1000000, ba));
+//        assertTrue(productParserC3.accepts(valid3PP10000000, ba));
+//        assertTrue(productParserCL3.accepts(valid3PP, ba));
+//        assertTrue(productParserCL3.accepts(valid3PP10, ba));
+//        assertTrue(productParserCL3.accepts(valid3PP100000, ba));
+//        assertTrue(productParserCL3.accepts(valid3PP1000000, ba));
+//        assertTrue(productParserCL3.accepts(valid3PP10000000, ba));
+//        assertTrue(productParserC4.accepts(valid4PP, ba));
+//        assertTrue(productParserC4.accepts(valid4PP10, ba));
+//        assertTrue(productParserC4.accepts(valid4PP100000, ba));
+//        assertTrue(productParserC4.accepts(valid4PP1000000, ba));
+//        assertTrue(productParserC4.accepts(valid4PP10000000, ba));
+//        assertTrue(productParserCL4.accepts(valid4PP, ba));
+//        assertTrue(productParserCL4.accepts(valid4PP10, ba));
+//        assertTrue(productParserCL4.accepts(valid4PP100000, ba));
+//        assertTrue(productParserCL4.accepts(valid4PP1000000, ba));
+//        assertTrue(productParserCL4.accepts(valid4PP10000000, ba));
+//        assertTrue(productParserC6.accepts(valid6PP, ba));
+//        assertTrue(productParserC6.accepts(valid6PP10, ba));
+//        assertTrue(productParserC6.accepts(valid6PP100000, ba));
+//        assertTrue(productParserC6.accepts(valid6PP1000000, ba));
+//        assertTrue(productParserC6.accepts(valid6PP10000000, ba));
+//        assertTrue(productParserCL6.accepts(valid6PP, ba));
+//        assertTrue(productParserCL6.accepts(valid6PP10, ba));
+//        assertTrue(productParserCL6.accepts(valid6PP100000, ba));
+//        assertTrue(productParserCL6.accepts(valid6PP1000000, ba));
+//        assertTrue(productParserCL6.accepts(valid6PP10000000, ba));
+//        assertTrue(productParserC9.accepts(valid9PP, ba));
+//        assertTrue(productParserC9.accepts(valid9PP10, ba));
+//        assertTrue(productParserC9.accepts(valid9PP100000, ba));
+//        assertTrue(productParserC9.accepts(valid9PP1000000, ba));
+//        assertTrue(productParserC9.accepts(valid9PP10000000, ba));
+//        assertTrue(productParserCL9.accepts(valid9PP, ba));
+//        assertTrue(productParserCL9.accepts(valid9PP10, ba));
+//        assertTrue(productParserCL9.accepts(valid9PP100000, ba));
+//        assertTrue(productParserCL9.accepts(valid9PP1000000, ba));
+//        assertTrue(productParserCL9.accepts(valid9PP10000000, ba));
+//    }
 
 //    @Test
 //    public void testSFAInclusion3In2() throws TimeoutException {
@@ -325,6 +407,33 @@ public class TestSRAExperiments {
     private List<Character> invalidName2 = lOfS("Tiago, Ferreira, AA"); // not accepted by SSNParser
     private List<Character> invalidName3 = lOfS("Tiago, Ferreira, A"); // not accepted by SSNParser
 
+    // PP test strings
+//    private List<Character> valid2PP = lOfS("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste"); // accepted by PPC2 and PPCL2
+//    private List<Character> valid2PP10 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10);
+//    private List<Character> valid2PP100000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100000);
+//    private List<Character> valid2PP1000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000000);
+//    private List<Character> valid2PP10000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10000000);
+//    private List<Character> valid3PP = lOfS("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste"); // accepted by PPC3 and PPCL3
+//    private List<Character> valid3PP10 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10);
+//    private List<Character> valid3PP100000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 100000);
+//    private List<Character> valid3PP1000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000000);
+//    private List<Character> valid3PP10000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10000000);
+//    private List<Character> valid4PP = lOfS("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste"); // accepted by PPC4 and PPCL4
+//    private List<Character> valid4PP10 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10);
+//    private List<Character> valid4PP100000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 100000);
+//    private List<Character> valid4PP1000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 1000000);
+//    private List<Character> valid4PP10000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10000000);
+//    private List<Character> valid6PP = lOfS("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste"); // accepted by PPC6 and PPCL6
+//    private List<Character> valid6PP10 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10);
+//    private List<Character> valid6PP100000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 100000);
+//    private List<Character> valid6PP1000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 1000000);
+//    private List<Character> valid6PP10000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10000000);
+//    private List<Character> valid9PP = lOfS("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste"); // accepted by PPC9 and PPCL9
+//    private List<Character> valid9PP10 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10);
+//    private List<Character> valid9PP100000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 100000);
+//    private List<Character> valid9PP1000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 1000000);
+//    private List<Character> valid9PP10000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10000000);
+
     // XML test strings
     private List<Character> validXML1 = lOfS("<A></A>"); // accepted by XMLParser
     private List<Character> validXML2 = lOfS("<AB></AB>"); // accepted by XMLParser
@@ -353,8 +462,11 @@ public class TestSRAExperiments {
 
     // Automata
     private SRA<CharPred, Character> SSNParser = getSSNParser(ba);
+    private SFA<CharPred, Character> SSNParserSFA = getSSNParserSFA(ba);
     private SRA<CharPred, Character> SSNParserFirst = getSSNParserFirst(ba);
+    private SFA<CharPred, Character> SSNParserFirstSFA = getSSNParserFirstSFA(ba);
     private SRA<CharPred, Character> SSNParserLast = getSSNParserLast(ba);
+    private SFA<CharPred, Character> SSNParserLastSFA = getSSNParserLastSFA(ba);
     private SRA<CharPred, Character> XMLParserSRA = getXMLParserSRA(ba);
     private SRA<CharPred, Character> productParserC2 = getProductParserC2(ba);
     private SRA<CharPred, Character> productParserCL2 = getProductParserCL2(ba);
@@ -424,6 +536,42 @@ public class TestSRAExperiments {
 		return null;
 	}
 
+    private SFA<CharPred, Character> getSSNParserSFA(UnaryCharIntervalSolver ba) {
+        Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
+        List<Integer> finalStates = new LinkedList<Integer>();
+
+        Character firstInitial = upperAlpha.intervals.get(0).left;
+        Character firstEnd = upperAlpha.intervals.get(0).right;
+        for (int firstCounter = 0; firstInitial < firstEnd; firstCounter++, firstInitial++) {
+            transitions.add(new SFAInputMove<CharPred, Character>(0, (firstCounter * 185) + 1, new CharPred(firstInitial)));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 1, (firstCounter * 185) + 1, lowerAlpha));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 1, (firstCounter * 185) + 2, comma));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 2, (firstCounter * 185) + 3, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 3, (firstCounter * 185) + 3, space));
+
+            Character secondInitial = upperAlpha.intervals.get(0).left;
+            Character secondEnd = upperAlpha.intervals.get(0).right;
+            for (int secondCounter = 0; secondInitial < secondEnd; secondCounter++, secondInitial++) {
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 3, (firstCounter * 185) + (secondCounter * 7) + 4, new CharPred(secondInitial)));
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 4, (firstCounter * 185) + (secondCounter * 7) + 4, lowerAlpha));
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 4, (firstCounter * 185) + (secondCounter * 7) + 5, comma));
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 5, (firstCounter * 185) + (secondCounter * 7) + 6, space));
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 6, (firstCounter * 185) + (secondCounter * 7) + 6, space));
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 6, (firstCounter * 185) + (secondCounter * 7) + 7, new CharPred(firstInitial)));
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 7, (firstCounter * 185) + (secondCounter * 7) + 8, new CharPred(secondInitial)));
+                finalStates.add((firstCounter * 185) + (secondCounter * 7) + 8);
+            }
+        }
+
+        try {
+            return SFA.MkSFA(transitions, 0, finalStates, ba, false, false);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private SRA<CharPred, Character> getSSNParserFirst(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null));
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -460,6 +608,37 @@ public class TestSRAExperiments {
 
         try {
             return SRA.MkSRA(transitions, 0, Collections.singleton(6), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private SFA<CharPred, Character> getSSNParserFirstSFA(UnaryCharIntervalSolver ba) {
+        Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
+        List<Integer> finalStates = new LinkedList<Integer>();
+
+        Character firstInitial = upperAlpha.intervals.get(0).left;
+        Character firstEnd = upperAlpha.intervals.get(0).right;
+        for (int firstCounter = 0; firstInitial < firstEnd; firstCounter++, firstInitial++) {
+            transitions.add(new SFAInputMove<CharPred, Character>(0, (firstCounter * 9) + 1, new CharPred(firstInitial)));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 1, (firstCounter * 9) + 1, lowerAlpha));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 1, (firstCounter * 9) + 2, comma));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 2, (firstCounter * 9) + 3, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 3, (firstCounter * 9) + 3, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 3, (firstCounter * 9) + 4, upperAlpha));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 4, (firstCounter * 9) + 4, lowerAlpha));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 4, (firstCounter * 9) + 5, comma));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 5, (firstCounter * 9) + 6, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 6, (firstCounter * 9) + 6, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 6, (firstCounter * 9) + 7, new CharPred(firstInitial)));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 7, (firstCounter * 9) + 8, upperAlpha));
+            finalStates.add((firstCounter * 9) + 8);
+        }
+
+        try {
+            return SFA.MkSFA(transitions, 0, finalStates, ba, false, false);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -510,41 +689,73 @@ public class TestSRAExperiments {
         return null;
     }
 
+    private SFA<CharPred, Character> getSSNParserLastSFA(UnaryCharIntervalSolver ba) {
+        Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
+        List<Integer> finalStates = new LinkedList<Integer>();
+
+        transitions.add(new SFAInputMove<CharPred, Character>(0, 1, upperAlpha));
+        transitions.add(new SFAInputMove<CharPred, Character>(1, 1, lowerAlpha));
+        transitions.add(new SFAInputMove<CharPred, Character>(1, 2, comma));
+        transitions.add(new SFAInputMove<CharPred, Character>(2, 3, space));
+        transitions.add(new SFAInputMove<CharPred, Character>(3, 3, space));
+
+        Character secondInitial = upperAlpha.intervals.get(0).left;
+        Character secondEnd = upperAlpha.intervals.get(0).right;
+        for (int secondCounter = 0; secondInitial < secondEnd; secondCounter++, secondInitial++) {
+            transitions.add(new SFAInputMove<CharPred, Character>(3, (secondCounter * 7) + 4, new CharPred(secondInitial)));
+            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 4, (secondCounter * 7) + 4, lowerAlpha));
+            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 4, (secondCounter * 7) + 5, comma));
+            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 5, (secondCounter * 7) + 6, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 6, (secondCounter * 7) + 6, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 6, (secondCounter * 7) + 7, upperAlpha));
+            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 7, (secondCounter * 7) + 8, new CharPred(secondInitial)));
+            finalStates.add((secondCounter * 7) + 8);
+        }
+
+
+        try {
+            return SFA.MkSFA(transitions, 0, finalStates, ba, false, false);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private SRA<CharPred, Character> getProductParserC2(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null));
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
         transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 13, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, space, 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(17, 18, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(18, 19, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(26, 26, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(26, 14, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 12, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(15, 16, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(16, 17, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 25, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 13, space, 0));
 
         try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(26), registers, ba);
+            return SRA.MkSRA(transitions, 0, Collections.singleton(25), registers, ba);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -557,36 +768,35 @@ public class TestSRAExperiments {
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
         transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, alphaNum, 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 13, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, space, 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(17, 18, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(18, 19, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, new CharPred(':'), 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(21, 22, alphaNum, 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(26, 26, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(26, 14, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, alphaNum, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 12, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(15, 16, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(16, 17, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(20, 21, alphaNum, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 25, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 13, space, 0));
 
         try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(26), registers, ba);
+            return SRA.MkSRA(transitions, 0, Collections.singleton(25), registers, ba);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -599,38 +809,37 @@ public class TestSRAExperiments {
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
         transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 14, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, space, 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(18, 19, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(19, 20, ba.MkNot(space), 2));
-        transitions.add(new SRACheckMove<CharPred, Character>(20, 21, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(27, 28, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(28, 28, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(28, 15, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 13, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(16, 17, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(17, 18, ba.MkNot(space), 2));
+        transitions.add(new SRACheckMove<CharPred, Character>(18, 19, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 27, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 14, space, 0));
 
         try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(28), registers, ba);
+            return SRA.MkSRA(transitions, 0, Collections.singleton(27), registers, ba);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -643,38 +852,37 @@ public class TestSRAExperiments {
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
         transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, alphaNum, 4));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 14, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, space, 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(18, 19, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(19, 20, ba.MkNot(space), 2));
-        transitions.add(new SRACheckMove<CharPred, Character>(20, 21, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, new CharPred(':'), 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(23, 24, alphaNum, 4));
-        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(27, 28, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(28, 28, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(28, 15, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, alphaNum, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 13, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(16, 17, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(17, 18, ba.MkNot(space), 2));
+        transitions.add(new SRACheckMove<CharPred, Character>(18, 19, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(22, 23, alphaNum, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 27, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 14, space, 0));
 
         try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(28), registers, ba);
+            return SRA.MkSRA(transitions, 0, Collections.singleton(27), registers, ba);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -687,40 +895,39 @@ public class TestSRAExperiments {
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
         transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, ba.MkNot(space), 4));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 15, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, space, 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(19, 20, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(20, 21, ba.MkNot(space), 2));
-        transitions.add(new SRACheckMove<CharPred, Character>(21, 22, ba.MkNot(space), 3));
-        transitions.add(new SRACheckMove<CharPred, Character>(22, 23, ba.MkNot(space), 4));
-        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(27, 28, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(28, 29, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(29, 30, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(30, 30, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(30, 16, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 14, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(17, 18, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(18, 19, ba.MkNot(space), 2));
+        transitions.add(new SRACheckMove<CharPred, Character>(19, 20, ba.MkNot(space), 3));
+        transitions.add(new SRACheckMove<CharPred, Character>(20, 21, ba.MkNot(space), 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 28, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(28, 29, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(29, 29, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(29, 15, space, 0));
 
         try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(30), registers, ba);
+            return SRA.MkSRA(transitions, 0, Collections.singleton(29), registers, ba);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -733,40 +940,39 @@ public class TestSRAExperiments {
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
         transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, ba.MkNot(space), 4));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, alphaNum, 5));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 15, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, space, 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(19, 20, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(20, 21, ba.MkNot(space), 2));
-        transitions.add(new SRACheckMove<CharPred, Character>(21, 22, ba.MkNot(space), 3));
-        transitions.add(new SRACheckMove<CharPred, Character>(22, 23, ba.MkNot(space), 4));
-        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, new CharPred(':'), 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(25, 26, alphaNum, 5));
-        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(27, 28, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(28, 29, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(29, 30, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(30, 30, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(30, 16, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, alphaNum, 5));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 14, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(17, 18, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(18, 19, ba.MkNot(space), 2));
+        transitions.add(new SRACheckMove<CharPred, Character>(19, 20, ba.MkNot(space), 3));
+        transitions.add(new SRACheckMove<CharPred, Character>(20, 21, ba.MkNot(space), 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(24, 25, alphaNum, 5));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 28, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(28, 29, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(29, 29, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(29, 15, space, 0));
 
         try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(30), registers, ba);
+            return SRA.MkSRA(transitions, 0, Collections.singleton(29), registers, ba);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -779,44 +985,43 @@ public class TestSRAExperiments {
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
         transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, ba.MkNot(space), 4));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, ba.MkNot(space), 5));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, ba.MkNot(space), 6));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(17, 17, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, space, 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(21, 22, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(22, 23, ba.MkNot(space), 2));
-        transitions.add(new SRACheckMove<CharPred, Character>(23, 24, ba.MkNot(space), 3));
-        transitions.add(new SRACheckMove<CharPred, Character>(24, 25, ba.MkNot(space), 4));
-        transitions.add(new SRACheckMove<CharPred, Character>(25, 26, ba.MkNot(space), 5));
-        transitions.add(new SRACheckMove<CharPred, Character>(26, 27, ba.MkNot(space), 6));
-        transitions.add(new SRAStoreMove<CharPred, Character>(27, 28, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(28, 29, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(29, 30, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(30, 31, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(31, 32, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(32, 33, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(33, 34, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(34, 34, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(34, 18, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, ba.MkNot(space), 5));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, ba.MkNot(space), 6));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(16, 16, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(19, 20, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(20, 21, ba.MkNot(space), 2));
+        transitions.add(new SRACheckMove<CharPred, Character>(21, 22, ba.MkNot(space), 3));
+        transitions.add(new SRACheckMove<CharPred, Character>(22, 23, ba.MkNot(space), 4));
+        transitions.add(new SRACheckMove<CharPred, Character>(23, 24, ba.MkNot(space), 5));
+        transitions.add(new SRACheckMove<CharPred, Character>(24, 25, ba.MkNot(space), 6));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 28, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(28, 29, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(29, 30, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(30, 31, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(31, 32, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(32, 33, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(33, 33, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(33, 17, space, 0));
 
         try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(34), registers, ba);
+            return SRA.MkSRA(transitions, 0, Collections.singleton(33), registers, ba);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -829,44 +1034,43 @@ public class TestSRAExperiments {
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
         transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, ba.MkNot(space), 4));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, ba.MkNot(space), 5));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, ba.MkNot(space), 6));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, alphaNum, 7));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(17, 17, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, new CharPred(':'), 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(20, 21, space, 7));
-        transitions.add(new SRACheckMove<CharPred, Character>(21, 22, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(22, 23, ba.MkNot(space), 2));
-        transitions.add(new SRACheckMove<CharPred, Character>(23, 24, ba.MkNot(space), 3));
-        transitions.add(new SRACheckMove<CharPred, Character>(24, 25, ba.MkNot(space), 4));
-        transitions.add(new SRACheckMove<CharPred, Character>(25, 26, ba.MkNot(space), 5));
-        transitions.add(new SRACheckMove<CharPred, Character>(26, 27, ba.MkNot(space), 6));
-        transitions.add(new SRAStoreMove<CharPred, Character>(27, 28, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(28, 29, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(29, 30, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(30, 31, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(31, 32, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(32, 33, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(33, 34, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(34, 34, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(34, 18, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, ba.MkNot(space), 5));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, ba.MkNot(space), 6));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, alphaNum, 7));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(16, 16, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(19, 20, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(20, 21, ba.MkNot(space), 2));
+        transitions.add(new SRACheckMove<CharPred, Character>(21, 22, ba.MkNot(space), 3));
+        transitions.add(new SRACheckMove<CharPred, Character>(22, 23, ba.MkNot(space), 4));
+        transitions.add(new SRACheckMove<CharPred, Character>(23, 24, ba.MkNot(space), 5));
+        transitions.add(new SRACheckMove<CharPred, Character>(24, 25, ba.MkNot(space), 6));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 28, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(28, 29, alphaNum, 7));
+        transitions.add(new SRAStoreMove<CharPred, Character>(29, 30, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(30, 31, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(31, 32, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(32, 33, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(33, 33, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(33, 17, space, 0));
 
         try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(34), registers, ba);
+            return SRA.MkSRA(transitions, 0, Collections.singleton(33), registers, ba);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -879,50 +1083,49 @@ public class TestSRAExperiments {
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
         transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, ba.MkNot(space), 4));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, ba.MkNot(space), 5));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, ba.MkNot(space), 6));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, ba.MkNot(space), 7));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, ba.MkNot(space), 8));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, ba.MkNot(space), 9));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(20, 20, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, space, 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(24, 25, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(25, 26, ba.MkNot(space), 2));
-        transitions.add(new SRACheckMove<CharPred, Character>(26, 27, ba.MkNot(space), 3));
-        transitions.add(new SRACheckMove<CharPred, Character>(27, 28, ba.MkNot(space), 4));
-        transitions.add(new SRACheckMove<CharPred, Character>(28, 29, ba.MkNot(space), 5));
-        transitions.add(new SRACheckMove<CharPred, Character>(29, 30, ba.MkNot(space), 6));
-        transitions.add(new SRACheckMove<CharPred, Character>(30, 31, ba.MkNot(space), 7));
-        transitions.add(new SRACheckMove<CharPred, Character>(31, 32, ba.MkNot(space), 8));
-        transitions.add(new SRACheckMove<CharPred, Character>(32, 33, ba.MkNot(space), 9));
-        transitions.add(new SRAStoreMove<CharPred, Character>(33, 34, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(34, 35, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(35, 36, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(36, 37, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(37, 38, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(38, 39, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(39, 40, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(40, 40, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(40, 21, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, ba.MkNot(space), 5));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, ba.MkNot(space), 6));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, ba.MkNot(space), 7));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, ba.MkNot(space), 8));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, ba.MkNot(space), 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 19, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(22, 23, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(23, 24, ba.MkNot(space), 2));
+        transitions.add(new SRACheckMove<CharPred, Character>(24, 25, ba.MkNot(space), 3));
+        transitions.add(new SRACheckMove<CharPred, Character>(25, 26, ba.MkNot(space), 4));
+        transitions.add(new SRACheckMove<CharPred, Character>(26, 27, ba.MkNot(space), 5));
+        transitions.add(new SRACheckMove<CharPred, Character>(27, 28, ba.MkNot(space), 6));
+        transitions.add(new SRACheckMove<CharPred, Character>(28, 29, ba.MkNot(space), 7));
+        transitions.add(new SRACheckMove<CharPred, Character>(29, 30, ba.MkNot(space), 8));
+        transitions.add(new SRACheckMove<CharPred, Character>(30, 31, ba.MkNot(space), 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(31, 32, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(32, 33, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(33, 34, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(34, 35, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(35, 36, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(36, 37, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(37, 38, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(38, 39, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(39, 39, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(39, 20, space, 0));
 
         try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(40), registers, ba);
+            return SRA.MkSRA(transitions, 0, Collections.singleton(39), registers, ba);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -935,53 +1138,65 @@ public class TestSRAExperiments {
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
         transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, ba.MkNot(space), 4));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, ba.MkNot(space), 5));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, ba.MkNot(space), 6));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, ba.MkNot(space), 7));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, ba.MkNot(space), 8));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, ba.MkNot(space), 9));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, alphaNum, 10));
-        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(20, 20, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, space, 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(24, 25, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(25, 26, ba.MkNot(space), 2));
-        transitions.add(new SRACheckMove<CharPred, Character>(26, 27, ba.MkNot(space), 3));
-        transitions.add(new SRACheckMove<CharPred, Character>(27, 28, ba.MkNot(space), 4));
-        transitions.add(new SRACheckMove<CharPred, Character>(28, 29, ba.MkNot(space), 5));
-        transitions.add(new SRACheckMove<CharPred, Character>(29, 30, ba.MkNot(space), 6));
-        transitions.add(new SRACheckMove<CharPred, Character>(30, 31, ba.MkNot(space), 7));
-        transitions.add(new SRACheckMove<CharPred, Character>(31, 32, ba.MkNot(space), 8));
-        transitions.add(new SRACheckMove<CharPred, Character>(32, 33, ba.MkNot(space), 9));
-        transitions.add(new SRAStoreMove<CharPred, Character>(33, 34, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(34, 35, new CharPred(':'), 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(35, 36, alphaNum, 10));
-        transitions.add(new SRAStoreMove<CharPred, Character>(36, 37, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(37, 38, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(38, 39, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(39, 40, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(40, 40, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(40, 21, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, ba.MkNot(space), 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, ba.MkNot(space), 5));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, ba.MkNot(space), 6));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, ba.MkNot(space), 7));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, ba.MkNot(space), 8));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, ba.MkNot(space), 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(16, 17, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 19, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(22, 23, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(23, 24, ba.MkNot(space), 2));
+        transitions.add(new SRACheckMove<CharPred, Character>(24, 25, ba.MkNot(space), 3));
+        transitions.add(new SRACheckMove<CharPred, Character>(25, 26, ba.MkNot(space), 4));
+        transitions.add(new SRACheckMove<CharPred, Character>(26, 27, ba.MkNot(space), 5));
+        transitions.add(new SRACheckMove<CharPred, Character>(27, 28, ba.MkNot(space), 6));
+        transitions.add(new SRACheckMove<CharPred, Character>(28, 29, ba.MkNot(space), 7));
+        transitions.add(new SRACheckMove<CharPred, Character>(29, 30, ba.MkNot(space), 8));
+        transitions.add(new SRACheckMove<CharPred, Character>(30, 31, ba.MkNot(space), 9));
+        transitions.add(new SRAStoreMove<CharPred, Character>(31, 32, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(32, 33, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(33, 34, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(34, 35, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(35, 36, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(36, 37, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(37, 38, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(38, 39, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(39, 39, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(39, 20, space, 0));
 
         try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(40), registers, ba);
+            return SRA.MkSRA(transitions, 0, Collections.singleton(39), registers, ba);
         } catch (TimeoutException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+        return null;
+    }
+
+    private List<Character> getPPTestStrings(String original, int repetitions) {
+        int startIndex = original.indexOf(' ', original.indexOf(' ', original.indexOf(' ') + 1) + 1);
+        if (startIndex != -1) {
+            String repetition = original.substring(startIndex);
+            StringBuilder sb = new StringBuilder();
+            sb.append(original);
+            for (int index = 0; index < repetitions; index++)
+                sb.append(repetition);
+            return lOfS(sb.toString());
         }
         return null;
     }
