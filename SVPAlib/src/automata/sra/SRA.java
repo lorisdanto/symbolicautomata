@@ -1073,14 +1073,14 @@ public class SRA<P, S> {
 		if (!aut1.isSingleValued)
 			aut1 = aut1.toSingleValuedSRA(ba, timeout);
 
-		if (!aut.isSingleValued)
+		if (!aut2.isSingleValued)
 			aut2 = aut2.toSingleValuedSRA(ba, timeout);
 
 
 		if (!aut1.isTotal)
 			aut1.complete(ba);
 
-		if (!aut.isTotal)
+		if (!aut2.isTotal)
 			aut2.complete(ba);
 
 
@@ -1098,18 +1098,18 @@ public class SRA<P, S> {
 		if (!aut1.isSingleValued)
 			aut1 = aut1.toSingleValuedSRA(ba, timeout);
 
-		if (!aut.isSingleValued)
+		if (!aut2.isSingleValued)
 			aut2 = aut2.toSingleValuedSRA(ba, timeout);
 
 
 		if (!aut1.isTotal)
 			aut1.complete(ba);
 
-		if (!aut.isTotal)
+		if (!aut2.isTotal)
 			aut2.complete(ba);
 
 
-		return canSimulate(aut, aut1, ba, false, timeout);
+		return canSimulate(aut2, aut1, ba, false, timeout);
 	}
 
 
