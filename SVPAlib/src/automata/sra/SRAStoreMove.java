@@ -34,12 +34,12 @@ public class SRAStoreMove<P, S> extends SRAMove<P, S> {
 
     @Override
     public String toString() {
-        return String.format("S: %s -%s/%s=-> %s", from, guard,registerIndex, to);
+        return String.format("S: %s -%s/%s->-> %s", from, guard,registerIndex, to);
     }
 
     @Override
     public String toDotString() {
-        return String.format("%s -> %s [label=\"%s/%s=\"]\n", from, to, guard, registerIndex);
+        return String.format("%s -> %s [label=\"%s/%s->\"]\n", from, to, guard, registerIndex);
     }
 
     @Override
