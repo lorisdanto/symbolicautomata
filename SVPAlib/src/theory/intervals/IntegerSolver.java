@@ -87,7 +87,11 @@ public class IntegerSolver extends BooleanAlgebra<IntPred, Integer> {
 			if (lo == null || hi == null || lo <= hi)
 				newIntervals.add(ImmutablePair.of(lo,  hi));
 			
-			if (cur1.right == hi)
+			if (hi == null && cur1.right == null)
+				i++;
+			else if (hi == null)
+				j++;
+			else if (hi.equals(cur1.right))
 				i++;
 			else
 				j++;
