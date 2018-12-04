@@ -1,7 +1,17 @@
 /SVPAlib/target/
+/SVPALib/*.iml
 /BooleanAlgebras/target/
 /TestSVPA/target/
+/TestSVPA/*.iml
 /TestSVPA/*.dot
+/TestSVPA/*.pdf
+/TestSVPA/*.txt
+automatark/*.iml
+automatark/Parsers/*.iml
+*.dot
+*.iml
+*.ipr
+*.iws
 
 BooleanAlgebras/bin/test/TestCharTheory.class
 BooleanAlgebras/bin/theory/CharConstant.class

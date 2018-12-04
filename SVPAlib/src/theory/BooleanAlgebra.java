@@ -144,7 +144,7 @@ public abstract class BooleanAlgebra<P, S> {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Given a set of <code>predicates</code>, returns all the satisfiable
 	 * Boolean combinations
