@@ -15,13 +15,16 @@ import java.util.List;
  * @param <S> The domain of the Boolean algebra
  */
 public abstract class BooleanAlgebraSubstAndOutputs<P, PL, F, S> extends BooleanAlgebraSubst<P, F, S>{
-
-	//All the BA for lists
+	
+	/**
+	 * hacky for now
+	 */
+	public abstract List<P> getCartesianPredicate(PL p);
 	
 	/**
 	 * get the restricted output based on <code>p</code> and <code>f</code>
 	 * @return \psi(y) = \exists x. \phi(x) \wedge f(x)=y
 	 */
-	public abstract PL getRestrictedOutput(P p, List<F> fs, BooleanAlgebra<PL,List<S>> bal);
+	public abstract PL getRestrictedOutput(P p, List<F> fs);
 	
 }
