@@ -949,6 +949,12 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 		return MkSFT(transitions, initialState, finalStatesAndTails, ba);
 	}
 
+	/**
+	 * Computes the output language of this transducer if possible, otherwise returns an overapproximation
+	 * @param ba
+	 * @return output SFA
+	 * @throws TimeoutException
+	 */
 	public SFA<P, S> getOutputSFA(BooleanAlgebraSubst<P, F, S> ba) throws TimeoutException {
 
 		Collection<SFAMove<P, S>> transitions = new ArrayList<SFAMove<P, S>>();
@@ -993,41 +999,54 @@ public class SFT<P, F, S> extends Automaton<P, S> {
 				}
 			}
 
+			//Epsilon transitions
 			for (SFTEpsilon<P, F, S> t1 : this.getEpsilonMovesFrom(currState)) {
-				// if t1.outputs.size() == 0, just do nothing
-				if (t1.outputs.size() == 1) {
+				if (t1.outputs.size() == 0){
 					int nextStateId = getStateId(t1.to, reached, toVisit);
-					SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
-							ba.MkAtom(t1.outputs.get(0)));
+					SFAEpsilon<P, S> newTrans = new SFAEpsilon<P, S>(currStateId, nextStateId);
 					transitions.add(newTrans);
-				} else if (t1.outputs.size() > 1) {
-					int nextStateId = getStateId(moreStateId++, reached, toVisit);
-					SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
-							ba.MkAtom(t1.outputs.get(0)));
-					transitions.add(newTrans);
-					int lastStateId = nextStateId;
-					for (int i = 1; i < t1.outputs.size() - 1; i++) {
-						nextStateId = getStateId(moreStateId++, reached, toVisit);
-						newTrans = new SFAInputMove<P, S>(lastStateId, nextStateId, ba.MkAtom(t1.outputs.get(i)));
+				}else{					
+					if (t1.outputs.size() == 1) {
+						int nextStateId = getStateId(t1.to, reached, toVisit);
+						SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
+								ba.MkAtom(t1.outputs.get(0)));
 						transitions.add(newTrans);
-						lastStateId = nextStateId;
+					} else if (t1.outputs.size() > 1) {
+						int nextStateId = getStateId(moreStateId++, reached, toVisit);
+						SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
+								ba.MkAtom(t1.outputs.get(0)));
+						transitions.add(newTrans);
+						int lastStateId = nextStateId;
+						for (int i = 1; i < t1.outputs.size() - 1; i++) {
+							nextStateId = getStateId(moreStateId++, reached, toVisit);
+							newTrans = new SFAInputMove<P, S>(lastStateId, nextStateId, ba.MkAtom(t1.outputs.get(i)));
+							transitions.add(newTrans);
+							lastStateId = nextStateId;
+						}
+						nextStateId = getStateId(t1.to, reached, toVisit);
+						newTrans = new SFAInputMove<P, S>(currStateId, nextStateId, ba.MkAtom(t1.outputs.get(t1.outputs.size() - 1)));
+						transitions.add(newTrans);
 					}
-					nextStateId = getStateId(t1.to, reached, toVisit);
-					newTrans = new SFAInputMove<P, S>(currStateId, nextStateId, ba.MkAtom(t1.outputs.get(t1.outputs.size() - 1)));
-					transitions.add(newTrans);
 				}
 			}
 
+			//Input moves
 			for (SFTInputMove<P, F, S> t1 : this.getInputMovesFrom(currState)) {
-				// if t1.outputFunctions.size() == 0, just do nothing
-				if (t1.outputFunctions.size() == 1) {
+				if (t1.outputFunctions.size() == 0){
 					int nextStateId = getStateId(t1.to, reached, toVisit);
-					SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
-							ba.getRestrictedOutput(t1.guard, t1.outputFunctions.get(0)));
+					SFAEpsilon<P, S> newTrans = new SFAEpsilon<P, S>(currStateId, nextStateId);
 					transitions.add(newTrans);
-				} else if (t1.outputFunctions.size() > 1) {
-					throw new UnsupportedOperationException("Not supported yet.");
-				}
+				} else {	
+					if (t1.outputFunctions.size() == 1) {
+						int nextStateId = getStateId(t1.to, reached, toVisit);
+						SFAInputMove<P, S> newTrans = new SFAInputMove<P, S>(currStateId, nextStateId,
+								ba.getRestrictedOutput(t1.guard, t1.outputFunctions.get(0)));
+						transitions.add(newTrans);
+					} else if (t1.outputFunctions.size() > 1) {
+						//Might lose precision
+						throw new UnsupportedOperationException("Not supported yet.");
+					}
+				}				
 			}
 
 		}
