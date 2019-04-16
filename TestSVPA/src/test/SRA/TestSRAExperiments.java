@@ -197,200 +197,521 @@ public class TestSRAExperiments {
         assertFalse(IP9PacketParserSRA.accepts(dependentIPPacket1, ba));
     }
 
-//    @Test
-//    public void testPPEquivalence() throws TimeoutException {
-//        assertFalse(productParserC4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
-//    }
+    @Test
+    public void testPP2Equivalence() throws TimeoutException {
+        assertFalse(productParserC2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
+    }
 
-//    @Test
-//    public void testPPC2Emptiness() throws TimeoutException {
-//        assertFalse(SRA.isLanguageEmpty(productParserC6, ba, Long.MAX_VALUE));
-//    }
+    @Test
+    public void testPP3Equivalence() throws TimeoutException {
+        assertFalse(productParserC3.isLanguageEquivalent(productParserCL3, ba, Long.MAX_VALUE));
+    }
 
-//    @Test
-//    public void testPPInclusion() throws TimeoutException {
-//        assertFalse(productParserCL4.languageIncludes(productParserC4, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testPPCL4Inclusion() throws TimeoutException {
-//        assertTrue(productParserC9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testPPCL6Inclusion() throws TimeoutException {
-//        assertTrue(productParserC6.languageIncludes(productParserCL6, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testPPCL9Inclusion() throws TimeoutException {
-//        assertTrue(productParserC9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testPPCL2Equivalence() throws TimeoutException {
-//        assertTrue(productParserCL2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testPPCL3Equivalence() throws TimeoutException {
-//        assertTrue(productParserCL3.isLanguageEquivalent(productParserCL3, ba, Long.MAX_VALUE));
-//    }
-//    @Test
-//    public void testPPCL4Equivalence() throws TimeoutException {
-//        assertTrue(productParserCL4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testPPCL6Equivalence() throws TimeoutException {
-//        assertTrue(productParserCL6.isLanguageEquivalent(productParserCL6, ba, Long.MAX_VALUE));
-//    }
-//    @Test
-//    public void testPPCL9Equivalence() throws TimeoutException {
-//        assertTrue(productParserCL9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
-//    }
+    @Test
+    public void testPP4Equivalence() throws TimeoutException {
+        assertFalse(productParserC4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
+    }
 
-//    @Test
-//    public void testPPAcceptance() throws TimeoutException {
-//        assertTrue(productParserC2.accepts(valid2PP, ba));
-//        assertTrue(productParserC2.accepts(valid2PP10, ba));
-//        assertTrue(productParserC2.accepts(valid2PP100000, ba));
-//        assertTrue(productParserC2.accepts(valid2PP1000000, ba));
-//        assertTrue(productParserC2.accepts(valid2PP10000000, ba));
-//        assertTrue(productParserCL2.accepts(valid2PP, ba));
-//        assertTrue(productParserCL2.accepts(valid2PP10, ba));
-//        assertTrue(productParserCL2.accepts(valid2PP100000, ba));
-//        assertTrue(productParserCL2.accepts(valid2PP1000000, ba));
-//        assertTrue(productParserCL2.accepts(valid2PP10000000, ba));
-//        assertTrue(productParserC3.accepts(valid3PP, ba));
-//        assertTrue(productParserC3.accepts(valid3PP10, ba));
-//        assertTrue(productParserC3.accepts(valid3PP100000, ba));
-//        assertTrue(productParserC3.accepts(valid3PP1000000, ba));
-//        assertTrue(productParserC3.accepts(valid3PP10000000, ba));
-//        assertTrue(productParserCL3.accepts(valid3PP, ba));
-//        assertTrue(productParserCL3.accepts(valid3PP10, ba));
-//        assertTrue(productParserCL3.accepts(valid3PP100000, ba));
-//        assertTrue(productParserCL3.accepts(valid3PP1000000, ba));
-//        assertTrue(productParserCL3.accepts(valid3PP10000000, ba));
-//        assertTrue(productParserC4.accepts(valid4PP, ba));
-//        assertTrue(productParserC4.accepts(valid4PP10, ba));
-//        assertTrue(productParserC4.accepts(valid4PP100000, ba));
-//        assertTrue(productParserC4.accepts(valid4PP1000000, ba));
-//        assertTrue(productParserC4.accepts(valid4PP10000000, ba));
-//        assertTrue(productParserCL4.accepts(valid4PP, ba));
-//        assertTrue(productParserCL4.accepts(valid4PP10, ba));
-//        assertTrue(productParserCL4.accepts(valid4PP100000, ba));
-//        assertTrue(productParserCL4.accepts(valid4PP1000000, ba));
-//        assertTrue(productParserCL4.accepts(valid4PP10000000, ba));
-//        assertTrue(productParserC6.accepts(valid6PP, ba));
-//        assertTrue(productParserC6.accepts(valid6PP10, ba));
-//        assertTrue(productParserC6.accepts(valid6PP100000, ba));
-//        assertTrue(productParserC6.accepts(valid6PP1000000, ba));
-//        assertTrue(productParserC6.accepts(valid6PP10000000, ba));
-//        assertTrue(productParserCL6.accepts(valid6PP, ba));
-//        assertTrue(productParserCL6.accepts(valid6PP10, ba));
-//        assertTrue(productParserCL6.accepts(valid6PP100000, ba));
-//        assertTrue(productParserCL6.accepts(valid6PP1000000, ba));
-//        assertTrue(productParserCL6.accepts(valid6PP10000000, ba));
-//        assertTrue(productParserC9.accepts(valid9PP, ba));
-//        assertTrue(productParserC9.accepts(valid9PP10, ba));
-//        assertTrue(productParserC9.accepts(valid9PP100000, ba));
-//        assertTrue(productParserC9.accepts(valid9PP1000000, ba));
-//        assertTrue(productParserC9.accepts(valid9PP10000000, ba));
-//        assertTrue(productParserCL9.accepts(valid9PP, ba));
-//        assertTrue(productParserCL9.accepts(valid9PP10, ba));
-//        assertTrue(productParserCL9.accepts(valid9PP100000, ba));
-//        assertTrue(productParserCL9.accepts(valid9PP1000000, ba));
-//        assertTrue(productParserCL9.accepts(valid9PP10000000, ba));
-//    }
-//
-//    @Test
-//    public void testPPAcceptanceJavaRegex() {
-//        Matcher m = CL9PPRegex.matcher(valid9PP10Str);
-//        if (m.find())
-//            System.out.println("MATCH");
-//    }
-//
-//    @Test
-//    public void testSFAInclusion3In2() throws TimeoutException {
-//        assertTrue(IP3PacketParserSimplifiedSFA.intersectionWith(IP2PacketParserSimplifiedSFA.complement(ba), ba).isEmpty());
-//    }
-//
-//    @Test
-//    public void testSFAEquivalence3In2() throws TimeoutException {
-//
-//        assertFalse(IP2PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP3PacketParserSimplifiedSFA, ba));
-//    }
-//
-//    @Test
-//    public void testSRAEmptiness() throws TimeoutException {
-//        assertFalse(SRA.isLanguageEmpty(productParserCL4, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testSFAEquivalence4In3() throws TimeoutException {
-//        assertFalse(IP3PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP4PacketParserSimplifiedSFA, ba));
-//    }
-//
-//    @Test
-//    public void testSFAInclusion4In2() throws TimeoutException {
-//        assertTrue(IP4PacketParserSimplifiedSFA.intersectionWith(IP2PacketParserSimplifiedSFA.complement(ba), ba).isEmpty());
-//    }
-//
-//    @Test
-//    public void testSFAEquivalence4In2() throws TimeoutException {
-//        assertFalse(IP2PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP4PacketParserSimplifiedSFA, ba));
-//    }
-//
-//    @Test
-//    public void testSRAInclusion3In2() throws TimeoutException {
-//        assertTrue(IP2PacketParserSimplifiedSRA.languageIncludes(IP3PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testSRAEquivalence3In2() throws TimeoutException {
-//        assertFalse(IP2PacketParserSimplifiedSRA.isLanguageEquivalent(IP3PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testSRAInclusion4In3() throws TimeoutException {
-//        assertTrue(IP3PacketParserSimplifiedSRA.languageIncludes(IP4PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testSRAEquivalence4In3() throws TimeoutException {
-//        assertFalse(IP3PacketParserSimplifiedSRA.isLanguageEquivalent(IP4PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testSRAInclusion4In2() throws TimeoutException {
-//        assertTrue(IP2PacketParserSimplifiedSRA.languageIncludes(IP4PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testSRAEquivalence4In2() throws TimeoutException {
-//        assertFalse(IP2PacketParserSimplifiedSRA.isLanguageEquivalent(IP4PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testSRAEquivalence6In4() throws TimeoutException {
-//        assertFalse(IP4PacketParserSRA.isLanguageEquivalent(IP6PacketParserSRA, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testSRAInclusion6In4() throws TimeoutException {
-//        assertFalse(IP4PacketParserSRA.languageIncludes(IP6PacketParserSRA, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testSRAEquivalence9In6() throws TimeoutException {
-//        assertFalse(IP6PacketParserSRA.isLanguageEquivalent(IP9PacketParserSRA, ba, Long.MAX_VALUE));
-//    }
-//
-//    @Test
-//    public void testSRAInclusion9In6() throws TimeoutException {
-//        assertFalse(IP6PacketParserSRA.languageIncludes(IP9PacketParserSRA, ba, Long.MAX_VALUE));
-//    }
+    @Test
+    public void testPP6Equivalence() throws TimeoutException {
+        assertFalse(productParserC6.isLanguageEquivalent(productParserCL6, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPP9Equivalence() throws TimeoutException {
+        assertFalse(productParserC9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPC2Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserC2, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPCL2Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserCL2, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPC3Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserC3, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPCL3Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserCL3, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPC4Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserC4, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPCL4Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserCL4, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPC6Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserC6, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPCL6Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserCL6, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPC9Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserC9, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPCL9Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserCL9, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPCL2Inclusion() throws TimeoutException {
+        assertFalse(productParserCL2.languageIncludes(productParserC2, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPCL3Inclusion() throws TimeoutException {
+        assertFalse(productParserCL3.languageIncludes(productParserC3, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPCL4Inclusion() throws TimeoutException {
+        assertFalse(productParserCL4.languageIncludes(productParserC4, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPCL6Inclusion() throws TimeoutException {
+        assertFalse(productParserCL6.languageIncludes(productParserC6, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPCL9Inclusion() throws TimeoutException {
+        assertFalse(productParserCL9.languageIncludes(productParserC9, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPC2Inclusion() throws TimeoutException {
+        assertTrue(productParserC2.languageIncludes(productParserCL2, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPC3Inclusion() throws TimeoutException {
+        assertTrue(productParserC3.languageIncludes(productParserCL3, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPC4Inclusion() throws TimeoutException {
+        assertTrue(productParserC9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPC6Inclusion() throws TimeoutException {
+        assertTrue(productParserC6.languageIncludes(productParserCL6, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPC9Inclusion() throws TimeoutException {
+        assertTrue(productParserC9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPC2Equivalence() throws TimeoutException {
+        assertTrue(productParserC2.isLanguageEquivalent(productParserC2, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPC3Equivalence() throws TimeoutException {
+        assertTrue(productParserC3.isLanguageEquivalent(productParserC3, ba, Long.MAX_VALUE));
+    }
+    @Test
+    public void testPPC4Equivalence() throws TimeoutException {
+        assertTrue(productParserC4.isLanguageEquivalent(productParserC4, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPC6Equivalence() throws TimeoutException {
+        assertTrue(productParserC6.isLanguageEquivalent(productParserC6, ba, Long.MAX_VALUE));
+    }
+    @Test
+    public void testPPC9Equivalence() throws TimeoutException {
+        assertTrue(productParserC9.isLanguageEquivalent(productParserC9, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPCL2Equivalence() throws TimeoutException {
+        assertTrue(productParserCL2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPCL3Equivalence() throws TimeoutException {
+        assertTrue(productParserCL3.isLanguageEquivalent(productParserCL3, ba, Long.MAX_VALUE));
+    }
+    @Test
+    public void testPPCL4Equivalence() throws TimeoutException {
+        assertTrue(productParserCL4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPCL6Equivalence() throws TimeoutException {
+        assertTrue(productParserCL6.isLanguageEquivalent(productParserCL6, ba, Long.MAX_VALUE));
+    }
+    @Test
+    public void testPPCL9Equivalence() throws TimeoutException {
+        assertTrue(productParserCL9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testPPAcceptanceC2PP1() throws TimeoutException {
+        List<Character> valid2PP = lOfS("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste"); // accepted by PPC2 and PPCL2
+        assertTrue(productParserC2.accepts(valid2PP, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC2PP10() throws TimeoutException {
+        List<Character> valid2PP10 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10);
+        assertTrue(productParserC2.accepts(valid2PP10, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC2PP100000() throws TimeoutException {
+        List<Character> valid2PP100000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100000);
+        assertTrue(productParserC2.accepts(valid2PP100000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC2PP1000000() throws TimeoutException {
+        List<Character> valid2PP1000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000000);
+        assertTrue(productParserC2.accepts(valid2PP1000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC2PP10000000() throws TimeoutException {
+        List<Character> valid2PP10000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10000000);
+        assertTrue(productParserC2.accepts(valid2PP10000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL2PP1() throws TimeoutException {
+        List<Character> valid2PP = lOfS("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste"); // accepted by PPC2 and PPCL2
+        assertTrue(productParserCL2.accepts(valid2PP, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL2PP10() throws TimeoutException {
+        List<Character> valid2PP10 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10);
+        assertTrue(productParserCL2.accepts(valid2PP10, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL2PP100000() throws TimeoutException {
+        List<Character> valid2PP100000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100000);
+        assertTrue(productParserCL2.accepts(valid2PP100000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL2PP1000000() throws TimeoutException {
+        List<Character> valid2PP1000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000000);
+        assertTrue(productParserCL2.accepts(valid2PP1000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL2PP10000000() throws TimeoutException {
+        List<Character> valid2PP10000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10000000);
+        assertTrue(productParserCL2.accepts(valid2PP10000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC3PP1() throws TimeoutException {
+        List<Character> valid3PP = lOfS("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste"); // accepted by PPC3 and PPCL3
+        assertTrue(productParserC3.accepts(valid3PP, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC3PP10() throws TimeoutException {
+        List<Character> valid3PP10 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10);
+        assertTrue(productParserC3.accepts(valid3PP10, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC3PP100000() throws TimeoutException {
+        List<Character> valid3PP100000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 100000);
+        assertTrue(productParserC3.accepts(valid3PP100000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC3PP1000000() throws TimeoutException {
+        List<Character> valid3PP1000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000000);
+        assertTrue(productParserC3.accepts(valid3PP1000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC3PP10000000() throws TimeoutException {
+        List<Character> valid3PP10000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10000000);
+        assertTrue(productParserC3.accepts(valid3PP10000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL3PP1() throws TimeoutException {
+        List<Character> valid3PP = lOfS("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste"); // accepted by PPC3 and PPCL3
+        assertTrue(productParserCL3.accepts(valid3PP, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL3PP10() throws TimeoutException {
+        List<Character> valid3PP10 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10);
+        assertTrue(productParserCL3.accepts(valid3PP10, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL3PP100000() throws TimeoutException {
+        List<Character> valid3PP100000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 100000);
+        assertTrue(productParserCL3.accepts(valid3PP100000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL3PP1000000() throws TimeoutException {
+        List<Character> valid3PP1000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000000);
+        assertTrue(productParserCL3.accepts(valid3PP1000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL3PP10000000() throws TimeoutException {
+        List<Character> valid3PP10000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10000000);
+        assertTrue(productParserCL3.accepts(valid3PP10000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC4PP1() throws TimeoutException {
+        List<Character> valid4PP = lOfS("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste"); // accepted by PPC4 and PPCL4
+        assertTrue(productParserC4.accepts(valid4PP, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC4PP10() throws TimeoutException {
+        List<Character> valid4PP10 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10);
+        assertTrue(productParserC4.accepts(valid4PP10, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC4PP100000() throws TimeoutException {
+        List<Character> valid4PP100000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 100000);
+        assertTrue(productParserC4.accepts(valid4PP100000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC4PP1000000() throws TimeoutException {
+        List<Character> valid4PP1000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 1000000);
+        assertTrue(productParserC4.accepts(valid4PP1000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC4PP10000000() throws TimeoutException {
+        List<Character> valid4PP10000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10000000);
+        assertTrue(productParserC4.accepts(valid4PP10000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL4PP1() throws TimeoutException {
+        List<Character> valid4PP = lOfS("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste"); // accepted by PPC4 and PPCL4
+        assertTrue(productParserCL4.accepts(valid4PP, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL4PP10() throws TimeoutException {
+        List<Character> valid4PP10 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10);
+        assertTrue(productParserCL4.accepts(valid4PP10, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL4PP100000() throws TimeoutException {
+        List<Character> valid4PP100000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 100000);
+        assertTrue(productParserCL4.accepts(valid4PP100000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL4PP1000000() throws TimeoutException {
+        List<Character> valid4PP1000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 1000000);
+        assertTrue(productParserCL4.accepts(valid4PP1000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL4PP10000000() throws TimeoutException {
+        List<Character> valid4PP10000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10000000);
+        assertTrue(productParserCL4.accepts(valid4PP10000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC6PP1() throws TimeoutException {
+        List<Character> valid6PP = lOfS("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste"); // accepted by PPC6 and PPCL6
+        assertTrue(productParserC6.accepts(valid6PP, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC6PP10() throws TimeoutException {
+        List<Character> valid6PP10 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10);
+        assertTrue(productParserC6.accepts(valid6PP10, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC6PP100000() throws TimeoutException {
+        List<Character> valid6PP100000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 100000);
+        assertTrue(productParserC6.accepts(valid6PP100000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC6PP1000000() throws TimeoutException {
+        List<Character> valid6PP1000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 1000000);
+        assertTrue(productParserC6.accepts(valid6PP1000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC6PP10000000() throws TimeoutException {
+        List<Character> valid6PP10000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10000000);
+        assertTrue(productParserC6.accepts(valid6PP10000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL6PP1() throws TimeoutException {
+        List<Character> valid6PP = lOfS("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste"); // accepted by PPC6 and PPCL6
+        assertTrue(productParserCL6.accepts(valid6PP, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL6PP10() throws TimeoutException {
+        List<Character> valid6PP10 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10);
+        assertTrue(productParserCL6.accepts(valid6PP10, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL6PP100000() throws TimeoutException {
+        List<Character> valid6PP100000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 100000);
+        assertTrue(productParserCL6.accepts(valid6PP100000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL6PP1000000() throws TimeoutException {
+        List<Character> valid6PP1000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 1000000);
+        assertTrue(productParserCL6.accepts(valid6PP1000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL6PP10000000() throws TimeoutException {
+        List<Character> valid6PP10000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10000000);
+        assertTrue(productParserCL6.accepts(valid6PP10000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC9PP1() throws TimeoutException {
+        List<Character> valid9PP = lOfS("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste"); // accepted by PPC9 and PPCL9
+        assertTrue(productParserC9.accepts(valid9PP, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC9PP10() throws TimeoutException {
+        List<Character> valid9PP10 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10);
+        assertTrue(productParserC9.accepts(valid9PP10, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC9PP100000() throws TimeoutException {
+        List<Character> valid9PP100000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 100000);
+        assertTrue(productParserC9.accepts(valid9PP100000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC9PP1000000() throws TimeoutException {
+        List<Character> valid9PP1000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 1000000);
+        assertTrue(productParserC9.accepts(valid9PP1000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceC9PP10000000() throws TimeoutException {
+        List<Character> valid9PP10000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10000000);
+        assertTrue(productParserC9.accepts(valid9PP10000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL9PP1() throws TimeoutException {
+        List<Character> valid9PP = lOfS("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste"); // accepted by PPC9 and PPCL9
+        assertTrue(productParserCL9.accepts(valid9PP, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL9PP10() throws TimeoutException {
+        List<Character> valid9PP10 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10);
+        assertTrue(productParserCL9.accepts(valid9PP10, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL9PP100000() throws TimeoutException {
+        List<Character> valid9PP100000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 100000);
+        assertTrue(productParserCL9.accepts(valid9PP100000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL9PP1000000() throws TimeoutException {
+        List<Character> valid9PP1000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 1000000);
+        assertTrue(productParserCL9.accepts(valid9PP1000000, ba));
+    }
+
+    @Test
+    public void testPPAcceptanceCL9PP10000000() throws TimeoutException {
+        List<Character> valid9PP10000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10000000);
+        assertTrue(productParserCL9.accepts(valid9PP10000000, ba));
+    }
+
+
+    @Test
+    public void testPPAcceptanceJavaRegex() {
+        String valid2PP100Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100);
+        Matcher m = CL2PPRegex.matcher(valid2PP100Str);
+        assertTrue(m.find());
+    }
+
+    @Test
+    public void testPPAcceptanceJavaRegexOverflow() {
+        String valid2PP1000Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000);
+        Matcher m = CL2PPRegex.matcher(valid2PP1000Str);
+        assertTrue(m.find());
+    }
+
+    @Test
+    public void testSFAEquivalence3And2() throws TimeoutException {
+        assertFalse(IP2PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP3PacketParserSimplifiedSFA, ba));
+    }
+
+    @Test
+    public void testSFAEquivalence4In3() throws TimeoutException {
+        assertFalse(IP3PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP4PacketParserSimplifiedSFA, ba));
+    }
+
+    @Test
+    public void testSRAInclusion3In2() throws TimeoutException {
+        assertTrue(IP2PacketParserSimplifiedSRA.languageIncludes(IP3PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testSRAInclusion4In3() throws TimeoutException {
+        assertTrue(IP3PacketParserSimplifiedSRA.languageIncludes(IP4PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testSRAInclusion6In4() throws TimeoutException {
+        assertTrue(IP4PacketParserSimplifiedSRA.languageIncludes(IP6PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testSRAInclusion9In6() throws TimeoutException {
+        assertTrue(IP6PacketParserSimplifiedSRA.languageIncludes(IP9PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
+    }
 
     // ---------------------------------------
     // Predicates
@@ -415,69 +736,8 @@ public class TestSRAExperiments {
     private List<Character> invalidName2 = lOfS("Tiago, Ferreira, AA"); // not accepted by SSNParser
     private List<Character> invalidName3 = lOfS("Tiago, Ferreira, A"); // not accepted by SSNParser
 
-    // PP test strings
-//    private List<Character> valid2PP = lOfS("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste"); // accepted by PPC2 and PPCL2
-//    private String valid2PPStr = "C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste"; // accepted by C2PPRegex and CL2PPRegex
-//    private List<Character> valid2PP10 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10);
-//    private String valid2PP10Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10);
-//    private List<Character> valid2PP100000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100000);
-//    private String valid2PP100000Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100000);
-//    private List<Character> valid2PP1000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000000);
-//    private String valid2PP1000000Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000000);
-//    private List<Character> valid2PP10000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10000000);
-//    private String valid2PP10000000Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10000000);
-//    private List<Character> valid3PP = lOfS("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste"); // accepted by PPC3 and PPCL3
-//    private String valid3PPStr = "C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste"; // accepted by C3PPRegex and CL3PPRegex
-//    private List<Character> valid3PP10 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10);
-//    private String valid3PP10Str = getPPTestString("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10);
-//    private List<Character> valid3PP100000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 100000);
-//    private String valid3PP100000Str = getPPTestString("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 100000);
-//    private List<Character> valid3PP1000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000000);
-//    private String valid3PP1000000Str = getPPTestString("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000000);
-//    private List<Character> valid3PP10000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10000000);
-//    private String valid3PP10000000Str = getPPTestString("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10000000);
-//    private List<Character> valid4PP = lOfS("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste"); // accepted by PPC4 and PPCL4
-//    private String valid4PPStr = "C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste"; // accepted by C4PPRegex and CL4PPRegex
-//    private List<Character> valid4PP10 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10);
-//    private String valid4PP10Str = getPPTestString("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10);
-//    private List<Character> valid4PP100000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 100000);
-//    private String valid4PP100000Str = getPPTestString("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 100000);
-//    private List<Character> valid4PP1000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 1000000);
-//    private String valid4PP1000000Str = getPPTestString("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 1000000);
-//    private List<Character> valid4PP10000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10000000);
-//    private String valid4PP10000000Str = getPPTestString("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10000000);
-//    private List<Character> valid6PP = lOfS("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste"); // accepted by PPC6 and PPCL6
-//    private String valid6PPStr = "C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste"; // accepted by C6PPRegex and CL6PPRegex
-//    private List<Character> valid6PP10 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10);
-//    private String valid6PP10Str = getPPTestString("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10);
-//    private List<Character> valid6PP100000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 100000);
-//    private String valid6PP100000Str = getPPTestString("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 100000);
-//    private List<Character> valid6PP1000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 1000000);
-//    private String valid6PP1000000Str = getPPTestString("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 1000000);
-//    private List<Character> valid6PP10000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10000000);
-//    private String valid6PP10000000Str = getPPTestString("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10000000);
-//    private List<Character> valid9PP = lOfS("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste"); // accepted by PPC9 and PPCL9
-//    private String valid9PPStr = "C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste"; // accepted by C9PPRegex and CL9PPRegex
-//    private List<Character> valid9PP10 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10);
-//    private String valid9PP10Str = getPPTestString("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10);
-//    private List<Character> valid9PP100000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 100000);
-//    private String valid9PP100000Str = getPPTestString("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 100000);
-//    private List<Character> valid9PP1000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 1000000);
-//    private String valid9PP1000000Str = getPPTestString("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 1000000);
-//    private List<Character> valid9PP10000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10000000);
-//    private String valid9PP10000000Str = getPPTestString("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10000000);
-
-    // PP Regex Patterns
-//    Pattern C2PPRegex = Pattern.compile("C:(.{2}) L:. D:[^\\s]+( C:\\1 L:. D:[^\\s]+)+");
-//    Pattern C3PPRegex = Pattern.compile("C:(.{3}) L:. D:[^\\s]+( C:\\1 L:. D:[^\\s]+)+");
-//    Pattern C4PPRegex = Pattern.compile("C:(.{4}) L:. D:[^\\s]+( C:\\1 L:. D:[^\\s]+)+");
-//    Pattern C6PPRegex = Pattern.compile("C:(.{6}) L:. D:[^\\s]+( C:\\1 L:. D:[^\\s]+)+");
-//    Pattern C9PPRegex = Pattern.compile("C:(.{9}) L:. D:[^\\s]+( C:\\1 L:. D:[^\\s]+)+");
-//    Pattern CL2PPRegex = Pattern.compile("C:(.{2}) L:(.) D:[^\\s]+( C:\\1 L:\\2 D:[^\\s]+)+");
-//    Pattern CL3PPRegex = Pattern.compile("C:(.{3}) L:(.) D:[^\\s]+( C:\\1 L:\\2 D:[^\\s]+)+");
-//    Pattern CL4PPRegex = Pattern.compile("C:(.{4}) L:(.) D:[^\\s]+( C:\\1 L:\\2 D:[^\\s]+)+");
-//    Pattern CL6PPRegex = Pattern.compile("C:(.{6}) L:(.) D:[^\\s]+( C:\\1 L:\\2 D:[^\\s]+)+");
-//    Pattern CL9PPRegex = Pattern.compile("C:(.{9}) L:(.) D:[^\\s]+( C:\\1 L:\\2 D:[^\\s]+)+");
+    // Regex pattern
+    Pattern CL2PPRegex = Pattern.compile("C:(.{2}) L:(.) D:[^\\s]+( C:\\1 L:\\2 D:[^\\s]+)+");
 
     // XML test strings
     private List<Character> validXML1 = lOfS("<A></A>"); // accepted by XMLParser
@@ -513,30 +773,30 @@ public class TestSRAExperiments {
     private SRA<CharPred, Character> SSNParserLast = getSSNParserLast(ba);
     private SFA<CharPred, Character> SSNParserLastSFA = getSSNParserLastSFA(ba);
     private SRA<CharPred, Character> XMLParserSRA = getXMLParserSRA(ba);
-//    private SRA<CharPred, Character> productParserC2 = getProductParserC2(ba);
-//    private SRA<CharPred, Character> productParserCL2 = getProductParserCL2(ba);
-//    private SRA<CharPred, Character> productParserC3 = getProductParserC3(ba);
-//    private SRA<CharPred, Character> productParserCL3 = getProductParserCL3(ba);
-//    private SRA<CharPred, Character> productParserC4 = getProductParserC4(ba);
-//    private SRA<CharPred, Character> productParserCL4 = getProductParserCL4(ba);
-//    private SRA<CharPred, Character> productParserC6 = getProductParserC6(ba);
-//    private SRA<CharPred, Character> productParserCL6 = getProductParserCL6(ba);
-//    private SRA<CharPred, Character> productParserC9 = getProductParserC9(ba);
-//    private SRA<CharPred, Character> productParserCL9 = getProductParserCL9(ba);
+    private SRA<CharPred, Character> productParserC2 = getProductParserC2(ba);
+    private SRA<CharPred, Character> productParserCL2 = getProductParserCL2(ba);
+    private SRA<CharPred, Character> productParserC3 = getProductParserC3(ba);
+    private SRA<CharPred, Character> productParserCL3 = getProductParserCL3(ba);
+    private SRA<CharPred, Character> productParserC4 = getProductParserC4(ba);
+    private SRA<CharPred, Character> productParserCL4 = getProductParserCL4(ba);
+    private SRA<CharPred, Character> productParserC6 = getProductParserC6(ba);
+    private SRA<CharPred, Character> productParserCL6 = getProductParserCL6(ba);
+    private SRA<CharPred, Character> productParserC9 = getProductParserC9(ba);
+    private SRA<CharPred, Character> productParserCL9 = getProductParserCL9(ba);
 //    private SFA<CharPred, Character> productParserSFA = getProductParserSFA(ba); // Intractable.
     private SRA<CharPred, Character> IP2PacketParserSRA = getIP2PacketParserSRA(ba);
-//    private SRA<CharPred, Character> IP2PacketParserSimplifiedSRA = getIP2PacketParserSimplifiedSRA(ba);
-//    private SFA<CharPred, Character> IP2PacketParserSimplifiedSFA = getIP2PacketParserSimplifiedSFA(ba);
+    private SRA<CharPred, Character> IP2PacketParserSimplifiedSRA = getIP2PacketParserSimplifiedSRA(ba);
+    private SFA<CharPred, Character> IP2PacketParserSimplifiedSFA = getIP2PacketParserSimplifiedSFA(ba);
     private SRA<CharPred, Character> IP3PacketParserSRA = getIP3PacketParserSRA(ba);
-//    private SRA<CharPred, Character> IP3PacketParserSimplifiedSRA = getIP3PacketParserSimplifiedSRA(ba);
-//    private SFA<CharPred, Character> IP3PacketParserSimplifiedSFA = getIP3PacketParserSimplifiedSFA(ba);
+    private SRA<CharPred, Character> IP3PacketParserSimplifiedSRA = getIP3PacketParserSimplifiedSRA(ba);
+    private SFA<CharPred, Character> IP3PacketParserSimplifiedSFA = getIP3PacketParserSimplifiedSFA(ba);
     private SRA<CharPred, Character> IP4PacketParserSRA = getIP4PacketParserSRA(ba);
-//    private SRA<CharPred, Character> IP4PacketParserSimplifiedSRA = getIP4PacketParserSimplifiedSRA(ba);
-//    private SFA<CharPred, Character> IP4PacketParserSimplifiedSFA = getIP4PacketParserSimplifiedSFA(ba);
+    private SRA<CharPred, Character> IP4PacketParserSimplifiedSRA = getIP4PacketParserSimplifiedSRA(ba);
+    private SFA<CharPred, Character> IP4PacketParserSimplifiedSFA = getIP4PacketParserSimplifiedSFA(ba);
     private SRA<CharPred, Character> IP6PacketParserSRA = getIP6PacketParserSRA(ba);
-//    private SRA<CharPred, Character> IP6PacketParserSimplifiedSRA = getIP6PacketParserSimplifiedSRA(ba);
+    private SRA<CharPred, Character> IP6PacketParserSimplifiedSRA = getIP6PacketParserSimplifiedSRA(ba);
     private SRA<CharPred, Character> IP9PacketParserSRA = getIP9PacketParserSRA(ba);
-//    private SRA<CharPred, Character> IP9PacketParserSimplifiedSRA = getIP9PacketParserSimplifiedSRA(ba);
+    private SRA<CharPred, Character> IP9PacketParserSimplifiedSRA = getIP9PacketParserSimplifiedSRA(ba);
 
 	private SRA<CharPred, Character> getSSNParser(UnaryCharIntervalSolver ba) {
 		LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null));
