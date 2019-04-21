@@ -1,1203 +1,29 @@
-package test.SRA;
+package benchmark.SRA;
 
 import automata.sra.*;
-import automata.sfa.*;
+import automata.sfa.SFA;
+import automata.sfa.SFAInputMove;
+import automata.sfa.SFAMove;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.junit.Test;
 import org.sat4j.specs.TimeoutException;
 import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 import theory.intervals.UnaryCharIntervalSolver;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+public class Experiments {
 
-public class TestSRAExperiments {
-
-    @Test
-    public void testSSNParserSRA() throws TimeoutException {
-        assertTrue(SSNParser.accepts(validName1, ba));
-        assertTrue(SSNParser.accepts(validName2, ba));
-        assertFalse(SSNParser.accepts(invalidName1, ba));
-        assertFalse(SSNParser.accepts(invalidName2, ba));
-        assertFalse(SSNParser.accepts(invalidName3, ba));
-    }
-
-    @Test
-    public void testSSNSimulation() throws TimeoutException {
-        assertTrue(SRA.canSimulate(SSNParser, SSNParserFirst, ba, false, Long.MAX_VALUE));
-        assertTrue(SRA.canSimulate(SSNParser, SSNParserLast, ba, false, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testSSNSFA() throws TimeoutException {
-        assertTrue(SSNParserSFA.accepts(validName1, ba));
-        assertTrue(SSNParserSFA.accepts(validName2, ba));
-        assertFalse(SSNParserSFA.accepts(invalidName1, ba));
-        assertFalse(SSNParserSFA.accepts(invalidName2, ba));
-        assertFalse(SSNParserSFA.accepts(invalidName3, ba));
-    }
-
-    @Test
-    public void testSSNFirstSFA() throws TimeoutException {
-        assertTrue(SSNParserFirstSFA.accepts(validName1, ba));
-        assertTrue(SSNParserFirstSFA.accepts(validName2, ba));
-    }
-
-    @Test
-    public void testSSNLastSFA() throws TimeoutException {
-        assertTrue(SSNParserLastSFA.accepts(validName1, ba));
-        assertTrue(SSNParserLastSFA.accepts(validName2, ba));
-    }
-
-    @Test
-    public void testSSNInclusion() throws TimeoutException {
-        assertTrue(SSNParserFirst.languageIncludes(SSNParser, ba, Long.MAX_VALUE));
-        assertTrue(SSNParserLast.languageIncludes(SSNParser, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testSSNEquivalence() throws TimeoutException {
-        assertTrue(SSNParserFirst.isLanguageEquivalent(SSNParserFirst, ba, Long.MAX_VALUE));
-        assertTrue(SSNParserLast.isLanguageEquivalent(SSNParserLast, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testSSNParserMSRAtoSRA() throws TimeoutException {
-        SRA<CharPred, Character> toSRA = SSNParser.toSingleValuedSRA(ba, Long.MAX_VALUE);
-        assertTrue(toSRA.accepts(validName1, ba));
-        assertTrue(toSRA.accepts(validName2, ba));
-        assertFalse(toSRA.accepts(invalidName1, ba));
-        assertFalse(toSRA.accepts(invalidName2, ba));
-        assertFalse(toSRA.accepts(invalidName3, ba));
-    }
-
-    @Test
-    public void testXMLParserSRA() throws TimeoutException {
-        boolean check = XMLParserSRA.createDotFile("xml", "");
-        assertTrue(check);
-        assertTrue(XMLParserSRA.accepts(validXML1, ba));
-        assertTrue(XMLParserSRA.accepts(validXML2, ba));
-        assertTrue(XMLParserSRA.accepts(validXML3, ba));
-        assertTrue(XMLParserSRA.accepts(validXML4, ba));
-        assertTrue(XMLParserSRA.accepts(validXML5, ba));
-        assertTrue(XMLParserSRA.accepts(validXML6, ba));
-        assertTrue(XMLParserSRA.accepts(validXML7, ba));
-        assertFalse(XMLParserSRA.accepts(invalidXML1, ba));
-        assertFalse(XMLParserSRA.accepts(invalidXML2, ba));
-        assertFalse(XMLParserSRA.accepts(invalidXML3, ba));
-        assertFalse(XMLParserSRA.accepts(invalidXML4, ba));
-        assertFalse(XMLParserSRA.accepts(invalidXML5, ba));
-        assertFalse(XMLParserSRA.accepts(invalidXML6, ba));
-        assertFalse(XMLParserSRA.accepts(invalidXML7, ba));
-    }
-
-    @Test
-    public void testIPPacketParserSRASingleValued() throws TimeoutException {
-        SRA<CharPred, Character> IP2PacketParserSRASS = IP2PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
-        SRA<CharPred, Character> IP3PacketParserSRASS = IP3PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
-        SRA<CharPred, Character> IP4PacketParserSRASS = IP4PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
-
-        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket1, ba));
-        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket1, ba));
-        assertTrue(IP2PacketParserSRASS.accepts(validIPPacket2, ba));
-        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket2, ba));
-        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket2, ba));
-        assertTrue(IP2PacketParserSRASS.accepts(validIPPacket3, ba));
-        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket3, ba));
-        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket3, ba));
-        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket1, ba));
-        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket1, ba));
-        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket1, ba));
-        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket2, ba));
-        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket2, ba));
-        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket2, ba));
-        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket3, ba));
-        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket3, ba));
-        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket3, ba));
-        assertTrue(IP2PacketParserSRASS.accepts(dependentIPPacket1, ba));
-        assertTrue(IP3PacketParserSRASS.accepts(dependentIPPacket1, ba));
-        assertTrue(IP4PacketParserSRASS.accepts(dependentIPPacket1, ba));
-
-    }
-
-    @Test
-    public void testIPPacketParserSRASingleValuedComplete() throws TimeoutException {
-        SRA<CharPred, Character> IP2PacketParserSRASS = IP2PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
-        SRA<CharPred, Character> IP3PacketParserSRASS = IP3PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
-        SRA<CharPred, Character> IP4PacketParserSRASS = IP4PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
-
-        IP2PacketParserSRASS.complete(ba);
-        IP3PacketParserSRASS.complete(ba);
-        IP4PacketParserSRASS.complete(ba);
-
-        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket1, ba));
-        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket1, ba));
-        assertTrue(IP2PacketParserSRASS.accepts(validIPPacket2, ba));
-        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket2, ba));
-        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket2, ba));
-        assertTrue(IP2PacketParserSRASS.accepts(validIPPacket3, ba));
-        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket3, ba));
-        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket3, ba));
-        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket1, ba));
-        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket1, ba));
-        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket1, ba));
-        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket2, ba));
-        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket2, ba));
-        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket2, ba));
-        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket3, ba));
-        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket3, ba));
-        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket3, ba));
-        assertTrue(IP2PacketParserSRASS.accepts(dependentIPPacket1, ba));
-        assertTrue(IP3PacketParserSRASS.accepts(dependentIPPacket1, ba));
-        assertTrue(IP4PacketParserSRASS.accepts(dependentIPPacket1, ba));
-    }
-
-    @Test
-    public void testIPPacketParserSRA() throws TimeoutException {
-        assertTrue(IP2PacketParserSRA.accepts(validIPPacket1, ba));
-        assertTrue(IP3PacketParserSRA.accepts(validIPPacket1, ba));
-        assertTrue(IP4PacketParserSRA.accepts(validIPPacket1, ba));
-        assertTrue(IP6PacketParserSRA.accepts(validIPPacket1, ba));
-        assertTrue(IP9PacketParserSRA.accepts(validIPPacket1, ba));
-        assertTrue(IP2PacketParserSRA.accepts(validIPPacket2, ba));
-        assertTrue(IP3PacketParserSRA.accepts(validIPPacket2, ba));
-        assertTrue(IP4PacketParserSRA.accepts(validIPPacket2, ba));
-        assertTrue(IP6PacketParserSRA.accepts(validIPPacket2, ba));
-        assertTrue(IP9PacketParserSRA.accepts(validIPPacket2, ba));
-        assertTrue(IP2PacketParserSRA.accepts(validIPPacket3, ba));
-        assertTrue(IP3PacketParserSRA.accepts(validIPPacket3, ba));
-        assertTrue(IP4PacketParserSRA.accepts(validIPPacket3, ba));
-        assertTrue(IP6PacketParserSRA.accepts(validIPPacket3, ba));
-        assertTrue(IP9PacketParserSRA.accepts(validIPPacket3, ba));
-        assertFalse(IP2PacketParserSRA.accepts(invalidIPPacket1, ba));
-        assertFalse(IP3PacketParserSRA.accepts(invalidIPPacket1, ba));
-        assertFalse(IP4PacketParserSRA.accepts(invalidIPPacket1, ba));
-        assertFalse(IP6PacketParserSRA.accepts(invalidIPPacket1, ba));
-        assertFalse(IP9PacketParserSRA.accepts(invalidIPPacket1, ba));
-        assertFalse(IP2PacketParserSRA.accepts(invalidIPPacket2, ba));
-        assertFalse(IP3PacketParserSRA.accepts(invalidIPPacket2, ba));
-        assertFalse(IP4PacketParserSRA.accepts(invalidIPPacket2, ba));
-        assertFalse(IP6PacketParserSRA.accepts(invalidIPPacket2, ba));
-        assertFalse(IP9PacketParserSRA.accepts(invalidIPPacket2, ba));
-        assertFalse(IP2PacketParserSRA.accepts(invalidIPPacket3, ba));
-        assertFalse(IP3PacketParserSRA.accepts(invalidIPPacket3, ba));
-        assertFalse(IP4PacketParserSRA.accepts(invalidIPPacket3, ba));
-        assertFalse(IP6PacketParserSRA.accepts(invalidIPPacket3, ba));
-        assertFalse(IP9PacketParserSRA.accepts(invalidIPPacket3, ba));
-        assertTrue(IP2PacketParserSRA.accepts(dependentIPPacket1, ba));
-        assertTrue(IP3PacketParserSRA.accepts(dependentIPPacket1, ba));
-        assertTrue(IP4PacketParserSRA.accepts(dependentIPPacket1, ba));
-        assertTrue(IP6PacketParserSRA.accepts(dependentIPPacket1, ba));
-        assertFalse(IP9PacketParserSRA.accepts(dependentIPPacket1, ba));
-    }
-
-    @Test
-    public void testPP2Equivalence() throws TimeoutException {
-        assertFalse(productParserC2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPP3Equivalence() throws TimeoutException {
-        assertFalse(productParserC3.isLanguageEquivalent(productParserCL3, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPP4Equivalence() throws TimeoutException {
-        assertFalse(productParserC4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPP6Equivalence() throws TimeoutException {
-        assertFalse(productParserC6.isLanguageEquivalent(productParserCL6, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPP9Equivalence() throws TimeoutException {
-        assertFalse(productParserC9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPC2Emptiness() throws TimeoutException {
-        assertFalse(SRA.isLanguageEmpty(productParserC2, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL2Emptiness() throws TimeoutException {
-        assertFalse(SRA.isLanguageEmpty(productParserCL2, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPC3Emptiness() throws TimeoutException {
-        assertFalse(SRA.isLanguageEmpty(productParserC3, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL3Emptiness() throws TimeoutException {
-        assertFalse(SRA.isLanguageEmpty(productParserCL3, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPC4Emptiness() throws TimeoutException {
-        assertFalse(SRA.isLanguageEmpty(productParserC4, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL4Emptiness() throws TimeoutException {
-        assertFalse(SRA.isLanguageEmpty(productParserCL4, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPC6Emptiness() throws TimeoutException {
-        assertFalse(SRA.isLanguageEmpty(productParserC6, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL6Emptiness() throws TimeoutException {
-        assertFalse(SRA.isLanguageEmpty(productParserCL6, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPC9Emptiness() throws TimeoutException {
-        assertFalse(SRA.isLanguageEmpty(productParserC9, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL9Emptiness() throws TimeoutException {
-        assertFalse(SRA.isLanguageEmpty(productParserCL9, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL2Inclusion() throws TimeoutException {
-        assertFalse(productParserCL2.languageIncludes(productParserC2, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL3Inclusion() throws TimeoutException {
-        assertFalse(productParserCL3.languageIncludes(productParserC3, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL4Inclusion() throws TimeoutException {
-        assertFalse(productParserCL4.languageIncludes(productParserC4, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL6Inclusion() throws TimeoutException {
-        assertFalse(productParserCL6.languageIncludes(productParserC6, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL9Inclusion() throws TimeoutException {
-        assertFalse(productParserCL9.languageIncludes(productParserC9, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPC2Inclusion() throws TimeoutException {
-        assertTrue(productParserC2.languageIncludes(productParserCL2, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPC3Inclusion() throws TimeoutException {
-        assertTrue(productParserC3.languageIncludes(productParserCL3, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPC4Inclusion() throws TimeoutException {
-        assertTrue(productParserC9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPC6Inclusion() throws TimeoutException {
-        assertTrue(productParserC6.languageIncludes(productParserCL6, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPC9Inclusion() throws TimeoutException {
-        assertTrue(productParserC9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPC2Equivalence() throws TimeoutException {
-        assertTrue(productParserC2.isLanguageEquivalent(productParserC2, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPC3Equivalence() throws TimeoutException {
-        assertTrue(productParserC3.isLanguageEquivalent(productParserC3, ba, Long.MAX_VALUE));
-    }
-    @Test
-    public void testPPC4Equivalence() throws TimeoutException {
-        assertTrue(productParserC4.isLanguageEquivalent(productParserC4, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPC6Equivalence() throws TimeoutException {
-        assertTrue(productParserC6.isLanguageEquivalent(productParserC6, ba, Long.MAX_VALUE));
-    }
-    @Test
-    public void testPPC9Equivalence() throws TimeoutException {
-        assertTrue(productParserC9.isLanguageEquivalent(productParserC9, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL2Equivalence() throws TimeoutException {
-        assertTrue(productParserCL2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL3Equivalence() throws TimeoutException {
-        assertTrue(productParserCL3.isLanguageEquivalent(productParserCL3, ba, Long.MAX_VALUE));
-    }
-    @Test
-    public void testPPCL4Equivalence() throws TimeoutException {
-        assertTrue(productParserCL4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPCL6Equivalence() throws TimeoutException {
-        assertTrue(productParserCL6.isLanguageEquivalent(productParserCL6, ba, Long.MAX_VALUE));
-    }
-    @Test
-    public void testPPCL9Equivalence() throws TimeoutException {
-        assertTrue(productParserCL9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testPPAcceptanceC2PP1() throws TimeoutException {
-        List<Character> valid2PP = lOfS("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste"); // accepted by PPC2 and PPCL2
-        assertTrue(productParserC2.accepts(valid2PP, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC2PP10() throws TimeoutException {
-        List<Character> valid2PP10 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10);
-        assertTrue(productParserC2.accepts(valid2PP10, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC2PP100000() throws TimeoutException {
-        List<Character> valid2PP100000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100000);
-        assertTrue(productParserC2.accepts(valid2PP100000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC2PP1000000() throws TimeoutException {
-        List<Character> valid2PP1000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000000);
-        assertTrue(productParserC2.accepts(valid2PP1000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC2PP10000000() throws TimeoutException {
-        List<Character> valid2PP10000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10000000);
-        assertTrue(productParserC2.accepts(valid2PP10000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL2PP1() throws TimeoutException {
-        List<Character> valid2PP = lOfS("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste"); // accepted by PPC2 and PPCL2
-        assertTrue(productParserCL2.accepts(valid2PP, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL2PP10() throws TimeoutException {
-        List<Character> valid2PP10 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10);
-        assertTrue(productParserCL2.accepts(valid2PP10, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL2PP100000() throws TimeoutException {
-        List<Character> valid2PP100000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100000);
-        assertTrue(productParserCL2.accepts(valid2PP100000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL2PP1000000() throws TimeoutException {
-        List<Character> valid2PP1000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000000);
-        assertTrue(productParserCL2.accepts(valid2PP1000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL2PP10000000() throws TimeoutException {
-        List<Character> valid2PP10000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10000000);
-        assertTrue(productParserCL2.accepts(valid2PP10000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC3PP1() throws TimeoutException {
-        List<Character> valid3PP = lOfS("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste"); // accepted by PPC3 and PPCL3
-        assertTrue(productParserC3.accepts(valid3PP, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC3PP10() throws TimeoutException {
-        List<Character> valid3PP10 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10);
-        assertTrue(productParserC3.accepts(valid3PP10, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC3PP100000() throws TimeoutException {
-        List<Character> valid3PP100000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 100000);
-        assertTrue(productParserC3.accepts(valid3PP100000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC3PP1000000() throws TimeoutException {
-        List<Character> valid3PP1000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000000);
-        assertTrue(productParserC3.accepts(valid3PP1000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC3PP10000000() throws TimeoutException {
-        List<Character> valid3PP10000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10000000);
-        assertTrue(productParserC3.accepts(valid3PP10000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL3PP1() throws TimeoutException {
-        List<Character> valid3PP = lOfS("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste"); // accepted by PPC3 and PPCL3
-        assertTrue(productParserCL3.accepts(valid3PP, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL3PP10() throws TimeoutException {
-        List<Character> valid3PP10 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10);
-        assertTrue(productParserCL3.accepts(valid3PP10, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL3PP100000() throws TimeoutException {
-        List<Character> valid3PP100000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 100000);
-        assertTrue(productParserCL3.accepts(valid3PP100000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL3PP1000000() throws TimeoutException {
-        List<Character> valid3PP1000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000000);
-        assertTrue(productParserCL3.accepts(valid3PP1000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL3PP10000000() throws TimeoutException {
-        List<Character> valid3PP10000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10000000);
-        assertTrue(productParserCL3.accepts(valid3PP10000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC4PP1() throws TimeoutException {
-        List<Character> valid4PP = lOfS("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste"); // accepted by PPC4 and PPCL4
-        assertTrue(productParserC4.accepts(valid4PP, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC4PP10() throws TimeoutException {
-        List<Character> valid4PP10 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10);
-        assertTrue(productParserC4.accepts(valid4PP10, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC4PP100000() throws TimeoutException {
-        List<Character> valid4PP100000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 100000);
-        assertTrue(productParserC4.accepts(valid4PP100000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC4PP1000000() throws TimeoutException {
-        List<Character> valid4PP1000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 1000000);
-        assertTrue(productParserC4.accepts(valid4PP1000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC4PP10000000() throws TimeoutException {
-        List<Character> valid4PP10000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10000000);
-        assertTrue(productParserC4.accepts(valid4PP10000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL4PP1() throws TimeoutException {
-        List<Character> valid4PP = lOfS("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste"); // accepted by PPC4 and PPCL4
-        assertTrue(productParserCL4.accepts(valid4PP, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL4PP10() throws TimeoutException {
-        List<Character> valid4PP10 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10);
-        assertTrue(productParserCL4.accepts(valid4PP10, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL4PP100000() throws TimeoutException {
-        List<Character> valid4PP100000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 100000);
-        assertTrue(productParserCL4.accepts(valid4PP100000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL4PP1000000() throws TimeoutException {
-        List<Character> valid4PP1000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 1000000);
-        assertTrue(productParserCL4.accepts(valid4PP1000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL4PP10000000() throws TimeoutException {
-        List<Character> valid4PP10000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10000000);
-        assertTrue(productParserCL4.accepts(valid4PP10000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC6PP1() throws TimeoutException {
-        List<Character> valid6PP = lOfS("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste"); // accepted by PPC6 and PPCL6
-        assertTrue(productParserC6.accepts(valid6PP, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC6PP10() throws TimeoutException {
-        List<Character> valid6PP10 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10);
-        assertTrue(productParserC6.accepts(valid6PP10, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC6PP100000() throws TimeoutException {
-        List<Character> valid6PP100000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 100000);
-        assertTrue(productParserC6.accepts(valid6PP100000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC6PP1000000() throws TimeoutException {
-        List<Character> valid6PP1000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 1000000);
-        assertTrue(productParserC6.accepts(valid6PP1000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC6PP10000000() throws TimeoutException {
-        List<Character> valid6PP10000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10000000);
-        assertTrue(productParserC6.accepts(valid6PP10000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL6PP1() throws TimeoutException {
-        List<Character> valid6PP = lOfS("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste"); // accepted by PPC6 and PPCL6
-        assertTrue(productParserCL6.accepts(valid6PP, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL6PP10() throws TimeoutException {
-        List<Character> valid6PP10 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10);
-        assertTrue(productParserCL6.accepts(valid6PP10, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL6PP100000() throws TimeoutException {
-        List<Character> valid6PP100000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 100000);
-        assertTrue(productParserCL6.accepts(valid6PP100000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL6PP1000000() throws TimeoutException {
-        List<Character> valid6PP1000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 1000000);
-        assertTrue(productParserCL6.accepts(valid6PP1000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL6PP10000000() throws TimeoutException {
-        List<Character> valid6PP10000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10000000);
-        assertTrue(productParserCL6.accepts(valid6PP10000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC9PP1() throws TimeoutException {
-        List<Character> valid9PP = lOfS("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste"); // accepted by PPC9 and PPCL9
-        assertTrue(productParserC9.accepts(valid9PP, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC9PP10() throws TimeoutException {
-        List<Character> valid9PP10 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10);
-        assertTrue(productParserC9.accepts(valid9PP10, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC9PP100000() throws TimeoutException {
-        List<Character> valid9PP100000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 100000);
-        assertTrue(productParserC9.accepts(valid9PP100000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC9PP1000000() throws TimeoutException {
-        List<Character> valid9PP1000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 1000000);
-        assertTrue(productParserC9.accepts(valid9PP1000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceC9PP10000000() throws TimeoutException {
-        List<Character> valid9PP10000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10000000);
-        assertTrue(productParserC9.accepts(valid9PP10000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL9PP1() throws TimeoutException {
-        List<Character> valid9PP = lOfS("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste"); // accepted by PPC9 and PPCL9
-        assertTrue(productParserCL9.accepts(valid9PP, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL9PP10() throws TimeoutException {
-        List<Character> valid9PP10 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10);
-        assertTrue(productParserCL9.accepts(valid9PP10, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL9PP100000() throws TimeoutException {
-        List<Character> valid9PP100000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 100000);
-        assertTrue(productParserCL9.accepts(valid9PP100000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL9PP1000000() throws TimeoutException {
-        List<Character> valid9PP1000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 1000000);
-        assertTrue(productParserCL9.accepts(valid9PP1000000, ba));
-    }
-
-    @Test
-    public void testPPAcceptanceCL9PP10000000() throws TimeoutException {
-        List<Character> valid9PP10000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10000000);
-        assertTrue(productParserCL9.accepts(valid9PP10000000, ba));
-    }
-
-
-    @Test
-    public void testPPAcceptanceJavaRegex() {
-        String valid2PP100Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100);
-        Matcher m = CL2PPRegex.matcher(valid2PP100Str);
-        assertTrue(m.find());
-    }
-
-    @Test
-    public void testPPAcceptanceJavaRegexOverflow() {
-        String valid2PP1000Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000);
-        Matcher m = CL2PPRegex.matcher(valid2PP1000Str);
-        assertTrue(m.find());
-    }
-
-    @Test
-    public void testSFAEquivalence3And2() throws TimeoutException {
-        assertFalse(IP2PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP3PacketParserSimplifiedSFA, ba));
-    }
-
-    @Test
-    public void testSFAEquivalence4In3() throws TimeoutException {
-        assertFalse(IP3PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP4PacketParserSimplifiedSFA, ba));
-    }
-
-    @Test
-    public void testSRAInclusion3In2() throws TimeoutException {
-        assertTrue(IP2PacketParserSimplifiedSRA.languageIncludes(IP3PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testSRAInclusion4In3() throws TimeoutException {
-        assertTrue(IP3PacketParserSimplifiedSRA.languageIncludes(IP4PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testSRAInclusion6In4() throws TimeoutException {
-        assertTrue(IP4PacketParserSimplifiedSRA.languageIncludes(IP6PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void testSRAInclusion9In6() throws TimeoutException {
-        assertTrue(IP6PacketParserSimplifiedSRA.languageIncludes(IP9PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-    }
-
-    // ---------------------------------------
-    // Predicates
-    // ---------------------------------------
-    private UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
-    private CharPred alpha = StdCharPred.ALPHA;
-    private CharPred num = StdCharPred.NUM;
-    private CharPred alphaNum = StdCharPred.ALPHA_NUM;
-    private CharPred lowerAlpha = StdCharPred.LOWER_ALPHA;
-    private CharPred upperAlpha = StdCharPred.UPPER_ALPHA;
-    private CharPred dot = new CharPred('.');
-    private CharPred comma = new CharPred(',');
-    private CharPred space = new CharPred(' ');
-    private CharPred open = new CharPred('<');
-    private CharPred close = new CharPred('>');
-    private CharPred slash = new CharPred('/');
-
-    // SSN test strings
-    private List<Character> validName1 = lOfS("Tiago, Ferreira, TF"); // accepted by SSNParser
-    private List<Character> validName2 = lOfS("Thomas, Thomson, TT"); // accepted by SSNParser
-    private List<Character> invalidName1 = lOfS("Tiago, Ferreira, TA"); // not accepted by SSNParser
-    private List<Character> invalidName2 = lOfS("Tiago, Ferreira, AA"); // not accepted by SSNParser
-    private List<Character> invalidName3 = lOfS("Tiago, Ferreira, A"); // not accepted by SSNParser
-
-    // Regex pattern
-    Pattern CL2PPRegex = Pattern.compile("C:(.{2}) L:(.) D:[^\\s]+( C:\\1 L:\\2 D:[^\\s]+)+");
-
-    // XML test strings
-    private List<Character> validXML1 = lOfS("<A></A>"); // accepted by XMLParser
-    private List<Character> validXML2 = lOfS("<AB></AB>"); // accepted by XMLParser
-    private List<Character> validXML3 = lOfS("<BB></BB>"); // accepted by XMLParser
-    private List<Character> validXML4 = lOfS("<ABB></ABB>"); // accepted by XMLParser
-    private List<Character> validXML5 = lOfS("<ABA></ABA>"); // accepted by XMLParser
-    private List<Character> validXML6 = lOfS("<AAB></AAB>"); // accepted by XMLParser
-    private List<Character> validXML7 = lOfS("<ABC></ABC>"); // accepted by XMLParser
-    private List<Character> invalidXML1 = lOfS("<A></>"); // not accepted by XMLParser
-    private List<Character> invalidXML2 = lOfS("<A><AB/>"); // not accepted by XMLParser
-    private List<Character> invalidXML3 = lOfS("<></A>"); // not accepted by XMLParser
-    private List<Character> invalidXML4 = lOfS("<A><A>"); // not accepted by XMLParser
-    private List<Character> invalidXML5 = lOfS("<AA></AB>"); // not accepted by XMLParser
-    private List<Character> invalidXML6 = lOfS("<AAA></CCC>"); // not accepted by XMLParser
-    private List<Character> invalidXML7 = lOfS("<ABA></ABC>"); // not accepted by XMLParser
-
-    // IP Packet test strings
-    private List<Character> validIPPacket1 = lOfS("srcip:192.168.123.192 prt:40 dstip:192.168.123.224 prt:50 pload:'hello'"); // accepted by IP9PacketParser
-//    private List<Character> validIPPacketSimplified1 = lOfS("s:192.168.123.192 p:40 d:192.168.123.224 p:50 p:'hello'"); // accepted by IP2PacketParserSimplified
-    private List<Character> validIPPacket2 = lOfS("srcip:192.168.123.122 prt:40 dstip:192.168.123.124 prt:5 pload:'hello123'"); // accepted by IP9PacketParser
-    private List<Character> validIPPacket3 = lOfS("srcip:192.148.123.122 prt:40 dstip:192.148.123.124 prt:5 pload:'hello123'"); // accepted by IP9PacketParser
-    private List<Character> invalidIPPacket1 = lOfS("srcip:12.168.123.122 prt:40 dstip:192.168.123.124 prt:5 pload:'hello123'"); // not accepted by either
-    private List<Character> invalidIPPacket2 = lOfS("srcip:192.148.123.122 prt:40 dstip:192.148.123.124 prt:5 plad:'hello123'"); // not accepted by either
-    private List<Character> invalidIPPacket3 = lOfS("srcip:192.148.123.122 dstip:192.148.123.124 prt:5 pload:'hello123'"); // not accepted by either
-    private List<Character> dependentIPPacket1 = lOfS("srcip:192.148.125.122 prt:40 dstip:192.148.123.124 prt:5 pload:'hello123'"); // accepted by IP6PacketParser but not IP9PacketParser
-
-    // Automata
-    private SRA<CharPred, Character> SSNParser = getSSNParser(ba);
-    private SFA<CharPred, Character> SSNParserSFA = getSSNParserSFA(ba);
-    private SRA<CharPred, Character> SSNParserFirst = getSSNParserFirst(ba);
-    private SFA<CharPred, Character> SSNParserFirstSFA = getSSNParserFirstSFA(ba);
-    private SRA<CharPred, Character> SSNParserLast = getSSNParserLast(ba);
-    private SFA<CharPred, Character> SSNParserLastSFA = getSSNParserLastSFA(ba);
-    private SRA<CharPred, Character> XMLParserSRA = getXMLParserSRA(ba);
-    private SRA<CharPred, Character> productParserC2 = getProductParserC2(ba);
-    private SRA<CharPred, Character> productParserCL2 = getProductParserCL2(ba);
-    private SRA<CharPred, Character> productParserC3 = getProductParserC3(ba);
-    private SRA<CharPred, Character> productParserCL3 = getProductParserCL3(ba);
-    private SRA<CharPred, Character> productParserC4 = getProductParserC4(ba);
-    private SRA<CharPred, Character> productParserCL4 = getProductParserCL4(ba);
-    private SRA<CharPred, Character> productParserC6 = getProductParserC6(ba);
-    private SRA<CharPred, Character> productParserCL6 = getProductParserCL6(ba);
-    private SRA<CharPred, Character> productParserC9 = getProductParserC9(ba);
-    private SRA<CharPred, Character> productParserCL9 = getProductParserCL9(ba);
-//    private SFA<CharPred, Character> productParserSFA = getProductParserSFA(ba); // Intractable.
-    private SRA<CharPred, Character> IP2PacketParserSRA = getIP2PacketParserSRA(ba);
-    private SRA<CharPred, Character> IP2PacketParserSimplifiedSRA = getIP2PacketParserSimplifiedSRA(ba);
-    private SFA<CharPred, Character> IP2PacketParserSimplifiedSFA = getIP2PacketParserSimplifiedSFA(ba);
-    private SRA<CharPred, Character> IP3PacketParserSRA = getIP3PacketParserSRA(ba);
-    private SRA<CharPred, Character> IP3PacketParserSimplifiedSRA = getIP3PacketParserSimplifiedSRA(ba);
-    private SFA<CharPred, Character> IP3PacketParserSimplifiedSFA = getIP3PacketParserSimplifiedSFA(ba);
-    private SRA<CharPred, Character> IP4PacketParserSRA = getIP4PacketParserSRA(ba);
-    private SRA<CharPred, Character> IP4PacketParserSimplifiedSRA = getIP4PacketParserSimplifiedSRA(ba);
-    private SFA<CharPred, Character> IP4PacketParserSimplifiedSFA = getIP4PacketParserSimplifiedSFA(ba);
-    private SRA<CharPred, Character> IP6PacketParserSRA = getIP6PacketParserSRA(ba);
-    private SRA<CharPred, Character> IP6PacketParserSimplifiedSRA = getIP6PacketParserSimplifiedSRA(ba);
-    private SRA<CharPred, Character> IP9PacketParserSRA = getIP9PacketParserSRA(ba);
-    private SRA<CharPred, Character> IP9PacketParserSimplifiedSRA = getIP9PacketParserSimplifiedSRA(ba);
-
-	private SRA<CharPred, Character> getSSNParser(UnaryCharIntervalSolver ba) {
-		LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null));
-
-		Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
-		// Read first initial and store it in register 0
-		transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, upperAlpha, 0));
-
-		// Read an unbound number of lowercase letters for the rest of the first name.
-        // Dispose of them on the dummy register (2)
-        transitions.add(new SRAStoreMove<CharPred, Character>(1, 1, lowerAlpha, 2));
-
-        // Read a comma and dispose of it on register (2)
-        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, comma, 2));
-
-        // Read an unbound number of spaces.
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 2, space, 2));
-
-        // Read the second initial and store it in register 1
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, upperAlpha, 1));
-
-        // Read an unbound number of lowercase letters for the rest of the last name.
-        // Dispose of them on the dummy register (2)
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 3, lowerAlpha, 2));
-
-        // Read a comma and dispose of it on register (2)
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, comma, 2));
-
-        // Read an unbound number of spaces.
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 4, space, 2));
-
-        // Read the first initial and compare it to register 0
-        transitions.add(new SRACheckMove<CharPred, Character>(4, 5, upperAlpha, 0));
-
-        // Read the second initial and compare it to register 1
-        transitions.add(new SRACheckMove<CharPred, Character>(5, 6, upperAlpha, 1));
-
-		try {
-			return SRA.MkSRA(transitions, 0, Arrays.asList(6), registers, ba);
-		} catch (TimeoutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-    private SFA<CharPred, Character> getSSNParserSFA(UnaryCharIntervalSolver ba) {
-        Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
-        List<Integer> finalStates = new LinkedList<Integer>();
-
-        Character firstInitial = upperAlpha.intervals.get(0).left;
-        Character firstEnd = upperAlpha.intervals.get(0).right;
-        for (int firstCounter = 0; firstInitial < firstEnd; firstCounter++, firstInitial++) {
-            transitions.add(new SFAInputMove<CharPred, Character>(0, (firstCounter * 185) + 1, new CharPred(firstInitial)));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 1, (firstCounter * 185) + 1, lowerAlpha));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 1, (firstCounter * 185) + 2, comma));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 2, (firstCounter * 185) + 3, space));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 3, (firstCounter * 185) + 3, space));
-
-            Character secondInitial = upperAlpha.intervals.get(0).left;
-            Character secondEnd = upperAlpha.intervals.get(0).right;
-            for (int secondCounter = 0; secondInitial < secondEnd; secondCounter++, secondInitial++) {
-                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 3, (firstCounter * 185) + (secondCounter * 7) + 4, new CharPred(secondInitial)));
-                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 4, (firstCounter * 185) + (secondCounter * 7) + 4, lowerAlpha));
-                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 4, (firstCounter * 185) + (secondCounter * 7) + 5, comma));
-                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 5, (firstCounter * 185) + (secondCounter * 7) + 6, space));
-                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 6, (firstCounter * 185) + (secondCounter * 7) + 6, space));
-                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 6, (firstCounter * 185) + (secondCounter * 7) + 7, new CharPred(firstInitial)));
-                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 7, (firstCounter * 185) + (secondCounter * 7) + 8, new CharPred(secondInitial)));
-                finalStates.add((firstCounter * 185) + (secondCounter * 7) + 8);
-            }
-        }
-
-        try {
-            return SFA.MkSFA(transitions, 0, finalStates, ba, false, false);
-        } catch (TimeoutException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private SRA<CharPred, Character> getSSNParserFirst(UnaryCharIntervalSolver ba) {
-        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null));
-        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
-
-        // Read the first initial and store it in register 0
-        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, upperAlpha, 0));
-
-        // Read an unbound number of lowercase characters
-        transitions.add(new SRAStoreMove<CharPred, Character>(1, 1, lowerAlpha, 1));
-
-        // Read a comma
-        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, comma, 1));
-
-        // Read an unbound number of spaces
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 2, space, 1));
-
-        // Read a different second initial or a repeated second initial and store it in 1
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, upperAlpha, 1));
-
-        // Read an unbound number of lowercase characters
-        transitions.add(new SRAStoreMove<>(3, 3, lowerAlpha,1));
-
-        // Read a comma
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, comma, 1));
-
-        // Read an unbound number of spaces
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 4, space, 1));
-
-        // Read a capital that matches both registers or a capital that matches the first register
-        transitions.add(new SRACheckMove<CharPred, Character>(4, 5, upperAlpha, 0));
-
-        // Read a second capital
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, upperAlpha, 1));
-
-        try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(6), registers, ba);
-        } catch (TimeoutException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private SFA<CharPred, Character> getSSNParserFirstSFA(UnaryCharIntervalSolver ba) {
-        Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
-        List<Integer> finalStates = new LinkedList<Integer>();
-
-        Character firstInitial = upperAlpha.intervals.get(0).left;
-        Character firstEnd = upperAlpha.intervals.get(0).right;
-        for (int firstCounter = 0; firstInitial < firstEnd; firstCounter++, firstInitial++) {
-            transitions.add(new SFAInputMove<CharPred, Character>(0, (firstCounter * 9) + 1, new CharPred(firstInitial)));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 1, (firstCounter * 9) + 1, lowerAlpha));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 1, (firstCounter * 9) + 2, comma));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 2, (firstCounter * 9) + 3, space));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 3, (firstCounter * 9) + 3, space));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 3, (firstCounter * 9) + 4, upperAlpha));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 4, (firstCounter * 9) + 4, lowerAlpha));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 4, (firstCounter * 9) + 5, comma));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 5, (firstCounter * 9) + 6, space));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 6, (firstCounter * 9) + 6, space));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 6, (firstCounter * 9) + 7, new CharPred(firstInitial)));
-            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 7, (firstCounter * 9) + 8, upperAlpha));
-            finalStates.add((firstCounter * 9) + 8);
-        }
-
-        try {
-            return SFA.MkSFA(transitions, 0, finalStates, ba, false, false);
-        } catch (TimeoutException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private SRA<CharPred, Character> getSSNParserLast(UnaryCharIntervalSolver ba) {
-        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null));
-        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
-
-        // Read the first initial and store it in register 0
-        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, upperAlpha, 1));
-
-        // Read an unbound number of lowercase characters
-        transitions.add(new SRAStoreMove<CharPred, Character>(1, 1, lowerAlpha, 1));
-
-        // Read a comma
-        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, comma, 1));
-
-        // Read an unbound number of spaces
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 2, space, 1));
-
-        // Read a different second initial or a repeated second initial and store it in 1
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, upperAlpha, 0));
-
-        // Read an unbound number of lowercase characters
-        transitions.add(new SRAStoreMove<>(3, 3, lowerAlpha,1));
-
-        // Read a comma
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, comma, 1));
-
-        // Read an unbound number of spaces
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 4, space, 1));
-
-        // Read a capital
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, upperAlpha, 1));
-
-        // Read a capital that matches both registers or a capital that matches the first register
-        transitions.add(new SRACheckMove<CharPred, Character>(5, 6, upperAlpha, 0));
-
-        try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(6), registers, ba);
-        } catch (TimeoutException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private SFA<CharPred, Character> getSSNParserLastSFA(UnaryCharIntervalSolver ba) {
-        Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
-        List<Integer> finalStates = new LinkedList<Integer>();
-
-        transitions.add(new SFAInputMove<CharPred, Character>(0, 1, upperAlpha));
-        transitions.add(new SFAInputMove<CharPred, Character>(1, 1, lowerAlpha));
-        transitions.add(new SFAInputMove<CharPred, Character>(1, 2, comma));
-        transitions.add(new SFAInputMove<CharPred, Character>(2, 3, space));
-        transitions.add(new SFAInputMove<CharPred, Character>(3, 3, space));
-
-        Character secondInitial = upperAlpha.intervals.get(0).left;
-        Character secondEnd = upperAlpha.intervals.get(0).right;
-        for (int secondCounter = 0; secondInitial < secondEnd; secondCounter++, secondInitial++) {
-            transitions.add(new SFAInputMove<CharPred, Character>(3, (secondCounter * 7) + 4, new CharPred(secondInitial)));
-            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 4, (secondCounter * 7) + 4, lowerAlpha));
-            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 4, (secondCounter * 7) + 5, comma));
-            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 5, (secondCounter * 7) + 6, space));
-            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 6, (secondCounter * 7) + 6, space));
-            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 6, (secondCounter * 7) + 7, upperAlpha));
-            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 7, (secondCounter * 7) + 8, new CharPred(secondInitial)));
-            finalStates.add((secondCounter * 7) + 8);
-        }
-
-
-        try {
-            return SFA.MkSFA(transitions, 0, finalStates, ba, false, false);
-        } catch (TimeoutException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private SRA<CharPred, Character> getProductParserC2(UnaryCharIntervalSolver ba) {
-        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null));
-        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 12, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred(':'), 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(15, 16, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(16, 17, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(25, 25, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(25, 13, space, 0));
-
-        try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(25), registers, ba);
-        } catch (TimeoutException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private SRA<CharPred, Character> getProductParserCL2(UnaryCharIntervalSolver ba) {
-        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null));
-        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, alphaNum, 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 12, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred(':'), 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(15, 16, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(16, 17, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, new CharPred(':'), 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(20, 21, alphaNum, 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(25, 25, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(25, 13, space, 0));
-
-        try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(25), registers, ba);
-        } catch (TimeoutException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private SRA<CharPred, Character> getProductParserC3(UnaryCharIntervalSolver ba) {
-        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null));
-        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 13, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred(':'), 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(16, 17, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(17, 18, ba.MkNot(space), 2));
-        transitions.add(new SRACheckMove<CharPred, Character>(18, 19, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, alphaNum, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(27, 27, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(27, 14, space, 0));
-
-        try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(27), registers, ba);
-        } catch (TimeoutException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private SRA<CharPred, Character> getProductParserCL3(UnaryCharIntervalSolver ba) {
-        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null));
-        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
-        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
-        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
-        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, alphaNum, 4));
-        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 13, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred('C'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred(':'), 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(16, 17, ba.MkNot(space), 1));
-        transitions.add(new SRACheckMove<CharPred, Character>(17, 18, ba.MkNot(space), 2));
-        transitions.add(new SRACheckMove<CharPred, Character>(18, 19, ba.MkNot(space), 3));
-        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, new CharPred('L'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, new CharPred(':'), 0));
-        transitions.add(new SRACheckMove<CharPred, Character>(22, 23, alphaNum, 4));
-        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, space, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, new CharPred('D'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, new CharPred(':'), 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(27, 27, alpha, 0));
-        transitions.add(new SRAStoreMove<CharPred, Character>(27, 14, space, 0));
-
-        try {
-            return SRA.MkSRA(transitions, 0, Collections.singleton(27), registers, ba);
-        } catch (TimeoutException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private SRA<CharPred, Character> getProductParserC4(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getProductParserC4(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null));
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
@@ -1242,7 +68,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getProductParserCL4(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getProductParserCL4(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null, null));
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
@@ -1287,7 +113,1287 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getProductParserC6(UnaryCharIntervalSolver ba) {
+    // @ToRun
+    public static void testSSNParserSRA() throws TimeoutException {
+        assertTrue(SSNParser.accepts(validName1, ba));
+        assertTrue(SSNParser.accepts(validName2, ba));
+        assertFalse(SSNParser.accepts(invalidName1, ba));
+        assertFalse(SSNParser.accepts(invalidName2, ba));
+        assertFalse(SSNParser.accepts(invalidName3, ba));
+    }
+
+
+    // @ToRun
+    public static void testSSNSimulation() throws TimeoutException {
+        assertTrue(SRA.canSimulate(SSNParser, SSNParserFirst, ba, false, Long.MAX_VALUE));
+        assertTrue(SRA.canSimulate(SSNParser, SSNParserLast, ba, false, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testSSNSFA() throws TimeoutException {
+        assertTrue(SSNParserSFA.accepts(validName1, ba));
+        assertTrue(SSNParserSFA.accepts(validName2, ba));
+        assertFalse(SSNParserSFA.accepts(invalidName1, ba));
+        assertFalse(SSNParserSFA.accepts(invalidName2, ba));
+        assertFalse(SSNParserSFA.accepts(invalidName3, ba));
+    }
+
+
+    // @ToRun
+    public static void testSSNFirstSFA() throws TimeoutException {
+        assertTrue(SSNParserFirstSFA.accepts(validName1, ba));
+        assertTrue(SSNParserFirstSFA.accepts(validName2, ba));
+    }
+
+
+    // @ToRun
+    public static void testSSNLastSFA() throws TimeoutException {
+        assertTrue(SSNParserLastSFA.accepts(validName1, ba));
+        assertTrue(SSNParserLastSFA.accepts(validName2, ba));
+    }
+
+
+    // @ToRun
+    public static void testSSNInclusion() throws TimeoutException {
+        assertTrue(SSNParserFirst.languageIncludes(SSNParser, ba, Long.MAX_VALUE));
+        assertTrue(SSNParserLast.languageIncludes(SSNParser, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testSSNEquivalence() throws TimeoutException {
+        assertTrue(SSNParserFirst.isLanguageEquivalent(SSNParserFirst, ba, Long.MAX_VALUE));
+        assertTrue(SSNParserLast.isLanguageEquivalent(SSNParserLast, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testSSNParserMSRAtoSRA() throws TimeoutException {
+        SRA<CharPred, Character> toSRA = SSNParser.toSingleValuedSRA(ba, Long.MAX_VALUE);
+        assertTrue(toSRA.accepts(validName1, ba));
+        assertTrue(toSRA.accepts(validName2, ba));
+        assertFalse(toSRA.accepts(invalidName1, ba));
+        assertFalse(toSRA.accepts(invalidName2, ba));
+        assertFalse(toSRA.accepts(invalidName3, ba));
+    }
+
+
+    // @ToRun
+    public static void testXMLParserSRA() throws TimeoutException {
+        boolean check = XMLParserSRA.createDotFile("xml", "");
+        assertTrue(check);
+        assertTrue(XMLParserSRA.accepts(validXML1, ba));
+        assertTrue(XMLParserSRA.accepts(validXML2, ba));
+        assertTrue(XMLParserSRA.accepts(validXML3, ba));
+        assertTrue(XMLParserSRA.accepts(validXML4, ba));
+        assertTrue(XMLParserSRA.accepts(validXML5, ba));
+        assertTrue(XMLParserSRA.accepts(validXML6, ba));
+        assertTrue(XMLParserSRA.accepts(validXML7, ba));
+        assertFalse(XMLParserSRA.accepts(invalidXML1, ba));
+        assertFalse(XMLParserSRA.accepts(invalidXML2, ba));
+        assertFalse(XMLParserSRA.accepts(invalidXML3, ba));
+        assertFalse(XMLParserSRA.accepts(invalidXML4, ba));
+        assertFalse(XMLParserSRA.accepts(invalidXML5, ba));
+        assertFalse(XMLParserSRA.accepts(invalidXML6, ba));
+        assertFalse(XMLParserSRA.accepts(invalidXML7, ba));
+    }
+
+
+    // @ToRun
+    public static void testIPPacketParserSRASingleValued() throws TimeoutException {
+        SRA<CharPred, Character> IP2PacketParserSRASS = IP2PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
+        SRA<CharPred, Character> IP3PacketParserSRASS = IP3PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
+        SRA<CharPred, Character> IP4PacketParserSRASS = IP4PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
+
+        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket1, ba));
+        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket1, ba));
+        assertTrue(IP2PacketParserSRASS.accepts(validIPPacket2, ba));
+        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket2, ba));
+        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket2, ba));
+        assertTrue(IP2PacketParserSRASS.accepts(validIPPacket3, ba));
+        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket3, ba));
+        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket3, ba));
+        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket1, ba));
+        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket1, ba));
+        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket1, ba));
+        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket2, ba));
+        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket2, ba));
+        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket2, ba));
+        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket3, ba));
+        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket3, ba));
+        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket3, ba));
+        assertTrue(IP2PacketParserSRASS.accepts(dependentIPPacket1, ba));
+        assertTrue(IP3PacketParserSRASS.accepts(dependentIPPacket1, ba));
+        assertTrue(IP4PacketParserSRASS.accepts(dependentIPPacket1, ba));
+
+    }
+
+
+    // @ToRun
+    public static void testIPPacketParserSRASingleValuedComplete() throws TimeoutException {
+        SRA<CharPred, Character> IP2PacketParserSRASS = IP2PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
+        SRA<CharPred, Character> IP3PacketParserSRASS = IP3PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
+        SRA<CharPred, Character> IP4PacketParserSRASS = IP4PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
+
+        IP2PacketParserSRASS.complete(ba);
+        IP3PacketParserSRASS.complete(ba);
+        IP4PacketParserSRASS.complete(ba);
+
+        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket1, ba));
+        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket1, ba));
+        assertTrue(IP2PacketParserSRASS.accepts(validIPPacket2, ba));
+        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket2, ba));
+        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket2, ba));
+        assertTrue(IP2PacketParserSRASS.accepts(validIPPacket3, ba));
+        assertTrue(IP3PacketParserSRASS.accepts(validIPPacket3, ba));
+        assertTrue(IP4PacketParserSRASS.accepts(validIPPacket3, ba));
+        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket1, ba));
+        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket1, ba));
+        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket1, ba));
+        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket2, ba));
+        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket2, ba));
+        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket2, ba));
+        assertFalse(IP2PacketParserSRASS.accepts(invalidIPPacket3, ba));
+        assertFalse(IP3PacketParserSRASS.accepts(invalidIPPacket3, ba));
+        assertFalse(IP4PacketParserSRASS.accepts(invalidIPPacket3, ba));
+        assertTrue(IP2PacketParserSRASS.accepts(dependentIPPacket1, ba));
+        assertTrue(IP3PacketParserSRASS.accepts(dependentIPPacket1, ba));
+        assertTrue(IP4PacketParserSRASS.accepts(dependentIPPacket1, ba));
+    }
+
+
+    // @ToRun
+    public static void testIPPacketParserSRA() throws TimeoutException {
+        assertTrue(IP2PacketParserSRA.accepts(validIPPacket1, ba));
+        assertTrue(IP3PacketParserSRA.accepts(validIPPacket1, ba));
+        assertTrue(IP4PacketParserSRA.accepts(validIPPacket1, ba));
+        assertTrue(IP6PacketParserSRA.accepts(validIPPacket1, ba));
+        assertTrue(IP9PacketParserSRA.accepts(validIPPacket1, ba));
+        assertTrue(IP2PacketParserSRA.accepts(validIPPacket2, ba));
+        assertTrue(IP3PacketParserSRA.accepts(validIPPacket2, ba));
+        assertTrue(IP4PacketParserSRA.accepts(validIPPacket2, ba));
+        assertTrue(IP6PacketParserSRA.accepts(validIPPacket2, ba));
+        assertTrue(IP9PacketParserSRA.accepts(validIPPacket2, ba));
+        assertTrue(IP2PacketParserSRA.accepts(validIPPacket3, ba));
+        assertTrue(IP3PacketParserSRA.accepts(validIPPacket3, ba));
+        assertTrue(IP4PacketParserSRA.accepts(validIPPacket3, ba));
+        assertTrue(IP6PacketParserSRA.accepts(validIPPacket3, ba));
+        assertTrue(IP9PacketParserSRA.accepts(validIPPacket3, ba));
+        assertFalse(IP2PacketParserSRA.accepts(invalidIPPacket1, ba));
+        assertFalse(IP3PacketParserSRA.accepts(invalidIPPacket1, ba));
+        assertFalse(IP4PacketParserSRA.accepts(invalidIPPacket1, ba));
+        assertFalse(IP6PacketParserSRA.accepts(invalidIPPacket1, ba));
+        assertFalse(IP9PacketParserSRA.accepts(invalidIPPacket1, ba));
+        assertFalse(IP2PacketParserSRA.accepts(invalidIPPacket2, ba));
+        assertFalse(IP3PacketParserSRA.accepts(invalidIPPacket2, ba));
+        assertFalse(IP4PacketParserSRA.accepts(invalidIPPacket2, ba));
+        assertFalse(IP6PacketParserSRA.accepts(invalidIPPacket2, ba));
+        assertFalse(IP9PacketParserSRA.accepts(invalidIPPacket2, ba));
+        assertFalse(IP2PacketParserSRA.accepts(invalidIPPacket3, ba));
+        assertFalse(IP3PacketParserSRA.accepts(invalidIPPacket3, ba));
+        assertFalse(IP4PacketParserSRA.accepts(invalidIPPacket3, ba));
+        assertFalse(IP6PacketParserSRA.accepts(invalidIPPacket3, ba));
+        assertFalse(IP9PacketParserSRA.accepts(invalidIPPacket3, ba));
+        assertTrue(IP2PacketParserSRA.accepts(dependentIPPacket1, ba));
+        assertTrue(IP3PacketParserSRA.accepts(dependentIPPacket1, ba));
+        assertTrue(IP4PacketParserSRA.accepts(dependentIPPacket1, ba));
+        assertTrue(IP6PacketParserSRA.accepts(dependentIPPacket1, ba));
+        assertFalse(IP9PacketParserSRA.accepts(dependentIPPacket1, ba));
+    }
+
+
+    // @ToRun
+    public static void testPP2Equivalence() throws TimeoutException {
+        assertFalse(productParserC2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPP3Equivalence() throws TimeoutException {
+        assertFalse(productParserC3.isLanguageEquivalent(productParserCL3, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPP4Equivalence() throws TimeoutException {
+        assertFalse(productParserC4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPP6Equivalence() throws TimeoutException {
+        assertFalse(productParserC6.isLanguageEquivalent(productParserCL6, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPP9Equivalence() throws TimeoutException {
+        assertFalse(productParserC9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPC2Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserC2, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPCL2Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserCL2, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPC3Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserC3, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPCL3Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserCL3, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPC4Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserC4, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPCL4Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserCL4, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPC6Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserC6, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPCL6Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserCL6, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPC9Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserC9, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPCL9Emptiness() throws TimeoutException {
+        assertFalse(SRA.isLanguageEmpty(productParserCL9, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPCL2Inclusion() throws TimeoutException {
+        assertFalse(productParserCL2.languageIncludes(productParserC2, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPCL3Inclusion() throws TimeoutException {
+        assertFalse(productParserCL3.languageIncludes(productParserC3, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPCL4Inclusion() throws TimeoutException {
+        assertFalse(productParserCL4.languageIncludes(productParserC4, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPCL6Inclusion() throws TimeoutException {
+        assertFalse(productParserCL6.languageIncludes(productParserC6, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPCL9Inclusion() throws TimeoutException {
+        assertFalse(productParserCL9.languageIncludes(productParserC9, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPC2Inclusion() throws TimeoutException {
+        assertTrue(productParserC2.languageIncludes(productParserCL2, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPC3Inclusion() throws TimeoutException {
+        assertTrue(productParserC3.languageIncludes(productParserCL3, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPC4Inclusion() throws TimeoutException {
+        assertTrue(productParserC9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPC6Inclusion() throws TimeoutException {
+        assertTrue(productParserC6.languageIncludes(productParserCL6, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPC9Inclusion() throws TimeoutException {
+        assertTrue(productParserC9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPC2Equivalence() throws TimeoutException {
+        assertTrue(productParserC2.isLanguageEquivalent(productParserC2, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPC3Equivalence() throws TimeoutException {
+        assertTrue(productParserC3.isLanguageEquivalent(productParserC3, ba, Long.MAX_VALUE));
+    }
+
+    // @ToRun
+    public static void testPPC4Equivalence() throws TimeoutException {
+        assertTrue(productParserC4.isLanguageEquivalent(productParserC4, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPC6Equivalence() throws TimeoutException {
+        assertTrue(productParserC6.isLanguageEquivalent(productParserC6, ba, Long.MAX_VALUE));
+    }
+
+    // @ToRun
+    public static void testPPC9Equivalence() throws TimeoutException {
+        assertTrue(productParserC9.isLanguageEquivalent(productParserC9, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPCL2Equivalence() throws TimeoutException {
+        assertTrue(productParserCL2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPCL3Equivalence() throws TimeoutException {
+        assertTrue(productParserCL3.isLanguageEquivalent(productParserCL3, ba, Long.MAX_VALUE));
+    }
+
+    // @ToRun
+    public static void testPPCL4Equivalence() throws TimeoutException {
+        assertTrue(productParserCL4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPCL6Equivalence() throws TimeoutException {
+        assertTrue(productParserCL6.isLanguageEquivalent(productParserCL6, ba, Long.MAX_VALUE));
+    }
+
+    // @ToRun
+    public static void testPPCL9Equivalence() throws TimeoutException {
+        assertTrue(productParserCL9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC2PP1() throws TimeoutException {
+        List<Character> valid2PP = lOfS("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste"); // accepted by PPC2 and PPCL2
+        assertTrue(productParserC2.accepts(valid2PP, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC2PP10() throws TimeoutException {
+        List<Character> valid2PP10 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10);
+        assertTrue(productParserC2.accepts(valid2PP10, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC2PP100000() throws TimeoutException {
+        List<Character> valid2PP100000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100000);
+        assertTrue(productParserC2.accepts(valid2PP100000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC2PP1000000() throws TimeoutException {
+        List<Character> valid2PP1000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000000);
+        assertTrue(productParserC2.accepts(valid2PP1000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC2PP10000000() throws TimeoutException {
+        List<Character> valid2PP10000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10000000);
+        assertTrue(productParserC2.accepts(valid2PP10000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL2PP1() throws TimeoutException {
+        List<Character> valid2PP = lOfS("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste"); // accepted by PPC2 and PPCL2
+        assertTrue(productParserCL2.accepts(valid2PP, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL2PP10() throws TimeoutException {
+        List<Character> valid2PP10 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10);
+        assertTrue(productParserCL2.accepts(valid2PP10, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL2PP100000() throws TimeoutException {
+        List<Character> valid2PP100000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100000);
+        assertTrue(productParserCL2.accepts(valid2PP100000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL2PP1000000() throws TimeoutException {
+        List<Character> valid2PP1000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000000);
+        assertTrue(productParserCL2.accepts(valid2PP1000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL2PP10000000() throws TimeoutException {
+        List<Character> valid2PP10000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10000000);
+        assertTrue(productParserCL2.accepts(valid2PP10000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC3PP1() throws TimeoutException {
+        List<Character> valid3PP = lOfS("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste"); // accepted by PPC3 and PPCL3
+        assertTrue(productParserC3.accepts(valid3PP, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC3PP10() throws TimeoutException {
+        List<Character> valid3PP10 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10);
+        assertTrue(productParserC3.accepts(valid3PP10, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC3PP100000() throws TimeoutException {
+        List<Character> valid3PP100000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 100000);
+        assertTrue(productParserC3.accepts(valid3PP100000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC3PP1000000() throws TimeoutException {
+        List<Character> valid3PP1000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000000);
+        assertTrue(productParserC3.accepts(valid3PP1000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC3PP10000000() throws TimeoutException {
+        List<Character> valid3PP10000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10000000);
+        assertTrue(productParserC3.accepts(valid3PP10000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL3PP1() throws TimeoutException {
+        List<Character> valid3PP = lOfS("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste"); // accepted by PPC3 and PPCL3
+        assertTrue(productParserCL3.accepts(valid3PP, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL3PP10() throws TimeoutException {
+        List<Character> valid3PP10 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10);
+        assertTrue(productParserCL3.accepts(valid3PP10, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL3PP100000() throws TimeoutException {
+        List<Character> valid3PP100000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 100000);
+        assertTrue(productParserCL3.accepts(valid3PP100000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL3PP1000000() throws TimeoutException {
+        List<Character> valid3PP1000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000000);
+        assertTrue(productParserCL3.accepts(valid3PP1000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL3PP10000000() throws TimeoutException {
+        List<Character> valid3PP10000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10000000);
+        assertTrue(productParserCL3.accepts(valid3PP10000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC4PP1() throws TimeoutException {
+        List<Character> valid4PP = lOfS("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste"); // accepted by PPC4 and PPCL4
+        assertTrue(productParserC4.accepts(valid4PP, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC4PP10() throws TimeoutException {
+        List<Character> valid4PP10 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10);
+        assertTrue(productParserC4.accepts(valid4PP10, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC4PP100000() throws TimeoutException {
+        List<Character> valid4PP100000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 100000);
+        assertTrue(productParserC4.accepts(valid4PP100000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC4PP1000000() throws TimeoutException {
+        List<Character> valid4PP1000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 1000000);
+        assertTrue(productParserC4.accepts(valid4PP1000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC4PP10000000() throws TimeoutException {
+        List<Character> valid4PP10000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10000000);
+        assertTrue(productParserC4.accepts(valid4PP10000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL4PP1() throws TimeoutException {
+        List<Character> valid4PP = lOfS("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste"); // accepted by PPC4 and PPCL4
+        assertTrue(productParserCL4.accepts(valid4PP, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL4PP10() throws TimeoutException {
+        List<Character> valid4PP10 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10);
+        assertTrue(productParserCL4.accepts(valid4PP10, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL4PP100000() throws TimeoutException {
+        List<Character> valid4PP100000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 100000);
+        assertTrue(productParserCL4.accepts(valid4PP100000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL4PP1000000() throws TimeoutException {
+        List<Character> valid4PP1000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 1000000);
+        assertTrue(productParserCL4.accepts(valid4PP1000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL4PP10000000() throws TimeoutException {
+        List<Character> valid4PP10000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10000000);
+        assertTrue(productParserCL4.accepts(valid4PP10000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC6PP1() throws TimeoutException {
+        List<Character> valid6PP = lOfS("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste"); // accepted by PPC6 and PPCL6
+        assertTrue(productParserC6.accepts(valid6PP, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC6PP10() throws TimeoutException {
+        List<Character> valid6PP10 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10);
+        assertTrue(productParserC6.accepts(valid6PP10, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC6PP100000() throws TimeoutException {
+        List<Character> valid6PP100000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 100000);
+        assertTrue(productParserC6.accepts(valid6PP100000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC6PP1000000() throws TimeoutException {
+        List<Character> valid6PP1000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 1000000);
+        assertTrue(productParserC6.accepts(valid6PP1000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC6PP10000000() throws TimeoutException {
+        List<Character> valid6PP10000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10000000);
+        assertTrue(productParserC6.accepts(valid6PP10000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL6PP1() throws TimeoutException {
+        List<Character> valid6PP = lOfS("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste"); // accepted by PPC6 and PPCL6
+        assertTrue(productParserCL6.accepts(valid6PP, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL6PP10() throws TimeoutException {
+        List<Character> valid6PP10 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10);
+        assertTrue(productParserCL6.accepts(valid6PP10, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL6PP100000() throws TimeoutException {
+        List<Character> valid6PP100000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 100000);
+        assertTrue(productParserCL6.accepts(valid6PP100000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL6PP1000000() throws TimeoutException {
+        List<Character> valid6PP1000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 1000000);
+        assertTrue(productParserCL6.accepts(valid6PP1000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL6PP10000000() throws TimeoutException {
+        List<Character> valid6PP10000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10000000);
+        assertTrue(productParserCL6.accepts(valid6PP10000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC9PP1() throws TimeoutException {
+        List<Character> valid9PP = lOfS("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste"); // accepted by PPC9 and PPCL9
+        assertTrue(productParserC9.accepts(valid9PP, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC9PP10() throws TimeoutException {
+        List<Character> valid9PP10 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10);
+        assertTrue(productParserC9.accepts(valid9PP10, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC9PP100000() throws TimeoutException {
+        List<Character> valid9PP100000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 100000);
+        assertTrue(productParserC9.accepts(valid9PP100000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC9PP1000000() throws TimeoutException {
+        List<Character> valid9PP1000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 1000000);
+        assertTrue(productParserC9.accepts(valid9PP1000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceC9PP10000000() throws TimeoutException {
+        List<Character> valid9PP10000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10000000);
+        assertTrue(productParserC9.accepts(valid9PP10000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL9PP1() throws TimeoutException {
+        List<Character> valid9PP = lOfS("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste"); // accepted by PPC9 and PPCL9
+        assertTrue(productParserCL9.accepts(valid9PP, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL9PP10() throws TimeoutException {
+        List<Character> valid9PP10 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10);
+        assertTrue(productParserCL9.accepts(valid9PP10, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL9PP100000() throws TimeoutException {
+        List<Character> valid9PP100000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 100000);
+        assertTrue(productParserCL9.accepts(valid9PP100000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL9PP1000000() throws TimeoutException {
+        List<Character> valid9PP1000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 1000000);
+        assertTrue(productParserCL9.accepts(valid9PP1000000, ba));
+    }
+
+
+    // @ToRun
+    public static void testPPAcceptanceCL9PP10000000() throws TimeoutException {
+        List<Character> valid9PP10000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10000000);
+        assertTrue(productParserCL9.accepts(valid9PP10000000, ba));
+    }
+
+    @ToRun
+    public static void testPPAcceptanceJavaRegex() {
+        String valid2PP100Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100);
+        Matcher m = CL2PPRegex.matcher(valid2PP100Str);
+        assertTrue(m.find());
+    }
+
+
+    @ToRun
+    public static void testPPAcceptanceJavaRegexOverflow() {
+        String valid2PP1000Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000);
+        Matcher m = CL2PPRegex.matcher(valid2PP1000Str);
+        assertTrue(m.find());
+    }
+
+
+    // @ToRun
+    public static void testSFAEquivalence3And2() throws TimeoutException {
+        assertFalse(IP2PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP3PacketParserSimplifiedSFA, ba));
+    }
+
+
+    // @ToRun
+    public static void testSFAEquivalence4In3() throws TimeoutException {
+        assertFalse(IP3PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP4PacketParserSimplifiedSFA, ba));
+    }
+
+
+    // @ToRun
+    public static void testSRAInclusion3In2() throws TimeoutException {
+        assertTrue(IP2PacketParserSimplifiedSRA.languageIncludes(IP3PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testSRAInclusion4In3() throws TimeoutException {
+        assertTrue(IP3PacketParserSimplifiedSRA.languageIncludes(IP4PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testSRAInclusion6In4() throws TimeoutException {
+        assertTrue(IP4PacketParserSimplifiedSRA.languageIncludes(IP6PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
+    }
+
+
+    // @ToRun
+    public static void testSRAInclusion9In6() throws TimeoutException {
+        assertTrue(IP6PacketParserSimplifiedSRA.languageIncludes(IP9PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
+    }
+
+    // ---------------------------------------
+    // Predicates
+    // ---------------------------------------
+    private static UnaryCharIntervalSolver ba = new UnaryCharIntervalSolver();
+    private static CharPred alpha = StdCharPred.ALPHA;
+    private static CharPred num = StdCharPred.NUM;
+    private static CharPred alphaNum = StdCharPred.ALPHA_NUM;
+    private static CharPred lowerAlpha = StdCharPred.LOWER_ALPHA;
+    private static CharPred upperAlpha = StdCharPred.UPPER_ALPHA;
+    private static CharPred dot = new CharPred('.');
+    private static CharPred comma = new CharPred(',');
+    private static CharPred space = new CharPred(' ');
+    private static CharPred open = new CharPred('<');
+    private static CharPred close = new CharPred('>');
+    private static CharPred slash = new CharPred('/');
+
+    // SSN test strings
+    private static List<Character> validName1 = lOfS("Tiago, Ferreira, TF"); // accepted by SSNParser
+    private static List<Character> validName2 = lOfS("Thomas, Thomson, TT"); // accepted by SSNParser
+    private static List<Character> invalidName1 = lOfS("Tiago, Ferreira, TA"); // not accepted by SSNParser
+    private static List<Character> invalidName2 = lOfS("Tiago, Ferreira, AA"); // not accepted by SSNParser
+    private static List<Character> invalidName3 = lOfS("Tiago, Ferreira, A"); // not accepted by SSNParser
+
+    // Regex pattern
+    private static Pattern CL2PPRegex = Pattern.compile("C:(.{2}) L:(.) D:[^\\s]+( C:\\1 L:\\2 D:[^\\s]+)+");
+
+    // XML test strings
+    private static List<Character> validXML1 = lOfS("<A></A>"); // accepted by XMLParser
+    private static List<Character> validXML2 = lOfS("<AB></AB>"); // accepted by XMLParser
+    private static List<Character> validXML3 = lOfS("<BB></BB>"); // accepted by XMLParser
+    private static List<Character> validXML4 = lOfS("<ABB></ABB>"); // accepted by XMLParser
+    private static List<Character> validXML5 = lOfS("<ABA></ABA>"); // accepted by XMLParser
+    private static List<Character> validXML6 = lOfS("<AAB></AAB>"); // accepted by XMLParser
+    private static List<Character> validXML7 = lOfS("<ABC></ABC>"); // accepted by XMLParser
+    private static List<Character> invalidXML1 = lOfS("<A></>"); // not accepted by XMLParser
+    private static List<Character> invalidXML2 = lOfS("<A><AB/>"); // not accepted by XMLParser
+    private static List<Character> invalidXML3 = lOfS("<></A>"); // not accepted by XMLParser
+    private static List<Character> invalidXML4 = lOfS("<A><A>"); // not accepted by XMLParser
+    private static List<Character> invalidXML5 = lOfS("<AA></AB>"); // not accepted by XMLParser
+    private static List<Character> invalidXML6 = lOfS("<AAA></CCC>"); // not accepted by XMLParser
+    private static List<Character> invalidXML7 = lOfS("<ABA></ABC>"); // not accepted by XMLParser
+
+    // IP Packet test strings
+    private static List<Character> validIPPacket1 = lOfS("srcip:192.168.123.192 prt:40 dstip:192.168.123.224 prt:50 pload:'hello'"); // accepted by IP9PacketParser
+    //    private static List<Character> validIPPacketSimplified1 = lOfS("s:192.168.123.192 p:40 d:192.168.123.224 p:50 p:'hello'"); // accepted by IP2PacketParserSimplified
+    private static List<Character> validIPPacket2 = lOfS("srcip:192.168.123.122 prt:40 dstip:192.168.123.124 prt:5 pload:'hello123'"); // accepted by IP9PacketParser
+    private static List<Character> validIPPacket3 = lOfS("srcip:192.148.123.122 prt:40 dstip:192.148.123.124 prt:5 pload:'hello123'"); // accepted by IP9PacketParser
+    private static List<Character> invalidIPPacket1 = lOfS("srcip:12.168.123.122 prt:40 dstip:192.168.123.124 prt:5 pload:'hello123'"); // not accepted by either
+    private static List<Character> invalidIPPacket2 = lOfS("srcip:192.148.123.122 prt:40 dstip:192.148.123.124 prt:5 plad:'hello123'"); // not accepted by either
+    private static List<Character> invalidIPPacket3 = lOfS("srcip:192.148.123.122 dstip:192.148.123.124 prt:5 pload:'hello123'"); // not accepted by either
+    private static List<Character> dependentIPPacket1 = lOfS("srcip:192.148.125.122 prt:40 dstip:192.148.123.124 prt:5 pload:'hello123'"); // accepted by IP6PacketParser but not IP9PacketParser
+
+    // Automata
+    private static SRA<CharPred, Character> SSNParser = getSSNParser(ba);
+    private static SFA<CharPred, Character> SSNParserSFA = getSSNParserSFA(ba);
+    private static SRA<CharPred, Character> SSNParserFirst = getSSNParserFirst(ba);
+    private static SFA<CharPred, Character> SSNParserFirstSFA = getSSNParserFirstSFA(ba);
+    private static SRA<CharPred, Character> SSNParserLast = getSSNParserLast(ba);
+    private static SFA<CharPred, Character> SSNParserLastSFA = getSSNParserLastSFA(ba);
+    private static SRA<CharPred, Character> XMLParserSRA = getXMLParserSRA(ba);
+    private static SRA<CharPred, Character> productParserC2 = getProductParserC2(ba);
+    private static SRA<CharPred, Character> productParserCL2 = getProductParserCL2(ba);
+    private static SRA<CharPred, Character> productParserC3 = getProductParserC3(ba);
+    private static SRA<CharPred, Character> productParserCL3 = getProductParserCL3(ba);
+    private static SRA<CharPred, Character> productParserC4 = getProductParserC4(ba);
+    private static SRA<CharPred, Character> productParserCL4 = getProductParserCL4(ba);
+    private static SRA<CharPred, Character> productParserC6 = getProductParserC6(ba);
+    private static SRA<CharPred, Character> productParserCL6 = getProductParserCL6(ba);
+    private static SRA<CharPred, Character> productParserC9 = getProductParserC9(ba);
+    private static SRA<CharPred, Character> productParserCL9 = getProductParserCL9(ba);
+    //    private static SFA<CharPred, Character> productParserSFA = getProductParserSFA(ba); // Intractable.
+    private static SRA<CharPred, Character> IP2PacketParserSRA = getIP2PacketParserSRA(ba);
+    private static SRA<CharPred, Character> IP2PacketParserSimplifiedSRA = getIP2PacketParserSimplifiedSRA(ba);
+    private static SFA<CharPred, Character> IP2PacketParserSimplifiedSFA = getIP2PacketParserSimplifiedSFA(ba);
+    private static SRA<CharPred, Character> IP3PacketParserSRA = getIP3PacketParserSRA(ba);
+    private static SRA<CharPred, Character> IP3PacketParserSimplifiedSRA = getIP3PacketParserSimplifiedSRA(ba);
+    private static SFA<CharPred, Character> IP3PacketParserSimplifiedSFA = getIP3PacketParserSimplifiedSFA(ba);
+    private static SRA<CharPred, Character> IP4PacketParserSRA = getIP4PacketParserSRA(ba);
+    private static SRA<CharPred, Character> IP4PacketParserSimplifiedSRA = getIP4PacketParserSimplifiedSRA(ba);
+    private static SFA<CharPred, Character> IP4PacketParserSimplifiedSFA = getIP4PacketParserSimplifiedSFA(ba);
+    private static SRA<CharPred, Character> IP6PacketParserSRA = getIP6PacketParserSRA(ba);
+    private static SRA<CharPred, Character> IP6PacketParserSimplifiedSRA = getIP6PacketParserSimplifiedSRA(ba);
+    private static SRA<CharPred, Character> IP9PacketParserSRA = getIP9PacketParserSRA(ba);
+    private static SRA<CharPred, Character> IP9PacketParserSimplifiedSRA = getIP9PacketParserSimplifiedSRA(ba);
+
+    private static SRA<CharPred, Character> getSSNParser(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null));
+
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+        // Read first initial and store it in register 0
+        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, upperAlpha, 0));
+
+        // Read an unbound number of lowercase letters for the rest of the first name.
+        // Dispose of them on the dummy register (2)
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 1, lowerAlpha, 2));
+
+        // Read a comma and dispose of it on register (2)
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, comma, 2));
+
+        // Read an unbound number of spaces.
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 2, space, 2));
+
+        // Read the second initial and store it in register 1
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, upperAlpha, 1));
+
+        // Read an unbound number of lowercase letters for the rest of the last name.
+        // Dispose of them on the dummy register (2)
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 3, lowerAlpha, 2));
+
+        // Read a comma and dispose of it on register (2)
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, comma, 2));
+
+        // Read an unbound number of spaces.
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 4, space, 2));
+
+        // Read the first initial and compare it to register 0
+        transitions.add(new SRACheckMove<CharPred, Character>(4, 5, upperAlpha, 0));
+
+        // Read the second initial and compare it to register 1
+        transitions.add(new SRACheckMove<CharPred, Character>(5, 6, upperAlpha, 1));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Arrays.asList(6), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static SFA<CharPred, Character> getSSNParserSFA(UnaryCharIntervalSolver ba) {
+        Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
+        List<Integer> finalStates = new LinkedList<Integer>();
+
+        Character firstInitial = upperAlpha.intervals.get(0).left;
+        Character firstEnd = upperAlpha.intervals.get(0).right;
+        for (int firstCounter = 0; firstInitial < firstEnd; firstCounter++, firstInitial++) {
+            transitions.add(new SFAInputMove<CharPred, Character>(0, (firstCounter * 185) + 1, new CharPred(firstInitial)));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 1, (firstCounter * 185) + 1, lowerAlpha));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 1, (firstCounter * 185) + 2, comma));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 2, (firstCounter * 185) + 3, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 3, (firstCounter * 185) + 3, space));
+
+            Character secondInitial = upperAlpha.intervals.get(0).left;
+            Character secondEnd = upperAlpha.intervals.get(0).right;
+            for (int secondCounter = 0; secondInitial < secondEnd; secondCounter++, secondInitial++) {
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + 3, (firstCounter * 185) + (secondCounter * 7) + 4, new CharPred(secondInitial)));
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 4, (firstCounter * 185) + (secondCounter * 7) + 4, lowerAlpha));
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 4, (firstCounter * 185) + (secondCounter * 7) + 5, comma));
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 5, (firstCounter * 185) + (secondCounter * 7) + 6, space));
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 6, (firstCounter * 185) + (secondCounter * 7) + 6, space));
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 6, (firstCounter * 185) + (secondCounter * 7) + 7, new CharPred(firstInitial)));
+                transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 185) + (secondCounter * 7) + 7, (firstCounter * 185) + (secondCounter * 7) + 8, new CharPred(secondInitial)));
+                finalStates.add((firstCounter * 185) + (secondCounter * 7) + 8);
+            }
+        }
+
+        try {
+            return SFA.MkSFA(transitions, 0, finalStates, ba, false, false);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static SRA<CharPred, Character> getSSNParserFirst(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null));
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+
+        // Read the first initial and store it in register 0
+        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, upperAlpha, 0));
+
+        // Read an unbound number of lowercase characters
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 1, lowerAlpha, 1));
+
+        // Read a comma
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, comma, 1));
+
+        // Read an unbound number of spaces
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 2, space, 1));
+
+        // Read a different second initial or a repeated second initial and store it in 1
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, upperAlpha, 1));
+
+        // Read an unbound number of lowercase characters
+        transitions.add(new SRAStoreMove<>(3, 3, lowerAlpha,1));
+
+        // Read a comma
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, comma, 1));
+
+        // Read an unbound number of spaces
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 4, space, 1));
+
+        // Read a capital that matches both registers or a capital that matches the first register
+        transitions.add(new SRACheckMove<CharPred, Character>(4, 5, upperAlpha, 0));
+
+        // Read a second capital
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, upperAlpha, 1));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Collections.singleton(6), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static SFA<CharPred, Character> getSSNParserFirstSFA(UnaryCharIntervalSolver ba) {
+        Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
+        List<Integer> finalStates = new LinkedList<Integer>();
+
+        Character firstInitial = upperAlpha.intervals.get(0).left;
+        Character firstEnd = upperAlpha.intervals.get(0).right;
+        for (int firstCounter = 0; firstInitial < firstEnd; firstCounter++, firstInitial++) {
+            transitions.add(new SFAInputMove<CharPred, Character>(0, (firstCounter * 9) + 1, new CharPred(firstInitial)));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 1, (firstCounter * 9) + 1, lowerAlpha));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 1, (firstCounter * 9) + 2, comma));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 2, (firstCounter * 9) + 3, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 3, (firstCounter * 9) + 3, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 3, (firstCounter * 9) + 4, upperAlpha));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 4, (firstCounter * 9) + 4, lowerAlpha));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 4, (firstCounter * 9) + 5, comma));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 5, (firstCounter * 9) + 6, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 6, (firstCounter * 9) + 6, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 6, (firstCounter * 9) + 7, new CharPred(firstInitial)));
+            transitions.add(new SFAInputMove<CharPred, Character>((firstCounter * 9) + 7, (firstCounter * 9) + 8, upperAlpha));
+            finalStates.add((firstCounter * 9) + 8);
+        }
+
+        try {
+            return SFA.MkSFA(transitions, 0, finalStates, ba, false, false);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static SRA<CharPred, Character> getSSNParserLast(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null));
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+
+        // Read the first initial and store it in register 0
+        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, upperAlpha, 1));
+
+        // Read an unbound number of lowercase characters
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 1, lowerAlpha, 1));
+
+        // Read a comma
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, comma, 1));
+
+        // Read an unbound number of spaces
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 2, space, 1));
+
+        // Read a different second initial or a repeated second initial and store it in 1
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, upperAlpha, 0));
+
+        // Read an unbound number of lowercase characters
+        transitions.add(new SRAStoreMove<>(3, 3, lowerAlpha,1));
+
+        // Read a comma
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, comma, 1));
+
+        // Read an unbound number of spaces
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 4, space, 1));
+
+        // Read a capital
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, upperAlpha, 1));
+
+        // Read a capital that matches both registers or a capital that matches the first register
+        transitions.add(new SRACheckMove<CharPred, Character>(5, 6, upperAlpha, 0));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Collections.singleton(6), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static SFA<CharPred, Character> getSSNParserLastSFA(UnaryCharIntervalSolver ba) {
+        Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
+        List<Integer> finalStates = new LinkedList<Integer>();
+
+        transitions.add(new SFAInputMove<CharPred, Character>(0, 1, upperAlpha));
+        transitions.add(new SFAInputMove<CharPred, Character>(1, 1, lowerAlpha));
+        transitions.add(new SFAInputMove<CharPred, Character>(1, 2, comma));
+        transitions.add(new SFAInputMove<CharPred, Character>(2, 3, space));
+        transitions.add(new SFAInputMove<CharPred, Character>(3, 3, space));
+
+        Character secondInitial = upperAlpha.intervals.get(0).left;
+        Character secondEnd = upperAlpha.intervals.get(0).right;
+        for (int secondCounter = 0; secondInitial < secondEnd; secondCounter++, secondInitial++) {
+            transitions.add(new SFAInputMove<CharPred, Character>(3, (secondCounter * 7) + 4, new CharPred(secondInitial)));
+            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 4, (secondCounter * 7) + 4, lowerAlpha));
+            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 4, (secondCounter * 7) + 5, comma));
+            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 5, (secondCounter * 7) + 6, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 6, (secondCounter * 7) + 6, space));
+            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 6, (secondCounter * 7) + 7, upperAlpha));
+            transitions.add(new SFAInputMove<CharPred, Character>((secondCounter * 7) + 7, (secondCounter * 7) + 8, new CharPred(secondInitial)));
+            finalStates.add((secondCounter * 7) + 8);
+        }
+
+
+        try {
+            return SFA.MkSFA(transitions, 0, finalStates, ba, false, false);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static SRA<CharPred, Character> getProductParserC2(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null));
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 12, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(15, 16, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(16, 17, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 25, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 13, space, 0));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Collections.singleton(25), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static SRA<CharPred, Character> getProductParserCL2(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null));
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, alphaNum, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 12, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(15, 16, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(16, 17, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(17, 18, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(18, 19, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(20, 21, alphaNum, 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 25, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 13, space, 0));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Collections.singleton(25), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static SRA<CharPred, Character> getProductParserC3(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null));
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 13, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(16, 17, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(17, 18, ba.MkNot(space), 2));
+        transitions.add(new SRACheckMove<CharPred, Character>(18, 19, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(22, 23, alphaNum, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 27, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 14, space, 0));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Collections.singleton(27), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static SRA<CharPred, Character> getProductParserCL3(UnaryCharIntervalSolver ba) {
+        LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null));
+        Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
+        transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(1, 2, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(2, 3, ba.MkNot(space), 1));
+        transitions.add(new SRAStoreMove<CharPred, Character>(3, 4, ba.MkNot(space), 2));
+        transitions.add(new SRAStoreMove<CharPred, Character>(4, 5, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(5, 6, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(6, 7, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(7, 8, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(8, 9, alphaNum, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(9, 10, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(10, 11, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(11, 12, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(12, 13, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 13, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(13, 14, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(14, 15, new CharPred('C'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(15, 16, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(16, 17, ba.MkNot(space), 1));
+        transitions.add(new SRACheckMove<CharPred, Character>(17, 18, ba.MkNot(space), 2));
+        transitions.add(new SRACheckMove<CharPred, Character>(18, 19, ba.MkNot(space), 3));
+        transitions.add(new SRAStoreMove<CharPred, Character>(19, 20, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(20, 21, new CharPred('L'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(21, 22, new CharPred(':'), 0));
+        transitions.add(new SRACheckMove<CharPred, Character>(22, 23, alphaNum, 4));
+        transitions.add(new SRAStoreMove<CharPred, Character>(23, 24, space, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(24, 25, new CharPred('D'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(25, 26, new CharPred(':'), 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(26, 27, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 27, alpha, 0));
+        transitions.add(new SRAStoreMove<CharPred, Character>(27, 14, space, 0));
+
+        try {
+            return SRA.MkSRA(transitions, 0, Collections.singleton(27), registers, ba);
+        } catch (TimeoutException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static SRA<CharPred, Character> getProductParserC6(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null, null, null));
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
@@ -1336,7 +1442,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getProductParserCL6(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getProductParserCL6(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null, null, null, null));
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
@@ -1385,7 +1491,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getProductParserC9(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getProductParserC9(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null, null, null, null, null, null));
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
@@ -1440,7 +1546,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getProductParserCL9(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getProductParserCL9(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null, null, null, null, null, null, null));
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
         transitions.add(new SRAStoreMove<CharPred, Character>(0, 1, new CharPred('C'), 0));
@@ -1495,7 +1601,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private List<Character> getPPTestStrings(String original, int repetitions) {
+    private static List<Character> getPPTestStrings(String original, int repetitions) {
         int startIndex = original.indexOf(' ', original.indexOf(' ', original.indexOf(' ') + 1) + 1);
         if (startIndex != -1) {
             String repetition = original.substring(startIndex);
@@ -1508,7 +1614,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private String getPPTestString(String original, int repetitions) {
+    private  static String getPPTestString(String original, int repetitions) {
         int startIndex = original.indexOf(' ', original.indexOf(' ', original.indexOf(' ') + 1) + 1);
         if (startIndex != -1) {
             String repetition = original.substring(startIndex);
@@ -1521,7 +1627,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SFA<CharPred, Character> getProductParserSFA(UnaryCharIntervalSolver ba) {
+    private static SFA<CharPred, Character> getProductParserSFA(UnaryCharIntervalSolver ba) {
         Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
         transitions.add(new SFAInputMove<CharPred, Character>(0, 1, new CharPred('C')));
         transitions.add(new SFAInputMove<CharPred, Character>(1, 2, new CharPred(':')));
@@ -1582,7 +1688,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getSmallXMLParserSRA(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getSmallXMLParserSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList('<', '>', '/', null, null, null));
         Integer garbageReg = registers.size() - 1;
 
@@ -1625,7 +1731,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getXMLParserSRA(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getXMLParserSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -1669,7 +1775,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getIP2PacketParserSRA(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getIP2PacketParserSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -1741,7 +1847,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getIP2PacketParserSimplifiedSRA(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getIP2PacketParserSimplifiedSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -1807,7 +1913,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SFA<CharPred, Character> getIP2PacketParserSimplifiedSFA(UnaryCharIntervalSolver ba) {
+    private static SFA<CharPred, Character> getIP2PacketParserSimplifiedSFA(UnaryCharIntervalSolver ba) {
         Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
         LinkedList<Integer> finalStates = new LinkedList<Integer>();
 
@@ -1882,7 +1988,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getIP3PacketParserSRA(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getIP3PacketParserSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -1954,7 +2060,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getIP3PacketParserSimplifiedSRA(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getIP3PacketParserSimplifiedSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -2020,7 +2126,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SFA<CharPred, Character> getIP3PacketParserSimplifiedSFA(UnaryCharIntervalSolver ba) {
+    private static SFA<CharPred, Character> getIP3PacketParserSimplifiedSFA(UnaryCharIntervalSolver ba) {
         Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
         LinkedList<Integer> finalStates = new LinkedList<Integer>();
 
@@ -2098,7 +2204,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getSmallIP3PacketParserSRA(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getSmallIP3PacketParserSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -2170,7 +2276,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getIP4PacketParserSRA(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getIP4PacketParserSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -2242,7 +2348,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getIP4PacketParserSimplifiedSRA(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getIP4PacketParserSimplifiedSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -2308,7 +2414,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SFA<CharPred, Character> getIP4PacketParserSimplifiedSFA(UnaryCharIntervalSolver ba) {
+    private static SFA<CharPred, Character> getIP4PacketParserSimplifiedSFA(UnaryCharIntervalSolver ba) {
         Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
         LinkedList<Integer> finalStates = new LinkedList<Integer>();
 
@@ -2391,7 +2497,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getIP6PacketParserSRA(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getIP6PacketParserSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null, null, null));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -2463,7 +2569,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getIP6PacketParserSimplifiedSRA(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getIP6PacketParserSimplifiedSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null, null, null));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -2529,7 +2635,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getIP9PacketParserSRA(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getIP9PacketParserSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null, null, null, null, null, null));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -2602,7 +2708,7 @@ public class TestSRAExperiments {
         return null;
     }
 
-    private SRA<CharPred, Character> getIP9PacketParserSimplifiedSRA(UnaryCharIntervalSolver ba) {
+    private static SRA<CharPred, Character> getIP9PacketParserSimplifiedSRA(UnaryCharIntervalSolver ba) {
         LinkedList<Character> registers = new LinkedList<Character>(Arrays.asList(null, null, null, null, null, null, null, null, null, null));
 
         Collection<SRAMove<CharPred, Character>> transitions = new LinkedList<SRAMove<CharPred, Character>>();
@@ -2668,15 +2774,14 @@ public class TestSRAExperiments {
         return null;
     }
 
-	// -------------------------
-	// Auxiliary methods
-	// -------------------------
-	private List<Character> lOfS(String s) {
-		List<Character> l = new ArrayList<Character>();
-		char[] ca = s.toCharArray();
-		for (int i = 0; i < s.length(); i++)
-			l.add(ca[i]);
-		return l;
-	}
-
+    // -------------------------
+    // Auxiliary methods
+    // -------------------------
+    private static List<Character> lOfS(String s) {
+        List<Character> l = new ArrayList<Character>();
+        char[] ca = s.toCharArray();
+        for (int i = 0; i < s.length(); i++)
+            l.add(ca[i]);
+        return l;
+    }
 }
