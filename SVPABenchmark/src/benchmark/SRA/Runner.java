@@ -3,18 +3,18 @@ package benchmark.SRA;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
-import java.io.BufferedReader;
+import java.io.Reader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
-
-import java.lang.management.ManagementFactory;
-import java.io.IOException;
+import java.util.Collections;
+import org.apache.commons.cli.*;
 import java.io.File;
+import java.util.List;
 
 import com.google.common.base.Stopwatch;
 import java.util.concurrent.TimeUnit;
@@ -22,69 +22,115 @@ import java.util.concurrent.TimeUnit;
 public class Runner {
 
     private static Integer numberOfRuns = 5;
+    private static Experiments sra = new Experiments();
+    private static Method[] methods = sra.getClass().getMethods();
+    private static ArrayList<String> alreadyRan = new ArrayList<String>();
+    private static CSVReader csvReader = null;
+    private static CSVWriter csvWriter = null;
+    private static String[] potentialErrorRecord = {"IDENTIFIER"};
+    private static File file = new File("./Experiments.csv");
+    private static ArrayList<String> testsToRun = new ArrayList<>();
 
     public static void main(String[] args) {
-        Experiments sra = new Experiments();
-        Method[] methods = sra.getClass().getMethods();
-        ArrayList<String> alreadyRan = new ArrayList<String>();
-        CSVReader csvReader = null;
-        CSVWriter csvWriter = null;
-
-        try {
-            csvReader = new CSVReader(new FileReader("Experiments.csv"),',','"',1);
-            while (csvReader.readNext() != null)
-                alreadyRan.add(csvReader.readNext()[0]);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
+        while(true) {
             try {
-                csvReader.close();
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
 
-        for (String method : alreadyRan)
-            System.out.println("Already ran " +  method + ". Skipping.");
+                System.out.println("-------------------------------------------------------------------------------");
+                System.out.println("SRA Experiment Runner");
+                System.out.println("-------------------------------------------------------------------------------");
 
-        for (Method method : methods) {
-            if (method.getAnnotation(ToRun.class) != null && !alreadyRan.contains(method.getName())) {
-                String[] potentialErrorRecord = {method.getName()};
-                ArrayList<String> timmings = new ArrayList<String>();
+                Options options = new Options();
 
-                System.out.println("Now running: " + method.getName());
+                Option input = new Option("f", "file", true, "CSV file. Default: ./Experiments.csv");
+                input.setRequired(false);
+                options.addOption(input);
+
+                Option option = new Option("t", "tests", true, "Tests to run. Default: All");
+                option.setArgs(Option.UNLIMITED_VALUES);
+                input.setRequired(false);
+                options.addOption(option);
+
+                CommandLineParser parser = new DefaultParser();
+                HelpFormatter formatter = new HelpFormatter();
+                CommandLine cmd;
+
                 try {
-                    csvWriter = new CSVWriter(new FileWriter("Experiments.csv"));
-                    for (Integer iterator = 0; iterator < numberOfRuns; iterator++) {
-                        Stopwatch timer = Stopwatch.createStarted();
-                        method.invoke(sra);
-                        timer.stop();
-                        System.out.println("[" + (iterator + 1) + "] Done in: " + timer.elapsed(TimeUnit.NANOSECONDS) + " ns.");
-                        timmings.add("" + timer.elapsed(TimeUnit.NANOSECONDS));
+                    cmd = parser.parse(options, args);
+                    String filePath = cmd.getOptionValue("file");
+                    String[] tests = cmd.getOptionValues("tests");
+
+                    if (filePath != null)
+                        file = new File(filePath);
+
+                    if (tests != null)
+                        Collections.addAll(testsToRun, tests);
+                    else
+                        testsToRun.add("all");
+
+                } catch (ParseException e) {
+                    System.out.println(e.getMessage());
+                    formatter.printHelp("SRA", options);
+
+                    System.exit(1);
+                }
+
+                if (!file.isFile())
+                    file.createNewFile();
+
+                Reader reader = Files.newBufferedReader(file.toPath());
+                csvReader = new CSVReader(reader);
+                String[] buffer;
+                while ((buffer = csvReader.readNext()) != null)
+                    alreadyRan.add(buffer[0]);
+                csvReader.close();
+
+                for (Method method : methods) {
+                    if (testsToRun.contains(method.getName()) || testsToRun.contains("all")) {
+                        if (method.getAnnotation(ToRun.class) != null && !alreadyRan.contains(method.getName())) {
+                            csvWriter = new CSVWriter(new FileWriter(file, true));
+                            potentialErrorRecord[0] = method.getName();
+                            ArrayList<String> timmings = new ArrayList<String>();
+
+                            System.out.println("-------------------------------------------------------------------------------");
+                            System.out.println("Now running: " + method.getName());
+
+                            for (Integer iterator = 0; iterator < numberOfRuns; iterator++) {
+                                Stopwatch timer = Stopwatch.createStarted();
+                                method.invoke(sra);
+                                timer.stop();
+                                System.out.println("[" + (iterator + 1) + "] Done in: " + timer.elapsed(TimeUnit.NANOSECONDS) + " ns.");
+                                timmings.add("" + timer.elapsed(TimeUnit.NANOSECONDS));
+                            }
+
+                            System.out.println("[AVERAGE] Done in: " + average(timmings) + " ns.");
+                            timmings.add(average(timmings));
+                            timmings.add(0, method.getName());
+                            csvWriter.writeNext(timmings.stream().toArray(String[]::new));
+                            try {
+                                csvWriter.close();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else if (alreadyRan.contains(method.getName())) {
+                            System.out.println("Already ran " + method.getName() + ". Skipping.");
+                        }
                     }
-                    System.out.println("[AVERAGE] Done in: " + average(timmings) + " ns.");
-                    timmings.add(average(timmings));
-                    timmings.add(0, method.getName());
-                    csvWriter.writeNext(timmings.stream().toArray(String[]::new));
-                    try {
-                        csvWriter.close();
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                    }
-                } catch (InvocationTargetException e) {
-                    if (e.getCause() instanceof StackOverflowError)
-                        System.out.println("Stack overflow while computing. Restarting JVM and skipping.");
-                    else if (e.getCause() instanceof OutOfMemoryError)
-                        System.out.println("Ran out of memory while computing. Restarting JVM and skipping.");
-                    csvWriter.writeNext(potentialErrorRecord);
-                    try {
-                        restartApplication(null);
-                    } catch (Exception ee) {
-                        ee.printStackTrace();
-                    }
-                } catch (Exception e) {
+                }
+
+                break;
+            } catch (InvocationTargetException e) {
+                if (e.getCause() instanceof StackOverflowError)
+                    System.out.println("Stack overflow while computing. Skipping.");
+                else if (e.getCause() instanceof OutOfMemoryError)
+                    System.out.println("Ran out of memory while computing. Skipping.");
+                csvWriter.writeNext(potentialErrorRecord);
+                try {
+                    csvWriter.close();
+                } catch (Exception ee) {
                     e.printStackTrace();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -96,95 +142,5 @@ public class Runner {
             total += Long.parseLong(result, 10) ;
         return String.valueOf(total / length);
     }
-
-    // -------------------------
-    // CSV methods
-    // -------------------------
-
-    private static String readFile(Path path) {
-        String response = "";
-        try {
-            FileReader fr = new FileReader(path.toString());
-            BufferedReader br = new BufferedReader(fr);
-            String strLine;
-            StringBuffer sb = new StringBuffer();
-            while ((strLine = br.readLine()) != null) {
-                sb.append(strLine);
-            }
-            response = sb.toString();
-            System.out.println(response);
-            fr.close();
-            br.close();
-        } catch (Exception ex) {
-            System.out.println(ex);
-        }
-        return response;
-    }
-
-    private static String csvWrite(List<String[]> stringArray, Path path) {
-        try {
-            CSVWriter writer = new CSVWriter(new FileWriter(path.toString()));
-            writer.writeAll(stringArray);
-            writer.close();
-        } catch (Exception ex) {
-            System.out.println(ex);
-        }
-        return readFile(path);
-    }
-
-    /**
-     * Sun property pointing the main class and its arguments.
-     * Might not be defined on non Hotspot VM implementations.
-     */
-    public static final String SUN_JAVA_COMMAND = "sun.java.command";
-
-    /**
-     * Restart the current Java application
-     * @param runBeforeRestart some custom code to be run before restarting
-     * @throws IOException
-     */
-    public static void restartApplication(Runnable runBeforeRestart) throws IOException {
-        try {
-            String java = System.getProperty("java.home") + "/bin/java";
-            List<String> vmArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
-            StringBuffer vmArgsOneLine = new StringBuffer();
-            for (String arg : vmArguments) {
-                if (!arg.contains("-agentlib")) {
-                    vmArgsOneLine.append(arg);
-                    vmArgsOneLine.append(" ");
-                }
-            }
-            final StringBuffer cmd = new StringBuffer("\"" + java + "\" " + vmArgsOneLine);
-
-            String[] mainCommand = System.getProperty(SUN_JAVA_COMMAND).split(" ");
-            if (mainCommand[0].endsWith(".jar")) {
-                cmd.append("-jar " + new File(mainCommand[0]).getPath());
-            } else {
-                cmd.append("-cp \"" + System.getProperty("java.class.path") + "\" " + mainCommand[0]);
-            }
-            for (int i = 1; i < mainCommand.length; i++) {
-                cmd.append(" ");
-                cmd.append(mainCommand[i]);
-            }
-
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        Runtime.getRuntime().exec(cmd.toString());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-            if (runBeforeRestart!= null) {
-                runBeforeRestart.run();
-            }
-
-            System.exit(0);
-        } catch (Exception e) {
-            throw new IOException("Error while trying to restart the application", e);
-        }
-    }
 }
+
