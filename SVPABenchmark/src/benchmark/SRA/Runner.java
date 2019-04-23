@@ -45,10 +45,14 @@ public class Runner {
                 input.setRequired(false);
                 options.addOption(input);
 
-                Option option = new Option("t", "tests", true, "Tests to run. Default: All");
-                option.setArgs(Option.UNLIMITED_VALUES);
+                Option list = new Option("l", "list", false, "List all Benchmarks.");
                 input.setRequired(false);
-                options.addOption(option);
+                options.addOption(list);
+
+                Option testsOption = new Option("t", "tests", true, "Tests to run. Default: All");
+                testsOption.setArgs(Option.UNLIMITED_VALUES);
+                input.setRequired(false);
+                options.addOption(testsOption);
 
                 CommandLineParser parser = new DefaultParser();
                 HelpFormatter formatter = new HelpFormatter();
@@ -62,6 +66,17 @@ public class Runner {
                     if (filePath != null)
                         file = new File(filePath);
 
+                    if (cmd.hasOption("l")) {
+                        System.out.println("Benchmarks available:");
+                        System.out.println();
+                        System.out.println("all");
+                        for (Method method : methods) {
+                            if (method.getAnnotation(ToRun.class) != null)
+                                System.out.println(method.getName());
+                        }
+                        System.exit(0);
+                    }
+
                     if (tests != null)
                         Collections.addAll(testsToRun, tests);
                     else
@@ -70,7 +85,6 @@ public class Runner {
                 } catch (ParseException e) {
                     System.out.println(e.getMessage());
                     formatter.printHelp("SRA", options);
-
                     System.exit(1);
                 }
 
