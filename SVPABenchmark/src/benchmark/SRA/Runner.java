@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -16,12 +17,17 @@ import org.apache.commons.cli.*;
 import java.io.File;
 import java.util.List;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.math.MathContext;
+
 import com.google.common.base.Stopwatch;
 import java.util.concurrent.TimeUnit;
 
 public class Runner {
 
-    private static Integer numberOfRuns = 5;
+    private static Integer numberOfRuns = 3;
+    private static Integer roundingPrecision = 3;
     private static Experiments sra = new Experiments();
     private static Method[] methods = sra.getClass().getMethods();
     private static ArrayList<String> alreadyRan = new ArrayList<String>();
@@ -103,7 +109,7 @@ public class Runner {
                         if (method.getAnnotation(ToRun.class) != null && !alreadyRan.contains(method.getName())) {
                             csvWriter = new CSVWriter(new FileWriter(file, true));
                             potentialErrorRecord[0] = method.getName();
-                            ArrayList<String> timmings = new ArrayList<String>();
+                            ArrayList<BigDecimal> timmings = new ArrayList<BigDecimal>();
 
                             System.out.println("-------------------------------------------------------------------------------");
                             System.out.println("Now running: " + method.getName());
@@ -112,14 +118,20 @@ public class Runner {
                                 Stopwatch timer = Stopwatch.createStarted();
                                 method.invoke(sra);
                                 timer.stop();
-                                System.out.println("[" + (iterator + 1) + "] Done in: " + timer.elapsed(TimeUnit.NANOSECONDS) + " ns.");
-                                timmings.add("" + timer.elapsed(TimeUnit.NANOSECONDS));
+                                BigDecimal timerResult = BigDecimal.valueOf(timer.elapsed(TimeUnit.NANOSECONDS)).divide(new BigDecimal("1000000000"), roundingPrecision, RoundingMode.UP);
+                                System.out.println("[" + (iterator + 1) + "] Done in: " + timerResult + " s.");
+                                timmings.add(timerResult);
                             }
 
-                            System.out.println("[AVERAGE] Done in: " + average(timmings) + " ns.");
+                            System.out.println("[AVERAGE] Done in: " + average(timmings) + " s.");
                             timmings.add(average(timmings));
-                            timmings.add(0, method.getName());
-                            csvWriter.writeNext(timmings.stream().toArray(String[]::new));
+
+                            ArrayList<String> outRecord = new ArrayList<String>();
+                            outRecord.add(method.getName());
+                            for (BigDecimal timming : timmings)
+                                outRecord.add(timming.toString());
+
+                            csvWriter.writeNext(outRecord.stream().toArray(String[]::new));
                             try {
                                 csvWriter.close();
                             } catch (Exception e) {
@@ -149,12 +161,12 @@ public class Runner {
         }
     }
 
-    private static String average(ArrayList<String> results) {
-        Integer length = results.size();
-        Long total = 0L;
-        for (String result : results)
-            total += Long.parseLong(result, 10) ;
-        return String.valueOf(total / length);
+    private static BigDecimal average(ArrayList<BigDecimal> results) {
+        BigDecimal length = BigDecimal.valueOf(results.size());
+        BigDecimal total = new BigDecimal("0");
+        for (BigDecimal result : results)
+            total = total.add(result);
+        return total.divide(length, 3, RoundingMode.UP);
     }
 }
 
