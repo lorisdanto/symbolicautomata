@@ -55,6 +55,11 @@ public class Runner {
                 input.setRequired(false);
                 options.addOption(list);
 
+                Option runs = new Option("n", "numberOfRuns", false, "Specify the number of runs per experiment. Default: 3");
+                runs.setArgs(1);
+                input.setRequired(false);
+                options.addOption(runs);
+
                 Option testsOption = new Option("t", "tests", true, "Tests to run. Default: All");
                 testsOption.setArgs(Option.UNLIMITED_VALUES);
                 input.setRequired(false);
@@ -68,9 +73,13 @@ public class Runner {
                     cmd = parser.parse(options, args);
                     String filePath = cmd.getOptionValue("file");
                     String[] tests = cmd.getOptionValues("tests");
+                    String runsParsed = cmd.getOptionValue("numberOfRuns");
 
                     if (filePath != null)
                         file = new File(filePath);
+
+                    if (runsParsed != null)
+                        numberOfRuns = Integer.parseInt(runsParsed);
 
                     if (cmd.hasOption("l")) {
                         System.out.println("Benchmarks available:");
