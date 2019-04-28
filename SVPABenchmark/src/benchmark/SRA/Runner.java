@@ -4,22 +4,23 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
 import java.io.Reader;
-import java.io.FileReader;
 import java.io.FileWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.RoundingMode;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.apache.commons.cli.*;
 import java.io.File;
-import java.util.List;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.ExecutionException;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.math.MathContext;
 
 import com.google.common.base.Stopwatch;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +29,7 @@ public class Runner {
 
     private static Integer numberOfRuns = 3;
     private static Integer roundingPrecision = 3;
+    private static Integer timeout = 300;
     private static Experiments sra = new Experiments();
     private static Method[] methods = sra.getClass().getMethods();
     private static ArrayList<String> alreadyRan = new ArrayList<String>();
@@ -55,12 +57,17 @@ public class Runner {
                 input.setRequired(false);
                 options.addOption(list);
 
-                Option runs = new Option("n", "numberOfRuns", false, "Specify the number of runs per experiment. Default: 3");
+                Option runs = new Option("n", "numberOfRuns", true, "Specify the number of runs per experiment. Default: 3");
                 runs.setArgs(1);
                 input.setRequired(false);
                 options.addOption(runs);
 
-                Option testsOption = new Option("t", "tests", true, "Tests to run. Default: All");
+                Option timeoutOption = new Option("t", "timeout", true, "Specify the timeout in seconds. Default: 300");
+                runs.setArgs(1);
+                input.setRequired(false);
+                options.addOption(timeoutOption);
+
+                Option testsOption = new Option("e", "experiments", true, "Experiments to run. Default: All");
                 testsOption.setArgs(Option.UNLIMITED_VALUES);
                 input.setRequired(false);
                 options.addOption(testsOption);
@@ -72,14 +79,18 @@ public class Runner {
                 try {
                     cmd = parser.parse(options, args);
                     String filePath = cmd.getOptionValue("file");
-                    String[] tests = cmd.getOptionValues("tests");
+                    String[] experiments = cmd.getOptionValues("experiments");
                     String runsParsed = cmd.getOptionValue("numberOfRuns");
+                    String timeoutParsed = cmd.getOptionValue("timeout");
 
                     if (filePath != null)
                         file = new File(filePath);
 
                     if (runsParsed != null)
                         numberOfRuns = Integer.parseInt(runsParsed);
+
+                    if (timeoutParsed != null)
+                        timeout = Integer.parseInt(timeoutParsed);
 
                     if (cmd.hasOption("l")) {
                         System.out.println("Benchmarks available:");
@@ -92,8 +103,8 @@ public class Runner {
                         System.exit(0);
                     }
 
-                    if (tests != null)
-                        Collections.addAll(testsToRun, tests);
+                    if (experiments != null)
+                        Collections.addAll(testsToRun, experiments);
                     else
                         testsToRun.add("all");
 
@@ -118,64 +129,127 @@ public class Runner {
                         if (method.getAnnotation(ToRun.class) != null && !alreadyRan.contains(method.getName())) {
                             csvWriter = new CSVWriter(new FileWriter(file, true));
                             potentialErrorRecord[0] = method.getName();
-                            ArrayList<BigDecimal> timmings = new ArrayList<BigDecimal>();
+                            ArrayList<BigDecimal> timings = new ArrayList<BigDecimal>();
+                            ArrayList<BigDecimal> validTimings = new ArrayList<BigDecimal>();
 
                             System.out.println("-------------------------------------------------------------------------------");
                             System.out.println("Now running: " + method.getName());
+                            Future<Object> future = null;
 
-                            for (Integer iterator = 0; iterator < numberOfRuns; iterator++) {
-                                Stopwatch timer = Stopwatch.createStarted();
-                                method.invoke(sra);
-                                timer.stop();
-                                BigDecimal timerResult = BigDecimal.valueOf(timer.elapsed(TimeUnit.NANOSECONDS)).divide(new BigDecimal("1000000000"), roundingPrecision, RoundingMode.UP);
-                                System.out.println("[" + (iterator + 1) + "] Done in: " + timerResult + " s.");
-                                timmings.add(timerResult);
-                            }
-
-                            System.out.println("[AVERAGE] Done in: " + average(timmings) + " s.");
-                            timmings.add(average(timmings));
-
-                            ArrayList<String> outRecord = new ArrayList<String>();
-                            outRecord.add(method.getName());
-                            for (BigDecimal timming : timmings)
-                                outRecord.add(timming.toString());
-
-                            csvWriter.writeNext(outRecord.stream().toArray(String[]::new));
                             try {
-                                csvWriter.close();
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                                for (Integer iterator = 0; iterator < numberOfRuns; iterator++) {
+                                    Stopwatch timer = Stopwatch.createStarted();
+                                    ExecutorService executor = Executors.newCachedThreadPool();
+                                    Callable<Object> task = new Callable<Object>() {
+                                        public Object call() throws Exception {
+                                            return method.invoke(sra);
+                                        }
+                                    };
+                                    future = executor.submit(task);
+                                    Object result = future.get(timeout, TimeUnit.SECONDS);
+
+                                    timer.stop();
+                                    BigDecimal timerResult = BigDecimal.valueOf(timer.elapsed(TimeUnit.NANOSECONDS)).divide(new BigDecimal("1000000000"), roundingPrecision, RoundingMode.UP);
+                                    System.out.println("[" + (iterator + 1) + "] Done in: " + timerResult + " s.");
+                                    timings.add(timerResult);
+
+                                    if (iterator != 0 && iterator != 1) {
+                                        BigDecimal cutOff = standardDeviation(timings).multiply(BigDecimal.valueOf(3));
+                                        BigDecimal lower = mean(timings).subtract(cutOff);
+                                        BigDecimal upper = mean(timings).add(cutOff);
+                                        if (timerResult.compareTo(lower) < 0 || timerResult.compareTo(upper) > 0) {
+                                            System.out.println("Upper Limit: " + upper.toString());
+                                            System.out.println("Lower Limit: " + lower.toString());
+                                            System.out.println("[" + (iterator + 1) + "] Marked as anomaly. Repeating.");
+                                            iterator--;
+                                        } else {
+                                            validTimings.add(timerResult);
+                                        }
+                                    } else {
+                                        validTimings.add(timerResult);
+                                    }
+
+                                }
+
+                                System.out.println("[AVERAGE] Done in: " + mean(validTimings) + " s.");
+                                validTimings.add(mean(validTimings));
+
+                                ArrayList<String> outRecord = new ArrayList<String>();
+                                outRecord.add(method.getName());
+                                for (BigDecimal timming : validTimings)
+                                    outRecord.add(timming.toString());
+
+                                csvWriter.writeNext(outRecord.stream().toArray(String[]::new));
+                                try {
+                                    csvWriter.close();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            } catch (TimeoutException ex) {
+                                System.out.println("Timeout while computing. Skipping.");
+                                csvWriter.writeNext(potentialErrorRecord);
+                                try {
+                                    csvWriter.close();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            } catch (InterruptedException e) {
+                                System.out.println("INTERRUPT");
+                                // handle the interrupts
+                            } catch (ExecutionException e) {
+                                if (e.getCause().getCause() instanceof StackOverflowError)
+                                    System.out.println("Stack overflow while computing. Skipping.");
+                                else if (e.getCause().getCause() instanceof OutOfMemoryError)
+                                    System.out.println("Ran out of memory while computing. Skipping.");
+                                csvWriter.writeNext(potentialErrorRecord);
+                                try {
+                                    csvWriter.close();
+                                } catch (Exception ee) {
+                                    ee.printStackTrace();
+                                }
+                            } finally {
+                                future.cancel(true);
                             }
+
                         } else if (alreadyRan.contains(method.getName())) {
                             System.out.println("Already ran " + method.getName() + ". Skipping.");
                         }
                     }
                 }
-
-                break;
-            } catch (InvocationTargetException e) {
-                if (e.getCause() instanceof StackOverflowError)
-                    System.out.println("Stack overflow while computing. Skipping.");
-                else if (e.getCause() instanceof OutOfMemoryError)
-                    System.out.println("Ran out of memory while computing. Skipping.");
-                csvWriter.writeNext(potentialErrorRecord);
-                try {
-                    csvWriter.close();
-                } catch (Exception ee) {
-                    e.printStackTrace();
-                }
+                System.exit(0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private static BigDecimal average(ArrayList<BigDecimal> results) {
+    private static BigDecimal mean(ArrayList<BigDecimal> results) {
         BigDecimal length = BigDecimal.valueOf(results.size());
         BigDecimal total = new BigDecimal("0");
         for (BigDecimal result : results)
             total = total.add(result);
         return total.divide(length, 3, RoundingMode.UP);
+    }
+
+    public static BigDecimal sqrt(BigDecimal A, final int SCALE) {
+        BigDecimal x0 = BigDecimal.ZERO;
+        BigDecimal x1 = new BigDecimal(Math.sqrt(A.doubleValue()));
+        while (!x0.equals(x1)) {
+            x0 = x1;
+            x1 = A.divide(x0, SCALE, BigDecimal.ROUND_HALF_UP);
+            x1 = x1.add(x0);
+            x1 = x1.divide(BigDecimal.valueOf(2), SCALE, BigDecimal.ROUND_HALF_UP);
+
+        }
+        return x1;
+    }
+
+    private static BigDecimal standardDeviation(ArrayList<BigDecimal> results) {
+        BigDecimal mean = mean(results);
+        BigDecimal sum = BigDecimal.ZERO;
+        for (BigDecimal value : results)
+            sum = sum.add(value.subtract(mean).pow(2));
+        return sqrt(sum.divide(BigDecimal.valueOf(results.size() - 1)), roundingPrecision);
     }
 }
 

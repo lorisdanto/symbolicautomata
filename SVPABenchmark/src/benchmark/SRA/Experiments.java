@@ -854,7 +854,21 @@ public class Experiments {
     }
 
     @ToRun
-    public static void test_Pr_Acceptance_JavaRegex() {
+    public static void test_Pr_Acceptance_JavaRegex_1() {
+        String valid2PP100Str = "C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste";
+        Matcher m = CL2PPRegex.matcher(valid2PP100Str);
+        assertTrue(m.find());
+    }
+
+    @ToRun
+    public static void test_Pr_Acceptance_JavaRegex_10() {
+        String valid2PP100Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10);
+        Matcher m = CL2PPRegex.matcher(valid2PP100Str);
+        assertTrue(m.find());
+    }
+
+    @ToRun
+    public static void test_Pr_Acceptance_JavaRegex_100() {
         String valid2PP100Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100);
         Matcher m = CL2PPRegex.matcher(valid2PP100Str);
         assertTrue(m.find());
@@ -862,12 +876,39 @@ public class Experiments {
 
 
     @ToRun
-    public static void test_Pr_Acceptance_JavaRegexOverflow() {
-        String valid2PP1000Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000);
-        Matcher m = CL2PPRegex.matcher(valid2PP1000Str);
+    public static void test_Pr_Acceptance_JavaRegex_1000() {
+        String valid2PP100Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000);
+        Matcher m = CL2PPRegex.matcher(valid2PP100Str);
         assertTrue(m.find());
     }
 
+    @ToRun
+    public static void test_Pr_Acceptance_JavaRegex_10000() {
+        String valid2PP100Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10000);
+        Matcher m = CL2PPRegex.matcher(valid2PP100Str);
+        assertTrue(m.find());
+    }
+
+    @ToRun
+    public static void test_Pr_Acceptance_JavaRegex_100000() {
+        String valid2PP100Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100000);
+        Matcher m = CL2PPRegex.matcher(valid2PP100Str);
+        assertTrue(m.find());
+    }
+
+    @ToRun
+    public static void test_Pr_Acceptance_JavaRegex_1000000() {
+        String valid2PP100Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000000);
+        Matcher m = CL2PPRegex.matcher(valid2PP100Str);
+        assertTrue(m.find());
+    }
+
+    @ToRun
+    public static void test_Pr_Acceptance_JavaRegex_10000000() {
+        String valid2PP100Str = getPPTestString("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10000000);
+        Matcher m = CL2PPRegex.matcher(valid2PP100Str);
+        assertTrue(m.find());
+    }
 
     @ToRun
     public static void test_SFA_Equivalence3_And2() throws TimeoutException {
