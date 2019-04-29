@@ -73,6 +73,10 @@ public class Runner {
                 input.setRequired(false);
                 options.addOption(testsOption);
 
+                Option help = new Option("h", "help", false, "Show help and usage.");
+                input.setRequired(false);
+                options.addOption(help);
+
                 CommandLineParser parser = new DefaultParser();
                 HelpFormatter formatter = new HelpFormatter();
                 CommandLine cmd;
@@ -101,6 +105,11 @@ public class Runner {
                             if (method.getAnnotation(ToRun.class) != null)
                                 System.out.println(method.getName());
                         }
+                        System.exit(0);
+                    }
+
+                    if (cmd.hasOption("h")) {
+                        formatter.printHelp("SRA Experiment Runner", options);
                         System.exit(0);
                     }
 
@@ -154,11 +163,12 @@ public class Runner {
                                     System.out.println("[" + (iterator + 1) + "] Done in: " + timerResult + " s.");
                                     timings.add(timerResult);
 
-                                    if (iterator != 0 && iterator != 1) {
+                                    if (iterator > 2) {
                                         BigDecimal cutOff = standardDeviation(timings).multiply(BigDecimal.valueOf(3));
                                         BigDecimal lower = mean(timings).subtract(cutOff);
                                         BigDecimal upper = mean(timings).add(cutOff);
                                         if (timerResult.compareTo(lower) < 0 || timerResult.compareTo(upper) > 0) {
+                                            System.out.println("Cut Off: " + cutOff.toString());
                                             System.out.println("Upper Limit: " + upper.toString());
                                             System.out.println("Lower Limit: " + lower.toString());
                                             System.out.println("[" + (iterator + 1) + "] Marked as anomaly. Repeating.");
@@ -249,8 +259,8 @@ public class Runner {
         BigDecimal mean = mean(results);
         BigDecimal sum = BigDecimal.ZERO;
         for (BigDecimal value : results)
-            sum = sum.add(value.subtract(mean).pow(2, new MathContext(roundingPrecision + 1)));
-        return sqrt(sum.divide(BigDecimal.valueOf(results.size() - 1), roundingPrecision, RoundingMode.HALF_UP), roundingPrecision);
+            sum = sum.add(value.subtract(mean).pow(2, new MathContext(10)));
+        return sqrt(sum.divide(BigDecimal.valueOf(results.size() - 1), 10, RoundingMode.HALF_UP), 10);
     }
 }
 
