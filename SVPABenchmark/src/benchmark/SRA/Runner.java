@@ -6,6 +6,7 @@ import com.opencsv.CSVWriter;
 import java.io.Reader;
 import java.io.FileWriter;
 import java.lang.reflect.Method;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public class Runner {
                 input.setRequired(false);
                 options.addOption(runs);
 
-                Option timeoutOption = new Option("t", "timeout", true, "Specify the timeout in seconds. Default: 300");
+                Option timeoutOption = new Option("t", "timeout", true, "Specify the timeout in whole seconds. Default: 300");
                 runs.setArgs(1);
                 input.setRequired(false);
                 options.addOption(timeoutOption);
@@ -248,7 +249,7 @@ public class Runner {
         BigDecimal mean = mean(results);
         BigDecimal sum = BigDecimal.ZERO;
         for (BigDecimal value : results)
-            sum = sum.add(value.subtract(mean).pow(2));
+            sum = sum.add(value.subtract(mean).pow(2, new MathContext(roundingPrecision + 1)));
         return sqrt(sum.divide(BigDecimal.valueOf(results.size() - 1)), roundingPrecision);
     }
 }
