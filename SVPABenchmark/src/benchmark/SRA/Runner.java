@@ -250,7 +250,7 @@ public class Runner {
         BigDecimal sum = BigDecimal.ZERO;
         for (BigDecimal value : results)
             sum = sum.add(value.subtract(mean).pow(2, new MathContext(roundingPrecision + 1)));
-        return sqrt(sum.divide(BigDecimal.valueOf(results.size() - 1)), roundingPrecision);
+        return sqrt(sum.divide(BigDecimal.valueOf(results.size() - 1), roundingPrecision, RoundingMode.HALF_UP), roundingPrecision);
     }
 }
 
