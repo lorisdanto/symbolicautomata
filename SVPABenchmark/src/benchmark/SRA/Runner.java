@@ -192,7 +192,6 @@ public class Runner {
                                     }
 
                                     timings.clear();
-//                                    timings.addAll(validTimings);
 
                                     if (validTimings.size() < numberOfRuns) {
                                         iterations = numberOfRuns - validTimings.size();
