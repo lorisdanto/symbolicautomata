@@ -297,32 +297,27 @@ public class Experiments {
     }
 
 
-    @ToRun
-    public static void test_Pr_C2_Equivalence() throws TimeoutException {
+    public static void test_Pr_C2_CL2_Equivalence() throws TimeoutException {
         assertFalse(productParserC2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
     }
 
 
-    @ToRun
-    public static void test_Pr_C3_Equivalence() throws TimeoutException {
+    public static void test_Pr_C3_CL3_Equivalence() throws TimeoutException {
         assertFalse(productParserC3.isLanguageEquivalent(productParserCL3, ba, Long.MAX_VALUE));
     }
 
 
-    @ToRun
-    public static void test_Pr_C4_Equivalence() throws TimeoutException {
+    public static void test_Pr_C4_CL4_Equivalence() throws TimeoutException {
         assertFalse(productParserC4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
     }
 
 
-    @ToRun
-    public static void test_Pr_C6_Equivalence() throws TimeoutException {
+    public static void test_Pr_C6_CL6_Equivalence() throws TimeoutException {
         assertFalse(productParserC6.isLanguageEquivalent(productParserCL6, ba, Long.MAX_VALUE));
     }
 
 
-    @ToRun
-    public static void test_Pr_C9_Equivalence() throws TimeoutException {
+    public static void test_Pr_C9_CL9_Equivalence() throws TimeoutException {
         assertFalse(productParserC9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
     }
 
@@ -388,61 +383,61 @@ public class Experiments {
 
 
     @ToRun
-    public static void test_Pr_CL2_Inclusion() throws TimeoutException {
+    public static void test_Pr_CL2_C2_Not_Inclusion() throws TimeoutException {
         assertFalse(productParserCL2.languageIncludes(productParserC2, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_Pr_CL3_Inclusion() throws TimeoutException {
+    public static void test_Pr_CL3_C3_Not_Inclusion() throws TimeoutException {
         assertFalse(productParserCL3.languageIncludes(productParserC3, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_Pr_CL4_Inclusion() throws TimeoutException {
+    public static void test_Pr_CL4_C4_Not_Inclusion() throws TimeoutException {
         assertFalse(productParserCL4.languageIncludes(productParserC4, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_Pr_CL6_Inclusion() throws TimeoutException {
+    public static void test_Pr_CL6_C6_Not_Inclusion() throws TimeoutException {
         assertFalse(productParserCL6.languageIncludes(productParserC6, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_Pr_CL9_Inclusion() throws TimeoutException {
+    public static void test_Pr_CL9_C9_Not_Inclusion() throws TimeoutException {
         assertFalse(productParserCL9.languageIncludes(productParserC9, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_Pr_C2_Inclusion() throws TimeoutException {
+    public static void test_Pr_C2_CL2_Inclusion() throws TimeoutException {
         assertTrue(productParserC2.languageIncludes(productParserCL2, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_Pr_C3_Inclusion() throws TimeoutException {
+    public static void test_Pr_C3_CL3_Inclusion() throws TimeoutException {
         assertTrue(productParserC3.languageIncludes(productParserCL3, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_Pr_C4_Inclusion() throws TimeoutException {
-        assertTrue(productParserC9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
+    public static void test_Pr_C4_CL4_Inclusion() throws TimeoutException {
+        assertTrue(productParserC4.languageIncludes(productParserCL4, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_Pr_C6_Inclusion() throws TimeoutException {
+    public static void test_Pr_C6_CL6_Inclusion() throws TimeoutException {
         assertTrue(productParserC6.languageIncludes(productParserCL6, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_Pr_C9_Inclusion() throws TimeoutException {
+    public static void test_Pr_C9_CL9_Inclusion() throws TimeoutException {
         assertTrue(productParserC9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
     }
 
@@ -504,25 +499,25 @@ public class Experiments {
 
 
     @ToRun
-    public static void test_SRA_Inclusion_IP3_In_IP2() throws TimeoutException {
+    public static void test_SRA_IP2_IP3_Inclusion() throws TimeoutException {
         assertTrue(IP2PacketParserSimplifiedSRA.languageIncludes(IP3PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_SRA_Inclusion_IP4_In_IP3() throws TimeoutException {
+    public static void test_SRA_IP3_IP4_Inclusion() throws TimeoutException {
         assertTrue(IP3PacketParserSimplifiedSRA.languageIncludes(IP4PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_SRA_Inclusion_IP6_In_IP4() throws TimeoutException {
+    public static void test_SRA_IP4_IP6_Inclusion() throws TimeoutException {
         assertTrue(IP4PacketParserSimplifiedSRA.languageIncludes(IP6PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_SRA_Inclusion_IP9_In_IP6() throws TimeoutException {
+    public static void test_SRA_IP6_IP9_Inclusion() throws TimeoutException {
         assertTrue(IP6PacketParserSimplifiedSRA.languageIncludes(IP9PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
     }
 
@@ -620,14 +615,14 @@ public class Experiments {
 
 
     @ToRun
-    public static void test_Pr_Membership_C3PP1000000() throws TimeoutException {
+    public static void test_Pr_Membership_C3PP1000000() throws TimeoutException tes{
         List<Character> valid3PP1000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000000);
         assertTrue(productParserC3.accepts(valid3PP1000000, ba));
     }
 
 
     @ToRun
-    public static void test_Pr_Membership_C3PP10000000() throws TimeoutException {
+    public static void test_PrtC3PP10000000() throws TimeoutException {
         List<Character> valid3PP10000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10000000);
         assertTrue(productParserC3.accepts(valid3PP10000000, ba));
     }
