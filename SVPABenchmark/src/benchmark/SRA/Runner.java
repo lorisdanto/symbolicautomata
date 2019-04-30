@@ -36,7 +36,7 @@ public class Runner {
     private static ArrayList<String> alreadyRan = new ArrayList<String>();
     private static CSVReader csvReader = null;
     private static CSVWriter csvWriter = null;
-    private static String[] potentialErrorRecord = {"IDENTIFIER"};
+    private static ArrayList<String> potentialErrorRecord = new ArrayList<String>();
     private static File file = new File("./Experiments.csv");
     private static ArrayList<String> testsToRun = new ArrayList<>();
 
@@ -96,6 +96,9 @@ public class Runner {
                             System.err.println("Error: The number of runs must be at least 1.");
                             System.exit(1);
                         }
+                        potentialErrorRecord.add("IDENTIFIER");
+                        for (int iterator = 0; iterator < numberOfRuns + 1; iterator++)
+                            potentialErrorRecord.add("-");
                     }
 
                     if (timeoutParsed != null) {
@@ -147,7 +150,7 @@ public class Runner {
                     if (testsToRun.contains(method.getName()) || testsToRun.contains("all")) {
                         if (method.getAnnotation(ToRun.class) != null && !alreadyRan.contains(method.getName())) {
                             csvWriter = new CSVWriter(new FileWriter(file, true));
-                            potentialErrorRecord[0] = method.getName();
+                            potentialErrorRecord.set(0, method.getName());
                             ArrayList<BigDecimal> timings = new ArrayList<BigDecimal>();
                             ArrayList<BigDecimal> validTimings = new ArrayList<BigDecimal>();
 
@@ -217,7 +220,10 @@ public class Runner {
                                 }
                             } catch (TimeoutException ex) {
                                 System.out.println("Timeout while computing. Skipping.");
-                                csvWriter.writeNext(potentialErrorRecord);
+                                ArrayList<String> outRecord = new ArrayList<String>();
+                                for (String entry : potentialErrorRecord)
+                                    outRecord.add(entry.toString());
+                                csvWriter.writeNext(outRecord.stream().toArray(String[]::new));
                                 try {
                                     csvWriter.close();
                                 } catch (Exception e) {
@@ -231,7 +237,10 @@ public class Runner {
                                     System.out.println("Stack overflow while computing. Skipping.");
                                 else if (e.getCause().getCause() instanceof OutOfMemoryError)
                                     System.out.println("Ran out of memory while computing. Skipping.");
-                                csvWriter.writeNext(potentialErrorRecord);
+                                ArrayList<String> outRecord = new ArrayList<String>();
+                                for (String entry : potentialErrorRecord)
+                                    outRecord.add(entry.toString());
+                                csvWriter.writeNext(outRecord.stream().toArray(String[]::new));
                                 try {
                                     csvWriter.close();
                                 } catch (Exception ee) {
