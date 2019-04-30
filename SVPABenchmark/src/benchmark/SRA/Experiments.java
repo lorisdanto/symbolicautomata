@@ -113,68 +113,67 @@ public class Experiments {
         return null;
     }
 
-    public static void testSSNParserSRA() throws TimeoutException {
-        assertTrue(SSNParser.accepts(validName1, ba));
-        assertTrue(SSNParser.accepts(validName2, ba));
-        assertFalse(SSNParser.accepts(invalidName1, ba));
-        assertFalse(SSNParser.accepts(invalidName2, ba));
-        assertFalse(SSNParser.accepts(invalidName3, ba));
-    }
+     public static void testSSNParserSRA() throws TimeoutException {
+         assertTrue(SSNParser.accepts(validName1, ba));
+         assertTrue(SSNParser.accepts(validName2, ba));
+         assertFalse(SSNParser.accepts(invalidName1, ba));
+         assertFalse(SSNParser.accepts(invalidName2, ba));
+         assertFalse(SSNParser.accepts(invalidName3, ba));
+     }
 
-    public static void testSSNSimulation() throws TimeoutException {
-        assertTrue(SRA.canSimulate(SSNParser, SSNParserFirst, ba, false, Long.MAX_VALUE));
-        assertTrue(SRA.canSimulate(SSNParser, SSNParserLast, ba, false, Long.MAX_VALUE));
-    }
+     public static void testSSNSimulation() throws TimeoutException {
+         assertTrue(SRA.canSimulate(SSNParser, SSNParserFirst, ba, false, Long.MAX_VALUE));
+         assertTrue(SRA.canSimulate(SSNParser, SSNParserLast, ba, false, Long.MAX_VALUE));
+     }
 
-    public static void testSSNSFA() throws TimeoutException {
-        assertTrue(SSNParserSFA.accepts(validName1, ba));
-        assertTrue(SSNParserSFA.accepts(validName2, ba));
-        assertFalse(SSNParserSFA.accepts(invalidName1, ba));
-        assertFalse(SSNParserSFA.accepts(invalidName2, ba));
-        assertFalse(SSNParserSFA.accepts(invalidName3, ba));
-    }
+     public static void testSSNSFA() throws TimeoutException {
+         assertTrue(SSNParserSFA.accepts(validName1, ba));
+         assertTrue(SSNParserSFA.accepts(validName2, ba));
+         assertFalse(SSNParserSFA.accepts(invalidName1, ba));
+         assertFalse(SSNParserSFA.accepts(invalidName2, ba));
+         assertFalse(SSNParserSFA.accepts(invalidName3, ba));
+     }
 
 
-    @ToRun
     public static void test_Name_F_SFA() throws TimeoutException {
         assertTrue(SSNParserFirstSFA.accepts(validName1, ba));
         assertTrue(SSNParserFirstSFA.accepts(validName2, ba));
     }
 
 
-    @ToRun
+
     public static void test_Name_L_SFA() throws TimeoutException {
         assertTrue(SSNParserLastSFA.accepts(validName1, ba));
         assertTrue(SSNParserLastSFA.accepts(validName2, ba));
     }
 
 
-    @ToRun
+
     public static void test_Name_Inclusion() throws TimeoutException {
         assertTrue(SSNParserFirst.languageIncludes(SSNParser, ba, Long.MAX_VALUE));
         assertTrue(SSNParserLast.languageIncludes(SSNParser, ba, Long.MAX_VALUE));
     }
 
 
-    @ToRun
+
     public static void test_Name_Equivalence() throws TimeoutException {
         assertTrue(SSNParserFirst.isLanguageEquivalent(SSNParserFirst, ba, Long.MAX_VALUE));
         assertTrue(SSNParserLast.isLanguageEquivalent(SSNParserLast, ba, Long.MAX_VALUE));
     }
 
 
-    @ToRun
-    public static void test_Name_MSRA_to_SRA() throws TimeoutException {
-        SRA<CharPred, Character> toSRA = SSNParser.toSingleValuedSRA(ba, Long.MAX_VALUE);
-        assertTrue(toSRA.accepts(validName1, ba));
-        assertTrue(toSRA.accepts(validName2, ba));
-        assertFalse(toSRA.accepts(invalidName1, ba));
-        assertFalse(toSRA.accepts(invalidName2, ba));
-        assertFalse(toSRA.accepts(invalidName3, ba));
+
+    public static void test_Name_SRA_Single_Valued() throws TimeoutException {
+        SRA<CharPred, Character> singleValuedSRA = SSNParser.toSingleValuedSRA(ba, Long.MAX_VALUE);
+        assertTrue(singleValuedSRA.accepts(validName1, ba));
+        assertTrue(singleValuedSRA.accepts(validName2, ba));
+        assertFalse(singleValuedSRA.accepts(invalidName1, ba));
+        assertFalse(singleValuedSRA.accepts(invalidName2, ba));
+        assertFalse(singleValuedSRA.accepts(invalidName3, ba));
     }
 
 
-    @ToRun
+
     public static void test_XML_SRA() throws TimeoutException {
         boolean check = XMLParserSRA.createDotFile("xml", "");
         assertTrue(check);
@@ -195,7 +194,7 @@ public class Experiments {
     }
 
 
-    @ToRun
+
     public static void test_IP_SRA_Single_Valued() throws TimeoutException {
         SRA<CharPred, Character> IP2PacketParserSRASS = IP2PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
         SRA<CharPred, Character> IP3PacketParserSRASS = IP3PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
@@ -225,7 +224,7 @@ public class Experiments {
     }
 
 
-    @ToRun
+
     public static void test_IP_SRA_Single_Valued_Complete() throws TimeoutException {
         SRA<CharPred, Character> IP2PacketParserSRASS = IP2PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
         SRA<CharPred, Character> IP3PacketParserSRASS = IP3PacketParserSRA.toSingleValuedSRA(ba, Long.MAX_VALUE);
@@ -258,7 +257,7 @@ public class Experiments {
     }
 
 
-    @ToRun
+
     public static void test_IP_SRA() throws TimeoutException {
         assertTrue(IP2PacketParserSRA.accepts(validIPPacket1, ba));
         assertTrue(IP3PacketParserSRA.accepts(validIPPacket1, ba));
@@ -502,6 +501,31 @@ public class Experiments {
     public static void test_Pr_CL9_Self_Equivalence() throws TimeoutException {
         assertTrue(productParserCL9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
     }
+
+
+    @ToRun
+    public static void test_SRA_Inclusion_IP3_In_IP2() throws TimeoutException {
+        assertTrue(IP2PacketParserSimplifiedSRA.languageIncludes(IP3PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
+    }
+
+
+    @ToRun
+    public static void test_SRA_Inclusion_IP4_In_IP3() throws TimeoutException {
+        assertTrue(IP3PacketParserSimplifiedSRA.languageIncludes(IP4PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
+    }
+
+
+    @ToRun
+    public static void test_SRA_Inclusion_IP6_In_IP4() throws TimeoutException {
+        assertTrue(IP4PacketParserSimplifiedSRA.languageIncludes(IP6PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
+    }
+
+
+    @ToRun
+    public static void test_SRA_Inclusion_IP9_In_IP6() throws TimeoutException {
+        assertTrue(IP6PacketParserSimplifiedSRA.languageIncludes(IP9PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
+    }
+
 
 
     @ToRun
@@ -911,39 +935,18 @@ public class Experiments {
     }
 
     @ToRun
-    public static void test_SFA_Equivalence3_And2() throws TimeoutException {
+    public static void test_SFA_Not_Equivalence_IP3_And_IP2() throws TimeoutException {
         assertFalse(IP2PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP3PacketParserSimplifiedSFA, ba));
     }
 
 
     @ToRun
-    public static void test_SFA_Equivalence_4In3() throws TimeoutException {
+    public static void test_SFA_Not_Equivalence_IP3_And_IP4() throws TimeoutException {
         assertFalse(IP3PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP4PacketParserSimplifiedSFA, ba));
     }
 
 
-    @ToRun
-    public static void test_SRA_Inclusion_3In2() throws TimeoutException {
-        assertTrue(IP2PacketParserSimplifiedSRA.languageIncludes(IP3PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-    }
 
-
-    @ToRun
-    public static void test_SRA_Inclusion_4In3() throws TimeoutException {
-        assertTrue(IP3PacketParserSimplifiedSRA.languageIncludes(IP4PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-    }
-
-
-    @ToRun
-    public static void test_SRA_Inclusion_6In4() throws TimeoutException {
-        assertTrue(IP4PacketParserSimplifiedSRA.languageIncludes(IP6PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-    }
-
-
-    @ToRun
-    public static void test_SRA_Inclusion_9In6() throws TimeoutException {
-        assertTrue(IP6PacketParserSimplifiedSRA.languageIncludes(IP9PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
-    }
 
     // ---------------------------------------
     // Predicates
