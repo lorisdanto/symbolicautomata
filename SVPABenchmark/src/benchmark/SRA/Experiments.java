@@ -975,7 +975,6 @@ public class Experiments {
         SFA<CharPred, Character> IP4PacketParserSimplifiedSFA = getIP4PacketParserSimplifiedSFA(ba);
     }
 
-
     // ---------------------------------------
     // Predicates
     // ---------------------------------------
@@ -2548,8 +2547,6 @@ public class Experiments {
                         transitions.add(new SFAInputMove<CharPred, Character>(3 + (firstDigit * 46287) + (secondDigit * 4477) + (thirdDigit * 444) + (fourthDigit * 37) + 39, 3 + (firstDigit * 46287) + (secondDigit * 4477) + (thirdDigit * 444) + (fourthDigit * 37) + 40, new CharPred('\'')));
                         finalStates.add(3 + (firstDigit * 46287) + (secondDigit * 4477) + (thirdDigit * 444) + (fourthDigit * 37) + 40);
                     }
-
-
                 }
             }
         }
