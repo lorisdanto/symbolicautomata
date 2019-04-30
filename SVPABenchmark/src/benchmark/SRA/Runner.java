@@ -96,10 +96,11 @@ public class Runner {
                             System.err.println("Error: The number of runs must be at least 1.");
                             System.exit(1);
                         }
-                        potentialErrorRecord.add("IDENTIFIER");
-                        for (int iterator = 0; iterator < numberOfRuns + 1; iterator++)
-                            potentialErrorRecord.add("-");
                     }
+
+                    potentialErrorRecord.add("IDENTIFIER");
+                    for (int iterator = 0; iterator < numberOfRuns + 1; iterator++)
+                        potentialErrorRecord.add("-");
 
                     if (timeoutParsed != null) {
                         timeout = Integer.parseInt(timeoutParsed);
@@ -218,25 +219,17 @@ public class Runner {
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
-                            } catch (TimeoutException ex) {
-                                System.out.println("Timeout while computing. Skipping.");
-                                ArrayList<String> outRecord = new ArrayList<String>();
-                                for (String entry : potentialErrorRecord)
-                                    outRecord.add(entry.toString());
-                                csvWriter.writeNext(outRecord.stream().toArray(String[]::new));
-                                try {
-                                    csvWriter.close();
-                                } catch (Exception e) {
-                                    e.printStackTrace();
+                            } catch (Exception e) {
+                                if (e instanceof ExecutionException) {
+                                    if (e.getCause().getCause() instanceof StackOverflowError)
+                                        System.out.println("Stack overflow while computing. Skipping.");
+                                    else if (e.getCause().getCause() instanceof OutOfMemoryError)
+                                        System.out.println("Ran out of memory while computing. Skipping.");
+                                } else if (e instanceof TimeoutException) {
+                                    System.out.println("Timeout while computing. Skipping.");
+                                } else if (e instanceof InterruptedException) {
+                                    System.out.println("Interrupt while computing. Skipping.");
                                 }
-                            } catch (InterruptedException e) {
-                                System.out.println("INTERRUPT");
-                                // handle the interrupts
-                            } catch (ExecutionException e) {
-                                if (e.getCause().getCause() instanceof StackOverflowError)
-                                    System.out.println("Stack overflow while computing. Skipping.");
-                                else if (e.getCause().getCause() instanceof OutOfMemoryError)
-                                    System.out.println("Ran out of memory while computing. Skipping.");
                                 ArrayList<String> outRecord = new ArrayList<String>();
                                 for (String entry : potentialErrorRecord)
                                     outRecord.add(entry.toString());

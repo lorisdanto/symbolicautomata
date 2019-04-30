@@ -940,7 +940,40 @@ public class Experiments {
         assertFalse(IP3PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP4PacketParserSimplifiedSFA, ba));
     }
 
+    @ToRun
+    public static void test_build_SFA_for_Name() {
+        SFA<CharPred, Character> SSNParserSFA = getSSNParserSFA(ba);
+    }
 
+    @ToRun
+    public static void test_build_SFA_for_Name_F() {
+        SFA<CharPred, Character> SSNParserFirstSFA = getSSNParserFirstSFA(ba);
+    }
+
+    @ToRun
+    public static void test_build_SFA_for_Name_L() {
+        SFA<CharPred, Character> SSNParserLastSFA = getSSNParserLastSFA(ba);
+    }
+
+    @ToRun
+    public static void test_build_SFA_for_Pr() {
+        SFA<CharPred, Character> productParserSFA = getProductParserSFA(ba);
+    }
+
+    @ToRun
+    public static void test_build_SFA_for_IP2() {
+        SFA<CharPred, Character> IP2PacketParserSimplifiedSFA = getIP2PacketParserSimplifiedSFA(ba);
+    }
+
+    @ToRun
+    public static void test_build_SFA_for_IP3() {
+        SFA<CharPred, Character> IP3PacketParserSimplifiedSFA = getIP3PacketParserSimplifiedSFA(ba);
+    }
+
+    @ToRun
+    public static void test_build_SFA_for_IP4() {
+        SFA<CharPred, Character> IP4PacketParserSimplifiedSFA = getIP4PacketParserSimplifiedSFA(ba);
+    }
 
 
     // ---------------------------------------
