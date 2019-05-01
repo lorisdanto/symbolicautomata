@@ -637,16 +637,6 @@ public class Experiments {
         assertTrue(m.find());
     }
 
-    @ToRun
-    public static void test_SFA_Not_Equivalence_IP3_And_IP2() throws TimeoutException {
-        assertFalse(IP2PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP3PacketParserSimplifiedSFA, ba));
-    }
-
-
-    @ToRun
-    public static void test_SFA_Not_Equivalence_IP3_And_IP4() throws TimeoutException {
-        assertFalse(IP3PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP4PacketParserSimplifiedSFA, ba));
-    }
 
     @ToRun
     public static void test_build_SFA_for_Name() {
@@ -687,6 +677,16 @@ public class Experiments {
     // ---------------------------------------
     // Other Experiments
     // ---------------------------------------
+
+
+    public static void test_SFA_Not_Equivalence_IP3_And_IP2() throws TimeoutException {
+        assertFalse(IP2PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP3PacketParserSimplifiedSFA, ba));
+    }
+
+
+    public static void test_SFA_Not_Equivalence_IP3_And_IP4() throws TimeoutException {
+        assertFalse(IP3PacketParserSimplifiedSFA.isHopcroftKarpEquivalentTo(IP4PacketParserSimplifiedSFA, ba));
+    }
 
 
 
