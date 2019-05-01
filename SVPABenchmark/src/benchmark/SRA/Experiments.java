@@ -330,7 +330,7 @@ public class Experiments {
 
 
     @ToRun
-    public static void test_PrtC3PP10000000() throws TimeoutException {
+    public static void test_Pr_Membership_C3PP10000000() throws TimeoutException {
         List<Character> valid3PP10000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10000000);
         assertTrue(productParserC3.accepts(valid3PP10000000, ba));
     }
