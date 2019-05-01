@@ -654,7 +654,7 @@ public class Experiments {
     }
 
     @ToRun
-    public static void test_build_SFA_for_Pr() {
+    public static void test_build_SFA_for_Pr_C2() {
         SFA<CharPred, Character> productParserSFA = getProductParserSFA(ba);
     }
 
