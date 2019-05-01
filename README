@@ -12,7 +12,7 @@ The most relevant bits of the source code can be found in /home/cav/SRA/SVPAlib/
 The experiments can be found in /home/cav/SRA/SVPABenchmark/src/benchmark/SRA/Experiments.java. Other experiments, not in the paper, are included as well.
 You can have the "run" script execute those experiments by adding the annotation @ToRun before the corresponding method.
 
-When we first ran these experiments we ran them on bare-metal with specifications:
+Results in the paper were obtained with the following configuration:
 OS: MacOs Mojave (10.14)
 CPU: 3.5 GHz Intel Core i7 (quad-core)
 RAM: 16GB
