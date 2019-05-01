@@ -9,7 +9,8 @@ You will also find that a "compile" and a "run" script are available to the SRA 
 
 The most relevant bits of the source code can be found in /home/cav/SRA/SVPAlib/src/automata/sra
 
-The experiments can be found in /home/cav/SRA/SVPABenchmark/src/benchmark/SRA/Experiments.java. Other experiments, not in the paper, are included as well, but they are not run by the benchmark script. You can run those experiments as well by adding the annotation @ToRun before the corresponding method.
+The experiments can be found in /home/cav/SRA/SVPABenchmark/src/benchmark/SRA/Experiments.java. Other experiments, not in the paper, are included as well.
+You can have the run script execute those experiments as well by adding the annotation @ToRun before the corresponding method.
 
 When we first ran these experiments we ran them on bare-metal with specifications:
 CPU: 3.5 GHz Intel Core i7 (quad-core)
