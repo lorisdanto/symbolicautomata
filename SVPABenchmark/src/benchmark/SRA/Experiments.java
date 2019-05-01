@@ -30,31 +30,6 @@ public class Experiments {
 
 
 
-    public static void test_Pr_C2_CL2_Equivalence() throws TimeoutException {
-        assertFalse(productParserC2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
-    }
-
-
-    public static void test_Pr_C3_CL3_Equivalence() throws TimeoutException {
-        assertFalse(productParserC3.isLanguageEquivalent(productParserCL3, ba, Long.MAX_VALUE));
-    }
-
-
-    public static void test_Pr_C4_CL4_Equivalence() throws TimeoutException {
-        assertFalse(productParserC4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
-    }
-
-
-    public static void test_Pr_C6_CL6_Equivalence() throws TimeoutException {
-        assertFalse(productParserC6.isLanguageEquivalent(productParserCL6, ba, Long.MAX_VALUE));
-    }
-
-
-    public static void test_Pr_C9_CL9_Equivalence() throws TimeoutException {
-        assertFalse(productParserC9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
-    }
-
-
     @ToRun
     public static void test_Pr_C2_Emptiness() throws TimeoutException {
         assertFalse(SRA.isLanguageEmpty(productParserC2, ba, Long.MAX_VALUE));
@@ -713,7 +688,31 @@ public class Experiments {
     // Other Experiments
     // ---------------------------------------
 
-    
+    public static void test_Pr_C2_CL2_Not_Equivalence() throws TimeoutException {
+        assertFalse(productParserC2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
+    }
+
+
+    public static void test_Pr_C3_CL3_Not_Equivalence() throws TimeoutException {
+        assertFalse(productParserC3.isLanguageEquivalent(productParserCL3, ba, Long.MAX_VALUE));
+    }
+
+
+    public static void test_Pr_C4_CL4_Not_Equivalence() throws TimeoutException {
+        assertFalse(productParserC4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
+    }
+
+
+    public static void test_Pr_C6_CL6_Not_Equivalence() throws TimeoutException {
+        assertFalse(productParserC6.isLanguageEquivalent(productParserCL6, ba, Long.MAX_VALUE));
+    }
+
+
+    public static void test_Pr_C9_CL9_Not_Equivalence() throws TimeoutException {
+        assertFalse(productParserC9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
+    }
+
+
     public static void test_Name_Short_Word_Membership() throws TimeoutException {
         assertTrue(SSNParser.accepts(validName1, ba));
         assertTrue(SSNParser.accepts(validName2, ba));
