@@ -164,13 +164,13 @@ public class Runner {
                                 boolean needsReRun = true;
                                 while (needsReRun) {
                                     for (Integer iterator = 0; iterator < iterations; iterator++) {
-                                        Stopwatch timer = Stopwatch.createStarted();
                                         ExecutorService executor = Executors.newCachedThreadPool();
                                         Callable<Object> task = new Callable<Object>() {
                                             public Object call() throws Exception {
                                                 return method.invoke(sra);
                                             }
                                         };
+                                        Stopwatch timer = Stopwatch.createStarted();
                                         future = executor.submit(task);
                                         Object result = future.get(timeout, TimeUnit.SECONDS);
 
