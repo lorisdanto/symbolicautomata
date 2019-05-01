@@ -35,126 +35,105 @@ public class Experiments {
         assertFalse(SRA.isLanguageEmpty(productParserC2, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_CL2_Emptiness() throws TimeoutException {
         assertFalse(SRA.isLanguageEmpty(productParserCL2, ba, Long.MAX_VALUE));
     }
-
 
     @ToRun
     public static void test_Pr_C3_Emptiness() throws TimeoutException {
         assertFalse(SRA.isLanguageEmpty(productParserC3, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_CL3_Emptiness() throws TimeoutException {
         assertFalse(SRA.isLanguageEmpty(productParserCL3, ba, Long.MAX_VALUE));
     }
-
 
     @ToRun
     public static void test_Pr_C4_Emptiness() throws TimeoutException {
         assertFalse(SRA.isLanguageEmpty(productParserC4, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_CL4_Emptiness() throws TimeoutException {
         assertFalse(SRA.isLanguageEmpty(productParserCL4, ba, Long.MAX_VALUE));
     }
-
 
     @ToRun
     public static void test_Pr_C6_Emptiness() throws TimeoutException {
         assertFalse(SRA.isLanguageEmpty(productParserC6, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_CL6_Emptiness() throws TimeoutException {
         assertFalse(SRA.isLanguageEmpty(productParserCL6, ba, Long.MAX_VALUE));
     }
-
 
     @ToRun
     public static void test_Pr_C9_Emptiness() throws TimeoutException {
         assertFalse(SRA.isLanguageEmpty(productParserC9, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_CL9_Emptiness() throws TimeoutException {
         assertFalse(SRA.isLanguageEmpty(productParserCL9, ba, Long.MAX_VALUE));
     }
-
 
     @ToRun
     public static void test_Pr_CL2_C2_Inclusion() throws TimeoutException {
         assertFalse(productParserCL2.languageIncludes(productParserC2, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_CL3_C3_Inclusion() throws TimeoutException {
         assertFalse(productParserCL3.languageIncludes(productParserC3, ba, Long.MAX_VALUE));
     }
-
 
     @ToRun
     public static void test_Pr_CL4_C4_Inclusion() throws TimeoutException {
         assertFalse(productParserCL4.languageIncludes(productParserC4, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_CL6_C6_Inclusion() throws TimeoutException {
         assertFalse(productParserCL6.languageIncludes(productParserC6, ba, Long.MAX_VALUE));
     }
-
 
     @ToRun
     public static void test_Pr_CL9_C9_Inclusion() throws TimeoutException {
         assertFalse(productParserCL9.languageIncludes(productParserC9, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_C2_CL2_Inclusion() throws TimeoutException {
         assertTrue(productParserC2.languageIncludes(productParserCL2, ba, Long.MAX_VALUE));
     }
-
 
     @ToRun
     public static void test_Pr_C3_CL3_Inclusion() throws TimeoutException {
         assertTrue(productParserC3.languageIncludes(productParserCL3, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_C4_CL4_Inclusion() throws TimeoutException {
         assertTrue(productParserC4.languageIncludes(productParserCL4, ba, Long.MAX_VALUE));
     }
-
 
     @ToRun
     public static void test_Pr_C6_CL6_Inclusion() throws TimeoutException {
         assertTrue(productParserC6.languageIncludes(productParserCL6, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_C9_CL9_Inclusion() throws TimeoutException {
         assertTrue(productParserC9.languageIncludes(productParserCL9, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_C2_Self_Equivalence() throws TimeoutException {
         assertTrue(productParserC2.isLanguageEquivalent(productParserC2, ba, Long.MAX_VALUE));
     }
-
 
     @ToRun
     public static void test_Pr_C3_Self_Equivalence() throws TimeoutException {
@@ -166,7 +145,6 @@ public class Experiments {
         assertTrue(productParserC4.isLanguageEquivalent(productParserC4, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_C6_Self_Equivalence() throws TimeoutException {
         assertTrue(productParserC6.isLanguageEquivalent(productParserC6, ba, Long.MAX_VALUE));
@@ -177,12 +155,10 @@ public class Experiments {
         assertTrue(productParserC9.isLanguageEquivalent(productParserC9, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_CL2_Self_Equivalence() throws TimeoutException {
         assertTrue(productParserCL2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
     }
-
 
     @ToRun
     public static void test_Pr_CL3_Self_Equivalence() throws TimeoutException {
@@ -194,7 +170,6 @@ public class Experiments {
         assertTrue(productParserCL4.isLanguageEquivalent(productParserCL4, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_Pr_CL6_Self_Equivalence() throws TimeoutException {
         assertTrue(productParserCL6.isLanguageEquivalent(productParserCL6, ba, Long.MAX_VALUE));
@@ -205,31 +180,25 @@ public class Experiments {
         assertTrue(productParserCL9.isLanguageEquivalent(productParserCL9, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_SRA_IP2_IP3_Inclusion() throws TimeoutException {
         assertTrue(IP2PacketParserSimplifiedSRA.languageIncludes(IP3PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
     }
-
 
     @ToRun
     public static void test_SRA_IP3_IP4_Inclusion() throws TimeoutException {
         assertTrue(IP3PacketParserSimplifiedSRA.languageIncludes(IP4PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_SRA_IP4_IP6_Inclusion() throws TimeoutException {
         assertTrue(IP4PacketParserSimplifiedSRA.languageIncludes(IP6PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
     }
 
-
     @ToRun
     public static void test_SRA_IP6_IP9_Inclusion() throws TimeoutException {
         assertTrue(IP6PacketParserSimplifiedSRA.languageIncludes(IP9PacketParserSimplifiedSRA, ba, Long.MAX_VALUE));
     }
-
-
 
     @ToRun
     public static void test_Pr_Membership_C2PP1() throws TimeoutException {
@@ -237,13 +206,29 @@ public class Experiments {
         assertTrue(productParserC2.accepts(valid2PP, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_C2PP10() throws TimeoutException {
         List<Character> valid2PP10 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10);
         assertTrue(productParserC2.accepts(valid2PP10, ba));
     }
 
+    @ToRun
+    public static void test_Pr_Membership_C2PP100() throws TimeoutException {
+        List<Character> valid2PP100 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100);
+        assertTrue(productParserC2.accepts(valid2PP100, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_C2PP1000() throws TimeoutException {
+        List<Character> valid2PP1000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000);
+        assertTrue(productParserC2.accepts(valid2PP1000, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_C2PP10000() throws TimeoutException {
+        List<Character> valid2PP10000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10000);
+        assertTrue(productParserC2.accepts(valid2PP10000, ba));
+    }
 
     @ToRun
     public static void test_Pr_Membership_C2PP100000() throws TimeoutException {
@@ -251,13 +236,11 @@ public class Experiments {
         assertTrue(productParserC2.accepts(valid2PP100000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_C2PP1000000() throws TimeoutException {
         List<Character> valid2PP1000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000000);
         assertTrue(productParserC2.accepts(valid2PP1000000, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_C2PP10000000() throws TimeoutException {
@@ -265,13 +248,11 @@ public class Experiments {
         assertTrue(productParserC2.accepts(valid2PP10000000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_CL2PP1() throws TimeoutException {
         List<Character> valid2PP = lOfS("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste"); // accepted by PPC2 and PPCL2
         assertTrue(productParserCL2.accepts(valid2PP, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_CL2PP10() throws TimeoutException {
@@ -279,6 +260,23 @@ public class Experiments {
         assertTrue(productParserCL2.accepts(valid2PP10, ba));
     }
 
+    @ToRun
+    public static void test_Pr_Membership_CL2PP100() throws TimeoutException {
+        List<Character> valid2PP100 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 100);
+        assertTrue(productParserCL2.accepts(valid2PP100, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_CL2PP1000() throws TimeoutException {
+        List<Character> valid2PP1000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000);
+        assertTrue(productParserCL2.accepts(valid2PP1000, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_CL2PP10000() throws TimeoutException {
+        List<Character> valid2PP10000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 10000);
+        assertTrue(productParserCL2.accepts(valid2PP10000, ba));
+    }
 
     @ToRun
     public static void test_Pr_Membership_CL2PP100000() throws TimeoutException {
@@ -286,13 +284,11 @@ public class Experiments {
         assertTrue(productParserCL2.accepts(valid2PP100000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_CL2PP1000000() throws TimeoutException {
         List<Character> valid2PP1000000 = getPPTestStrings("C:X4 L:4 D:toothbrush C:X4 L:4 D:toothpaste", 1000000);
         assertTrue(productParserCL2.accepts(valid2PP1000000, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_CL2PP10000000() throws TimeoutException {
@@ -300,13 +296,11 @@ public class Experiments {
         assertTrue(productParserCL2.accepts(valid2PP10000000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_C3PP1() throws TimeoutException {
         List<Character> valid3PP = lOfS("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste"); // accepted by PPC3 and PPCL3
         assertTrue(productParserC3.accepts(valid3PP, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_C3PP10() throws TimeoutException {
@@ -314,6 +308,23 @@ public class Experiments {
         assertTrue(productParserC3.accepts(valid3PP10, ba));
     }
 
+    @ToRun
+    public static void test_Pr_Membership_C3PP100() throws TimeoutException {
+        List<Character> valid3PP100 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 100);
+        assertTrue(productParserC3.accepts(valid3PP100, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_C3PP1000() throws TimeoutException {
+        List<Character> valid3PP1000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000);
+        assertTrue(productParserC3.accepts(valid3PP1000, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_C3PP10000() throws TimeoutException {
+        List<Character> valid3PP10000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10000);
+        assertTrue(productParserC3.accepts(valid3PP10000, ba));
+    }
 
     @ToRun
     public static void test_Pr_Membership_C3PP100000() throws TimeoutException {
@@ -321,13 +332,11 @@ public class Experiments {
         assertTrue(productParserC3.accepts(valid3PP100000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_C3PP1000000() throws TimeoutException {
         List<Character> valid3PP1000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000000);
         assertTrue(productParserC3.accepts(valid3PP1000000, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_C3PP10000000() throws TimeoutException {
@@ -335,13 +344,11 @@ public class Experiments {
         assertTrue(productParserC3.accepts(valid3PP10000000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_CL3PP1() throws TimeoutException {
         List<Character> valid3PP = lOfS("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste"); // accepted by PPC3 and PPCL3
         assertTrue(productParserCL3.accepts(valid3PP, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_CL3PP10() throws TimeoutException {
@@ -349,6 +356,23 @@ public class Experiments {
         assertTrue(productParserCL3.accepts(valid3PP10, ba));
     }
 
+    @ToRun
+    public static void test_Pr_Membership_CL3PP100() throws TimeoutException {
+        List<Character> valid3PP100 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 100);
+        assertTrue(productParserCL3.accepts(valid3PP100, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_CL3PP1000() throws TimeoutException {
+        List<Character> valid3PP1000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000);
+        assertTrue(productParserCL3.accepts(valid3PP1000, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_CL3PP10000() throws TimeoutException {
+        List<Character> valid3PP10000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 10000);
+        assertTrue(productParserCL3.accepts(valid3PP10000, ba));
+    }
 
     @ToRun
     public static void test_Pr_Membership_CL3PP100000() throws TimeoutException {
@@ -356,13 +380,11 @@ public class Experiments {
         assertTrue(productParserCL3.accepts(valid3PP100000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_CL3PP1000000() throws TimeoutException {
         List<Character> valid3PP1000000 = getPPTestStrings("C:X4a L:4 D:toothbrush C:X4a L:4 D:toothpaste", 1000000);
         assertTrue(productParserCL3.accepts(valid3PP1000000, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_CL3PP10000000() throws TimeoutException {
@@ -370,13 +392,11 @@ public class Experiments {
         assertTrue(productParserCL3.accepts(valid3PP10000000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_C4PP1() throws TimeoutException {
         List<Character> valid4PP = lOfS("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste"); // accepted by PPC4 and PPCL4
         assertTrue(productParserC4.accepts(valid4PP, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_C4PP10() throws TimeoutException {
@@ -384,6 +404,23 @@ public class Experiments {
         assertTrue(productParserC4.accepts(valid4PP10, ba));
     }
 
+    @ToRun
+    public static void test_Pr_Membership_C4PP100() throws TimeoutException {
+        List<Character> valid4PP100 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 100);
+        assertTrue(productParserC4.accepts(valid4PP100, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_C4PP1000() throws TimeoutException {
+        List<Character> valid4PP1000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 1000);
+        assertTrue(productParserC4.accepts(valid4PP1000, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_C4PP10000() throws TimeoutException {
+        List<Character> valid4PP10000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10000);
+        assertTrue(productParserC4.accepts(valid4PP10000, ba));
+    }
 
     @ToRun
     public static void test_Pr_Membership_C4PP100000() throws TimeoutException {
@@ -391,13 +428,11 @@ public class Experiments {
         assertTrue(productParserC4.accepts(valid4PP100000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_C4PP1000000() throws TimeoutException {
         List<Character> valid4PP1000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 1000000);
         assertTrue(productParserC4.accepts(valid4PP1000000, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_C4PP10000000() throws TimeoutException {
@@ -405,13 +440,11 @@ public class Experiments {
         assertTrue(productParserC4.accepts(valid4PP10000000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_CL4PP1() throws TimeoutException {
         List<Character> valid4PP = lOfS("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste"); // accepted by PPC4 and PPCL4
         assertTrue(productParserCL4.accepts(valid4PP, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_CL4PP10() throws TimeoutException {
@@ -419,6 +452,23 @@ public class Experiments {
         assertTrue(productParserCL4.accepts(valid4PP10, ba));
     }
 
+    @ToRun
+    public static void test_Pr_Membership_CL4PP100() throws TimeoutException {
+        List<Character> valid4PP100 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 100);
+        assertTrue(productParserCL4.accepts(valid4PP100, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_CL4PP1000() throws TimeoutException {
+        List<Character> valid4PP1000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 1000);
+        assertTrue(productParserCL4.accepts(valid4PP1000, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_CL4PP10000() throws TimeoutException {
+        List<Character> valid4PP10000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 10000);
+        assertTrue(productParserCL4.accepts(valid4PP10000, ba));
+    }
 
     @ToRun
     public static void test_Pr_Membership_CL4PP100000() throws TimeoutException {
@@ -426,13 +476,11 @@ public class Experiments {
         assertTrue(productParserCL4.accepts(valid4PP100000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_CL4PP1000000() throws TimeoutException {
         List<Character> valid4PP1000000 = getPPTestStrings("C:X4aB L:4 D:toothbrush C:X4aB L:4 D:toothpaste", 1000000);
         assertTrue(productParserCL4.accepts(valid4PP1000000, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_CL4PP10000000() throws TimeoutException {
@@ -440,13 +488,11 @@ public class Experiments {
         assertTrue(productParserCL4.accepts(valid4PP10000000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_C6PP1() throws TimeoutException {
         List<Character> valid6PP = lOfS("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste"); // accepted by PPC6 and PPCL6
         assertTrue(productParserC6.accepts(valid6PP, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_C6PP10() throws TimeoutException {
@@ -454,6 +500,23 @@ public class Experiments {
         assertTrue(productParserC6.accepts(valid6PP10, ba));
     }
 
+    @ToRun
+    public static void test_Pr_Membership_C6PP100() throws TimeoutException {
+        List<Character> valid6PP100 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 100);
+        assertTrue(productParserC6.accepts(valid6PP100, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_C6PP1000() throws TimeoutException {
+        List<Character> valid6PP1000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 1000);
+        assertTrue(productParserC6.accepts(valid6PP1000, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_C6PP10000() throws TimeoutException {
+        List<Character> valid6PP10000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10000);
+        assertTrue(productParserC6.accepts(valid6PP10000, ba));
+    }
 
     @ToRun
     public static void test_Pr_Membership_C6PP100000() throws TimeoutException {
@@ -461,13 +524,11 @@ public class Experiments {
         assertTrue(productParserC6.accepts(valid6PP100000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_C6PP1000000() throws TimeoutException {
         List<Character> valid6PP1000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 1000000);
         assertTrue(productParserC6.accepts(valid6PP1000000, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_C6PP10000000() throws TimeoutException {
@@ -475,13 +536,11 @@ public class Experiments {
         assertTrue(productParserC6.accepts(valid6PP10000000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_CL6PP1() throws TimeoutException {
         List<Character> valid6PP = lOfS("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste"); // accepted by PPC6 and PPCL6
         assertTrue(productParserCL6.accepts(valid6PP, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_CL6PP10() throws TimeoutException {
@@ -489,6 +548,23 @@ public class Experiments {
         assertTrue(productParserCL6.accepts(valid6PP10, ba));
     }
 
+    @ToRun
+    public static void test_Pr_Membership_CL6PP100() throws TimeoutException {
+        List<Character> valid6PP100 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 100);
+        assertTrue(productParserCL6.accepts(valid6PP100, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_CL6PP1000() throws TimeoutException {
+        List<Character> valid6PP1000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 1000);
+        assertTrue(productParserCL6.accepts(valid6PP1000, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_CL6PP10000() throws TimeoutException {
+        List<Character> valid6PP10000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 10000);
+        assertTrue(productParserCL6.accepts(valid6PP10000, ba));
+    }
 
     @ToRun
     public static void test_Pr_Membership_CL6PP100000() throws TimeoutException {
@@ -496,13 +572,11 @@ public class Experiments {
         assertTrue(productParserCL6.accepts(valid6PP100000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_CL6PP1000000() throws TimeoutException {
         List<Character> valid6PP1000000 = getPPTestStrings("C:X4aB@y L:4 D:toothbrush C:X4aB@y L:4 D:toothpaste", 1000000);
         assertTrue(productParserCL6.accepts(valid6PP1000000, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_CL6PP10000000() throws TimeoutException {
@@ -510,13 +584,11 @@ public class Experiments {
         assertTrue(productParserCL6.accepts(valid6PP10000000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_C9PP1() throws TimeoutException {
         List<Character> valid9PP = lOfS("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste"); // accepted by PPC9 and PPCL9
         assertTrue(productParserC9.accepts(valid9PP, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_C9PP10() throws TimeoutException {
@@ -524,6 +596,23 @@ public class Experiments {
         assertTrue(productParserC9.accepts(valid9PP10, ba));
     }
 
+    @ToRun
+    public static void test_Pr_Membership_C9PP100() throws TimeoutException {
+        List<Character> valid9PP100 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 100);
+        assertTrue(productParserC9.accepts(valid9PP100, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_C9PP1000() throws TimeoutException {
+        List<Character> valid9PP1000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 1000);
+        assertTrue(productParserC9.accepts(valid9PP1000, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_C9PP10000() throws TimeoutException {
+        List<Character> valid9PP10000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10000);
+        assertTrue(productParserC9.accepts(valid9PP10000, ba));
+    }
 
     @ToRun
     public static void test_Pr_Membership_C9PP100000() throws TimeoutException {
@@ -531,13 +620,11 @@ public class Experiments {
         assertTrue(productParserC9.accepts(valid9PP100000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_C9PP1000000() throws TimeoutException {
         List<Character> valid9PP1000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 1000000);
         assertTrue(productParserC9.accepts(valid9PP1000000, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_C9PP10000000() throws TimeoutException {
@@ -545,13 +632,11 @@ public class Experiments {
         assertTrue(productParserC9.accepts(valid9PP10000000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_CL9PP1() throws TimeoutException {
         List<Character> valid9PP = lOfS("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste"); // accepted by PPC9 and PPCL9
         assertTrue(productParserCL9.accepts(valid9PP, ba));
     }
-
 
     @ToRun
     public static void test_Pr_Membership_CL9PP10() throws TimeoutException {
@@ -559,6 +644,23 @@ public class Experiments {
         assertTrue(productParserCL9.accepts(valid9PP10, ba));
     }
 
+    @ToRun
+    public static void test_Pr_Membership_CL9PP100() throws TimeoutException {
+        List<Character> valid9PP100 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 100);
+        assertTrue(productParserCL9.accepts(valid9PP100, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_CL9PP1000() throws TimeoutException {
+        List<Character> valid9PP1000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 1000);
+        assertTrue(productParserCL9.accepts(valid9PP1000, ba));
+    }
+
+    @ToRun
+    public static void test_Pr_Membership_CL9PP10000() throws TimeoutException {
+        List<Character> valid9PP10000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10000);
+        assertTrue(productParserCL9.accepts(valid9PP10000, ba));
+    }
 
     @ToRun
     public static void test_Pr_Membership_CL9PP100000() throws TimeoutException {
@@ -566,14 +668,12 @@ public class Experiments {
         assertTrue(productParserCL9.accepts(valid9PP100000, ba));
     }
 
-
     @ToRun
     public static void test_Pr_Membership_CL9PP1000000() throws TimeoutException {
         List<Character> valid9PP1000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 1000000);
         assertTrue(productParserCL9.accepts(valid9PP1000000, ba));
     }
-
-
+    
     @ToRun
     public static void test_Pr_Membership_CL9PP10000000() throws TimeoutException {
         List<Character> valid9PP10000000 = getPPTestStrings("C:X4aB@y%z[ L:4 D:toothbrush C:X4aB@y%z[ L:4 D:toothpaste", 10000000);
@@ -600,7 +700,6 @@ public class Experiments {
         Matcher m = CL2PPRegex.matcher(valid2PP100Str);
         assertTrue(m.find());
     }
-
 
     @ToRun
     public static void test_Pr_Membership_JavaRegex_1000() {
@@ -763,8 +862,6 @@ public class Experiments {
         assertTrue(SSNParserLast.isLanguageEquivalent(SSNParserLast, ba, Long.MAX_VALUE));
     }
 
-
-
     public static void test_XML_Membership() throws TimeoutException {
         boolean check = XMLParserSRA.createDotFile("xml", "");
         assertTrue(check);
@@ -783,7 +880,6 @@ public class Experiments {
         assertFalse(XMLParserSRA.accepts(invalidXML6, ba));
         assertFalse(XMLParserSRA.accepts(invalidXML7, ba));
     }
-
 
     public static void test_IP_Membership_SRA() throws TimeoutException {
         assertTrue(IP2PacketParserSRA.accepts(validIPPacket1, ba));
@@ -822,8 +918,6 @@ public class Experiments {
         assertTrue(IP6PacketParserSRA.accepts(dependentIPPacket1, ba));
         assertFalse(IP9PacketParserSRA.accepts(dependentIPPacket1, ba));
     }
-
-
 
     // ---------------------------------------
     // Predicates
