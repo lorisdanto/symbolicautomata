@@ -57,7 +57,7 @@ $ run -l
 $ run -n 5
 
 * Run specific benchmarks 5 times with 20s timeout:
-$ run -e testSSNParserSRA testXMLParserSRA -n 5 -t 20
+$ run -e test_Pr_C2_Emptiness test_Pr_Membership_C2PP1 -n 5 -t 20
 
 * Run all benchmarks and write results in "newFilePath.csv". 
 $ run -f newFilePath.csv
