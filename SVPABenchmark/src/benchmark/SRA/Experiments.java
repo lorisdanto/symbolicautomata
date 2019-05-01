@@ -91,31 +91,31 @@ public class Experiments {
 
 
     @ToRun
-    public static void test_Pr_CL2_C2_Not_Inclusion() throws TimeoutException {
+    public static void test_Pr_CL2_C2_Inclusion() throws TimeoutException {
         assertFalse(productParserCL2.languageIncludes(productParserC2, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_Pr_CL3_C3_Not_Inclusion() throws TimeoutException {
+    public static void test_Pr_CL3_C3_Inclusion() throws TimeoutException {
         assertFalse(productParserCL3.languageIncludes(productParserC3, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_Pr_CL4_C4_Not_Inclusion() throws TimeoutException {
+    public static void test_Pr_CL4_C4_Inclusion() throws TimeoutException {
         assertFalse(productParserCL4.languageIncludes(productParserC4, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_Pr_CL6_C6_Not_Inclusion() throws TimeoutException {
+    public static void test_Pr_CL6_C6_Inclusion() throws TimeoutException {
         assertFalse(productParserCL6.languageIncludes(productParserC6, ba, Long.MAX_VALUE));
     }
 
 
     @ToRun
-    public static void test_Pr_CL9_C9_Not_Inclusion() throws TimeoutException {
+    public static void test_Pr_CL9_C9_Inclusion() throws TimeoutException {
         assertFalse(productParserCL9.languageIncludes(productParserC9, ba, Long.MAX_VALUE));
     }
 
@@ -688,7 +688,7 @@ public class Experiments {
     // Other Experiments
     // ---------------------------------------
 
-    
+
 
     public static void test_Pr_C2_CL2_Not_Equivalence() throws TimeoutException {
         assertFalse(productParserC2.isLanguageEquivalent(productParserCL2, ba, Long.MAX_VALUE));
