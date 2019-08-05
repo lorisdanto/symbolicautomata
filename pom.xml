@@ -3,25 +3,24 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
     http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <groupId>cs.wisc.edu</groupId>
     <artifactId>symbolicautomata</artifactId>
     <version>1.0</version>
     <packaging>pom</packaging>
     <name>symbolicautomata</name>
-    
+
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
-    
+
     <modules>
         <module>automatark</module>
-        <module>SVPAlib</module>
-        <module>TestSVPA</module>
-        <module>SVPABenchmark</module>
+        <module>models</module>
+        <module>benchmarks</module>
     </modules>
-    
+
     <repositories>
         <repository>
             <id>project.local</id>
@@ -29,5 +28,5 @@
             <url>file:${project.basedir}/repo</url>
         </repository>
     </repositories>
-    
+
 </project>

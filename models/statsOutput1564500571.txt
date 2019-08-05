@@ -1,0 +1,2 @@
+Number Membership Queries: 5
+Number Equivalence Queries: 2
