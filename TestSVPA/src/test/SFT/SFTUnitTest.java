@@ -1416,7 +1416,9 @@ public class SFTUnitTest {
 		finStates21.add(2);
 		SFA<CharPred, Character> expected2 = SFA.MkSFA(transitions21, 1, finStates21, ba);
 
-		assertTrue(expected2.isEquivalentTo(mySFT222.getOutputSFA(ba), ba));
+		SFA<CharPred, Character> output2 = mySFT222.getOutputSFA(ba);
+		
+		assertTrue(expected2.isEquivalentTo(output2, ba));
 	}
 
 	/**
