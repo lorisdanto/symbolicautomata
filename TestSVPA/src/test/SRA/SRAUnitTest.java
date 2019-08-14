@@ -62,7 +62,7 @@ public class SRAUnitTest {
 
         assertFalse(intersection.accepts(la, ba));
         assertFalse(intersection.accepts(lb, ba));
-        assertFalse(intersection.accepts(lab, ba));
+        assertTrue(intersection.accepts(lab, ba));
         assertFalse(intersection.accepts(lnot, ba));
     }
 
