@@ -22,6 +22,7 @@ import transducers.sft.SFTMove;
 import transducers.sft.SFTInputMove;
 import transducers.sft.SFTEpsilon;
 import automata.sfa.SFA;
+import automata.sfa.SFAEpsilon;
 import automata.sfa.SFAMove;
 import automata.sfa.SFAInputMove;
 
@@ -140,6 +141,7 @@ public class SFTUnitTest {
 		List<SFTMove<CharPred, CharFunc, Character>> transitions222 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
 		List<CharFunc> output2221 = new ArrayList<CharFunc>();
 		output2221.add(new CharOffset(1));
+		// 1 -- [bc]/+1 --> 2
 		transitions222.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('b', 'c'), output2221));
 		Map<Integer, Set<List<Character>>> finStatesAndTails222 = new HashMap<Integer, Set<List<Character>>>();
 		finStatesAndTails222.put(2, new HashSet<List<Character>>());
@@ -1384,30 +1386,39 @@ public class SFTUnitTest {
 	 */
 	@Test
 	public void testGetOutputSFA() throws Exception {
-		// no output functions
+		// SFT that produces no output
 		List<SFTMove<CharPred, CharFunc, Character>> transitions121 = new LinkedList<SFTMove<CharPred, CharFunc, Character>>();
 		List<CharFunc> output1211 = new ArrayList<CharFunc>();
+		// 1 -- [ac]/[] --> 2
 		transitions121.add(new SFTInputMove<CharPred, CharFunc, Character>(1, 2, new CharPred('a', 'c'), output1211));
 		Map<Integer, Set<List<Character>>> finStatesAndTails121 = new HashMap<Integer, Set<List<Character>>>();
+		// 2 -- [] --> *
 		finStatesAndTails121.put(2, new HashSet<List<Character>>());
+		// 1 is initial, 2 is final with tail []
 		SFT<CharPred, CharFunc, Character> noOutputFunctions = SFT.MkSFT(transitions121, 1, finStatesAndTails121, ba);
 
+		// SFA that accepts only epsilon
 		LinkedList<SFAMove<CharPred, Character>> transitions1 = new LinkedList<SFAMove<CharPred, Character>>();
+		transitions1.add(new SFAEpsilon<CharPred,Character>(1, 2));
 		List<Integer> finStates1 = new LinkedList<Integer>();
 		finStates1.add(2);
 		SFA<CharPred, Character> expected1 = SFA.MkSFA(transitions1, 1, finStates1, ba);
-
+		
+		// SFT output is epsilon
 		assertTrue(expected1.isEquivalentTo(noOutputFunctions.getOutputSFA(ba), ba));
 
 		// II. two states with one final state
 		// i. onr arc, one transition condition
 		LinkedList<SFAMove<CharPred, Character>> transitions21 = new LinkedList<SFAMove<CharPred, Character>>();
+		// 1 -- [cd] --> 2
 		transitions21.add(new SFAInputMove<CharPred, Character>(1, 2, new CharPred('c', 'd')));
 		List<Integer> finStates21 = new LinkedList<Integer>();
 		finStates21.add(2);
 		SFA<CharPred, Character> expected2 = SFA.MkSFA(transitions21, 1, finStates21, ba);
 
-		assertTrue(expected2.isEquivalentTo(mySFT222.getOutputSFA(ba), ba));
+		SFA<CharPred, Character> output2 = mySFT222.getOutputSFA(ba);
+		
+		assertTrue(expected2.isEquivalentTo(output2, ba));
 	}
 
 	/**

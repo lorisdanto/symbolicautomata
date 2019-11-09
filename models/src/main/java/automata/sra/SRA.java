@@ -1064,7 +1064,7 @@ public class SRA<P, S> {
 
 	/**
 	 * Checks if the language of an SRA is equivalent to the language of another SRA.
-	 * @return true of it is equivalent, false if not.
+	 * @return true if it is equivalent, false if not.
 	 */
 	public boolean isLanguageEquivalent(SRA<P,S> aut, BooleanAlgebra<P,S> ba, long timeout) throws TimeoutException {
 		SRA<P,S> aut1 = (SRA<P,S>) this.clone();
@@ -1760,6 +1760,7 @@ public class SRA<P, S> {
         // intersection registers are the union of register components
         registers.addAll(aut1.getRegisters());
         registers.addAll(aut2.getRegisters());
+        int registerSize1 = aut1.getRegisters().size();
 
         // reached contains the product states (p1,p2) we discovered and maps
         // them to a stateId
@@ -1794,19 +1795,19 @@ public class SRA<P, S> {
                     Set<Integer> intersE = new HashSet<Integer>();
                     intersE.addAll(ct1.E);
                     for (Integer registerE : ct2.E)
-                        intersE.add(registerE + ct1.E.size());
+                        intersE.add(registerE + registerSize1);
 
                     // create union of the two I sets.
                     Set<Integer> intersI = new HashSet<Integer>();
                     intersI.addAll(ct1.I);
                     for (Integer registerI : ct2.I)
-                        intersI.add(registerI + ct1.I.size());
+                        intersI.add(registerI + registerSize1);
 
                     // create union fo the two U sets.
                     Set<Integer> intersU = new HashSet<Integer>();
                     intersU.addAll(ct1.U);
                     for (Integer registerU : ct2.U)
-                        intersU.add(registerU + ct1.U.size());
+                        intersU.add(registerU + registerSize1);
                     
                     // construct potential transition.
                     SRAMove<A, B> transition = new SRAMove<A, B>(currentStateID, null, intersGuard, intersE, intersI, intersU);
@@ -1815,7 +1816,8 @@ public class SRA<P, S> {
                     if (transition.isSatisfiable(ba)) {
                         Pair<Integer, Integer> nextState = new Pair<Integer, Integer>(ct1.to, ct2.to);
                         transition.to = getStateId(nextState, reached, toVisit);
-                        if (aut1.finalStates.contains(ct1.to) || aut2.finalStates.contains(ct2.to))
+                        if ( (aut1.finalStates.contains(ct1.to) || aut2.finalStates.contains(ct2.to)) &&
+                                !finalStates.contains(transition.to))
                             finalStates.add(transition.to);
                         transitions.add(transition);
                     }
@@ -1915,6 +1917,9 @@ public class SRA<P, S> {
 						A guard = regPredMapGen.get(regConstraints);
 						regPredMapGen.replace(regConstraints, ba.MkOr(guard, move.guard));
 					}
+					else {
+					    regPredMapGen.put(regConstraints, move.guard);
+                    }
 				} else {
 					regPredMapGen = new HashMap<>();
 					regPredMapGen.put(regConstraints, move.guard);
