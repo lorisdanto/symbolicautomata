@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>cs.wisc.edu</groupId>
-            <artifactId>SVPAlib</artifactId>
+            <artifactId>models</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
