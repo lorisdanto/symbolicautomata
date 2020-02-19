@@ -1,5 +1,6 @@
-/SVPAlib/target/
 /SVPALib/*.iml
+/SVPAlib/target/
+/SVPABenchmark/target/
 /BooleanAlgebras/target/
 /TestSVPA/target/
 /TestSVPA/*.iml
