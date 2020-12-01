@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -887,9 +888,9 @@ public class SVPAUnitTest {
 	}
 
 	private SVPA<ICharPred, Character> importFromResourceFile(
-			String file) throws AutomataException, IOException {
+			String file) throws AutomataException, IOException, URISyntaxException {
 		return ImportCharSVPA.importSVPA(
-			new File(getClass().getClassLoader().getResource(file).getFile()));
+			new File(getClass().getClassLoader().getResource(file).toURI().getPath()));
 	}
 
 	// slow intersection test (first_svpa_intersect is large)
