@@ -19,13 +19,15 @@ public abstract class BooleanAlgebraSubstAndOutputs<P, PL, F, S> extends Boolean
 	
 	/**
 	 * Returns a list of P predicates whose conjunction expresses the PL p
-	 * e.g.: for \phi(x, y) = (x = 1) \wedge (x = y), computes \psi(x) = [x = 1, x = 1]
+	 * e.g.: for \phi(x, y) = (x = 1) \wedge (x = y), computes [x = 1, x = 1]
+	 * which stands for \phi(x, y) = (x = 1) \wedge (y = 1)
 	 */
 	public abstract List<P> getCartesianPredicate(PL p);
 	
 	/**
 	 * Returns a list of list of P predicates whose disjunction expresses the PL p
-	 * e.g.: for \phi(x, y) = (0 < x < 3) \wedge (x = y), computes \psi(x) = [[x = 1, x = 1], [x = 2, x = 2], [x = 3, x= 3]]
+	 * e.g.: for \phi(x, y) = (0 < x < 3) \wedge (x = y), computes [[x = 1, x = 1], [x = 2, x = 2]]
+	 * which stands for \phi(x, y) = ((x = 1) \wedge (y = 1)) \vee ((x = 2) \wedge (y = 2))
 	 */
 	public abstract List<List<P>> getMonadicPredicate(PL p);
 	
