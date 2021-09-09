@@ -37,7 +37,7 @@ The easiest way to use the libraries and build them is to open them in Eclipse. 
 
 The main library resides in the project SVPALib. 
 The character theory of interval resides in the project BooleanAlgebras.
-To see usage examples of the library check the project TestSVPA.
+To see usage examples of the library check the test folder.
 
 Instructions from command line
 ----------------
@@ -46,7 +46,5 @@ Instructions from command line
 2. Apache Maven >= 3.2.1
 
 If you have insatlled automatark just run "mvn clean install" in the symbolicautomata directory.
-If you haven't done so run
-"mvn clean install -pl "SVPAlib, TestSVPA" " to only install the library and the test cases.
 
 
