@@ -58,15 +58,13 @@ public class RegexConverter {
 			List<RegexNode> concateList = cphi.getList();
 			Iterator<RegexNode> it = concateList.iterator();
 			//initialize SFA to empty SFA
-			SFA<CharPred, Character> iterateSFA = SFA.getEmptySFA(unarySolver);
-			if(it.hasNext()){
-				iterateSFA = toSFA(it.next(), unarySolver);
-				while (it.hasNext()) {
-					SFA<CharPred, Character> followingSFA = toSFA(it.next(), unarySolver);
-					iterateSFA = SFA.concatenate(iterateSFA, followingSFA, unarySolver);
-				}
+			Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
+			outputSFA = SFA.MkSFA(transitionsA, 0, Arrays.asList(0), unarySolver);
+			while (it.hasNext()) {
+				SFA<CharPred, Character> followingSFA = toSFA(it.next(), unarySolver);
+				outputSFA = SFA.concatenate(outputSFA, followingSFA, unarySolver);
 			}
-			return iterateSFA;
+			return outputSFA;
 
 		} else if (phi instanceof DotNode) {
 			// make a SFA that has a transition which accepts TRUE
@@ -217,16 +215,10 @@ public class RegexConverter {
 
 		} else if (phi instanceof RepetitionNode) {
 			RepetitionNode cphi = (RepetitionNode) phi;
-			//special case when there is zero repetition which means the Regex is not existing
-			if(cphi.getMin() == 0){
-				return SFA.getEmptySFA(unarySolver);
-			}
-			//now the repetition will be at least once
+			Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
+			outputSFA = SFA.MkSFA(transitionsA, 0, Arrays.asList(0), unarySolver);
 			SFA<CharPred, Character> tempSFA = toSFA(cphi.getMyRegex1(), unarySolver);
-			//make sure there is no empty SFA when using SFA.concatenate()
-			outputSFA = tempSFA;
-			// i starts from 1 because we already have one repetition above
-			for (int i = 1; i < cphi.getMin(); i++) { //now we looped min times
+			for (int i = 0; i < cphi.getMin(); i++) { //now we looped min times
 				outputSFA = SFA.concatenate(outputSFA, tempSFA, unarySolver);
 			}
 			
