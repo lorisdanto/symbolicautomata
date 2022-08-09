@@ -58,8 +58,8 @@ public class RegexConverter {
 			List<RegexNode> concateList = cphi.getList();
 			Iterator<RegexNode> it = concateList.iterator();
 			//initialize SFA to empty SFA
-			Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
-			outputSFA = SFA.MkSFA(transitionsA, 0, Arrays.asList(0), unarySolver);
+			Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
+			outputSFA = SFA.MkSFA(transitions, 0, Arrays.asList(0), unarySolver);
 			while (it.hasNext()) {
 				SFA<CharPred, Character> followingSFA = toSFA(it.next(), unarySolver);
 				outputSFA = SFA.concatenate(outputSFA, followingSFA, unarySolver);
@@ -215,11 +215,12 @@ public class RegexConverter {
 
 		} else if (phi instanceof RepetitionNode) {
 			RepetitionNode cphi = (RepetitionNode) phi;
-			Collection<SFAMove<CharPred, Character>> transitionsA = new LinkedList<SFAMove<CharPred, Character>>();
-			outputSFA = SFA.MkSFA(transitionsA, 0, Arrays.asList(0), unarySolver);
-			SFA<CharPred, Character> tempSFA = toSFA(cphi.getMyRegex1(), unarySolver);
+			Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
+            SFA<CharPred, Character> shortSFA = SFA.MkSFA(transitions, 0, Arrays.asList(0), unarySolver);
+			outputSFA = shortSFA;
+			SFA<CharPred, Character> bodySFA = toSFA(cphi.getMyRegex1(), unarySolver);
 			for (int i = 0; i < cphi.getMin(); i++) { //now we looped min times
-				outputSFA = SFA.concatenate(outputSFA, tempSFA, unarySolver);
+				outputSFA = SFA.concatenate(outputSFA, bodySFA, unarySolver);
 			}
 			
 			if (cphi.getMode().equals("min")) {
@@ -228,15 +229,18 @@ public class RegexConverter {
 				
 			} else if (cphi.getMode().equals("minToInfinite")) {
 				// concatenate with a star, e.g. R{3,} = RRR(R)*
-				return SFA.concatenate(outputSFA, SFA.star(tempSFA, unarySolver), unarySolver);
+				return SFA.concatenate(outputSFA, SFA.star(bodySFA, unarySolver), unarySolver);
 				
-			} else { // minToMax
-				SFA<CharPred, Character> unions = outputSFA;
-				for(int i = cphi.getMin(); i< cphi.getMax(); i++){
-					unions = SFA.concatenate(unions, tempSFA, unarySolver);
-					outputSFA = SFA.union(outputSFA, unions, unarySolver);
-				}
+			} else if (cphi.getMax() == cphi.getMin()) { // minToMax
 				return outputSFA;
+			} else {
+				SFA<CharPred, Character> unions = bodySFA;
+				for(int i = cphi.getMin() + 1; i < cphi.getMax(); i++){
+					unions = SFA.union(unions, shortSFA, unarySolver);
+					unions = SFA.concatenate(bodySFA, unions, unarySolver);
+				}
+				unions = SFA.union(unions, SFA.MkSFA(transitions,0, Arrays.asList(0), unarySolver), unarySolver);
+				return SFA.concatenate(outputSFA, unions, unarySolver);
 			}
 			
 		}else if (phi instanceof ModifierNode) {
