@@ -58,15 +58,13 @@ public class RegexConverter {
 			List<RegexNode> concateList = cphi.getList();
 			Iterator<RegexNode> it = concateList.iterator();
 			//initialize SFA to empty SFA
-			SFA<CharPred, Character> iterateSFA = SFA.getEmptySFA(unarySolver);
-			if(it.hasNext()){
-				iterateSFA = toSFA(it.next(), unarySolver);
-				while (it.hasNext()) {
-					SFA<CharPred, Character> followingSFA = toSFA(it.next(), unarySolver);
-					iterateSFA = SFA.concatenate(iterateSFA, followingSFA, unarySolver);
-				}
+			Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
+			outputSFA = SFA.MkSFA(transitions, 0, Arrays.asList(0), unarySolver);
+			while (it.hasNext()) {
+				SFA<CharPred, Character> followingSFA = toSFA(it.next(), unarySolver);
+				outputSFA = SFA.concatenate(outputSFA, followingSFA, unarySolver);
 			}
-			return iterateSFA;
+			return outputSFA;
 
 		} else if (phi instanceof DotNode) {
 			// make a SFA that has a transition which accepts TRUE
@@ -217,17 +215,12 @@ public class RegexConverter {
 
 		} else if (phi instanceof RepetitionNode) {
 			RepetitionNode cphi = (RepetitionNode) phi;
-			//special case when there is zero repetition which means the Regex is not existing
-			if(cphi.getMin() == 0){
-				return SFA.getEmptySFA(unarySolver);
-			}
-			//now the repetition will be at least once
-			SFA<CharPred, Character> tempSFA = toSFA(cphi.getMyRegex1(), unarySolver);
-			//make sure there is no empty SFA when using SFA.concatenate()
-			outputSFA = tempSFA;
-			// i starts from 1 because we already have one repetition above
-			for (int i = 1; i < cphi.getMin(); i++) { //now we looped min times
-				outputSFA = SFA.concatenate(outputSFA, tempSFA, unarySolver);
+			Collection<SFAMove<CharPred, Character>> transitions = new LinkedList<SFAMove<CharPred, Character>>();
+            SFA<CharPred, Character> shortSFA = SFA.MkSFA(transitions, 0, Arrays.asList(0), unarySolver);
+			outputSFA = shortSFA;
+			SFA<CharPred, Character> bodySFA = toSFA(cphi.getMyRegex1(), unarySolver);
+			for (int i = 0; i < cphi.getMin(); i++) { //now we looped min times
+				outputSFA = SFA.concatenate(outputSFA, bodySFA, unarySolver);
 			}
 			
 			if (cphi.getMode().equals("min")) {
@@ -236,15 +229,18 @@ public class RegexConverter {
 				
 			} else if (cphi.getMode().equals("minToInfinite")) {
 				// concatenate with a star, e.g. R{3,} = RRR(R)*
-				return SFA.concatenate(outputSFA, SFA.star(tempSFA, unarySolver), unarySolver);
+				return SFA.concatenate(outputSFA, SFA.star(bodySFA, unarySolver), unarySolver);
 				
-			} else { // minToMax
-				SFA<CharPred, Character> unions = outputSFA;
-				for(int i = cphi.getMin(); i< cphi.getMax(); i++){
-					unions = SFA.concatenate(unions, tempSFA, unarySolver);
-					outputSFA = SFA.union(outputSFA, unions, unarySolver);
-				}
+			} else if (cphi.getMax() == cphi.getMin()) { // minToMax
 				return outputSFA;
+			} else {
+				SFA<CharPred, Character> unions = bodySFA;
+				for(int i = cphi.getMin() + 1; i < cphi.getMax(); i++){
+					unions = SFA.union(unions, shortSFA, unarySolver);
+					unions = SFA.concatenate(bodySFA, unions, unarySolver);
+				}
+				unions = SFA.union(unions, SFA.MkSFA(transitions,0, Arrays.asList(0), unarySolver), unarySolver);
+				return SFA.concatenate(outputSFA, unions, unarySolver);
 			}
 			
 		}else if (phi instanceof ModifierNode) {
