@@ -49,7 +49,7 @@ public class Internal<U, S> extends SVPAMove<U, S> {
 
 		if (input.tag == SymbolTag.Internal) {
 			Integer currState = state.first;
-			if (currState == from) {
+			if (currState.equals(from)) {
 				Stack<Pair<Integer, S>> currStack = state.second;
 				if (ba.HasModel(guard, input.input)) {
 					@SuppressWarnings("unchecked")
@@ -79,7 +79,7 @@ public class Internal<U, S> extends SVPAMove<U, S> {
 	public boolean equals(Object other) {
 		if (other instanceof Internal<?, ?>) {
 			Internal<?, ?> otherCasted = (Internal<?, ?>) other;
-			return otherCasted.from==from && otherCasted.to==to && otherCasted.guard==guard;
+			return otherCasted.from.equals(from) && otherCasted.to.equals(to) && otherCasted.guard.equals(guard);
 		}
 
 		return false;

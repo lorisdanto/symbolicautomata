@@ -78,7 +78,7 @@ public class Call<U,S> extends SVPAMove<U,S> {
 	public boolean equals(Object other) {
 		if (other instanceof Call<?, ?>) {
 			Call<?, ?> otherCasted = (Call<?, ?>) other;
-			return otherCasted.from==from && otherCasted.to==to && otherCasted.guard==guard && otherCasted.stackState==stackState;
+			return otherCasted.from.equals(from) && otherCasted.to.equals(to) && otherCasted.guard.equals(guard) && otherCasted.stackState.equals(stackState);
 		}
 
 		return false;

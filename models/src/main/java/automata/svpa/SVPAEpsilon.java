@@ -21,7 +21,7 @@ public class SVPAEpsilon<U, S> extends SVPAMove<U, S> {
 	}
 
 	public boolean isDisjointFrom(SVPAMove<U, S> t, BooleanAlgebra<U, S> ba) {
-		return t.from != from;
+		return !t.from.equals(from);
 	}
 
 	public boolean isSatisfiable(BooleanAlgebra<U, S> boolal) {
@@ -54,7 +54,7 @@ public class SVPAEpsilon<U, S> extends SVPAMove<U, S> {
 	public boolean equals(Object other) {
 		if (other instanceof SVPAEpsilon<?, ?>) {
 			SVPAEpsilon<?, ?> otherCasted = (SVPAEpsilon<?, ?>) other;
-			return otherCasted.from == from && otherCasted.to == to;
+			return otherCasted.from.equals(from) && otherCasted.to.equals(to);
 		}
 
 		return false;

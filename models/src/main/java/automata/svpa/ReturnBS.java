@@ -51,7 +51,7 @@ public class ReturnBS<U, S> extends SVPAMove<U, S> {
 		
 		if (input.tag == SymbolTag.Return) {
 			Integer currState = state.first;
-			if (currState == from) {
+			if (currState.equals(from)) {
 				Stack<Pair<Integer, S>> currStack = state.second;
 
 				if (currStack.size() == 0
@@ -88,7 +88,7 @@ public class ReturnBS<U, S> extends SVPAMove<U, S> {
 	public boolean equals(Object other) {
 		if (other instanceof ReturnBS<?, ?>) {
 			ReturnBS<?, ?> otherCasted = (ReturnBS<?, ?>) other;
-			return otherCasted.from==from && otherCasted.to==to && otherCasted.guard==guard;
+			return otherCasted.from.equals(from) && otherCasted.to.equals(to) && otherCasted.guard.equals(guard);
 		}
 
 		return false;
