@@ -32,7 +32,7 @@ public class Return<U, S> extends SVPAMove<U, S> {
 
 	public boolean isDisjointFrom(SVPAMove<U, S> t, BooleanAlgebra<U, S> ba) throws TimeoutException {
 		if (t instanceof Return)
-			if (from.equals(t.from) && stackState == ((Return<U, S>) t).stackState){
+			if (from.equals(t.from) && stackState.equals(((Return<U, S>) t).stackState)){
 				List<U> conjuncts = new ArrayList<U>();
 				conjuncts.add(guard);
 				conjuncts.add(((Return<U, S>) t).guard);
@@ -51,12 +51,12 @@ public class Return<U, S> extends SVPAMove<U, S> {
 			TaggedSymbol<S> input, BooleanAlgebra<U, S> ba) throws TimeoutException {
 		if (input.tag == SymbolTag.Return) {
 			Integer currState = state.first;
-			if (currState == from) {
+			if (currState.equals(from)) {
 				Stack<Pair<Integer, S>> currStack = state.second;
 				if (currStack.size() > 0) {
 					Pair<Integer, S> stackTop = currStack.peek();
 
-					if (stackTop.first == stackState
+					if (stackTop.first.equals(stackState)
 							&& ba.HasModel(guard, stackTop.second, input.input)) {
 						@SuppressWarnings("unchecked")
 						Stack<Pair<Integer, S>> newStack = (Stack<Pair<Integer, S>>) currStack
@@ -93,9 +93,9 @@ public class Return<U, S> extends SVPAMove<U, S> {
 	public boolean equals(Object other) {
 		if (other instanceof Return<?, ?>) {
 			Return<?, ?> otherCasted = (Return<?, ?>) other;
-			return otherCasted.from == from && otherCasted.to == to
-					&& otherCasted.guard == guard
-					&& otherCasted.stackState == stackState;
+			return otherCasted.from.equals(from) && otherCasted.to.equals(to)
+					&& otherCasted.guard.equals(guard)
+					&& otherCasted.stackState.equals(stackState);
 		}
 
 		return false;
