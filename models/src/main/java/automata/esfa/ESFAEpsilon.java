@@ -1,6 +1,7 @@
 package automata.esfa;
 
 import java.util.List;
+import java.util.Objects;
 
 import automata.esfa.ESFAMove;
 import theory.BooleanAlgebra;
@@ -43,6 +44,11 @@ public class ESFAEpsilon<U,S> extends ESFAMove<U,S> {
 		}
 
 		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(to, from);
 	}
 	
 	@Override
