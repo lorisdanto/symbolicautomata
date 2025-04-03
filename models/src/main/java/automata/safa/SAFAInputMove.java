@@ -7,6 +7,7 @@
 package automata.safa;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 
 import org.sat4j.specs.TimeoutException;
@@ -69,6 +70,11 @@ public class SAFAInputMove<P,S> {
 		}
 
 		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(to, from, guard.hashCode());
 	}
 
 	@Override

@@ -8,6 +8,8 @@ package automata.sfa;
 
 import theory.BooleanAlgebra;
 
+import java.util.Objects;
+
 /**
  * Epsilon move of an SFA
  * @param <P> set of predicates over the domain S
@@ -46,6 +48,11 @@ public class SFAEpsilon<U,S> extends SFAMove<U,S> {
 		}
 
 		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(to, from);
 	}
 	
 	@Override

@@ -10,6 +10,8 @@ import org.sat4j.specs.TimeoutException;
 
 import theory.BooleanAlgebra;
 
+import java.util.Objects;
+
 /**
  * SFAInputMove
  * @param <P> set of predicates over the domain S
@@ -63,6 +65,11 @@ public class SFAInputMove<P,S> extends SFAMove<P, S>{
 		}
 
 		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(to, from, guard.hashCode());
 	}
 
 	@Override
